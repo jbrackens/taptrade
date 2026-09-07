@@ -132,7 +132,7 @@ brand-identity branch `origin/feat/tap-path-identity` deleted;
 `feat/predict-redesign-p10` pushed to origin as an archive branch; the `pam-worktree`
 removed (history preserved on `origin/pam/p0-modernization`); the parent folder's era
 artifacts moved to
-`/Users/john/Sandbox/Taya_NA_Predict/_archive-2026-09/`; the July rebrand ledger
+`/Users/john/Sandbox/taptrade-workspace/_archive-2026-09/`; the July rebrand ledger
 (`WORKLOG.md`, `CURRENT_STATE.md`, `RENAME_MAP.md`) archived under
 `docs/archive/2026-07-rebrand/` — the hold entry that briefly lived in that WORKLOG is
 this section.

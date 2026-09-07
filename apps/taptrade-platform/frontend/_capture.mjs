@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 
-const ROOT = '/Users/john/Sandbox/Taya_NA_Predict/nimbus_deck/v2/img';
+const ROOT = '/Users/john/Sandbox/taptrade-workspace/nimbus_deck/v2/img';
 
 const PLAYER_PAGES = [
   ['discover', 'http://localhost:3000/discover'],

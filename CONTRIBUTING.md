@@ -20,7 +20,7 @@ Install once from the yarn workspace root
 Player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 yarn typecheck
 yarn test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 yarn test:smoke
@@ -29,7 +29,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 yarn test:smoke
 Go services:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 

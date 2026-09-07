@@ -21,7 +21,7 @@ Measure from a clean terminal with Docker available:
 
 ```bash
 date
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose up -d postgres redis gateway auth
 cd frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 \
@@ -43,7 +43,7 @@ Record:
 ## Evidence Commands
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose ps
 ```
 
@@ -53,14 +53,14 @@ curl -i http://localhost:18080/api/v1/markets/NOT-A-REAL-MARKET/
 ```
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 npm run typecheck
 npm test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 ```
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 

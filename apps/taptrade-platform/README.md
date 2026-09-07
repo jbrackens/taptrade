@@ -5,14 +5,14 @@ Full local stack for Tap Trade: a player prediction-market app, admin backoffice
 ## Quick Start
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose up -d postgres redis gateway auth
 ```
 
 Then start the player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 \
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081 \
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws \
@@ -74,7 +74,7 @@ docker compose down
 Player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 npm run dev -- -p 3010
 npm run typecheck
 npm test
@@ -84,21 +84,21 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 Go services:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 
 Prediction end-to-end tests (against the running stack):
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend
 PREDICT_BASE_URL=http://localhost:8080 npx playwright test --config playwright.prediction.config.ts
 ```
 
 Migrations and seeds:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 MIGRATIONS_DIR="$(pwd)/migrations" \
 go run ./cmd/migrate up

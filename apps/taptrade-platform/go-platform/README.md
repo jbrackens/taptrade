@@ -14,7 +14,7 @@ prediction-market app that uses non-redeemable gameplay points only.
 ## Quick Start
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go work sync
 go test ./...
 ```
@@ -28,7 +28,7 @@ useful for a smoke test. For real work start Postgres from
 `services/gateway/migrations/README.md`.
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 
 # Both services take the same DSN:
 #   postgres://predict:localdev@localhost:5434/predict?sslmode=disable

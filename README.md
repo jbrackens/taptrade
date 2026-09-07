@@ -37,7 +37,7 @@ Prerequisites:
 ### 1. Start the datastores
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose up -d postgres redis
 ```
 
@@ -48,7 +48,7 @@ has no migrate or seed service. Skip this and every market page comes up empty a
 schema-less database.
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable"
 export MIGRATIONS_DIR="$(pwd)/migrations"
 go run ./cmd/migrate up
@@ -63,7 +63,7 @@ market-maker book, backdated volume, an open portfolio and settled markets — r
 
 ```bash
 # Gateway, port 18080
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 WALLET_STORE_MODE=db \
@@ -83,7 +83,7 @@ go run ./cmd/auth
 sub-package — npm does not detect the workspace declaration up-tree and hangs.
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend
 yarn install --frozen-lockfile
 
 cd packages/app
@@ -107,7 +107,7 @@ Demo player login:
 Player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 yarn typecheck
 yarn test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 yarn test:smoke
@@ -116,7 +116,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 yarn test:smoke
 Gateway/auth:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 

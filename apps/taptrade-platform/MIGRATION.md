@@ -27,14 +27,14 @@ This repository is now Tap Trade. The old sportsbook code remains in places for 
 Run these before opening a PR that touches prediction flows:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 npm run typecheck
 npm test
 PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 ```
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 

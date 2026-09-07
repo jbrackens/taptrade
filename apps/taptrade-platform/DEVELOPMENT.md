@@ -15,7 +15,7 @@ This guide is the canonical local setup for the prediction-market stack.
 Start the backend stack:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose up -d postgres redis gateway auth
 docker compose ps
 ```
@@ -23,7 +23,7 @@ docker compose ps
 Start the player app:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 NEXT_PUBLIC_API_URL=http://localhost:18080 \
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081 \
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws \
@@ -55,7 +55,7 @@ The Docker Compose database and Redis ports intentionally avoid the old sportsbo
 Use this only for local development data.
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose down
 docker volume rm taptrade-platform_postgres_data taptrade-platform_redis_data
 # (pre-rebrand checkouts used: phoenix-predict-combined_postgres_data / _redis_data)
@@ -65,7 +65,7 @@ docker compose up -d postgres redis gateway auth
 Apply migrations manually:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 MIGRATIONS_DIR="$(pwd)/migrations" \
 go run ./cmd/migrate up
@@ -74,7 +74,7 @@ go run ./cmd/migrate up
 Seed prediction data manually:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 go run ./cmd/seed
 ```
@@ -82,7 +82,7 @@ go run ./cmd/seed
 ## Player App Commands
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 npm run dev -- -p 3010
 npm run typecheck
 npm run typecheck:full
@@ -95,14 +95,14 @@ The app package exposes both `dev` and `run-local:dev`. Prefer `npm run dev -- -
 ## Go Commands
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 
 Run gateway manually:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/gateway
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/gateway
 GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 WALLET_STORE_MODE=db \
@@ -142,7 +142,7 @@ stay outside the app, and local development should not set the legacy
 Run auth manually:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform/services/auth
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform/services/auth
 AUTH_STORE_MODE=db \
 AUTH_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 AUTH_COOKIE_SECURE=false \
@@ -180,7 +180,7 @@ If API calls return `401 authentication required`, confirm that the endpoint is 
 If data looks stale, check Docker container health:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose ps
 docker compose logs --tail=100 gateway auth
 ```

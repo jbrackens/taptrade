@@ -15,10 +15,10 @@ The app has three surfaces:
 
 ## Repository Structure
 
-Workspace root on this Mac: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/`
+Workspace root on this Mac: `/Users/john/Sandbox/taptrade-workspace/taptrade/`
 
 ```
-Taya_Na_Predict/
+taptrade/
 ├── apps/taptrade-platform/
 │   ├── frontend/                          ← yarn-workspaces monorepo root (run yarn here)
 │   │   └── packages/
@@ -67,7 +67,7 @@ Active development and demo deployment happen from the primary checkout
 (P2-06 consolidated everything onto `main`; the old `-cashier` worktree and
 `feat/binary-exchange-engine` deploy branch are retired):
 
-- Checkout: `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict`
+- Checkout: `/Users/john/Sandbox/taptrade-workspace/taptrade`
 - Branch: `main` (pushing to it IS the production deploy)
 - Deploy workflow: `.github/workflows/deploy-demo.yml` (triggers on push to `main` under `apps/taptrade-platform/**`)
 
@@ -77,7 +77,7 @@ clean tree, and sync with `origin/main`).
 
 Treat the user phrase `commit/push/deploy` as a strict procedure:
 
-1. Stay in `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict`.
+1. Stay in `/Users/john/Sandbox/taptrade-workspace/taptrade`.
 2. Confirm the branch is `main`.
 3. Fetch `origin` and refuse if the branch is behind or diverged.
 4. Review `git status` and commit only intended files.
@@ -93,7 +93,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 
 ### Never Do These
 
-1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/` — not `~/...` or `your-project/...`.
+1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/` — not `~/...` or `your-project/...`.
 2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPricePoints`/`noPricePoints`, not odds; users have positions, not bets.
 3. **Never reintroduce `*Cents` / `*_cents` names in the prediction economy.** Migration 050 renamed them to `*_points`; `app/__tests__/qa-regressions-2026-04-18.test.ts` fails CI if `yesPriceCents` / `noPriceCents` and friends reappear on the wire types.
 4. **Never use `@taptrade-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
@@ -104,7 +104,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 
 ### Always Do These
 
-1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/`.
+1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/`.
 2. **Fix errors at the root, don't work around them.** Zero bug policy.
 3. **Keep the `prediction` Go package decoupled from `wallet`.** It uses the `prediction.WalletAdapter` interface — the concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Don't import `wallet` from `prediction/`.
 4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (056 is the highest today, so the next is 057). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
@@ -295,7 +295,7 @@ Social (comments, follows, moderation) lives in `internal/http/market_social_han
 ### One-time setup
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 
 # Start Postgres (port 5434 to avoid colliding with any sportsbook container)
 docker compose up -d postgres redis

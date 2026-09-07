@@ -3,7 +3,7 @@
 Concrete calls for the local Tap Trade gateway. Start the backend stack first:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose up -d postgres redis gateway auth
 ```
 

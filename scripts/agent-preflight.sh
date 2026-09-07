@@ -4,7 +4,7 @@ set -euo pipefail
 # P2-06 consolidated development + deploy onto `main` in the primary checkout;
 # the old worktree and its deploy branch are retired. This preflight now
 # guards that consolidated flow.
-required_root="/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict"
+required_root="/Users/john/Sandbox/taptrade-workspace/taptrade"
 required_branch="main"
 remote_ref="origin/${required_branch}"
 

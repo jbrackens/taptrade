@@ -36,7 +36,7 @@ Log the `requestId` when reporting a backend issue. It is the quickest way to co
 Stack health:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
 docker compose ps
 docker compose logs --tail=100 gateway auth
 ```
@@ -51,7 +51,7 @@ curl -i http://localhost:18080/api/v1/markets/not-a-real-market
 Player app checks:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/frontend/packages/app
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/frontend/packages/app
 npm run typecheck
 PLAYWRIGHT_BASE_URL=http://localhost:3010 npx playwright test tests/smoke/market-detail.smoke.spec.ts --project=desktop-chromium
 ```
@@ -59,7 +59,7 @@ PLAYWRIGHT_BASE_URL=http://localhost:3010 npx playwright test tests/smoke/market
 Go tests:
 
 ```bash
-cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform/go-platform
+cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform/go-platform
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 
