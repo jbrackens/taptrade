@@ -1,6 +1,6 @@
-# TapTrade Go Platform
+# Tap Trade Go Platform
 
-This directory is the Go workspace for TapTrade backend services. TapTrade is a
+This directory is the Go workspace for Tap Trade backend services. Tap Trade is a
 prediction-market app that uses non-redeemable gameplay points only.
 
 ## Workspace Layout

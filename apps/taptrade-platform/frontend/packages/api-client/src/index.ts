@@ -1,5 +1,5 @@
 /**
- * Taya NA Predict API client entrypoint.
+ * Tap Trade API client entrypoint.
  *
  * Shared auth, wallet, and compliance infrastructure remain available through
  * this package. New prediction-market work should import PredictionApiClient
@@ -7,7 +7,7 @@
  * into src/prediction-client directly.
  */
 
-export { PhoenixApiClient, TapTradeApiClient } from "./client";
+export { TapTradeApiClient } from "./client";
 export {
   AuthManager,
   createAuthManager,

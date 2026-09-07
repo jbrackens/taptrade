@@ -7,11 +7,12 @@ that needs more detail than a sentence lives in `CLAUDE.md` or in the per-surfac
 
 ## What the product is
 
-A prediction market. Users trade binary YES/NO contracts on real-world outcomes. Six
-categories are active in the schema — politics, esports, sports, entertainment, tech,
-economics. Migration `046_taptrade_launch_taxonomy.sql` added esports and **deactivated**
-crypto (renamed "Legacy Crypto", `active = false`), so any doc still listing crypto as a
-live category is out of date, and crypto markets must not be seeded back in.
+Tap Trade is a prediction market. Users trade binary YES/NO contracts on real-world
+outcomes. Six categories are active in the schema — politics, esports, sports,
+entertainment, tech, economics. Migration `046_taptrade_launch_taxonomy.sql` added
+esports and **deactivated** crypto (renamed "Legacy Crypto", `active = false`), so any
+doc still listing crypto as a live category is out of date, and crypto markets must not
+be seeded back in.
 
 The economy is **points-only and non-redeemable**:
 
@@ -58,7 +59,7 @@ Newest first, from `git log` on `main`:
 - `f89b5a8b` (2026-08-26) — reward hero uses a fictional prediction UI.
 - `2852db8e` (2026-08-25, PR #79) — elevated Predict reward hero.
 - `0cfd3e89` (2026-08-24, PR #78) — `/predict` rebuilt around "trending moments".
-- `83d92631` / `21b2c9ea` / `7a8b7f56` (2026-08-22) — the **Tap Path purple + gold**
+- `83d92631` / `21b2c9ea` / `7a8b7f56` (2026-08-22) — the **purple + gold** Tap Trade
   identity. This replaced the 1C "lime skin" system. `DESIGN.md` describes the current
   system; `app/__tests__/color-system.test.ts` pins it.
 - `37690520` … `d9861e56` (2026-08-17) — rate-limiting and edge fixes: the whole
@@ -127,9 +128,10 @@ Tests and the money-path guard were green on every hold commit. Live smoke: `/`,
 **Cleanup executed** (each step verified by command output): ten superseded local
 branches deleted (nine merged by ancestry; `feat/moments-predict-experience` was
 tree-diffed against `main`, the only delta being main's newer hero fix); the merged
-`origin/feat/tap-path-identity` deleted; `feat/predict-redesign-p10` pushed to origin
-as an archive branch; the `pam-worktree` removed (history preserved on
-`origin/pam/p0-modernization`); the parent folder's era artifacts moved to
+brand-identity branch `origin/feat/tap-path-identity` deleted;
+`feat/predict-redesign-p10` pushed to origin as an archive branch; the `pam-worktree`
+removed (history preserved on `origin/pam/p0-modernization`); the parent folder's era
+artifacts moved to
 `/Users/john/Sandbox/Taya_NA_Predict/_archive-2026-09/`; the July rebrand ledger
 (`WORKLOG.md`, `CURRENT_STATE.md`, `RENAME_MAP.md`) archived under
 `docs/archive/2026-07-rebrand/` — the hold entry that briefly lived in that WORKLOG is

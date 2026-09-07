@@ -31,7 +31,7 @@ const HEAD_CLASS = "mb-6 text-center";
 // informational label into a competing interactive control.
 const EYEBROW_CLASS =
   "mb-3.5 inline-block rounded-full border border-[var(--border-1)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--t1)]";
-// The selected Tap Path mark pairs with the data-driven title-case wordmark.
+// The selected Tap Trade mark pairs with the data-driven title-case wordmark.
 const TITLE_CLASS =
   "m-0 mb-2 inline-flex items-center justify-center gap-2.5 text-[27px] font-semibold tracking-[-0.025em] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";

@@ -6,7 +6,7 @@ because `scripts/check-cashier-all.sh` runs `go test ./internal/cashier`.
 
 It is a reference implementation of credential-free, provider-independent cashier
 rules, written during the non-custodial migration. That workstream did not ship:
-TapTrade launched points-only and non-redeemable, and the gateway now refuses to
+Tap Trade launched points-only and non-redeemable, and the gateway now refuses to
 boot with `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` or
 `ALPHA_CASHIER_ENABLED=true` when `ENVIRONMENT` is `production` or `staging`.
 

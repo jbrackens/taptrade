@@ -1,6 +1,6 @@
 # Code Of Conduct
 
-Taya NA Predict contributors are expected to keep collaboration direct, kind, and useful.
+Tap Trade contributors are expected to keep collaboration direct, kind, and useful.
 
 ## Standards
 

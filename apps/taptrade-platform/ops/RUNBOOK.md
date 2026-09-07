@@ -1,4 +1,4 @@
-# TapTrade exchange — on-call runbook
+# Tap Trade exchange — on-call runbook
 
 You're on-call. Something tripped. This page is for the first 15 minutes.
 Find the matching scenario, run the diagnostic, stop the bleeding, capture
@@ -483,12 +483,43 @@ Every scenario above ends here. Don't resolve a ticket without:
 Stash these in the incident channel before saying "resolved." A future
 on-call will thank you when the same alert fires again.
 
-## Deferred cutover: /opt/phoenix box path + compose project name (rebrand batch I)
-The demo box keeps two pinned legacy values, allowlisted with this runbook as the exit:
-`/opt/phoenix` (rsync/deploy path) and `COMPOSE_PROJECT_NAME=phoenix` (pins container
-and volume names so postgres data survives the image renames). Cutover procedure
-(maintenance window): 1) compose down; 2) mv /opt/phoenix /opt/taptrade; 3) for each
-volume taptrade_X: docker volume create taptrade_X && docker run --rm -v taptrade_X:/from
--v taptrade_X:/to alpine cp -a /from/. /to/; 4) set COMPOSE_PROJECT_NAME=taptrade and
-update deploy-demo.yml box paths in the same change; 5) compose up, smoke-check, then
-remove old volumes after 7 quiet days.
+## Pinned legacy infrastructure names: /opt/phoenix + COMPOSE_PROJECT_NAME=phoenix
+Two infrastructure names on the demo box predate the Tap Trade brand and are
+**pinned permanently, by decision (2026-09-06)**:
+
+- `/opt/phoenix` — the rsync/deploy root the deploy workflow writes to.
+- `COMPOSE_PROJECT_NAME=phoenix` — written into `/opt/phoenix/.env` on every deploy
+  (`.github/workflows/deploy-demo.yml`). It prefixes every container and **named volume**.
+
+**Do not rename either.** Neither is user-visible: they are a directory path and a Docker
+name prefix. Nothing a player or an operator sees derives from them. The cost of changing
+them is a full-outage volume migration; the benefit is cosmetic.
+
+Seven named volumes carry the `phoenix_` prefix, and renaming the compose project orphans
+all of them at once:
+
+| Volume | Holds | Loss if orphaned |
+|---|---|---|
+| `phoenix_postgres_data` | the entire platform database | total product data loss |
+| `phoenix_redis_data` | auth sessions (db 1), cache + rate limits (db 0) | every user logged out |
+| `phoenix_caddy_data` | Let's Encrypt certs **and the ACME account key** | re-issue against LE rate limits; 526 while Cloudflare is Full (Strict) |
+| `phoenix_caddy_config` | Caddy autosave state | low |
+| `phoenix_market_images` | rehosted market thumbnails referenced by DB `image_url` | DB rows desync from files |
+| `phoenix_db_backups` | the pg_dump history — i.e. the recovery path itself | recovery artifact destroyed with the data |
+| `phoenix_rocketchat_mongo_data` | all Rocket.Chat history, rooms, accounts | **permanent — Mongo has no backup sidecar** |
+
+A previous version of this section documented a five-step cutover. **That procedure was
+unsafe and has been removed.** Its volume-copy step mounted the same volume as both source
+and destination (`-v taptrade_X:/from -v taptrade_X:/to`) against a volume created empty
+moments earlier, so it copied nothing, exited 0, and looked successful. The stack would
+have come up on empty volumes — Postgres running `initdb` on a fresh database — and the
+final step would then have deleted the only surviving copy. It also took no backup first,
+never enumerated the volume set, and never verified a copy before deleting.
+
+If a rename is ever genuinely required, it needs: an off-box, restore-verified `pg_dump`
+taken while the stack is healthy; a separate off-box tar of all seven volumes; read-only
+source mounts (`-v phoenix_$V:/from:ro -v taptrade_$V:/to`); per-volume file/byte
+verification before any deletion; and a lockstep update of `deploy-demo.yml`,
+`migrate-on-box.sh`, `migrate-demo.yml`, `cf-firewall.sh`, and the `cf-firewall.service`
+systemd unit **installed in /etc** (which the `mv` does not touch, and whose failure
+silently leaves the Cloudflare origin filter fail-open at next boot).

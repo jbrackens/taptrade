@@ -12,6 +12,7 @@ import {
   useFingerprint,
 } from "@taptrade-ui/utils";
 import { isEligibleToAccess, validateAndDecode } from "../../../utils/auth";
+import { brand } from "../../../lib/brand";
 import { LoginFormComponent, LoginForm, LoginWrapper } from "./index.styled";
 import { useContext } from "react";
 import { ThemeContext } from "../../app/theme-context";
@@ -137,7 +138,7 @@ const LoginComponent: React.FC = () => {
       <LoginFormComponent>
         <Header>
           <Logo theme={theme?.logo} />
-          TapTrade Backoffice
+          {brand.name} Backoffice
         </Header>
 
         <LoginForm>

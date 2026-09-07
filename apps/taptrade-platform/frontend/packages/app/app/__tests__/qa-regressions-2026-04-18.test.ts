@@ -50,7 +50,7 @@ function listSourceFiles(rel: string): string[] {
   return out;
 }
 
-// ── TapTrade safety: user-facing cashier surfaces stay absent ──────
+// ── Tap Trade safety: user-facing cashier surfaces stay absent ────
 
 describe("points-only safety boundary", () => {
   it("does not ship the user-facing cashier routes", () => {
@@ -1265,7 +1265,7 @@ describe("Static informational pages", () => {
     );
     assert.ok(
       aboutSource.includes('slug="about-us"') &&
-        aboutSource.includes("About TapTrade"),
+        aboutSource.includes("About Tap Trade"),
       "/about should render the About Us fallback content",
     );
   });

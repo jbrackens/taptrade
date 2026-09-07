@@ -1,4 +1,4 @@
-# TapTrade Cashier API
+# Tap Trade Cashier API
 
 > **NOT A RUNNING SERVICE.** This directory is a design-and-fixture scaffold from
 > the abandoned cashier / crypto workstream. It has no `package.json`, no HTTP

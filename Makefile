@@ -4,9 +4,10 @@
 # gateway Makefile:
 #   apps/taptrade-platform/go-platform/services/gateway/Makefile
 #
-# The old apps/taptrade-platform/Makefile was removed in the 2026-09 cleanup
-# along with the Phoenix-revival trees its 66 targets drove (JVM baselines,
-# preservation gates, sportsbook smoke).
+# The old apps/taptrade-platform/Makefile was removed in the 2026-09 cleanup.
+# Its 66 targets drove the Phoenix-era revival trees (JVM baselines, preservation
+# gates, sportsbook smoke), which that same cleanup deleted. Historical note only:
+# none of those trees or targets are tracked in this repo today.
 
 .PHONY: cashier-check
 cashier-check: ## Validate the dormant real-money trees still build and stay unmounted

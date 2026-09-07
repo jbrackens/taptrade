@@ -5,7 +5,7 @@
  * Next.js's App Router directory layout. */
 @import "tailwindcss";
 
-/* ── TapTrade type system ──────────────────────────────────────────────
+/* ── Tap Trade type system ─────────────────────────────────────────────
  * Two families replace seven. Switzer (Fontshare, ITF Free Font
  * License; self-hosted woff2 in public/fonts/, ~16-20KB/weight) is
  * display, UI and body. Geist Mono (geist npm package, self-hosted via
@@ -110,7 +110,7 @@ body {
 }
 
 /* ── Predict design system tokens ─────────────────────────────────────
-   * Cool-neutral information surfaces, structural TapTrade purple, and
+   * Cool-neutral information surfaces, structural Tap Trade purple, and
    * selectively deployed signal gold. Green and red remain market-side
    * semantics only. */
 :root {
@@ -266,7 +266,7 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* ── TapTrade color system ────────────────────────────────────────────
+/* ── Tap Trade color system ───────────────────────────────────────────
  * Cool-neutral information surfaces form the canvas. Purple establishes
  * brand, navigation, selected controls, links, and focus. Gold is a
  * deliberate live/reward/priority signal. Green and red belong only to
@@ -1538,7 +1538,7 @@ body {
 }
 
 /* Landing (deep purple) — scoped to the marketing front door only. The
- * application retains its cool-neutral canvas; this surface uses TapTrade's
+ * application retains its cool-neutral canvas; this surface uses Tap Trade's
  * deepest brand tone as its field. Purple owns structure and action, while
  * gold is reserved for live and priority signals. */
 .landing-1c {

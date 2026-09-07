@@ -1,6 +1,6 @@
 package payments
 
-// Payment types for the TapTrade Sportsbook payment system
+// Payment types for the sportsbook-era payment system
 
 // PaymentMethod represents an available payment method
 type PaymentMethod struct {

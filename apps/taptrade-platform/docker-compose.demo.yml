@@ -104,7 +104,7 @@ services:
       DEPLOY_METHOD: "docker"
       INITIAL_USER: "yes"
       ADMIN_USERNAME: "taptrade-admin"
-      ADMIN_NAME: "TapTrade Demo Admin"
+      ADMIN_NAME: "Tap Trade Demo Admin"
       ADMIN_EMAIL: "chat-admin@99rtp.io"
       ADMIN_PASS: "${ROCKETCHAT_ADMIN_PASSWORD:-change-me-before-demo}"
       OVERWRITE_SETTING_FileUpload_Enabled: "false"

@@ -22,6 +22,7 @@ import { register as registerUser } from "../../lib/api";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
+import { brand } from "../../lib/brand";
 import { useToast } from "../../components/ToastProvider";
 import { Button, Input } from "../../components/ui";
 
@@ -244,9 +245,13 @@ export default function RegisterPage() {
     <div className={SHELL_CLASS}>
       <div className={FORM_COL_CLASS}>
         <div className={FORM_INNER_CLASS}>
-          <Link href="/" className={BRAND_ROW_CLASS} aria-label="TapTrade home">
+          <Link
+            href="/"
+            className={BRAND_ROW_CLASS}
+            aria-label={`${brand.name} home`}
+          >
             <BrandMark size={26} tone="ink" />
-            <span className={BRAND_WORDMARK_CLASS}>TapTrade</span>
+            <span className={BRAND_WORDMARK_CLASS}>{brand.name}</span>
           </Link>
 
           <header className={HEAD_CLASS}>
@@ -321,14 +326,14 @@ export default function RegisterPage() {
               <div className={TERMS_CLASS}>
                 <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
                 <p className={TERMS_COPY_CLASS}>
-                  By creating a TapTrade account you agree to our Terms of
+                  By creating a {brand.name} account you agree to our Terms of
                   Service and Privacy Policy. You must be 18 or older to make
                   predictions on this platform.
                 </p>
                 <p className="m-0 text-xs leading-[1.55] text-[var(--t2)]">
-                  TapTrade uses non-redeemable gameplay points. Starter points
-                  are for predictions only; they are not money and cannot be
-                  cashed out, withdrawn, transferred, or redeemed for prizes.
+                  {brand.name} uses non-redeemable gameplay points. Starter
+                  points are for predictions only; they are not money and cannot
+                  be cashed out, withdrawn, transferred, or redeemed for prizes.
                 </p>
               </div>
 
@@ -424,7 +429,7 @@ export default function RegisterPage() {
             <Link href="/privacy" className="text-[var(--t2)] underline">
               Privacy Policy
             </Link>
-            . TapTrade uses non-redeemable gameplay points.
+            . {brand.name} uses non-redeemable gameplay points.
           </p>
 
           <footer className={FOOTER_CLASS}>

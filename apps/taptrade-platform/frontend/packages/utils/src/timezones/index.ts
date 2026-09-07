@@ -21,7 +21,7 @@ export const timezones: Timezones = {
   "America/Edmonton": "(GMT-07:00) Mountain Time - Edmonton",
   "America/Hermosillo": "(GMT-07:00) Mountain Time - Hermosillo",
   "America/Mazatlan": "(GMT-07:00) Mountain Time - Chihuahua, Mazatlan",
-  "America/TapTrade": "(GMT-07:00) Mountain Time - Arizona",
+  "America/Phoenix": "(GMT-07:00) Mountain Time - Arizona",
   "America/Yellowknife": "(GMT-07:00) Mountain Time - Yellowknife",
   "America/Belize": "(GMT-06:00) Belize",
   "America/Chicago": "(GMT-06:00) Central Time",

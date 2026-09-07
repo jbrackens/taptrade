@@ -3,7 +3,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git@github.com:jbrackens/TAYA_NA.git"
+    "url": "git@github.com:jbrackens/taptrade.git"
   },
   "publishConfig": {
     "registry": "https://lena-srv01.flipsports.net:4566/repository/npm-releases/"

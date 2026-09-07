@@ -1,4 +1,4 @@
-# Design System — TapTrade · Tap Path (purple + gold)
+# Design System — Tap Trade (purple + gold)
 
 > **This document mirrors the code. It does not govern it.**
 >
@@ -245,16 +245,16 @@ Serif display is not used in product UI.
 
 ## 5. Brand
 
-- **Mark:** the Tap Path stepped-route glyph. `app/components/BrandMark.tsx`
+- **Mark:** the Tap Trade stepped-route glyph. `app/components/BrandMark.tsx`
   renders a Figma production export via `next/image` — it deliberately does not
   reconstruct the vector geometry in code. Three toned SVGs live in
-  `public/brand/`: `tap-path-mark-brand.svg` (`#6334A8`),
-  `tap-path-mark-ink.svg` (`#1E1235`), `tap-path-mark-light.svg` (`#FFFFFF`).
+  `public/brand/`: `taptrade-mark-brand.svg` (`#6334A8`),
+  `taptrade-mark-ink.svg` (`#1E1235`), `taptrade-mark-light.svg` (`#FFFFFF`).
   Default tone is `ink`, default width 30px, aspect ratio 24.001 × 17.8604.
   `app/icon.svg` is the same stepped-route path. There is no split-leaf mark and
   no lime lobe.
 - **Wordmark:** the string is `brand.name` from `app/lib/brand.ts`
-  (`NEXT_PUBLIC_BRAND_NAME`, defaulting to `TapTrade`) — it is white-label
+  (`NEXT_PUBLIC_BRAND_NAME`, defaulting to `Tap Trade`) — it is white-label
   config, not a literal. Rendered in Switzer 600, tracking `-0.025em`, coloured
   `--brand-ink` on light chrome and `--on-brand` on dark chrome.
 - **Three brand grounds**, not two:
@@ -461,7 +461,7 @@ terminal, and the "Ink & lime" handoff framing. Full text for all of them is in
 | Date | Decision |
 |---|---|
 | 2026-08-06 | 1C "lime skin, terminal bones" locked as the canonical system. **Superseded — archived 2026-09-06.** |
-| 2026-08-22 | **Tap Path identity adopted** (`83d92631`): stepped-route mark as Figma SVG exports, title-case wordmark bound to `brand.name`. |
+| 2026-08-22 | **Brand identity adopted** (`83d92631`): stepped-route mark as Figma SVG exports, title-case wordmark bound to `brand.name`. Adopted that day under the interim "Tap Path" working name; the artwork is unchanged and ships as Tap Trade. |
 | 2026-08-22 | **Purple + gold colour system applied** (`21b2c9ea`, 73 files): `--accent`/`--focus-ring` → `--brand-purple`; `--live`/`--reward` → `--signal-gold`; the lime action tokens repointed at purple as deprecated aliases. Locked by `app/__tests__/color-system.test.ts` (`7a8b7f56` surfaced gold on Predict). |
 | 2026-08-24 | `/predict` rebuilt around trending moments (`0cfd3e89`): `PredictionWorkspace` reduced to a two-column rail + moments grid; the featured-market/preview-rail model retired from that route. Direction pair refreshed to teal `#126d68` / mulberry `#9c3b65`. |
 | 2026-09-06 | This document rewritten against `globals.css` + `color-system.test.ts`. The supremacy clause ("this document wins over the code") removed — the code and its tests are the source of truth and this document mirrors them. |

@@ -8,7 +8,7 @@ export const supportedLocales = [
 ] as const;
 
 export const defaultLocale = "en";
-export const localeStorageKey = "hula_locale";
+export const localeStorageKey = "taptrade_locale";
 export const legacyLocaleStorageKey = "taptrade_language";
 
 export type SupportedLocale = (typeof supportedLocales)[number]["code"];

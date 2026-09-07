@@ -29,7 +29,7 @@ func TestPriceWithinBounds(t *testing.T) {
 }
 
 func TestCalculateTakerFeePoints(t *testing.T) {
-	// Default TapTrade rate: 500 bps (5%). Peak fee at p=50.
+	// Default Tap Trade rate: 500 bps (5%). Peak fee at p=50.
 	// floor(500 * 50 * 50 * q / 1_000_000) = floor(1.25 * q)
 	cases := []struct {
 		name            string

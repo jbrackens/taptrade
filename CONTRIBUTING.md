@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for working on Taya NA Predict. This project is a prediction-market fork of a sportsbook codebase, so the most important contribution rule is to keep new work in the prediction domain.
+Thanks for working on Tap Trade. This project is a prediction-market fork of a sportsbook codebase, so the most important contribution rule is to keep new work in the prediction domain.
 
 ## Before You Start
 

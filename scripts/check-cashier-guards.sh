@@ -34,7 +34,7 @@ if [ -f "$NONCUSTODIAL_CLIENT" ]; then
     exit 1
   fi
 else
-  echo "non-custodial cashier frontend client absent; TapTrade launch has no user-facing cashier"
+  echo "non-custodial cashier frontend client absent; Tap Trade launch has no user-facing cashier"
 fi
 
 for key in CRYPTO_RPC_URL CRYPTO_ASSET_CONTRACT CRYPTO_DEPOSIT_ADDRESS_SOURCE; do

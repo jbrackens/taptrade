@@ -78,7 +78,7 @@ func (c *OpenAICompatibleClient) Translate(ctx context.Context, req TranslationR
 	httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("HTTP-Referer", "https://demo.99rtp.io")
-	httpReq.Header.Set("X-Title", "TapTrade market translation")
+	httpReq.Header.Set("X-Title", "Tap Trade market translation")
 
 	resp, err := c.httpClient.Do(httpReq)
 	if err != nil {
@@ -153,7 +153,7 @@ func systemPrompt(locales []LocaleSpec) string {
 	for _, locale := range locales {
 		localeNames = append(localeNames, locale.Code+" ("+locale.Name+")")
 	}
-	return "You translate prediction-market contract copy for TapTrade. " +
+	return "You translate prediction-market contract copy for Tap Trade. " +
 		"English is the legally canonical settlement language; translations are display copy only. " +
 		"Do not add, remove, soften, or reinterpret settlement conditions. " +
 		"Preserve ticker-like symbols, URLs, dates, numbers, percentages, prices, team/player/company/person names unless there is a standard local-language rendering. " +

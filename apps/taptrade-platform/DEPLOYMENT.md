@@ -1,4 +1,4 @@
-# Taya NA Predict — Deployment
+# Tap Trade — Deployment
 
 > Describes the deployment **as it actually runs today**: a single Hetzner box
 > running docker-compose behind Caddy, driven by GitHub Actions over SSH. The

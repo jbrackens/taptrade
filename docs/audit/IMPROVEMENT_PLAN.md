@@ -1,4 +1,4 @@
-# Taya NA Predict — Improvement Plan
+# Tap Trade — Improvement Plan
 
 **Written:** 2026-06-14 · **Status re-verified against the code:** 2026-09-06
 **Companion to:** [AUDIT_REPORT.md](AUDIT_REPORT.md) (2026-06-14) · **Completion record:** [ARCH-CLEANUP-2026-06-14.md](ARCH-CLEANUP-2026-06-14.md)

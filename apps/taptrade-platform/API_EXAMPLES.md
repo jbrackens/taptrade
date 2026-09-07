@@ -1,6 +1,6 @@
 # API Examples
 
-Concrete calls for the local Taya NA Predict gateway. Start the backend stack first:
+Concrete calls for the local Tap Trade gateway. Start the backend stack first:
 
 ```bash
 cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/taptrade-platform
@@ -60,7 +60,7 @@ curl -s "$API/api/v1/markets/$MARKET_ID/trades?limit=10" | jq '.[0:3]'
 Login and save cookies:
 
 ```bash
-curl -i -s -c /tmp/taya-predict.cookies \
+curl -i -s -c /tmp/taptrade.cookies \
   -H 'Content-Type: application/json' \
   -d "{\"username\":\"$DEMO_USERNAME\",\"password\":\"$DEMO_PASSWORD\"}" \
   "$API/api/v1/auth/login/"
@@ -69,20 +69,20 @@ curl -i -s -c /tmp/taya-predict.cookies \
 Check the current session:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies "$API/api/v1/auth/session/" | jq
+curl -s -b /tmp/taptrade.cookies "$API/api/v1/auth/session/" | jq
 ```
 
 Portfolio:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies "$API/api/v1/portfolio" | jq '.[0:5]'
-curl -s -b /tmp/taya-predict.cookies "$API/api/v1/portfolio/summary" | jq
+curl -s -b /tmp/taptrade.cookies "$API/api/v1/portfolio" | jq '.[0:5]'
+curl -s -b /tmp/taptrade.cookies "$API/api/v1/portfolio/summary" | jq
 ```
 
 Open orders:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies "$API/api/v1/orders?status=open&page=1&pageSize=20" | jq
+curl -s -b /tmp/taptrade.cookies "$API/api/v1/orders?status=open&page=1&pageSize=20" | jq
 ```
 
 ## Trading
@@ -90,7 +90,7 @@ curl -s -b /tmp/taya-predict.cookies "$API/api/v1/orders?status=open&page=1&page
 Preview a limit buy before placing it:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies \
+curl -s -b /tmp/taptrade.cookies \
   -H 'Content-Type: application/json' \
   -d "{
     \"marketId\":\"$MARKET_ID\",
@@ -108,7 +108,7 @@ curl -s -b /tmp/taya-predict.cookies \
 Place a small limit buy:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies \
+curl -s -b /tmp/taptrade.cookies \
   -H 'Content-Type: application/json' \
   -d "{
     \"marketId\":\"$MARKET_ID\",
@@ -127,7 +127,7 @@ curl -s -b /tmp/taya-predict.cookies \
 Market buy orders require a slippage cap:
 
 ```bash
-curl -s -b /tmp/taya-predict.cookies \
+curl -s -b /tmp/taptrade.cookies \
   -H 'Content-Type: application/json' \
   -d "{
     \"marketId\":\"$MARKET_ID\",
@@ -146,7 +146,7 @@ curl -s -b /tmp/taya-predict.cookies \
 The package exports a prediction-specific client:
 
 ```ts
-import { createPredictionClient } from "@taptrade/api-client";
+import { createPredictionClient } from "@taptrade-ui/api-client";
 
 const predict = createPredictionClient("http://localhost:18080");
 

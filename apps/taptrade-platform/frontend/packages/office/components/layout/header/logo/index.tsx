@@ -1,4 +1,5 @@
 import React from "react";
+import { brand } from "../../../../lib/brand";
 
 type LogoProps = {
   source?: string;
@@ -13,8 +14,8 @@ type ComponentProps = {
 
 const TapTradeOfficeLogo = () => (
   <div className="mr-16 inline-flex items-center gap-2 text-[var(--focus-ring,#0e7a53)]">
-    <span className="text-[20px] font-black leading-none tracking-normal">
-      TapTrade
+    <span className="whitespace-nowrap text-[20px] font-black leading-none tracking-normal">
+      {brand.name}
     </span>
     <svg
       aria-hidden="true"

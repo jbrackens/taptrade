@@ -4,7 +4,7 @@ Each scenario is mapped as a real journey: 10 canonical stages, and at every sta
 
 Canonical stages: **1 Trigger · 2 Discovery · 3 Landing · 4 Orientation · 5 Evaluation · 6 Funding/Auth · 7 First trade · 8 Monitoring · 9 Resolution & payout · 10 Post & retention.** Where a persona genuinely skips a stage, that skip *is* their journey and is stated.
 
-Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/sports/entertainment/tech/economics.
+Applied to Tap Trade: binary YES/NO, cent-priced, categories politics/crypto/sports/entertainment/tech/economics.
 
 ---
 
@@ -15,7 +15,7 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 
 | Stage | Does | Thinking / feeling | Friction → fork |
 |---|---|---|---|
-| Trigger | Sees CT thread pairing TapTrade with a points rumor | "Another farm to rotate into" | Hook is the rumor, not the product |
+| Trigger | Sees CT thread pairing Tap Trade with a points rumor | "Another farm to rotate into" | Hook is the rumor, not the product |
 | Discovery | Clicks through from the thread link | Impatient, скептичен about yield | If no incentive visible in 20s, doubts it's worth it |
 | Landing | Hits /predict or a market deep-link | Scans for volume, ignores questions | Wants "what's hot" immediately, not editorial |
 | Orientation | Skips all copy, hunts the highest-volume market | "Where's the deepest pool" | If liquidity isn't visible per-market, bounces |
@@ -64,7 +64,7 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 | Stage | Does | Thinking / feeling | Friction → fork |
 |---|---|---|---|
 | Trigger | News breaks on their feed | "Trade this before it moves" | — |
-| Discovery | Opens TapTrade from muscle memory in <90s | Urgency, adrenaline | If app slow to open, misses the window |
+| Discovery | Opens Tap Trade from muscle memory in <90s | Urgency, adrenaline | If app slow to open, misses the window |
 | Landing | Goes straight to the relevant market | "Does it even exist yet?" | **Market doesn't exist = total miss, the core risk** |
 | Orientation | None — already knows what they want | Tunnel vision | — |
 | Evaluation | Glances at price vs their read of the news | "Mispriced for 30 more seconds" | Thin book = can't get size in |
@@ -107,11 +107,11 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 | Post & retention | Big realized P&L event, then goes dark ~18mo | Done till next cycle | **Worthless unless you can re-wake them in 18 months** |
 
 ### 7. The cross-platform arbitrageur
-*Runs the same market on TapTrade/Polymarket/Kalshi; trigger = a price discrepancy.*
+*Runs the same market on Tap Trade/Polymarket/Kalshi; trigger = a price discrepancy.*
 
 | Stage | Does | Thinking / feeling | Friction → fork |
 |---|---|---|---|
-| Trigger | Spots TapTrade price diverging from peers | "Free spread" | — |
+| Trigger | Spots Tap Trade price diverging from peers | "Free spread" | — |
 | Discovery | Already monitors all venues by tool/eye | Mechanical | — |
 | Landing | Jumps to the diverged market | "How deep is the cheap side" | Thin book = can't lock meaningful spread |
 | Orientation | None — pure price/size math | Indifferent to the event | — |
@@ -152,7 +152,7 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 | First trade | Small stake, expects to lose | Pure hope | — |
 | Monitoring | Forgets about it entirely | Out of mind | — |
 | Resolution & payout | Either 20x euphoria or worthless shrug | Calibrated to "lottery" | Loss doesn't churn (expected); win is huge |
-| Post & retention | If it hits: screenshots, evangelizes forever | "I won 40x on TapTrade" | **Rare win = lifelong advocate; loss = neutral, returns for next** |
+| Post & retention | If it hits: screenshots, evangelizes forever | "I won 40x on Tap Trade" | **Rare win = lifelong advocate; loss = neutral, returns for next** |
 
 ### 10. The favorite-grinder
 *Risk-averse; trigger = wants better-than-savings yield at perceived low risk.*
@@ -355,14 +355,14 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 | Post & retention | Won skeptic = best evangelist you get | "OK, I was wrong, this works" | **Bulletproof resolution decides convert vs detractor** |
 
 ### 22. The embedded-widget reader
-*Never visits the site; trigger = sees TapTrade odds inside third-party content.*
+*Never visits the site; trigger = sees Tap Trade odds inside third-party content.*
 
 | Stage | Does | Thinking / feeling | Friction → fork |
 |---|---|---|---|
 | Trigger | Reads an article/app embedding the odds | "Huh, interesting number" | — |
 | Discovery | Passive — never sought you out | Brand impression forming | Unbranded widget = zero brand transfer |
 | Landing | Stays in the host content | Not motivated to leave | — |
-| Orientation | Absorbs the probability in context | "TapTrade says 60%" | — |
+| Orientation | Absorbs the probability in context | "Tap Trade says 60%" | — |
 | Evaluation | No active evaluation (passive) | — | — |
 | Funding/Auth | None | — | — |
 | First trade | None on this exposure | — | — |
@@ -840,7 +840,7 @@ Applied to TapTrade: binary YES/NO, cent-priced, categories politics/crypto/spor
 
 ---
 
-## Cross-cutting takeaways for TapTrade
+## Cross-cutting takeaways for Tap Trade
 
 1. **~6 of 50 are the rational trader the product is built for** (1, 5, 7, 8, 41, 42). The other 44 run on anxiety, identity, social pressure, boredom, curiosity, or habit. Over-index the roadmap on the 44.
 2. **Highest-virality unmet need = private/group + head-to-head markets** (23, 26, 29). Entirely unserved by a public-only book. The single biggest roadmap lever in this map.

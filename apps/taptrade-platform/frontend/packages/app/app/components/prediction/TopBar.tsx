@@ -75,7 +75,7 @@ const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
 const TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[var(--border-1)] bg-[var(--bg-deep)] font-sans";
 
-// Prediction routes use the deepest TapTrade brand surface for primary
+// Prediction routes use the deepest Tap Trade brand surface for primary
 // navigation; regular application routes keep the neutral canvas.
 const TERMINAL_TOP_BAR_CLASS =
   "sticky top-0 z-[100] border-b border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] [font-family:var(--font-terminal)]";
@@ -91,7 +91,7 @@ const TERMINAL_TOP_BAR_INNER_CLASS =
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
-// Tap Path uses a title-case wordmark beside the approved stepped-route mark.
+// Tap Trade uses a title-case wordmark beside the approved stepped-route mark.
 // The product keeps Switzer as its self-hosted UI family so white-label brand
 // names remain data-driven rather than baking a static wordmark into the app.
 const TOP_BAR_WORDMARK_CLASS =

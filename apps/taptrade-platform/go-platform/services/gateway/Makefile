@@ -9,7 +9,7 @@ GREEN := \033[0;32m
 RESET := \033[0m
 
 help: ## Display this help message
-	@echo "$(BLUE)TapTrade Prediction Gateway - Make Commands$(RESET)"
+	@echo "$(BLUE)Tap Trade Prediction Gateway - Make Commands$(RESET)"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
 	@echo ""
@@ -17,7 +17,7 @@ help: ## Display this help message
 	@echo "  make createdb          Create PostgreSQL database"
 	@echo "  make migrate-up        Apply all pending migrations"
 	@echo "  make migrate-down      Rollback one migration"
-	@echo "  make seed              Load TapTrade launch base seed data"
+	@echo "  make seed              Load Tap Trade launch base seed data"
 	@echo ""
 	@echo "Environment setup:"
 	@echo "  export GATEWAY_DB_DSN=\"postgres://user:pass@localhost:5432/taptrade_predict\""
@@ -28,7 +28,7 @@ build: ## Build the migration tool
 	@echo "$(GREEN)✓ Migration tool built at bin/migrate$(RESET)"
 
 createdb: ## Create PostgreSQL database
-	@echo "$(BLUE)Creating TapTrade prediction database...$(RESET)"
+	@echo "$(BLUE)Creating Tap Trade prediction database...$(RESET)"
 	@psql -U postgres -c "CREATE DATABASE taptrade_predict;" 2>/dev/null || echo "$(GREEN)Database already exists$(RESET)"
 
 migrate-up: build ## Apply all pending migrations
@@ -67,14 +67,14 @@ migrate-status: build ## Check migration status
 	@echo "$(BLUE)Migration status:$(RESET)"
 	./bin/migrate status
 
-seed: ## Load TapTrade launch base seed data
+seed: ## Load Tap Trade launch base seed data
 	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
 		echo "$(BLUE)Error: GATEWAY_DB_DSN environment variable not set$(RESET)"; \
 		exit 1; \
 	fi
-	@echo "$(BLUE)Loading TapTrade launch base seed...$(RESET)"
+	@echo "$(BLUE)Loading Tap Trade launch base seed...$(RESET)"
 	WALLET_DB_DSN=$(GATEWAY_DB_DSN) WALLET_STORE_MODE=db go run ./cmd/seed -mode base
-	@echo "$(GREEN)✓ TapTrade launch base seed loaded$(RESET)"
+	@echo "$(GREEN)✓ Tap Trade launch base seed loaded$(RESET)"
 
 demo-data: ## Load base seed + demo state (orderbooks, volume, demo user portfolio, settlements)
 	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \

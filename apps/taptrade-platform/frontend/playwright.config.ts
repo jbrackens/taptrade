@@ -4,7 +4,7 @@ import path from "path";
 /**
  * Comprehensive Playwright E2E Config
  *
- * Tests both TapTrade Sportsbook Player App and office Backoffice
+ * Tests both the Tap Trade Player App and the office Backoffice
  *
  * Run all tests:     npx playwright test
  * Run player app:    npx playwright test --project=player-app

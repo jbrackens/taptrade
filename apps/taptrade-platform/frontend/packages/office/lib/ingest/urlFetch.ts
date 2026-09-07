@@ -196,7 +196,8 @@ export async function fetchAndExtractArticle(
     maxRedirects: opts.maxRedirects ?? 3,
     timeout: { request: opts.timeoutMs ?? 8000 },
     responseType: "text",
-    headers: { "user-agent": "TayaNA-MarketBot/1.0 (+article-ingest)" },
+    // UA token, not prose: no space, so the compact "TapTrade" spelling.
+    headers: { "user-agent": "TapTrade-MarketBot/1.0 (+article-ingest)" },
     hooks: {
       // (3) Re-validate every redirect target (scheme + literal IP).
       beforeRedirect: [

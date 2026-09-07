@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 /// @notice Interface sketch only. The real implementation must verify
 /// domain-separated user authorization and reject arbitrary calldata.
-interface IHulaCashierTradeAuthorization {
+interface ITapTradeCashierTradeAuthorization {
     event TradeAuthorizationConsumed(
         bytes32 indexed authorizationHash,
         address indexed smartWallet,

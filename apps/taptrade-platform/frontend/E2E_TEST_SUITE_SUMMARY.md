@@ -1,15 +1,15 @@
 # E2E Test Suite Implementation Summary
 
-> Historical sportsbook-era note: this document describes the TapTrade
-> sportsbook test suite that predated the TapTrade prediction-market migration.
+> Historical sportsbook-era note: this document describes the sportsbook-era
+> test suite that predated the Tap Trade prediction-market migration.
 > It is kept only as migration history; it is not evidence that fixture,
 > betslip, parlay, or sportsbook bet-history flows are current production
 > behavior.
 
 ## Overview
 
-A comprehensive Playwright E2E test suite has been created for both the TapTrade
-Sportsbook Player App and TapTrade Backoffice admin interface. The test suites
+A comprehensive Playwright E2E test suite has been created for both the
+sportsbook-era Player App and Backoffice admin interface. The test suites
 include critical user flows, API mocking, shared fixtures, and detailed
 documentation.
 
@@ -366,7 +366,7 @@ All tests use shared helpers from `fixtures/`:
 
 All new files are located at:
 
-- `/sessions/dreamy-bold-ptolemy/mnt/TapTradeBotRevival/apps/TapTrade-Sportsbook-Combined/frontend/e2e/`
+- `apps/taptrade-platform/frontend/e2e/`
 
 Key files:
 

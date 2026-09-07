@@ -1,8 +1,8 @@
-# Taya NA Predict — CLAUDE.md
+# Tap Trade — CLAUDE.md
 
 ## Project Overview
 
-**Taya NA Predict** (product name: TapTrade) is a prediction event market platform in the shape of Polymarket and Kalshi. Users trade binary YES/NO contracts on real-world outcomes: politics, esports, sports, entertainment, tech, economics.
+**Tap Trade** is a prediction event market platform in the shape of Polymarket and Kalshi. Users trade binary YES/NO contracts on real-world outcomes: politics, esports, sports, entertainment, tech, economics.
 
 Contracts are priced in **Points**, 1–99, where the price is the implied probability. `yes_price_points + no_price_points = 100`; a correct contract settles at 100 Points, a wrong one at 0. **Points are non-redeemable play value** — the gateway reports `pointMode: "non_redeemable_points"` on `/api/v1/status`, the deposit/withdrawal/cashier/crypto route trees are unmounted by default, and the flags that would mount them are refused at boot in production/staging. See "Points-only launch boundary" below before touching anything money-shaped.
 
@@ -50,14 +50,14 @@ Taya_Na_Predict/
 ├── Makefile                               ← one target: `make cashier-check` (validates the dormant trees)
 ├── CLAUDE.md                              ← this file
 ├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
-└── DESIGN.md                              ← design system (Tap Path purple + gold); mirrors the code, does not govern it
+└── DESIGN.md                              ← design system (Tap Trade purple + gold); mirrors the code, does not govern it
 ```
 
-Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root`, not in prose: the Tap Path identity (adopted 2026-08-22) is `--brand-purple #6334a8` for actions/focus/links, `--signal-gold #f5c454` for live/reward/featured, `--paper #f1f4f6` page ground, `--dir-yes #126d68` teal and `--dir-no #9c3b65` mulberry for market direction only, and `--reward-lime #c6f24e` limited to the reward hero (never a generic CTA or YES signal). Type is Switzer for UI and Geist Mono for every numeral. Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section).
+Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root`, not in prose: the current brand identity (adopted 2026-08-22) is `--brand-purple #6334a8` for actions/focus/links, `--signal-gold #f5c454` for live/reward/featured, `--paper #f1f4f6` page ground, `--dir-yes #126d68` teal and `--dir-no #9c3b65` mulberry for market direction only, and `--reward-lime #c6f24e` limited to the reward hero (never a generic CTA or YES signal). Type is Switzer for UI and Geist Mono for every numeral. Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section).
 
 ## GitHub Repo
 
-- Remote: `https://github.com/jbrackens/TAYA_NA` (branch `main`)
+- Remote: `https://github.com/jbrackens/taptrade` (branch `main`)
 - GitHub user: `jbrackens`
 - The sister repo `jbrackens/Taya_Na_Sportsbook` is the on-hold sportsbook. Don't touch it unless the user explicitly asks.
 
@@ -175,7 +175,7 @@ The app ships 40 routes under `app/`. The ones that matter:
 
 - **Framework:** Next.js 16 **App Router only** (`app/`). The Pages Router was removed because it never hydrated under Next 16 + React 19 (see `FEATURE_MANIFEST.json` `known_blockers/pages-router-no-hydration`). There is no `pages/` directory — do not add one.
 - **UI:** Ant Design `^5.29.3` with `@ant-design/nextjs-registry` and `@ant-design/v5-patch-for-react-19`. No styled-components. AntD v5 is CSS-in-JS: there is no `antd/dist/antd.css` to import. The stylesheet stack is `styles/p8-tokens.css` → `styles/p8-antd.css` (AntD class overrides), plus the runtime theme in `app/lib/antd-config-provider.tsx`.
-- **Tokens:** `styles/p8-tokens.css` declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`. These are the legacy P8-named tokens (values P9-swapped 2026-07-07); office has not yet been swept onto the player app's Tap Path values. New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
+- **Tokens:** `styles/p8-tokens.css` declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`. These are the legacy P8-named tokens (values P9-swapped 2026-07-07); office has not yet been swept onto the player app's purple + gold values. New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
 - **API:** `app/lib/admin-fetch.ts` for the App Router pages; the older containers use the shared `useApi` hook via `services/api/api-service`
 - **Auth:** the `(dashboard)` App Router pages are **not** wrapped in `securedPage` — the gateway is the authorization boundary (`requireAdminRole` + `requireRBACPermission`). The sidebar filters entries from `GET /api/v1/admin/me` as a UX hint only, and fails open. `securedPage` still lives in `utils/auth.ts` and is used by the legacy `containers/terms-and-conditions` page; `PunterRoleEnum` is imported from `@taptrade-ui/utils`.
 

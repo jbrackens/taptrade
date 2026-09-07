@@ -1,4 +1,4 @@
-# TapTrade Player App — Development Rules
+# Tap Trade Player App — Development Rules
 
 ## Mandatory Quality Gates
 
@@ -32,7 +32,7 @@ Rules:
 - Every new feature implementation must update the manifest status from
   MISSING/STUBBED to REAL
 - A feature is REAL only when it connects to actual API endpoints (no
-  MockTapTrade classes, no hardcoded data, no empty method bodies)
+  mock classes, no hardcoded data, no empty method bodies)
 - STUBBED means the UI exists but the backend wiring is fake — this is technical
   debt, not a completed feature
 - MISSING means the legacy feature has no equivalent in app/ at all
@@ -41,7 +41,7 @@ Rules:
 
 These patterns are gate failures. Do not introduce them:
 
-1. **MockTapTrade classes in production code** — Use real API clients from
+1. **Mock classes in production code** — Use real API clients from
    `app/lib/api/`. Mock classes belong in test files only.
 2. **@taptrade-ui/design-system imports in app/** — This package uses
    styled-components and causes webpack hangs. Use inline components or

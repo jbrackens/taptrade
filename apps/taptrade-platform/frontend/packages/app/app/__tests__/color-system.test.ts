@@ -22,7 +22,7 @@ const marketCard = readFileSync(
   "utf8",
 );
 
-describe("TapTrade purple and gold color system", () => {
+describe("Tap Trade purple and gold color system", () => {
   it("pins the approved neutral, brand, and market-semantic primitives", () => {
     const expected = {
       paper: "#f1f4f6",

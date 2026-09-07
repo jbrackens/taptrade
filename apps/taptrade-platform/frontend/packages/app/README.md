@@ -1,6 +1,6 @@
 # Player app — `@taptrade-ui/app`
 
-The TapTrade player app: a prediction market where users trade binary YES/NO
+The Tap Trade player app: a prediction market where users trade binary YES/NO
 contracts priced in Points (1–99, YES + NO = 100). Next.js 16 App Router; the
 route tree lives in `app/`.
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# TapTrade Office (Back-Office) - Automated Quality Gates
+# Tap Trade Office (Back-Office) - Automated Quality Gates
 #
 # Sibling of packages/app/gate.sh, adapted for the office package. Office is
 # NOT a pages->app migration: it is a back-office forked from a sportsbook and
@@ -34,7 +34,7 @@ GREP_EXCLUDES="--exclude-dir=node_modules --exclude-dir=.next --exclude-dir=__te
 print_header() {
     echo ""
     echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BLUE}║      TapTrade Office Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')    ║${RESET}"
+    echo -e "${BLUE}║      Tap Trade Office Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')   ║${RESET}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${RESET}"
     echo ""
 }

@@ -47,7 +47,7 @@ export interface DiscoverRanking extends DiscoverRankingSection {
 }
 
 /**
- * Seven prediction-market rankings, adapted from the historical TapTrade
+ * Seven prediction-market rankings, adapted from the sportsbook-era
  * sentiment board. "Most discussed" is intentionally used instead of a
  * fabricated watcher count, and price movers use only the real 24h series.
  */

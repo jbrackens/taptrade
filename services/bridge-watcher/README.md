@@ -1,4 +1,4 @@
-# TapTrade Bridge Watcher
+# Tap Trade Bridge Watcher
 
 > **NOT A RUNNING SERVICE.** This directory is a design-and-fixture scaffold from
 > the abandoned cashier / crypto workstream. It holds one source file —

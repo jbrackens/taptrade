@@ -1,5 +1,5 @@
 /**
- * Taya NA Predict — Prediction Platform API Types
+ * Tap Trade — Prediction Platform API Types
  */
 
 export interface Category {

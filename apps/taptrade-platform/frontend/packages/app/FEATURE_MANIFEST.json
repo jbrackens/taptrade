@@ -188,7 +188,7 @@
       "name": "ChatSidebar",
       "status": "REAL",
       "module": "chat",
-      "notes": "Feature-gated Rocket.Chat iframe shell with desktop collapse, mobile external open, provider unavailable state, and TapTrade-owned report form"
+      "notes": "Feature-gated Rocket.Chat iframe shell with desktop collapse, mobile external open, provider unavailable state, and Tap Trade-owned report form"
     },
     {
       "legacy_path": "components/auth/login",

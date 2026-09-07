@@ -44,7 +44,7 @@ func PriceWithinBounds(pricePoints int) bool {
 //
 //	floor(takerFeeBps × pricePoints × (100 - pricePoints) × quantity / 1_000_000)
 //
-// Bps are basis points (1bp = 0.01%). Default in TapTrade is DefaultTakerFeeBps
+// Bps are basis points (1bp = 0.01%). Default in Tap Trade is DefaultTakerFeeBps
 // (100 = 1%), applied per the 2026-04-24 fee-model decision and peaking at
 // 0.25¢/contract at p=50, tapering toward 0 at the price extremes. Maker
 // fees are always 0 in v1.

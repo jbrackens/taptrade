@@ -1,9 +1,9 @@
-# TapTrade Cashier Contracts
+# Tap Trade Cashier Contracts
 
 > **THREE INTERFACE SKETCHES — NOTHING IS IMPLEMENTED OR DEPLOYED.** This
 > directory holds `INVARIANTS.md` and three `.sol` files
-> (`IHulaCashierCollateral`, `IHulaCashierRecovery`,
-> `IHulaCashierTradeAuthorization`). Every one is an `interface` declaration
+> (`ITapTradeCashierCollateral`, `ITapTradeCashierRecovery`,
+> `ITapTradeCashierTradeAuthorization`). Every one is an `interface` declaration
 > carrying a "do not deploy" notice. There is no implementation contract, no
 > `foundry.toml`, no `hardhat.config.*`, no `package.json` and no test — this
 > code has never been compiled by any tool in the repository. No contract was
@@ -19,8 +19,11 @@
 > and that script are removed with it.
 >
 > **What replaced it.** Non-redeemable points. The design record for this
-> workstream is archived at `docs/archive/cashier/`. The `Hula` prefix on the
-> interface names is also stale — it predates the TapTrade naming.
+> workstream is archived at `docs/archive/cashier/`. The interface names were
+> rewritten to the `ITapTradeCashier*` form on 2026-09-06, replacing a prefix
+> that predated the Tap Trade naming. The June 2026 audit report
+> (`docs/audit/AUDIT_REPORT.md`) is a point-in-time record and still quotes the
+> old names; that is expected and is not a stale reference to fix.
 
 The rest of this file records the intended scope. It is not a work plan.
 
@@ -42,6 +45,6 @@ No contract in this directory should touch mainnet funds before external audit.
 Artifacts in this directory:
 
 - [Contract invariants](./INVARIANTS.md)
-- `src/IHulaCashierCollateral.sol`
-- `src/IHulaCashierRecovery.sol`
-- `src/IHulaCashierTradeAuthorization.sol`
+- `src/ITapTradeCashierCollateral.sol`
+- `src/ITapTradeCashierRecovery.sol`
+- `src/ITapTradeCashierTradeAuthorization.sol`

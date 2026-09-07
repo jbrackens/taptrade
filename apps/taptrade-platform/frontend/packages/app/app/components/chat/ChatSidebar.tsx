@@ -8,7 +8,7 @@ import { reportChatMessage } from "../../lib/api/chat-client";
 import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 
-const STORAGE_KEY = "hula_chat_collapsed";
+const STORAGE_KEY = "taptrade_chat_collapsed";
 const DEFAULT_ROOM_ID = "general";
 
 type LoadState = "idle" | "loading" | "ready" | "unavailable";

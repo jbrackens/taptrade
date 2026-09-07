@@ -57,7 +57,7 @@
   "TERMS_EMPLOYEE": "I certify that all information provided during account registration is true and accurate and that I am allowed to use a points-only prediction account on this website.",
   "MODAL_TITLE_SUCCESS": "Success",
   "MODAL_MESSAGE_SUCCESS": "Account created.",
-  "RG_MESSAGE": "TapTrade provides responsible-play tools such as point-use limits, session limits, cool-off periods, and self-exclusion from gameplay. Visit the responsible play page for additional information.",
+  "RG_MESSAGE": "Tap Trade provides responsible-play tools such as point-use limits, session limits, cool-off periods, and self-exclusion from gameplay. Visit the responsible play page for additional information.",
   "LOGIN_INFO": "If you already have account, please login here",
   "LOGIN_NOW": "Login Now",
   "AGE_VERIFICATION_ERROR": "You must be at least {{age}} to register",

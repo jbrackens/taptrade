@@ -1,7 +1,7 @@
 {
   "name": "@taptrade-ui/api-client",
   "version": "1.0.0",
-  "description": "Type-safe API client for Taya NA Predict backend",
+  "description": "Type-safe API client for the Tap Trade backend",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.esm.js",
@@ -12,12 +12,12 @@
     "test:watch": "jest --watch"
   },
   "keywords": [
-    "taya-na",
+    "tap-trade",
     "prediction-market",
     "api-client",
     "typescript"
   ],
-  "author": "TapTrade Team",
+  "author": "Tap Trade Team",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {

@@ -351,14 +351,14 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
 	realEnv := env == "production" || env == "staging"
 	if legacyMoneyRoutesEnabled(getenv) && realEnv {
-		return fmt.Errorf("%s=true is not permitted when ENVIRONMENT=%s; TapTrade launch must not expose deposit, withdrawal, cashier, crypto, or provider-callback routes", legacyMoneyRoutesEnv, env)
+		return fmt.Errorf("%s=true is not permitted when ENVIRONMENT=%s; Tap Trade launch must not expose deposit, withdrawal, cashier, crypto, or provider-callback routes", legacyMoneyRoutesEnv, env)
 	}
 	alphaCashierEnabled := strings.EqualFold(strings.TrimSpace(getenv("ALPHA_CASHIER_ENABLED")), "true")
 	if alphaCashierEnabled && realEnv {
-		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true is not permitted when ENVIRONMENT=%s; TapTrade launch is points-only with no crypto cashier rail", env)
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true is not permitted when ENVIRONMENT=%s; Tap Trade launch is points-only with no crypto cashier rail", env)
 	}
 	if alphaCashierEnabled && !legacyMoneyRoutesEnabled(getenv) {
-		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true requires %s=true; TapTrade launch keeps the legacy cashier route tree disabled", legacyMoneyRoutesEnv)
+		return fmt.Errorf("ALPHA_CASHIER_ENABLED=true requires %s=true; Tap Trade launch keeps the legacy cashier route tree disabled", legacyMoneyRoutesEnv)
 	}
 	if err := alphacashier.ValidateRuntimeConfig(getenv); err != nil {
 		return err
@@ -386,7 +386,7 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	}
 
 	// Payment webhooks are not launch routes. Validate their HMAC secret only
-	// when the legacy money-route tree is explicitly enabled, so TapTrade launch
+	// when the legacy money-route tree is explicitly enabled, so Tap Trade launch
 	// does not require a dormant payment secret to boot.
 	if legacyMoneyRoutesEnabled(getenv) {
 		switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {

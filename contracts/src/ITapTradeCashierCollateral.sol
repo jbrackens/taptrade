@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /// @notice Interface sketch only. Do not deploy before implementation review and audit.
-interface IHulaCashierCollateral {
+interface ITapTradeCashierCollateral {
     event CollateralMinted(
         bytes32 indexed depositIntentId,
         address indexed smartWallet,

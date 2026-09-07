@@ -1,7 +1,7 @@
 {
   "name": "@taptrade-ui/app",
   "version": "0.34.1-build.4",
-  "description": "Next.js React App - The TapTrade UI",
+  "description": "Next.js React App - The Tap Trade UI",
   "scripts": {
     "bootstrap:locales": "node ./scripts/translations/generate.js",
     "dev": "next dev --webpack",

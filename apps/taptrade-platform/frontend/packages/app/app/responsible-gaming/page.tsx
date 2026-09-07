@@ -42,7 +42,7 @@ const FALLBACK_CONTENT = `
 <p><strong>GamStop (UK Self-Exclusion)</strong> &mdash; Free self-exclusion service for UK-licensed online gambling. Website: <a href="https://www.gamstop.co.uk">www.gamstop.co.uk</a></p>
 
 <h2>Patron Protection</h2>
-<p>TapTrade is committed to protecting our players. We implement the following measures:</p>
+<p>Tap Trade is committed to protecting our players. We implement the following measures:</p>
 <ul>
 <li>Age verification to prevent underage participation (18+ / 21+ depending on jurisdiction)</li>
 <li>Point-use, prediction, and session limits that you can set and adjust at any time</li>

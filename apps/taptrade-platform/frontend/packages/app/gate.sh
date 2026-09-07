@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# TapTrade Sportsbook Frontend - Automated Quality Gates
+# Tap Trade Frontend - Automated Quality Gates
 # Runs comprehensive checks on TypeScript, imports, mocks, TODOs, and build
 ###############################################################################
 
@@ -34,7 +34,7 @@ cd "$SCRIPT_DIR"
 print_header() {
     echo ""
     echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${RESET}"
-    echo -e "${BLUE}║         TapTrade Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')         ║${RESET}"
+    echo -e "${BLUE}║          Tap Trade Quality Gates - $(date '+%Y-%m-%d %H:%M:%S')         ║${RESET}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${RESET}"
     echo ""
 }
@@ -128,7 +128,7 @@ gate_phantom_imports() {
 gate_no_mocks() {
     print_gate_start "3" "No Mock Classes in Production Code"
 
-    # Search for MockPhoenix and class Mock patterns
+    # Search for `class Mock` patterns in production code
     local mock_files=$(grep -r "class Mock" app/components/ app/lib/ 2>/dev/null | grep -v node_modules | cut -d: -f1 | sort -u)
     local mock_count=0
     if [ -n "$mock_files" ]; then

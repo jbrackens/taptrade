@@ -1,5 +1,5 @@
 /**
- * Taya NA Predict — Prediction Platform API Client
+ * Tap Trade — Prediction Platform API Client
  * Extends the shared HTTP client with prediction-specific methods.
  */
 

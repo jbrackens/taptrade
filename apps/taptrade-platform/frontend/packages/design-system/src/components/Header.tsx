@@ -18,7 +18,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  logo = 'TapTrade UI',
+  logo = 'Tap Trade UI',
   logoIcon = '🏀',
   navItems = [],
   onSearch,

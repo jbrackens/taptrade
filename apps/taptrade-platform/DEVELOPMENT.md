@@ -1,4 +1,4 @@
-# Taya NA Predict Developer Setup
+# Tap Trade Developer Setup
 
 This guide is the canonical local setup for the prediction-market stack.
 

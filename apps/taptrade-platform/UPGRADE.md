@@ -1,6 +1,6 @@
 # Upgrade Guide
 
-Use this guide when moving an existing local or preview environment to a newer Taya NA Predict build.
+Use this guide when moving an existing local or preview environment to a newer Tap Trade build.
 
 ## Before You Upgrade
 

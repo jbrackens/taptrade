@@ -76,7 +76,7 @@
   "LIVE_RECENT": "Recent",
   "LIVE_REFRESH": "Refresh",
   "LIVE_SCORE_PENDING": "Score pending",
-  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; TapTrade market prices remain driven by our exchange.",
+  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; Tap Trade market prices remain driven by our exchange.",
   "LIVE_TITLE": "In-play moments",
   "LIVE_UPDATED": "Updated {{value}}",
   "LOADING": "Loading...",

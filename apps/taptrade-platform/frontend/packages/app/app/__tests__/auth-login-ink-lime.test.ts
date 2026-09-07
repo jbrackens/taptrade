@@ -45,7 +45,7 @@ describe("login card shape (step 7)", () => {
     assert.match(login, /items-center justify-center/);
   });
 
-  it("renders the selected Tap Path mark with a title-case, 600 wordmark", () => {
+  it("renders the selected Tap Trade mark with a title-case, 600 wordmark", () => {
     assert.match(login, /text-\[27px\] font-semibold tracking-\[-0\.025em\]/);
     assert.match(login, /<BrandMark size=\{32\} tone="ink" \/>/);
     assert.doesNotMatch(login, /text-\[var\(--brand-period\)\]/);

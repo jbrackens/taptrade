@@ -25,7 +25,7 @@ var ErrRailNotConfigured = errors.New("crypto rail not configured")
 // configured for production funds. See docs/archive/cashier/README.md (workstream dormant since 2026-09-06).
 //
 // CryptoRail abstracts a legacy on-chain deposit/withdrawal rail (e.g. USDC on
-// an EVM chain). TapTrade launch mode keeps this surface unregistered unless
+// an EVM chain). Tap Trade launch mode keeps this surface unregistered unless
 // legacy money routes are explicitly enabled. Until ops supply the chain inputs,
 // every operation fails closed with ErrRailNotConfigured — wired, not faked.
 // The two integration points a real deployment must provide:

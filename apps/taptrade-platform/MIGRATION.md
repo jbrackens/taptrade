@@ -1,6 +1,6 @@
 # Migration Guide: Sportsbook To Predict
 
-This repository is now Taya NA Predict. The old sportsbook code remains in places for reference, but new work should use the prediction-market model.
+This repository is now Tap Trade. The old sportsbook code remains in places for reference, but new work should use the prediction-market model.
 
 ## Domain Translation
 

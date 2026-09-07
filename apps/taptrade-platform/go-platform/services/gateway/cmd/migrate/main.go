@@ -86,7 +86,7 @@ func main() {
 }
 
 func printUsage() {
-	usage := `Database migration tool for TapTrade Sportsbook Gateway
+	usage := `Database migration tool for the Tap Trade gateway
 
 Usage:
   migrate <command> [options]

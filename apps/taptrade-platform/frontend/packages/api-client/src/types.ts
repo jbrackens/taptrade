@@ -1,5 +1,5 @@
 /**
- * Taya NA Predict API Types
+ * Tap Trade API Types
  * Maintained from the launch OpenAPI specification.
  */
 

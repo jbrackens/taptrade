@@ -1,4 +1,4 @@
-# TapTrade Relayer
+# Tap Trade Relayer
 
 > **NOT A SERVICE — NO CODE AT ALL.** This directory contains four files:
 > `README.md`, `POLICY.md` and two JSON fixtures. There is no source file, no

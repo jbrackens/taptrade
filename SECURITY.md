@@ -1,6 +1,6 @@
 # Security Policy
 
-Taya NA Predict handles auth, wallet balances, orders, positions, settlements, and admin controls. Treat security reports carefully.
+Tap Trade handles auth, wallet balances, orders, positions, settlements, and admin controls. Treat security reports carefully.
 
 ## Reporting A Vulnerability
 

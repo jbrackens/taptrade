@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# TapTrade Sportsbook Stack — Smoke Test
+# Tap Trade Stack — Smoke Test
 #
 # Tests the currently wired local stack:
 #   1. Sports listing

@@ -1,6 +1,6 @@
 # Martian Grotesk
 
-Martian Grotesk is used for the TapTrade wordmark only. The variable WOFF2
+Martian Grotesk is used for the Tap Trade wordmark only. The variable WOFF2
 contains the `wdth` and `wght` axes; interface and trading typography remains
 Geist Sans and Geist Mono.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# TapTrade Sportsbook — Unit Test Runner
+# Tap Trade — Unit Test Runner
 # Uses Node.js built-in test runner (node:test) with tsx for TS support.
 # Zero additional dependencies beyond tsx (which ships with the project).
 #

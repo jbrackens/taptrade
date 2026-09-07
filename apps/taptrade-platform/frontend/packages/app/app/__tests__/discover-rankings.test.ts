@@ -44,7 +44,7 @@ const movement = (deltaPoints: number): MarketMovement => ({
 });
 
 describe("Discover rankings", () => {
-  it("keeps the seven TapTrade ranking tabs, their labels, and View All paths", () => {
+  it("keeps the seven Tap Trade ranking tabs, their labels, and View All paths", () => {
     assert.equal(DISCOVER_RANKING_LIMIT, 10);
     assert.deepEqual(
       DISCOVER_RANKING_SECTIONS.map((section) => section.key),

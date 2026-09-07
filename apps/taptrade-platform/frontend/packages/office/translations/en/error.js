@@ -21,7 +21,7 @@ module.exports = {
   registrationInformationZipInvalid: "ZIP code invalid",
   photoVerificationNotCompleted: "Photo verification not completed",
   MaximumAmountOfPuntersCheckNotPassed:
-    "Thank you for visiting TapTrade! We have reached the soft play registration limit, please come back and visit us once TapTrade has completed its soft play process next week.",
+    "Thank you for visiting Tap Trade! We have reached the soft play registration limit, please come back and visit us once Tap Trade has completed its soft play process next week.",
   ageRestrictionNotPassed: "Age restriction not passed",
   cannotVerifyPunter: "Cannot verify punter",
   invalidAuthToken: "Invalid auth token",

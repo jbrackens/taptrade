@@ -6,7 +6,7 @@ import {
 } from "@playwright/test";
 
 /**
- * Canonical browser journey proof for TapTrade's player app. The user-facing
+ * Canonical browser journey proof for Tap Trade's player app. The user-facing
  * journey is exercised through rendered pages; API calls are used only for
  * admin operations and ledger/settlement assertions that are not yet exposed as
  * one continuous player+office browser workflow.

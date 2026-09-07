@@ -29,17 +29,15 @@ const apiOrigin = (() => {
   }
 })();
 
-const frameSrc = ["'self'", "https://www.googletagmanager.com"];
-const connectSrc = [
-  "'self'",
-  "https://www.googletagmanager.com",
-  "https://www.google-analytics.com",
-];
+const frameSrc = ["'self'"];
+const connectSrc = ["'self'"];
+// Tag Manager and Analytics origins were dropped alongside the inherited
+// GTM container removed in the 2026-09 brand migration (see app/layout.tsx).
+// Re-add them only if a Tap Trade-owned container is introduced.
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
   ...(process.env.NODE_ENV !== "production" ? ["'unsafe-eval'"] : []),
-  "https://www.googletagmanager.com",
 ];
 if (chatOrigin) {
   frameSrc.push(chatOrigin);

@@ -160,9 +160,14 @@ func envInt(key string, fallback int) int {
 // defaultPublicRoot resolves the player-app public/ directory relative to the
 // gateway service. Layout:
 //
-//	apps/TapTrade-Predict-Combined/
+//	apps/taptrade-platform/
 //	  go-platform/services/gateway/      ← cwd when run via `go run ./cmd/sync-markets`
-//	  office-backoffice/packages/app/public/  ← target
+//	  frontend/packages/app/public/      ← target
+//
+// NOTE (pre-existing, unrelated to branding): the candidates below still probe
+// the pre-2026-07 `office-backoffice/` path, which no longer exists, so this
+// function currently returns "" on every checkout. Left as-is — repointing it is
+// a behaviour change, not a rename.
 func defaultPublicRoot() string {
 	cwd, err := os.Getwd()
 	if err != nil {

@@ -14,7 +14,7 @@ type TapTradeLifecycleAction struct {
 }
 
 // TapTradeMarketLifecycle maps legacy engine statuses to the launch-facing
-// lifecycle language used in the TapTrade backoffice.
+// lifecycle language used in the Tap Trade backoffice.
 type TapTradeMarketLifecycle struct {
 	Stage          string                    `json:"stage"`
 	Label          string                    `json:"label"`

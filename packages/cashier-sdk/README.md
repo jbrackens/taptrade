@@ -1,4 +1,4 @@
-# TapTrade Cashier SDK
+# Tap Trade Cashier SDK
 
 > **NO RUNTIME CONSUMER — abandoned scaffold.** This package was written as the
 > shared contract for a cashier UI and cashier backend services. Neither exists.
@@ -11,9 +11,10 @@
 > repository root. The yarn workspace root is
 > `apps/taptrade-platform/frontend/`, whose `workspaces: ["packages/**/*"]`
 > resolves to `apps/taptrade-platform/frontend/packages/**` — not this
-> directory. So `@hula-na/cashier-sdk` is never installed, hoisted or resolved
+> directory. So `@taptrade/cashier-sdk` is never installed, hoisted or resolved
 > by any application build; it is built only ad hoc into `.tmp-test-dist/`.
-> The `@hula-na` scope is also stale: it predates the TapTrade naming.
+> The package was renamed into the `@taptrade` scope on 2026-09-06; nothing
+> outside this directory referenced the old scope, so no consumer moved with it.
 >
 > **Why it is still in the repository.** `scripts/check-cashier-all.sh` runs
 > `npm --prefix packages/cashier-sdk test` and `run build`, then

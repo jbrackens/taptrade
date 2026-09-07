@@ -1,4 +1,4 @@
-# Prometheus alerting rules for the Hula Na! gateway (improvement-plan P3-05).
+# Prometheus alerting rules for the Tap Trade gateway (improvement-plan P3-05).
 #
 # Load via the Prometheus server config:
 #   rule_files:

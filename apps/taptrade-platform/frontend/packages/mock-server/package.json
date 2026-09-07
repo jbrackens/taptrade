@@ -1,7 +1,7 @@
 {
   "name": "@taptrade-ui/mock-server",
   "version": "0.13.0",
-  "description": "An Express server delivers mocked API to the TapTrade UI",
+  "description": "An Express server delivers mocked API to the Tap Trade UI",
   "main": "dist/index.js",
   "esnext": "dist/index.js",
   "files": [

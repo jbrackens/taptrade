@@ -1,4 +1,4 @@
-# Taya NA Predict — Platform Architecture
+# Tap Trade — Platform Architecture
 
 Prediction-market platform: binary YES/NO contracts priced 1–99 Points (price =
 implied probability, `yes + no = 100`), winners pay 100 Points/contract at

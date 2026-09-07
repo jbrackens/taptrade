@@ -467,16 +467,18 @@ describe("wallet-client endpoint paths", () => {
     );
   });
 
-  it("names the shared API-client class TapTrade and keeps a deprecated TapTrade alias", () => {
+  it("names the shared API-client class for Tap Trade and drops the retired compatibility alias", () => {
     assert.ok(
       sharedApiClientSource.includes("export class TapTradeApiClient") &&
-        sharedApiClientSource.includes(
-          "export const PhoenixApiClient = TapTradeApiClient",
-        ) &&
         sharedApiIndexSource.includes(
-          "export { PhoenixApiClient, TapTradeApiClient } from",
+          'export { TapTradeApiClient } from "./client"',
         ),
-      "shared API client should be TapTrade-named with a deprecated TapTrade compatibility alias",
+      "shared API client should be exported as TapTradeApiClient",
+    );
+    assert.ok(
+      !sharedApiClientSource.includes("PhoenixApiClient") &&
+        !sharedApiIndexSource.includes("PhoenixApiClient"),
+      "shared API client should no longer export the retired compatibility alias",
     );
   });
 

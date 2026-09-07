@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# TapTrade Sportsbook — Full Stack Health Check
+# Tap Trade — Full Stack Health Check
 #
 # Verifies all backend services are reachable before QA or testing.
 # Exit 0 = all services up. Exit 1 = one or more down.

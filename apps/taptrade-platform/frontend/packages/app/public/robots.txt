@@ -1,0 +1,17 @@
+# Tap Trade — player app.
+#
+# No Sitemap or Host directive on purpose: the app is currently served from
+# demo.99rtp.io, a placeholder host used only to test the demo online until the
+# real Tap Trade domain is purchased. Add Sitemap/Host — and the Open Graph and
+# metadataBase urls in app/layout.tsx, which are deliberately absent for the
+# same reason — once that domain exists.
+
+User-agent: *
+Allow: /
+
+# Authenticated and per-user surfaces: no indexable content.
+Disallow: /auth/
+Disallow: /account/
+Disallow: /profile/
+Disallow: /portfolio/
+Disallow: /reset-password

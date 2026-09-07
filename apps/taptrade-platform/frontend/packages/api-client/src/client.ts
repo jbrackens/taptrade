@@ -1,5 +1,5 @@
 /**
- * Taya NA Predict API Client
+ * Tap Trade API Client
  * Type-safe API client with automatic auth token management and 401 refresh
  */
 
@@ -520,8 +520,3 @@ export class TapTradeApiClient {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-
-/** @deprecated Legacy codename alias — use TapTradeApiClient. */
-export const PhoenixApiClient = TapTradeApiClient;
-/** @deprecated Legacy codename alias — use TapTradeApiClient. */
-export type PhoenixApiClient = TapTradeApiClient;

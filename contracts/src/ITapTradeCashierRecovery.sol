@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 /// @notice Interface sketch only. Recovery actions require off-chain policy,
 /// audit evidence, and multi-operator approval before any implementation ships.
-interface IHulaCashierRecovery {
+interface ITapTradeCashierRecovery {
     enum RecoveryAction {
         SettleToSmartWallet,
         RefundToUserControlledAddress,

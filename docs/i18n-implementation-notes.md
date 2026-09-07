@@ -1,4 +1,4 @@
-# TapTrade Player App i18n — how it actually works
+# Tap Trade Player App i18n — how it actually works
 
 *Rewritten 2026-09-06. The previous version of this file described a plan for `apps/taptrade-platform/phoenix-frontend-brand-viegg` (Next 11, Pages Router, `next-i18next` 6, CommonJS translation modules). None of that describes the shipped system, and that tree is not built or deployed. This file now documents what is in the code.*
 
@@ -15,7 +15,7 @@ Static product UI copy is localized. Dynamic content — market titles/descripti
 - **Provider:** `app/lib/i18n/I18nProvider.tsx` — `I18nextProvider` from `react-i18next`.
 - **Locale list and helpers:** `app/lib/i18n/locales.ts` — `supportedLocales`, `defaultLocale`, `isSupportedLocale`, `normalizeLocale`.
 - **Selector:** `app/components/i18n/LanguageSelector.tsx`.
-- **Persistence:** `localStorage` under `hula_locale` (`localeStorageKey`), with `taptrade_language` read as a legacy fallback (`legacyLocaleStorageKey`).
+- **Persistence:** `localStorage` under `taptrade_locale` (`localeStorageKey`), with `taptrade_language` read as a legacy fallback (`legacyLocaleStorageKey`).
 - **Translation files:** raw JSON at `public/static/locales/<locale>/<namespace>.json`. 58 namespaces in `en`.
 - **Usage:** `useTranslation("<namespace>")` in ~58 component/page files.
 

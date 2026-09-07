@@ -103,7 +103,7 @@ func BenchmarkBuildPlan_FullCross(b *testing.B) {
 
 // BenchmarkBuildPlan_NoMatch measures the fast-path cost: a limit order
 // that crosses no makers and rests on the book. This is the most common
-// case under thin liquidity (which is where TapTrade launches).
+// case under thin liquidity (which is where Tap Trade launches).
 func BenchmarkBuildPlan_NoMatch(b *testing.B) {
 	market := makeMarket()
 	now := time.Date(2026, 5, 11, 0, 0, 0, 0, time.UTC)

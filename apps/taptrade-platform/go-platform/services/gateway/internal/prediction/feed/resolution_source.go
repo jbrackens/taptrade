@@ -9,7 +9,7 @@ import (
 
 // ADR-0003: resolution-source health + the corroboration seam.
 //
-// The TapTrade launch policy is admin/manual attestation only. Automated
+// The Tap Trade launch policy is admin/manual attestation only. Automated
 // adapters are compatibility seams for legacy or future non-launch markets and
 // must be explicitly enabled before registration. When a source is enabled,
 // the AutoSettler tracks per-source health: this makes a degraded source

@@ -1,6 +1,6 @@
-# TapTrade Predict Combined
+# Tap Trade Platform
 
-Full local stack for Taya NA Predict: a player prediction-market app, admin backoffice, Go gateway, Go auth service, PostgreSQL, and Redis.
+Full local stack for Tap Trade: a player prediction-market app, admin backoffice, Go gateway, Go auth service, PostgreSQL, and Redis.
 
 ## Quick Start
 
@@ -112,7 +112,7 @@ run the gateway with the `ALPHA_CASHIER_*` variables documented in
 [the cashier plan](../../docs/archive/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
 `go-platform/services/gateway/migrations/030_alpha_cashier.sql`. Live-chain
 setup still requires a reviewed RPC URL, verified USDC token contract, and
-TapTrade-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
+Tap Trade-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
 path.
 
 ## Documentation

@@ -1,4 +1,4 @@
-# TapTrade Cashier Contract Invariants
+# Tap Trade Cashier Contract Invariants
 
 **Status:** SUPERSEDED 2026-09-06 — abandoned workstream (was: "Draft gate for
 contract implementation and audit."). No contract was implemented or deployed,

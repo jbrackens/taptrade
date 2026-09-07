@@ -1,0 +1,5 @@
+# Tap Trade — back office. Staff-only administration surface, additionally
+# gated by Caddy basic_auth. Nothing here should ever be indexed.
+
+User-agent: *
+Disallow: /

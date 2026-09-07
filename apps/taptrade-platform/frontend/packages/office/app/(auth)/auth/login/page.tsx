@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { brand } from "../../../../lib/brand";
 
 // useSearchParams() reads URL state on the client, so static prerender
 // must be skipped for this route. Without this, Next.js 16 errors out
@@ -93,7 +94,7 @@ function LoginForm() {
         <div className="mb-9 text-center">
           <div className="mb-4 inline-flex items-end justify-center gap-3 text-[var(--focus-ring,#0e7a53)]">
             <span className="text-[40px] font-black leading-none tracking-normal">
-              TapTrade
+              {brand.name}
             </span>
             <svg
               aria-hidden="true"
@@ -192,7 +193,7 @@ function LoginForm() {
         </form>
 
         <p className="mt-7 text-center text-xs text-[var(--t3,#8b8378)]">
-          TapTrade Predict Admin
+          {brand.name} Admin
         </p>
       </div>
     </div>

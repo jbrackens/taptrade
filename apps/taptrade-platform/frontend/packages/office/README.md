@@ -1,6 +1,6 @@
 # Back office — `@taptrade-ui/office`
 
-Staff back office for the TapTrade prediction market: market creation and
+Staff back office for the Tap Trade prediction market: market creation and
 lifecycle, settlement and disputes, risk, moderation, users and access control.
 Next.js 16 App Router (`app/`) with Ant Design 5. Runs on port 3001.
 
@@ -29,8 +29,9 @@ Install from the yarn workspace root (`frontend/`), not from this package.
 ## Current Admin Surfaces
 
 All routes live under `app/(dashboard)/`. There is no Pages Router tree in this
-package. Every surface is point-native TapTrade administration: balances, ledger
-entries and rewards are all denominated in Points, and there is no cash-out.
+package. Every surface is point-native Tap Trade administration: balances,
+ledger entries and rewards are all denominated in Points, and there is no
+cash-out.
 
 Prediction operations:
 

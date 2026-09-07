@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-ADR-0001 through ADR-0004 are the remediation ADRs from the production-readiness audit (2026-05-22) of the Taya NA Predict / "TapTrade" prediction exchange. ADR-0005 and ADR-0006 came later, out of the 2026-06 improvement plan. Each ADR is grounded in specific files in `apps/taptrade-platform`.
+ADR-0001 through ADR-0004 are the remediation ADRs from the production-readiness audit (2026-05-22) of the Tap Trade prediction exchange. ADR-0005 and ADR-0006 came later, out of the 2026-06 improvement plan. Each ADR is grounded in specific files in `apps/taptrade-platform`.
 
 | ADR | Title | Priority | Status |
 |-----|-------|----------|--------|

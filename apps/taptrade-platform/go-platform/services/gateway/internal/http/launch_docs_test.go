@@ -46,7 +46,7 @@ func TestGatewayMakefileUsesLaunchSeedCommand(t *testing.T) {
 	}
 	content := string(body)
 	required := []string{
-		"seed: ## Load TapTrade launch base seed data",
+		"seed: ## Load Tap Trade launch base seed data",
 		"go run ./cmd/seed -mode base",
 		"demo-data: ## Load base seed + demo state",
 		"go run ./cmd/seed -mode demo",

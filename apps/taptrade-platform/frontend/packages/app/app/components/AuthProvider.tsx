@@ -60,15 +60,6 @@ interface AuthProviderProps {
 
 function readStoredUser(): User | null {
   if (typeof window === "undefined") return null;
-  // One-time migration of pre-rebrand storage keys (phoenix_*) so live
-  // sessions survive the rename; runs before every read, no-ops once clean.
-  for (const key of ["access_token", "refresh_token", "user_id", "username"]) {
-    const legacy = localStorage.getItem(`phoenix_${key}`);
-    if (legacy !== null) {
-      localStorage.setItem(`taptrade_${key}`, legacy);
-      localStorage.removeItem(`phoenix_${key}`);
-    }
-  }
   const id = localStorage.getItem("taptrade_user_id");
   const username = localStorage.getItem("taptrade_username");
   if (!id || !username) return null;

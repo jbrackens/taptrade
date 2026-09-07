@@ -625,7 +625,7 @@ function HowPointsWork() {
       <p className={HOW_BODY_CLASS}>
         {t(
           "how.body",
-          "Point packs add non-redeemable gameplay points to your balance for predictions on TapTrade. Points are play credits only — they carry no cash value, and there is no cash-out, transfer, or conversion of any kind.",
+          "Point packs add non-redeemable gameplay points to your balance for predictions on Tap Trade. Points are play credits only — they carry no cash value, and there is no cash-out, transfer, or conversion of any kind.",
         )}
       </p>
     </aside>

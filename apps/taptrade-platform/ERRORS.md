@@ -1,6 +1,6 @@
 # Error And Debugging Guide
 
-This guide covers the errors a developer is most likely to hit while running Taya NA Predict locally.
+This guide covers the errors a developer is most likely to hit while running Tap Trade locally.
 
 ## Error Shape
 

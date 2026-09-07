@@ -165,8 +165,7 @@ function Reveal({ children, className = "" }: RevealProps) {
 const GRANT_BODY_LEGAL =
   "Join and trade with 500 PTS — non-redeemable gameplay points. Not money. Just conviction, kept score.";
 const GRANT_MICRO_LEGAL = "No cash · No cashout · 18+";
-const FOOTER_LEGAL =
-  "TapTrade uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.";
+const FOOTER_LEGAL = `${brand.name} uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.`;
 
 const MICRO_CLASS =
   "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-lavender)]";

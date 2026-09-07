@@ -542,14 +542,14 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
       readme.indexOf("### Dev-mode auth"),
     );
 
-    expect(currentAdminSurfaces).toContain("point-native TapTrade");
+    expect(currentAdminSurfaces).toContain("point-native Tap Trade");
     expect(currentAdminSurfaces).toContain("point-ledger inspection");
     expect(currentAdminSurfaces).not.toMatch(
       /\b(?:sportsbook|cashier|deposit|withdrawals?|cashout|fiat|crypto|redeem(?:able)?|prizes?|wagers?|wagering|stakes?|refunds?|payouts?|payments?)\b|\$/i,
     );
   });
 
-  it("keeps active office navigation and risk comments TapTrade-native", () => {
+  it("keeps active office navigation and risk comments Tap Trade-native", () => {
     const activeCommentSources = [
       "providers/menu/structure.ts",
       "providers/menu/defaults.ts",

@@ -1,4 +1,4 @@
-# Taya NA Predict — Operational Runbooks
+# Tap Trade — Operational Runbooks
 
 > Prediction-market operations. The previous sportsbook runbook documented tables
 > that no longer exist — migration `033_drop_dead_sportsbook_tables.sql` dropped

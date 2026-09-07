@@ -1,4 +1,4 @@
-# Taya NA Predict Changelog
+# Tap Trade Changelog
 
 ## [Unreleased] - 2026-05-23
 
@@ -60,7 +60,7 @@ Taya NA Predict forked from Taya NA Sportsbook and replaced the sportsbook domai
 
 ---
 
-# Archived TapTrade Sportsbook Release Changelog
+# Archived Sportsbook-Era Release Changelog
 
 ## [1.2.0] - 2026-04-16
 
@@ -150,7 +150,7 @@ Complete rebrand to TAYA NA! identity with unified design system, new player fea
 
 ### Initial Production Release
 
-TapTrade Sportsbook platform reaching production-ready status. Complete sportsbook solution with real-time betting, market management, and comprehensive compliance framework.
+The sportsbook-era platform reaching production-ready status. Complete sportsbook solution with real-time betting, market management, and comprehensive compliance framework.
 
 ### Major Features
 
@@ -380,11 +380,11 @@ None at this time.
 
 ### Contributors & Acknowledgments
 
-TapTrade Sportsbook was developed by the TapTrade team. Special thanks to all testers and early users who provided feedback.
+The sportsbook-era platform was developed by the core team. Special thanks to all testers and early users who provided feedback.
 
 ### License
 
-All rights reserved. TapTrade Sportsbook Platform.
+All rights reserved. DORA Research, Inc.
 
 ### Support
 

@@ -3,14 +3,14 @@ import { initMenuBuilder } from "./utils/builder";
 // Pages Router top-nav menu structure.
 //
 // The MenuModulesPathEnum members are kept for backwards compatibility:
-// retired pre-TapTrade Pages Router components still reference
+// retired pre-Tap Trade Pages Router components still reference
 // RISK_MANAGEMENT for path generation. Removing the enum members would
 // break those imports. The defaultMenuStructure builder, however, no
 // longer registers them, so they don't appear in the rendered top nav.
 //
 // Pruned 2026-05-03: dropped USERS and RISK_MANAGEMENT from the
 // rendered nav. USERS' backing endpoint isn't wired for predict.
-// RISK_MANAGEMENT is the retired pre-TapTrade operations subtree and is
+// RISK_MANAGEMENT is the retired pre-Tap Trade operations subtree and is
 // already redirected to /dashboard in next.config.js redirects(); leaving
 // it in the nav would advertise destinations that bounce away on click.
 //

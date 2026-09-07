@@ -1,7 +1,7 @@
 {
   "name": "@taptrade-ui/design-system",
   "version": "0.1.0",
-  "description": "Shared design system for TapTrade UI",
+  "description": "Shared design system for the Tap Trade UI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

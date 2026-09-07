@@ -34,9 +34,9 @@ type Service struct {
 }
 
 // ErrLaunchProhibitedCategory blocks inherited real-money/crypto taxonomy from
-// TapTrade launch category management while deeper import compatibility is
+// Tap Trade launch category management while deeper import compatibility is
 // retired incrementally.
-var ErrLaunchProhibitedCategory = errors.New("category is not allowed in TapTrade launch taxonomy")
+var ErrLaunchProhibitedCategory = errors.New("category is not allowed in Tap Trade launch taxonomy")
 
 var launchHiddenCategorySlugs = map[string]struct{}{
 	"crypto": {},
@@ -68,7 +68,7 @@ var launchProhibitedSettlementRules = map[string]struct{}{
 	"price_below": {},
 }
 
-var ErrLaunchProhibitedMarket = errors.New("market is not allowed in TapTrade launch mode")
+var ErrLaunchProhibitedMarket = errors.New("market is not allowed in Tap Trade launch mode")
 
 // ComplianceChecker gates order placement against responsible-gambling
 // controls (self-exclusion, cool-off, deposit/bet stake limits). It is an

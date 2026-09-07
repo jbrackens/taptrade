@@ -161,9 +161,6 @@ export default function ContactUsPage() {
           support@taptrade.com
         </div>
         <div className="mb-2 text-sm text-[var(--t2)]">
-          <strong className="text-[var(--t1)]">Phone:</strong> 1-800-TAPTRADE
-        </div>
-        <div className="mb-2 text-sm text-[var(--t2)]">
           <strong className="text-[var(--t1)]">Support Hours:</strong> Monday -
           Friday, 9 AM - 10 PM EST
         </div>

@@ -4,7 +4,7 @@
  * PredictFooter — the deep-purple anchor (P9.4, 2026-07-07).
  *
  * Every page ends on one deliberate deep-purple statement: the brand
- * surface the P9 white system otherwise never spends. The inverse Tap Path
+ * surface the P9 white system otherwise never spends. The inverse Tap Trade
  * lockup, quiet inverse links, and legal line sit under a hairline.
  * This is a brand-layer surface (DESIGN.md Active Brand) — market data
  * never renders on ink.

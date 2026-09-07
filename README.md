@@ -1,4 +1,4 @@
-# Taya NA Predict
+# Tap Trade
 
 Prediction-market platform for trading binary YES/NO contracts on real-world outcomes.
 

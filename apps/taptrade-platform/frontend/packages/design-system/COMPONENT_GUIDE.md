@@ -1,4 +1,4 @@
-# TapTrade UI Design System - Component Guide
+# Tap Trade UI Design System - Component Guide
 
 > **Status: sportsbook-era, unused.** No package in this workspace imports
 > `@taptrade-ui/design-system`; the player app is forbidden from doing so (it
@@ -162,7 +162,7 @@ function App() {
 - **Usage:**
   ```tsx
   <Header
-    logo="TapTrade"
+    logo="Tap Trade"
     logoIcon="🏀"
     navItems={[{ label: "Home", active: true }, { label: "Sports" }]}
     onSearch={(q) => console.log(q)}

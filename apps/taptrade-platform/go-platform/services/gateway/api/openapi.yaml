@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Taya NA Predict API
+  title: Tap Trade API
   version: "1.0.0"
   description: >
-    TapTrade prediction-market gateway API for non-redeemable gameplay points.
+    Tap Trade prediction-market gateway API for non-redeemable gameplay points.
     Binary YES/NO outcomes use point-cents subunits on a 0-100 implied
     probability scale; settled winning shares return 100 point-cents per share.
     Points are gameplay-only units with no external value path.
@@ -3692,7 +3692,7 @@ paths:
   /api/v1/admin/markets/{id}/lifecycle:
     get:
       summary: Admin lifecycle audit for one market
-      description: Returns persisted actor, reason, timestamp, and TapTrade lifecycle mapping. Use format=csv for formula-safe export rows.
+      description: Returns persisted actor, reason, timestamp, and Tap Trade lifecycle mapping. Use format=csv for formula-safe export rows.
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
@@ -3735,7 +3735,7 @@ paths:
   /api/v1/admin/settlements/{marketId}:
     post:
       summary: Direct admin settlement for one market
-      description: Resolves a closed prediction market immediately and returns preferred point-disbursement aliases with TapTrade lifecycle metadata. Use the proposed-resolution routes when dual-control challenge windows are required.
+      description: Resolves a closed prediction market immediately and returns preferred point-disbursement aliases with Tap Trade lifecycle metadata. Use the proposed-resolution routes when dual-control challenge windows are required.
       security: [{ SessionCookie: [] }]
       parameters:
         - { name: marketId, in: path, required: true, schema: { type: string } }

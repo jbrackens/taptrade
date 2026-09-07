@@ -490,7 +490,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)
 		slog.Info("alpha cashier: routes registered", "enabled", alphaCashierConfig.Enabled, "chain", alphaCashierConfig.ChainName)
 	} else {
-		slog.Info("legacy money routes disabled for TapTrade launch", "env", legacyMoneyRoutesEnv)
+		slog.Info("legacy money routes disabled for Tap Trade launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Account/User Routes ---
@@ -540,7 +540,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	tradeGeoGate = compliance.NewGeoGateFromEnv()
 	tradeKYCGate = kycService
 	// Legacy guarded routes run through the same geo gate as trading. Their
-	// registration is still controlled by the TapTrade legacy-route opt-in; see
+	// registration is still controlled by the Tap Trade legacy-route opt-in; see
 	// docs/compliance/geofencing-kyc.md for the compliance posture.
 	alphacashier.ComplianceGate = checkComplianceGates
 	payments.ComplianceGate = checkComplianceGates
@@ -593,7 +593,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
 		}
 	} else {
-		slog.Info("legacy payment routes disabled for TapTrade launch", "env", legacyMoneyRoutesEnv)
+		slog.Info("legacy payment routes disabled for Tap Trade launch", "env", legacyMoneyRoutesEnv)
 	}
 
 	// --- Loyalty / Rewards ---
@@ -631,7 +631,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// were never wired into RegisterRoutes. Public delivery routes
 	// (/api/v1/content/, /api/v1/banners) come along for the player app.
 	// The bonus service's optional legacy promo granter is deliberately not set:
-	// sportsbook-style promo issuance is outside the TapTrade launch economy;
+	// sportsbook-style promo issuance is outside the Tap Trade launch economy;
 	// campaigns/bonuses CRUD works without it.
 	if walletDB := walletService.DB(); walletDB != nil {
 		registerContentRoutes(mux, content.NewService(walletDB))
@@ -649,7 +649,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
 
-	slog.Info("Taya NA Predict gateway initialized",
+	slog.Info("Tap Trade gateway initialized",
 		"service", service,
 		"routes", strings.Join(gatewayRouteDomains(legacyMoneyRoutesEnabled()), ", "),
 	)

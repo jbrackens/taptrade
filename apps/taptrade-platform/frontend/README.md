@@ -1,6 +1,6 @@
 # taptrade-ui
 
-Frontend application for the TapTrade betting platform project
+Frontend application for the Tap Trade prediction market
 
 ## Requirements
 
