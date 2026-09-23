@@ -265,11 +265,9 @@
   "WORKSPACE_REWARD_BADGE_LABEL": "精选奖励",
   "WORKSPACE_REWARD_BADGE_NAME": "iPhone 16 Pro",
   "WORKSPACE_REWARD_BADGE_POINTS": "120,000 积分",
-  "WORKSPACE_OPEN_FLOOR": "打开 Floor",
   "WORKSPACE_START_GUIDE": "入门指南",
   "WORKSPACE_MOMENTS_TITLE": "热门事件",
   "WORKSPACE_EXPLORE_TOPICS": "探索主题 · 全部事件",
-  "WORKSPACE_FLOOR_NOTICE": "试用新版 Floor — 一个面板，无需切换上下文。",
   "WORKSPACE_GUIDE_NOTICE": "刚来吗？看看选择和积分如何运作。",
   "WORKSPACE_ALL_MOMENTS": "全部事件",
   "WORKSPACE_MOMENTS_RAIL_LINE_ONE": "热门",
@@ -291,5 +289,8 @@
   "MARKET": "市场",
   "TRENDING": "热门",
   "PARTICIPANT_VIEW": "参与者观点",
-  "ACTIVITY": "活跃度"
+  "ACTIVITY": "活跃度",
+  "QUICK_TRADE": "快速交易",
+  "CLOSE": "关闭",
+  "VIEW_EVENT_MARKETS": "此事件的所有市场"
 }

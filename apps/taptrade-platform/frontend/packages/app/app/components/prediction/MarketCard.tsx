@@ -23,7 +23,15 @@ interface MarketCardProps {
   onToggleWatchlist?: (marketId: string) => void;
   /** Position in the current discovery result set (one-based). */
   rank?: number;
+  /**
+   * When set, YES/NO open an in-place trade panel instead of navigating to
+   * the market page with `?side=` preselected.
+   */
+  onQuickTrade?: (side: "yes" | "no") => void;
 }
+
+const SIDE_BUTTON_CLASS =
+  "flex min-h-[34px] cursor-pointer items-center justify-center rounded-[7px] border-0 px-3 py-2 text-center font-sans text-[12px] font-semibold text-white no-underline transition-[filter,transform] duration-150 hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[640px]:min-h-11";
 
 function formatCloseAt(iso: string): string {
   return new Date(iso)
@@ -77,9 +85,12 @@ export function MarketCard({
   status,
   categoryLabel,
   rank = 1,
+  onQuickTrade,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
   const isOpen = isOpenMarketStatus(status);
+  // A closed market has nothing to trade in place; its page explains why.
+  const quickTrade = isOpen ? onQuickTrade : undefined;
   const yesPercentage = clampPercentage(yesPricePoints);
   const noPercentage = clampPercentage(noPricePoints);
   const sentiment = calculateMarketSentiment(yesPercentage);
@@ -155,20 +166,36 @@ export function MarketCard({
       </Link>
 
       <div className="mt-2 grid grid-cols-2 gap-3">
-        <Link
-          href={`/market/${ticker}?side=yes`}
-          className="flex min-h-[34px] items-center justify-center rounded-[7px] bg-[var(--yes)] px-3 py-2 text-center text-[12px] font-semibold text-white no-underline transition-[filter,transform] duration-150 hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[640px]:min-h-11"
-          aria-label={`${yesPercentage}% ${t("BUY_YES", "Yes")}`}
-        >
-          {yesPercentage}% {t("YES")}
-        </Link>
-        <Link
-          href={`/market/${ticker}?side=no`}
-          className="flex min-h-[34px] items-center justify-center rounded-[7px] bg-[var(--no)] px-3 py-2 text-center text-[12px] font-semibold text-white no-underline transition-[filter,transform] duration-150 hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[640px]:min-h-11"
-          aria-label={`${noPercentage}% ${t("BUY_NO", "No")}`}
-        >
-          {noPercentage}% {t("NO")}
-        </Link>
+        {(["yes", "no"] as const).map((side) => {
+          const percentage = side === "yes" ? yesPercentage : noPercentage;
+          const className = `${SIDE_BUTTON_CLASS} ${side === "yes" ? "bg-[var(--yes)]" : "bg-[var(--no)]"}`;
+          const ariaLabel =
+            side === "yes"
+              ? `${percentage}% ${t("BUY_YES", "Yes")}`
+              : `${percentage}% ${t("BUY_NO", "No")}`;
+          const text = `${percentage}% ${side === "yes" ? t("YES") : t("NO")}`;
+          return quickTrade ? (
+            <button
+              key={side}
+              type="button"
+              onClick={() => quickTrade(side)}
+              className={className}
+              aria-label={ariaLabel}
+              aria-haspopup="dialog"
+            >
+              {text}
+            </button>
+          ) : (
+            <Link
+              key={side}
+              href={`/market/${ticker}?side=${side}`}
+              className={className}
+              aria-label={ariaLabel}
+            >
+              {text}
+            </Link>
+          );
+        })}
       </div>
     </article>
   );

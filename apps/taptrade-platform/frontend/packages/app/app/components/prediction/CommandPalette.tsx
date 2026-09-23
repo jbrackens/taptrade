@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * CommandPalette — the redesign's ⌘K command surface (Gate 1 B2): one
- * overlay absorbing search and navigation. Sections: Markets (ranked by
- * the shared searchMarkets scorer over live open markets), Events
- * (derived from the same data), and Actions (shell navigation). Markets
- * route to their event workspace when they have one — the market is a
- * focused state of its event, per the approved object model.
+ * CommandPalette — the ⌘K command surface: one overlay absorbing search
+ * and navigation. Sections: Markets (ranked by the shared searchMarkets
+ * scorer over live open markets, opening the market detail page), Events
+ * (derived from the same data, opening the event page), and Actions (the
+ * TopBar's primary destinations, filtered by the same auth rule).
  */
 
 import { useRouter } from "next/navigation";
@@ -14,9 +13,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
+import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 import { searchMarkets } from "../../lib/marketSearch";
-import { localizedMarket } from "../prediction/market-content";
+import { localizedMarket } from "./market-content";
 
 const api = createPredictionClient();
 
@@ -40,6 +40,8 @@ export function CommandPalette({
 }) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
+  const { t: navT } = useTranslation("header");
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -64,13 +66,18 @@ export function CommandPalette({
 
   const entries = useMemo<Entry[]>(() => {
     const q = query.trim();
-    const allActions: Entry[] = [
-      { id: "a-floor", kind: "action", label: t("FLOOR_NAV_FLOOR", "Floor"), meta: t("CMDK_GO", "Go to"), href: "/floor" },
-      { id: "a-book", kind: "action", label: t("FLOOR_NAV_BOOK", "My Book"), meta: t("CMDK_GO", "Go to"), href: "/book" },
-      { id: "a-standing", kind: "action", label: t("FLOOR_NAV_STANDING", "Standing"), meta: t("CMDK_GO", "Go to"), href: "/standing" },
+    const goLabel = t("CMDK_GO", "Go to");
+    const allActions: (Entry & { requiresAuth?: boolean })[] = [
+      { id: "a-markets", kind: "action", label: navT("NAV_MARKETS"), meta: goLabel, href: "/predict" },
+      { id: "a-trending", kind: "action", label: navT("NAV_TRENDING"), meta: goLabel, href: "/discover" },
+      { id: "a-portfolio", kind: "action", label: navT("NAV_PORTFOLIO"), meta: goLabel, href: "/portfolio", requiresAuth: true },
+      { id: "a-leaderboards", kind: "action", label: navT("NAV_LEADERBOARDS"), meta: goLabel, href: "/leaderboards", requiresAuth: true },
+      { id: "a-rewards", kind: "action", label: navT("NAV_REWARDS"), meta: goLabel, href: "/rewards", requiresAuth: true },
     ];
     const actions = allActions.filter(
-      (a) => !q || a.label.toLowerCase().includes(q.toLowerCase()),
+      (a) =>
+        (!a.requiresAuth || isAuthenticated) &&
+        (!q || a.label.toLowerCase().includes(q.toLowerCase())),
     );
     const localized = markets.map((m) => localizedMarket(contentT, m));
     const hits = q ? searchMarkets(localized, q, 6) : localized.slice(0, 5);
@@ -79,7 +86,7 @@ export function CommandPalette({
       kind: "market",
       label: m.title,
       meta: `${m.yesPricePoints}¢ · ${m.eventTitle || m.ticker}`,
-      href: m.eventId ? `/event/${m.eventId}` : `/market/${m.ticker}`,
+      href: `/market/${m.ticker}`,
     }));
     const seen = new Set<string>();
     const eventEntries: Entry[] = [];
@@ -97,7 +104,7 @@ export function CommandPalette({
       if (eventEntries.length >= 3) break;
     }
     return [...marketEntries, ...eventEntries, ...actions];
-  }, [query, markets, contentT, t]);
+  }, [query, markets, contentT, t, navT, isAuthenticated]);
 
   useEffect(() => {
     setCursor(0);

@@ -155,9 +155,7 @@ function WorkspaceNotice({
         href={href}
         className="shrink-0 font-semibold text-[var(--brand-purple)] no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
       >
-        {href === "/floor"
-          ? t("WORKSPACE_OPEN_FLOOR", "Open Floor")
-          : t("WORKSPACE_START_GUIDE", "Start guide")}
+        {t("WORKSPACE_START_GUIDE", "Start guide")}
       </Link>
     </div>
   );
@@ -203,13 +201,7 @@ export function PredictionWorkspace({
             <RewardHero />
           </div>
 
-          <div className="mt-4 grid gap-3 min-[761px]:mt-6 min-[761px]:grid-cols-2">
-            <WorkspaceNotice href="/floor">
-              {t(
-                "WORKSPACE_FLOOR_NOTICE",
-                "Try the new Floor — one board, no context switching.",
-              )}
-            </WorkspaceNotice>
+          <div className="mt-4 min-[761px]:mt-6">
             <WorkspaceNotice href="/about">
               {t(
                 "WORKSPACE_GUIDE_NOTICE",

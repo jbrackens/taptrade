@@ -39,7 +39,7 @@ import {
 } from "../../lib/store/pointBalanceSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
-import { CommandPalette } from "../floor/CommandPalette";
+import { CommandPalette } from "./CommandPalette";
 import { NotificationsBell } from "./NotificationsBell";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";

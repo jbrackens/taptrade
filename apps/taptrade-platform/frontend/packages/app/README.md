@@ -40,12 +40,13 @@ called done. See `CLAUDE.md` in this package.
 
 Prediction market:
 
-- `/predict` — discovery: featured, trending, closing soon, recent
+- `/predict` — discovery: featured, trending, closing soon, recent; YES/NO on
+  any market card opens a quick-trade panel in place
 - `/market/[ticker]` — market detail, price chart, order book, trade ticket
 - `/category/[slug]` — markets filtered by category
 - `/series/[slug]`, `/event/[id]` — the taxonomy above a market
 - `/portfolio` — open positions, orders, history, accuracy
-- `/discover`, `/book`, `/floor`, `/live`, `/standing`, `/activity`
+- `/discover`, `/live`, `/activity`
 
 Account and social:
 

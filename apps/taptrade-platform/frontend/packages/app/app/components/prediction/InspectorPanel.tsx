@@ -1,18 +1,22 @@
 "use client";
 
 /**
- * InspectorPanel — the redesign's persistent contextual inspector (Figma:
- * 05 Redesign › InspectorV2, Gates 2/3 approved). Focused market: price
- * readout + split bar, resolution rules + source, liquidity line, MY
- * exposure, and the REAL ticket (ConnectedTradeTicket — live preview/place
- * path with hold-to-place). Idle: a my-book digest. The ticket has exactly
- * one desktop container: this one.
+ * InspectorPanel — contextual market inspector (Figma: 05 Redesign ›
+ * InspectorV2). Focused market: price readout + split bar, resolution
+ * rules + source, liquidity line, MY exposure, the REAL ticket
+ * (ConnectedTradeTicket — live preview/place path with hold-to-place), and
+ * a link out to the full market page. Idle: an open-positions digest.
+ * Hosts: the /event/[id] side panel and the QuickTradePanel overlay.
  */
 
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
+import type {
+  OrderSide,
+  PredictionMarket,
+} from "@taptrade-ui/api-client/src/prediction-types";
 import { formatCompactPoints } from "../../lib/points";
-import { ConnectedTradeTicket } from "../prediction/ConnectedTradeTicket";
+import { ConnectedTradeTicket } from "./ConnectedTradeTicket";
 import type { RowPosition } from "./RowMarketV2";
 
 function sourceLabel(key: string | undefined): string {
@@ -25,25 +29,39 @@ function sourceLabel(key: string | undefined): string {
 const EYEBROW_CLASS =
   "font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]";
 
+const CARD_CHROME_CLASS =
+  "rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4";
+
 export function InspectorPanel({
   market,
   position,
   openPositions,
   onMarketUpdate,
+  label,
+  defaultSide,
+  bare = false,
 }: {
   market: PredictionMarket | null;
   position?: RowPosition;
   openPositions: number;
   onMarketUpdate: (market: PredictionMarket) => void;
+  /** Eyebrow label; defaults to "Inspector". */
+  label?: string;
+  /** Side the ticket opens on (e.g. the YES/NO button that opened it). */
+  defaultSide?: OrderSide;
+  /** Drop the card chrome when a host (dialog, sheet) already draws it. */
+  bare?: boolean;
 }) {
   const { t } = useTranslation("prediction");
+  const eyebrow = label ?? t("FLOOR_INSPECTOR", "Inspector");
+  const chrome = bare ? "" : ` ${CARD_CHROME_CLASS}`;
+  // A bare host draws its own close control in the top-right corner.
+  const eyebrowClass = bare ? `${EYEBROW_CLASS} pr-8` : EYEBROW_CLASS;
 
   if (!market) {
     return (
-      <div className="flex flex-col gap-3 rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4">
-        <span className={EYEBROW_CLASS}>
-          {t("FLOOR_INSPECTOR", "Inspector")}
-        </span>
+      <div className={`flex flex-col gap-3${chrome}`}>
+        <span className={eyebrowClass}>{eyebrow}</span>
         <p className="m-0 text-[13px] leading-[1.5] text-[var(--t2)]">
           {t(
             "FLOOR_INSPECTOR_IDLE",
@@ -60,9 +78,9 @@ export function InspectorPanel({
   const yes = Math.max(0, Math.min(100, market.yesPricePoints));
 
   return (
-    <div className="flex flex-col gap-3.5 rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4">
-      <span className={EYEBROW_CLASS}>
-        {t("FLOOR_INSPECTOR", "Inspector")}
+    <div className={`flex flex-col gap-3.5${chrome}`}>
+      <span className={eyebrowClass}>
+        {eyebrow}
         {market.eventTitle ? ` — ${market.eventTitle}` : ""}
       </span>
       <h2 className="m-0 text-[15px] font-semibold leading-[1.35] text-[var(--t1)]">
@@ -131,10 +149,18 @@ export function InspectorPanel({
         <ConnectedTradeTicket
           key={market.id}
           market={market}
+          defaultSide={defaultSide}
           defaultAmount={100}
           onMarketUpdate={onMarketUpdate}
         />
       </div>
+
+      <Link
+        href={`/market/${market.ticker}`}
+        className="self-start text-[12px] font-semibold text-[var(--accent-text)] no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
+      >
+        {t("MARKET_DETAILS")} →
+      </Link>
     </div>
   );
 }

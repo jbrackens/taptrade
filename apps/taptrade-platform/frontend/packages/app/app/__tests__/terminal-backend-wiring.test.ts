@@ -9,16 +9,20 @@ const appRoot = fileURLToPath(new URL("../", import.meta.url));
 const read = (path: string) => readFileSync(`${appRoot}${path}`, "utf8");
 
 describe("prediction terminal backend wiring", () => {
-  it("keeps trade execution on market detail while discovery actions choose a side", () => {
+  it("routes discovery side actions through the shared ticket with the side preselected", () => {
     const workspace = read("components/prediction/PredictionWorkspace.tsx");
     const card = read("components/prediction/MarketCard.tsx");
+    const quickTrade = read("components/prediction/QuickTradePanel.tsx");
     const connectedTicket = read(
       "components/prediction/ConnectedTradeTicket.tsx",
     );
 
+    // No persistent trade rail on the discovery page itself: the ticket
+    // only mounts on demand, inside the quick-trade overlay.
     assert.ok(!workspace.includes("<ConnectedTradeTicket"));
-    assert.ok(card.includes("?side=yes"));
-    assert.ok(card.includes("?side=no"));
+    assert.ok(card.includes("onClick={() => quickTrade(side)}"));
+    assert.ok(card.includes("?side=${side}"));
+    assert.ok(quickTrade.includes("defaultSide={current.side}"));
     assert.ok(!workspace.includes("const reviewHref ="));
     assert.ok(connectedTicket.includes("api.previewOrder"));
     assert.ok(connectedTicket.includes("api.placeOrder"));

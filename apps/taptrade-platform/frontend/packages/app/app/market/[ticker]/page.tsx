@@ -1349,6 +1349,18 @@ export default function MarketDetailPage() {
               </Link>
             </>
           )}
+          {event && (
+            <>
+              <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
+              <Link
+                href={`/event/${event.id}`}
+                title={t("VIEW_EVENT_MARKETS", "All markets in this event")}
+                className="max-w-[320px] truncate font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[640px]:max-w-[200px]"
+              >
+                {event.title}
+              </Link>
+            </>
+          )}
           <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
           <span className="font-mono uppercase tracking-[0.08em]">
             {market.ticker}

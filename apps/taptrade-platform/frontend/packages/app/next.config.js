@@ -100,6 +100,16 @@ module.exports = {
       },
     ];
   },
+  // The 2026-08 Floor redesign trial was retired in favour of the classic
+  // surface; its routes forward to the page that replaced each one so
+  // bookmarks and old in-app links still land somewhere useful.
+  async redirects() {
+    return [
+      { source: "/floor", destination: "/predict", permanent: false },
+      { source: "/book", destination: "/portfolio", permanent: false },
+      { source: "/standing", destination: "/leaderboards", permanent: false },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [

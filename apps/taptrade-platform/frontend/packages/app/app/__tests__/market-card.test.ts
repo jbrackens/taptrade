@@ -25,11 +25,26 @@ describe("Market Discovery Card", () => {
   });
 
   it("renders the two live market sides as percentage actions", () => {
-    assert.match(card, /href=\{`\/market\/\$\{ticker\}\?side=yes`\}/);
-    assert.match(card, /href=\{`\/market\/\$\{ticker\}\?side=no`\}/);
-    assert.match(card, /\{yesPercentage\}% \{t\("YES"\)\}/);
-    assert.match(card, /\{noPercentage\}% \{t\("NO"\)\}/);
+    assert.match(card, /\(\["yes", "no"\] as const\)\.map/);
+    assert.match(
+      card,
+      /`\$\{percentage\}% \$\{side === "yes" \? t\("YES"\) : t\("NO"\)\}`/,
+    );
     assert.doesNotMatch(card, /¢/);
+  });
+
+  it("opens quick trade in place for open markets and deep-links otherwise", () => {
+    assert.match(card, /onQuickTrade\?: \(side: "yes" \| "no"\) => void/);
+    assert.match(card, /const quickTrade = isOpen \? onQuickTrade : undefined/);
+    assert.match(card, /onClick=\{\(\) => quickTrade\(side\)\}/);
+    assert.match(card, /aria-haspopup="dialog"/);
+    assert.match(card, /href=\{`\/market\/\$\{ticker\}\?side=\$\{side\}`\}/);
+  });
+
+  it("hosts one quick-trade panel per grid", () => {
+    assert.match(grid, /<QuickTradePanel/);
+    assert.match(grid, /setQuickTrade\(\{ market: localized, side \}\)/);
+    assert.match(grid, /onClose=\{\(\) => setQuickTrade\(null\)\}/);
   });
 
   it("removes unapproved card media and explanatory content", () => {

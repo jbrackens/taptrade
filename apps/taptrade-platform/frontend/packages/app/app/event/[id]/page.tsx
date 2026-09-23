@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * /event/[id] — the redesign's Object-workspace archetype, slice 2
- * (REDESIGN-S2). The Event is the user's mental object: all sibling
- * markets of one question-space, comparable in one place, with a single
- * resolution block and the user's aggregate exposure — beside the same
- * persistent Inspector (and the real ticket) the Floor uses. This gives
- * OPEN EVENT a real destination for the first time (the gap that blocked
- * FEED2-005 on the legacy feed).
+ * /event/[id] — every sibling market of one event, comparable in one
+ * place, with a single resolution block and the user's aggregate
+ * exposure, beside the persistent Inspector (and the real ticket).
+ * Reached from the market page breadcrumb and the ⌘K Events section.
+ * The only survivor of the 2026-08 Floor redesign trial, which was
+ * retired in favour of /predict + /market/[ticker].
  */
 
 import Link from "next/link";
@@ -25,8 +24,8 @@ import { logger } from "../../lib/logger";
 import {
   RowMarketV2,
   type RowPosition,
-} from "../../components/floor/RowMarketV2";
-import { InspectorPanel } from "../../components/floor/InspectorPanel";
+} from "../../components/prediction/RowMarketV2";
+import { InspectorPanel } from "../../components/prediction/InspectorPanel";
 
 const api = createPredictionClient();
 
@@ -138,10 +137,10 @@ export default function EventWorkspacePage() {
     <div className="mx-auto grid w-full max-w-[1920px] grid-cols-[minmax(0,1fr)_340px] items-start bg-[var(--bg-deep)] max-[1179px]:grid-cols-1">
       <main className="min-w-0 px-6 py-5 max-[760px]:px-4">
         <Link
-          href="/floor"
+          href="/predict"
           className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)] no-underline hover:text-[var(--t1)]"
         >
-          ← {t("FLOOR_NAV_FLOOR", "Floor")}
+          ← {t("BACK_TO_MARKETS")}
         </Link>
 
         {loading ? (
