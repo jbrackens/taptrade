@@ -295,8 +295,10 @@ body {
   --on-brand: #ffffff;
   --on-gold: var(--brand-dark);
 
-  /* The lime channel is intentionally limited to featured redemption
-   * surfaces. It never doubles as a generic brand CTA or YES signal. */
+  /* The lime channel is reserved: its only consumer, the /predict reward
+   * hero, was removed on 2026-09-24 (Points are non-redeemable, so no
+   * surface advertises redemption). It never doubles as a generic brand
+   * CTA or YES signal. */
   --reward-lime: #c6f24e;
   --reward-lime-soft: rgba(198, 242, 78, 0.16);
   --on-reward-lime: #161a0f;

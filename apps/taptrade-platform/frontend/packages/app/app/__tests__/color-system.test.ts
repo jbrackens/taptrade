@@ -104,15 +104,16 @@ describe("Tap Trade purple and gold color system", () => {
     );
   });
 
-  it("uses lime in the reward-led Predict hero and retains gold for live-market signals", () => {
-    assert.match(predictionWorkspace, /WORKSPACE_REWARD_WIN/);
-    assert.match(predictionWorkspace, /bg-\[var\(--reward-lime\)\][^\n]*text-\[var\(--on-reward-lime\)\]/);
-    assert.match(predictionWorkspace, /featured-iphone-reward-hero-v6\.webp/);
-    assert.match(predictionWorkspace, /featured-iphone-reward-artwork/);
-    assert.match(
-      predictionWorkspace,
-      /Titanium smartphone featured as a redeemable reward\./,
+  it("keeps Predict free of redemption/prize marketing and retains gold for live-market signals", () => {
+    // Points are non-redeemable play value: the retired "Pick. Win. Redeem."
+    // iPhone hero must not come back on the discovery page. Comments are
+    // stripped so only rendered code is checked.
+    const workspaceCode = predictionWorkspace.replace(
+      /\/\*[\s\S]*?\*\/|\{\/\*[\s\S]*?\*\/\}|\/\/.*$/gm,
+      "",
     );
+    assert.doesNotMatch(workspaceCode, /WORKSPACE_REWARD_|RewardHero/);
+    assert.doesNotMatch(workspaceCode, /redeem|prize|iphone/i);
     assert.match(marketCard, /bg-\[var\(--live\)\]/);
     assert.doesNotMatch(
       marketCard,

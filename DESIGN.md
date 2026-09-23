@@ -51,12 +51,13 @@ branded and generous where the product sells itself.
    `--dir-no` colour prices, deltas, bars and settlement outcomes — never
    chrome, never brand, never decoration. Selection is the purple voice, even on
    a NO cell.
-4. **Lime is one scoped channel: featured redemption.** `--reward-lime`
-   `#c6f24e` exists only for the reward hero on `/predict`, where it is used as
-   display heading text and mono numerals on `--reward-hero-bg`. Verbatim from
-   `globals.css`: *"The lime channel is intentionally limited to featured
-   redemption surfaces. It never doubles as a generic brand CTA or YES signal."*
-   Lime is not the action colour and has not been since 2026-08-22.
+4. **Lime is a reserved channel with no current consumer.** `--reward-lime`
+   `#c6f24e` existed only for the "Pick. Win. Redeem." reward hero on
+   `/predict`, which was removed on 2026-09-24: Points are non-redeemable play
+   value, so no surface may advertise redemption or prizes. The tokens stay
+   pinned in `globals.css`; lime still never doubles as a generic brand CTA or
+   YES signal, and is not the action colour (it has not been since
+   2026-08-22).
 5. **Every numeral is mono.** Geist Mono with tabular figures for prices,
    points, counts, timestamps and tickers. The `.mono` utility and the Tailwind
    `font-mono` utility both guarantee `tabular-nums`. If it can be compared or
@@ -98,11 +99,11 @@ test.
 | `--on-brand` | `#ffffff` | text on purple fills — not asserted by the test |
 | `--on-gold` | `var(--brand-dark)` | text on gold fills |
 
-### 3.3 Reward channel (scoped to the featured redemption hero)
+### 3.3 Reward channel (reserved — unused since the reward hero was removed on 2026-09-24)
 
 | CSS | Value | Role |
 |---|---|---|
-| `--reward-lime` | `#c6f24e` | reward hero headline, numerals, CTA fill (**pinned**) |
+| `--reward-lime` | `#c6f24e` | reserved; was the reward hero headline, numerals, CTA fill (**pinned**) |
 | `--reward-lime-soft` | `rgba(198, 242, 78, 0.16)` | soft lime wash |
 | `--on-reward-lime` | `#161a0f` | text on a lime fill |
 | `--reward-hero-bg` | `#090711` | near-black hero ground |

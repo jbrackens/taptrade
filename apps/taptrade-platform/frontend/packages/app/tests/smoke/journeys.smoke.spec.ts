@@ -245,7 +245,7 @@ test.describe("J1 browse markets", () => {
       timeout: 10_000,
     });
     await expect(
-      page.getByRole("link", { name: /\d+% buy yes/i }).first(),
+      page.getByRole("button", { name: /\d+% buy yes/i }).first(),
     ).toBeVisible();
     const closingSoon = page.getByTestId("market-sort-closing_soon");
     await closingSoon.click();

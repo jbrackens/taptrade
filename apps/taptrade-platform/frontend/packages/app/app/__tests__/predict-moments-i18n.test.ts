@@ -10,17 +10,6 @@ const LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"] as const;
 // public bundle. i18next otherwise renders the English fallback for a locale
 // that has no matching key, which is easy to miss in the default English UI.
 const PREDICT_MOMENT_KEYS = [
-  "WORKSPACE_REWARD_KICKER",
-  "WORKSPACE_REWARD_PICK",
-  "WORKSPACE_REWARD_WIN",
-  "WORKSPACE_REWARD_REDEEM",
-  "WORKSPACE_REWARD_COPY",
-  "WORKSPACE_START_PICKING",
-  "WORKSPACE_EXPLORE_REWARDS",
-  "WORKSPACE_REWARD_TRUST",
-  "WORKSPACE_REWARD_BADGE_LABEL",
-  "WORKSPACE_REWARD_BADGE_NAME",
-  "WORKSPACE_REWARD_BADGE_POINTS",
   "WORKSPACE_START_GUIDE",
   "WORKSPACE_MOMENTS_TITLE",
   "WORKSPACE_EXPLORE_TOPICS",

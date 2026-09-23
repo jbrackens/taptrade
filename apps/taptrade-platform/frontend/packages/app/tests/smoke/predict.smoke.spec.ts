@@ -11,51 +11,14 @@ test.describe("/predict — discovery landing", () => {
 
     await assertPageHealthy(page, "/predict");
 
-    const rewardHero = page.locator('[aria-labelledby="reward-hero-heading"]');
-    await expect(rewardHero).toBeVisible();
+    // The market grid leads the page. The retired "Pick. Win. Redeem."
+    // iPhone reward hero must not come back: Points are non-redeemable.
     await expect(
-      rewardHero.getByRole("heading", { name: /pick\.\s*win\.\s*redeem\./i }),
-    ).toBeVisible();
-    await expect(
-      rewardHero.getByText(
-        "Make your predictions, win points, and redeem them for rewards you actually want.",
-      ),
-    ).toBeVisible();
-
-    const rewardArtwork = rewardHero.getByAltText(
-      "Titanium smartphone featured as a redeemable reward.",
-    );
-    await expect(rewardArtwork).toBeVisible();
-    await expect
-      .poll(() =>
-        rewardArtwork.evaluate(
-          (image) => image instanceof HTMLImageElement && image.naturalWidth > 0,
-        ),
-      )
-      .toBe(true);
-    await expect(
-      page
-        .getByTestId("featured-reward-badge")
-        .filter({ visible: true }),
-    ).toContainText("120,000 points");
-
-    const startPicking = rewardHero.getByRole("button", {
-      name: /start picking/i,
-    });
-    await expect(startPicking).toBeVisible();
-    await expect(
-      rewardHero.getByRole("link", { name: /explore rewards/i }),
-    ).toBeVisible();
-
-    const heroBox = await rewardHero.boundingBox();
-    const artworkBox = await rewardArtwork.boundingBox();
-    expect(heroBox).not.toBeNull();
-    expect(artworkBox).not.toBeNull();
-    if (heroBox && artworkBox && (await page.evaluate(() => window.innerWidth)) >= 900) {
-      expect(artworkBox.x).toBeGreaterThan(heroBox.x + heroBox.width * 0.4);
-    }
-
-    await startPicking.click();
+      page.getByRole("heading", { level: 1, name: /trending moments/i }),
+    ).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: /redeem/i })).toHaveCount(0);
+    await expect(page.getByTestId("featured-reward-badge")).toHaveCount(0);
+    await expect(page.getByText("Real prizes", { exact: false })).toHaveCount(0);
     await expect
       .poll(() =>
         page.evaluate(() => {
@@ -85,13 +48,26 @@ test.describe("/predict — discovery landing", () => {
     // The approved discovery card shows both live market sides as
     // percentage actions, not as a dense single-column price table.
     await expect(
-      page.getByRole("link", { name: /\d+% buy yes/i }).first(),
+      page.getByRole("button", { name: /\d+% buy yes/i }).first(),
     ).toBeVisible({
       timeout: 10_000,
     });
     await expect(
-      page.getByRole("link", { name: /\d+% buy no/i }).first(),
+      page.getByRole("button", { name: /\d+% buy no/i }).first(),
     ).toBeVisible();
+
+    // YES/NO open the quick-trade panel in place (Dialog on desktop, vaul
+    // Sheet on the <=1023px band) instead of leaving the list.
+    await page.getByRole("button", { name: /\d+% buy no/i }).first().click();
+    const quickTrade = page.getByRole("dialog");
+    await expect(quickTrade).toBeVisible();
+    await expect(quickTrade.getByText(/quick trade/i).first()).toBeVisible();
+    await expect(
+      quickTrade.getByRole("link", { name: /view market details/i }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(quickTrade).toHaveCount(0);
+    await expect(page).toHaveURL(/\/predict\/?(\?.*)?$/);
 
     const search = page.getByRole("searchbox", {
       name: /search markets/i,
