@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { formatCompactPoints } from "../../lib/points";
 import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
-import { calculateMarketSentiment } from "./marketSentiment";
+import { PosterTile } from "./PosterTile";
+
+export type MarketCardSize = "standard" | "wide";
 
 interface MarketCardProps {
   marketId: string;
@@ -24,14 +26,16 @@ interface MarketCardProps {
   /** Position in the current discovery result set (one-based). */
   rank?: number;
   /**
+   * Kilig mixed grid: "wide" spans two columns and leads with a poster
+   * tile; "standard" is the typographic card.
+   */
+  size?: MarketCardSize;
+  /**
    * When set, YES/NO open an in-place trade panel instead of navigating to
    * the market page with `?side=` preselected.
    */
   onQuickTrade?: (side: "yes" | "no") => void;
 }
-
-const SIDE_BUTTON_CLASS =
-  "flex min-h-[34px] cursor-pointer items-center justify-center rounded-[7px] border-0 px-3 py-2 text-center font-sans text-[12px] font-semibold text-white no-underline transition-[filter,transform] duration-150 hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[640px]:min-h-11";
 
 function formatCloseAt(iso: string): string {
   return new Date(iso)
@@ -48,32 +52,14 @@ function clampPercentage(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-/**
- * The Figma-approved discovery treatment turns the derived sentiment into a
- * compact, directional label. The underlying side prices remain visible in
- * the two action buttons so the card stays honest about the live market data.
- */
-function leanLabel(
-  sentiment: ReturnType<typeof calculateMarketSentiment>,
-  t: ReturnType<typeof useTranslation>["t"],
-): string {
-  if (sentiment.sentimentState === "neutral") {
-    return t("MARKET_CARD_EVENLY_SPLIT", "Evenly split");
-  }
-
-  const isStrong = (sentiment.percentage ?? 0) >= 75;
-  if (sentiment.sentimentState === "yes") {
-    return t(
-      isStrong ? "MARKET_CARD_STRONG_YES_LEAN" : "MARKET_CARD_YES_LEAN",
-      isStrong ? "Strong Yes lean" : "Yes lean",
-    );
-  }
-
-  return t(
-    isStrong ? "MARKET_CARD_STRONG_NO_LEAN" : "MARKET_CARD_NO_LEAN",
-    isStrong ? "Strong No lean" : "No lean",
-  );
-}
+// Soft direction chips: tinted at rest, filled on hover/press. The side
+// colour is the only colour on the card besides the pink trending dot.
+const SIDE_BUTTON_CLASS =
+  "flex min-h-10 cursor-pointer items-center justify-between rounded-[var(--r-rh-md)] border-0 px-3 font-sans text-[13px] font-bold tracking-[0.01em] no-underline transition-[background-color,color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:scale-[0.98] max-[640px]:min-h-11";
+const SIDE_TONE: Record<"yes" | "no", string> = {
+  yes: "bg-[var(--yes-soft)] text-[var(--yes-text)] hover:bg-[var(--yes)] hover:text-[var(--on-ink)]",
+  no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
+};
 
 export function MarketCard({
   ticker,
@@ -84,7 +70,11 @@ export function MarketCard({
   closeAt,
   status,
   categoryLabel,
+  imagePath,
+  imageUrl,
+  image_url,
   rank = 1,
+  size = "standard",
   onQuickTrade,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
@@ -93,14 +83,11 @@ export function MarketCard({
   const quickTrade = isOpen ? onQuickTrade : undefined;
   const yesPercentage = clampPercentage(yesPricePoints);
   const noPercentage = clampPercentage(noPricePoints);
-  const sentiment = calculateMarketSentiment(yesPercentage);
   const rankLabel = String(Math.max(1, Math.round(rank))).padStart(2, "0");
-  const directionTextClass =
-    sentiment.sentimentState === "yes"
-      ? "text-[var(--yes-text)]"
-      : sentiment.sentimentState === "no"
-        ? "text-[var(--no-text)]"
-        : "text-[var(--t3)]";
+  const wide = size === "wide";
+  const photo = [imagePath, imageUrl, image_url].find(
+    (value) => value && value.trim().length > 0,
+  );
   const closingLabel = isOpen
     ? `${t("CLOSES", "Closes")} ${formatCloseAt(closeAt)}`
     : `${t("STATUS", "Status")} ${marketStatusLabel(status, t)}`;
@@ -108,23 +95,41 @@ export function MarketCard({
   return (
     <article
       data-testid="market-card"
-      className="relative flex h-full min-h-[222px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 font-sans text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-[140ms] hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--accent)] max-[640px]:min-h-[232px]"
+      data-size={size}
+      className={`relative flex h-full flex-col min-[641px]:min-h-[236px] overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] font-sans text-[var(--t1)] transition-[border-color] duration-150 hover:border-[var(--border-2)] focus-within:border-[var(--t3)] ${
+        // Wide: poster beside the content (same row height as its
+        // neighbours); stacked on phones.
+        wide ? "min-[641px]:grid min-[641px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]" : ""
+      }`}
     >
+      {wide && (
+        <PosterTile
+          title={title}
+          categoryLabel={categoryLabel}
+          size="wide"
+          imageUrl={photo}
+          className="min-[641px]:h-full"
+        >
+          {/* The 132px phone tile has no headroom above the poster word,
+              and the card body already names the category. */}
+          <span className="absolute left-3 top-3 inline-flex h-6 items-center rounded-full max-[640px]:hidden border border-[rgb(255_255_255/0.16)] bg-[rgb(255_255_255/0.1)] px-2.5 text-[11.5px] font-semibold text-[var(--poster-ink)]">
+            {categoryLabel ?? t("MARKET", "Market")}
+          </span>
+        </PosterTile>
+      )}
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <Link
         href={`/market/${ticker}`}
-        className="flex min-h-0 flex-1 flex-col rounded-[6px] text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
+        className="flex min-h-0 flex-1 flex-col px-4 pt-4 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)]"
         aria-label={title}
       >
-        <div className="flex h-6 items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="grid h-6 min-w-6 place-items-center rounded-[7px] bg-[var(--brand-lavender)] px-1 text-[11px] font-bold leading-none tabular-nums text-[var(--accent-text)]">
-              {rankLabel}
-            </span>
-            <span className="truncate text-[10px] font-semibold uppercase tracking-[0.11em] text-[var(--accent-text)]">
-              {categoryLabel ?? t("MARKET", "Market")}
-            </span>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--brand-dark)]">
+        <div className="flex h-5 items-center justify-between gap-3 text-[12px] font-semibold text-[var(--t3)]">
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="font-mono text-[11px] text-[var(--t3)]">{rankLabel}</span>
+            <span className="truncate">{categoryLabel ?? t("MARKET", "Market")}</span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-[var(--live-text)]">
             <span
               className="h-1.5 w-1.5 rounded-full bg-[var(--live)]"
               aria-hidden="true"
@@ -134,7 +139,9 @@ export function MarketCard({
         </div>
 
         <h3
-          className="m-0 mt-2 min-h-[42px] overflow-hidden text-[16px] font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--t1)]"
+          className={`m-0 mt-2 overflow-hidden font-semibold leading-[1.28] tracking-[-0.012em] text-[var(--t1)] ${
+            wide ? "text-[19px]" : "min-h-[42px] text-[16px]"
+          }`}
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -144,36 +151,46 @@ export function MarketCard({
           {title}
         </h3>
 
-        <div className="mt-auto pt-3">
-          <div className="flex items-center justify-between gap-3 text-[9px] font-semibold uppercase tracking-[0.11em]">
-            <span className="text-[var(--t3)]">
-              {t("PARTICIPANT_VIEW", "Participant view")}
+        <div className="mt-auto pt-4">
+          <div className="flex items-baseline gap-2">
+            <span className="mono mono-wide text-[26px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)]">
+              {yesPercentage}%
             </span>
-            <span className={`truncate ${directionTextClass}`}>
-              {leanLabel(sentiment, t)}
+            <span className="text-[12px] text-[var(--t3)]">
+              {t("CHANCE", "chance")}
             </span>
           </div>
-          <span className="mt-1.5 block h-2 overflow-hidden rounded-[var(--r-pill)] bg-[var(--no)]">
+          <span
+            className="mt-2.5 flex h-1.5 gap-[2px]"
+            role="img"
+            aria-label={`${yesPercentage}% ${t("YES")}`}
+          >
             <span
-              className="block h-full rounded-l-[var(--r-pill)] bg-[var(--yes)]"
+              className="h-full rounded-[var(--r-pill)] bg-[var(--yes)]"
               style={{ width: `${yesPercentage}%` }}
             />
+            <span className="h-full min-w-0 flex-1 rounded-[var(--r-pill)] bg-[var(--no-bar)]" />
           </span>
-          <p className="m-0 mt-2 truncate text-[10px] font-medium uppercase tracking-[0.04em] text-[var(--t3)]">
+          <p className="m-0 mt-2.5 truncate font-mono text-[11px] text-[var(--t3)]">
             {closingLabel} · {formatCompactPoints(volumePoints)} {t("ACTIVITY", "activity")}
           </p>
         </div>
       </Link>
 
-      <div className="mt-2 grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-3">
         {(["yes", "no"] as const).map((side) => {
           const percentage = side === "yes" ? yesPercentage : noPercentage;
-          const className = `${SIDE_BUTTON_CLASS} ${side === "yes" ? "bg-[var(--yes)]" : "bg-[var(--no)]"}`;
+          const className = `${SIDE_BUTTON_CLASS} ${SIDE_TONE[side]}`;
           const ariaLabel =
             side === "yes"
               ? `${percentage}% ${t("BUY_YES", "Yes")}`
               : `${percentage}% ${t("BUY_NO", "No")}`;
-          const text = `${percentage}% ${side === "yes" ? t("YES") : t("NO")}`;
+          const content = (
+            <>
+              <span>{side === "yes" ? t("YES") : t("NO")}</span>
+              <span className="font-mono text-[12.5px] font-semibold">{percentage}</span>
+            </>
+          );
           return quickTrade ? (
             <button
               key={side}
@@ -183,7 +200,7 @@ export function MarketCard({
               aria-label={ariaLabel}
               aria-haspopup="dialog"
             >
-              {text}
+              {content}
             </button>
           ) : (
             <Link
@@ -192,10 +209,11 @@ export function MarketCard({
               className={className}
               aria-label={ariaLabel}
             >
-              {text}
+              {content}
             </Link>
           );
         })}
+      </div>
       </div>
     </article>
   );

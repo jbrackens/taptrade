@@ -18,22 +18,27 @@ import { formatUsdCents } from "../../lib/usd";
 
 const GRID_CLASS =
   "grid gap-3 grid-cols-3 max-[1023px]:grid-cols-2 max-[639px]:grid-cols-1";
+// No resting shadow, no lift — hover reads entirely through the border
+// step (DESIGN.md §5 elevation doctrine).
 const CARD_BASE_CLASS =
-  "relative flex w-full cursor-pointer flex-col items-start gap-1.5 rounded-[var(--r-rh-lg)] border bg-[var(--surface-1)] p-4 text-left [font-family:inherit] transition-[transform,box-shadow,border-color,background-color] duration-[140ms] hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]";
+  "relative flex w-full cursor-pointer flex-col items-start gap-1.5 rounded-[var(--r-rh-lg)] border bg-[var(--surface-1)] p-4 text-left [font-family:inherit] transition-[border-color,background-color] duration-150";
 const CARD_IDLE_CLASS =
   "border-[var(--border-1)] hover:border-[var(--border-2)]";
-const CARD_SELECTED_CLASS =
-  "border-[var(--accent)] bg-[var(--accent-soft)] shadow-[var(--shadow-card)]";
+const CARD_SELECTED_CLASS = "border-[var(--accent)] bg-[var(--accent-soft)]";
+// Marketing badge ("Popular") is an identity accent, the same licence as
+// the MarketCard "Trending" dot — not a reward/loyalty amount.
 const BADGE_CLASS =
-  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--reward-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--reward-text)]";
+  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--live-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--live-text)]";
 const NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
 const TOTAL_CLASS =
-  "text-[24px] font-semibold leading-tight text-[var(--t1)] tabular-nums font-mono";
+  "mono-wide text-[24px] font-semibold leading-tight text-[var(--t1)] tabular-nums font-mono";
 const TOTAL_UNIT_CLASS = "ml-1 text-[13px] font-medium text-[var(--t3)]";
 const SPLIT_CLASS =
   "text-xs text-[var(--t3)] tabular-nums font-mono";
+// Bonus points are a generic point amount — ink, not the reward pink
+// (DESIGN.md §3.2 + the Kilig brief scope pink to progress/streaks).
 const BONUS_CLASS =
-  "text-xs font-semibold text-[var(--reward-text)] tabular-nums font-mono";
+  "text-xs font-semibold text-[var(--t1)] tabular-nums font-mono";
 const PRICE_ROW_CLASS =
   "mt-2 flex w-full items-center justify-between border-t border-[var(--border-1)] pt-2.5";
 const PRICE_LABEL_CLASS = "text-[11px] font-medium text-[var(--t3)]";

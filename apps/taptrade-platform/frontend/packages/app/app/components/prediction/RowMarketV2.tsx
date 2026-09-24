@@ -41,11 +41,11 @@ function ColStack({
 }) {
   return (
     <span className="flex flex-col gap-[3px] max-[720px]:hidden">
-      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]">
+      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
         {label}
       </span>
       <span
-        className={`font-mono text-[14px] font-semibold tabular-nums ${
+        className={`whitespace-nowrap font-mono text-[14px] font-semibold tabular-nums ${
           tone === "muted" ? "text-[var(--t4)]" : "text-[var(--t1)]"
         }`}
       >
@@ -75,7 +75,7 @@ export function RowMarketV2({
       onClick={onSelect}
       aria-pressed={selected}
       data-testid={`floor-row-${market.id}`}
-      className={`grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_70px_80px_90px] items-center gap-5 rounded-[8px] border border-l-2 px-4 py-3 text-left transition-[background-color,border-color] duration-150 max-[720px]:grid-cols-[minmax(0,1fr)_70px] max-[720px]:gap-3 ${
+      className={`grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_64px_104px_96px] items-center gap-5 rounded-[var(--r-rh-lg)] border border-l-2 px-4 py-3 text-left transition-[background-color,border-color] duration-150 max-[720px]:grid-cols-[minmax(0,1fr)_70px] max-[720px]:gap-3 ${
         selected
           ? "border-[var(--border-2)] border-l-[var(--accent-lo)] bg-[var(--accent-soft)]"
           : "border-[var(--border-1)] bg-[var(--surface-1)] hover:border-[var(--border-2)] hover:bg-[var(--surface-2)]"
@@ -87,7 +87,7 @@ export function RowMarketV2({
             {market.title}
           </span>
           {position && (
-            <span className="flex-none rounded-[3px] bg-[var(--accent-soft)] px-1.5 py-0.5 font-mono text-[8.5px] font-semibold uppercase tracking-[0.06em] text-[var(--accent-text)]">
+            <span className="flex-none rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-text)]">
               {t("FLOOR_HOLD_BADGE", "Hold")} {position.quantity}{" "}
               {position.side === "yes" ? t("YES") : t("NO")}
             </span>
@@ -107,11 +107,11 @@ export function RowMarketV2({
       </span>
 
       <span className="flex flex-col gap-[3px]">
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]">
+        <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
           {t("COL_PROB", "Prob")}
         </span>
         <span className="font-mono text-[14px] font-semibold text-[var(--t1)] tabular-nums">
-          {market.yesPricePoints}¢
+          {yes}%
         </span>
       </span>
       <ColStack

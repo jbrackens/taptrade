@@ -21,8 +21,6 @@ const ROW_CLASS = "flex items-center justify-between gap-3";
 const LABEL_CLASS = "font-medium text-[var(--t3)]";
 const VALUE_CLASS =
   "font-mono font-semibold text-[var(--t1)]";
-const BONUS_VALUE_CLASS =
-  "font-mono font-semibold text-[var(--reward-text)]";
 const TOTAL_ROW_CLASS =
   "flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-3";
 const STATUS_CLASS =
@@ -84,7 +82,7 @@ export function OrderSummary({
             <span className={LABEL_CLASS}>
               {t("summary.bonus", "Bonus points")}
             </span>
-            <span className={BONUS_VALUE_CLASS}>
+            <span className={VALUE_CLASS}>
               +{formatPointsAmount(order.bonusPoints)}
             </span>
           </div>

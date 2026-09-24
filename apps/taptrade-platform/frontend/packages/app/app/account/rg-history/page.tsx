@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
+import { Button } from "../../components/ui";
 import { getLimitsHistory } from "../../lib/api/compliance-client";
 import type { LimitHistoryItem } from "../../lib/api/compliance-client";
 import { FEATURE_RG } from "../../lib/features";
@@ -19,11 +20,11 @@ const pageClass = "mx-auto max-w-[1200px] px-4 py-6";
 const headerClass =
   "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
 const backClass =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const sectionClass =
   "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const tableHeadCellClass =
-  "px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.05em] text-[var(--t3)]";
+  "px-4 py-3 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const tableCellClass =
   "border-b border-[var(--border-1)] px-4 py-3 text-[13px] text-[var(--t1)]";
 
@@ -81,7 +82,7 @@ function RGHistoryPageContent() {
     <div className={sectionClass}>
       <h2 className="mb-4 text-base font-bold text-[var(--t1)]">{title}</h2>
       {items.length === 0 ? (
-        <div className="rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-8 text-center text-sm text-[var(--t3)]">
+        <div className="p-8 text-center text-sm text-[var(--t3)]">
           No {title.toLowerCase()} found
         </div>
       ) : (
@@ -89,11 +90,11 @@ function RGHistoryPageContent() {
           <table className="w-full border-collapse">
             <thead className="border-b border-[var(--border-1)] bg-[var(--surface-2)]">
               <tr>
-                <th className={tableHeadCellClass}>Limit Type</th>
-                <th className={tableHeadCellClass}>Old Value</th>
-                <th className={tableHeadCellClass}>New Value</th>
-                <th className={tableHeadCellClass}>Effective Date</th>
-                <th className={tableHeadCellClass}>Created Date</th>
+                <th className={tableHeadCellClass}>Limit type</th>
+                <th className={tableHeadCellClass}>Old value</th>
+                <th className={tableHeadCellClass}>New value</th>
+                <th className={tableHeadCellClass}>Effective date</th>
+                <th className={tableHeadCellClass}>Created date</th>
               </tr>
             </thead>
             <tbody>
@@ -101,7 +102,7 @@ function RGHistoryPageContent() {
                 // biome-ignore lint/suspicious/noArrayIndexKey: read-only history rows rendered once per fetch — never reordered in place
                 <tr className="hover:bg-[var(--surface-2)]" key={idx}>
                   <td className={tableCellClass}>
-                    <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
+                    <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent-text)]">
                       {item.limitType === "point_use_limit"
                         ? "Point-Use Limit"
                         : item.limitType === "prediction_limit"
@@ -115,7 +116,7 @@ function RGHistoryPageContent() {
                                 : item.limitType}
                     </span>
                   </td>
-                  <td className={tableCellClass}>
+                  <td className={`${tableCellClass} font-mono tabular-nums`}>
                     {item.oldValue !== null && item.oldValue !== undefined
                       ? typeof item.oldValue === "boolean"
                         ? item.oldValue
@@ -124,7 +125,7 @@ function RGHistoryPageContent() {
                         : `${item.oldValue} pts`
                       : "—"}
                   </td>
-                  <td className={tableCellClass}>
+                  <td className={`${tableCellClass} font-mono tabular-nums`}>
                     {item.newValue !== null && item.newValue !== undefined
                       ? typeof item.newValue === "boolean"
                         ? item.newValue
@@ -133,10 +134,10 @@ function RGHistoryPageContent() {
                         : `${item.newValue} pts`
                       : "—"}
                   </td>
-                  <td className={tableCellClass}>
+                  <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>
                     {new Date(item.effectiveDate).toLocaleDateString()}
                   </td>
-                  <td className={tableCellClass}>
+                  <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>
                     {new Date(item.createdAt).toLocaleString()}
                   </td>
                 </tr>
@@ -152,8 +153,8 @@ function RGHistoryPageContent() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
-            Responsible Play History
+          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+            Responsible play history
           </h1>
           <p className="text-sm text-[var(--t3)]">
             Track all your responsible-play limits and actions
@@ -166,7 +167,7 @@ function RGHistoryPageContent() {
 
       {loading ? (
         <div className="p-10 text-center text-sm text-[var(--t3)]">
-          Loading history...
+          Loading history…
         </div>
       ) : (
         <>
@@ -178,20 +179,27 @@ function RGHistoryPageContent() {
             grouped.coolOffs.length === 0 &&
             grouped.exclusions.length === 0 && (
               <div className="flex flex-col items-center justify-center rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-[60px] text-center">
-                <div className="mb-4 text-5xl">📊</div>
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                  className="mb-4 text-[var(--t3)]"
+                >
+                  <rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                  <path d="M7 9h10M7 12.5h10M7 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
                 <div className="mb-2 text-lg font-bold text-[var(--t1)]">
-                  No History Yet
+                  No history yet
                 </div>
                 <div className="mb-5 max-w-[400px] text-[13px] leading-normal text-[var(--t3)]">
                   You haven't set any responsible-play limits yet. Visit the
                   responsible play page to get started.
                 </div>
-                <Link
-                  href="/responsible-gaming"
-                  className="inline-block rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[13px] font-bold text-white no-underline transition-all duration-150 hover:-translate-y-px hover:brightness-105"
-                >
-                  Go to Responsible Play
-                </Link>
+                <Button variant="primary" render={<Link href="/responsible-gaming" />}>
+                  Go to responsible play
+                </Button>
               </div>
             )}
         </>

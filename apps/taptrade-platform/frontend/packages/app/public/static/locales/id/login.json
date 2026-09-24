@@ -18,5 +18,6 @@
   "USERNAME_PLACEHOLDER": "Enter your username or email",
   "PASSWORD_PLACEHOLDER": "Enter your password",
   "SIGNING_IN": "Signing In...",
-  "INCORRECT_CREDENTIALS": "Nama pengguna atau kata sandi salah."
+  "INCORRECT_CREDENTIALS": "Nama pengguna atau kata sandi salah.",
+  "WELCOME_TITLE": "Selamat datang kembali"
 }

@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * Toasts — sonner underneath, the app's existing useToast() API on top
- * (P3). The hand-rolled queue/timer/exit-animation provider is deleted;
- * sonner owns scheduling, stacking, swipe-dismiss, pause-on-hover, and
- * reduced-motion. The P9 card (white surface, hairline border, dot
- * signature) and the a11y contract (errors interrupt, the rest stay
- * polite) are unchanged — they live in the custom card below.
+ * Toasts — sonner underneath, the app's existing useToast() API on top.
+ * The hand-rolled queue/timer/exit-animation provider is deleted; sonner
+ * owns scheduling, stacking, swipe-dismiss, pause-on-hover, and
+ * reduced-motion. The Kilig card (white surface, hairline border, a 3px
+ * left edge in the system colour for the kind, --shadow-pop since this
+ * is a floating layer) and the a11y contract (errors interrupt, the
+ * rest stay polite) live in the custom card below.
  */
 
 import type React from "react";
@@ -57,21 +58,22 @@ const icons: Record<ToastType, React.ReactNode> = {
   warning: <AlertTriangle size={14} strokeWidth={2} />,
 };
 
-// P9 (2026-07-08): toasts are system cards, not tinted glass — white
-// --surface-1 card, hairline --border-1, --shadow-card, INK title, --t2
-// message; status speaks through the dot signature (DESIGN.md "The dot")
-// plus a tinted icon glyph — never through the card surface.
-const toastClasses: Record<ToastType, { dot: string; icon: string }> = {
-  success: { dot: "bg-[var(--accent)]", icon: "text-[var(--accent-text)]" },
-  error: {
-    dot: "bg-[var(--brand-deep)]",
-    icon: "text-[var(--brand-deep)]",
+// Toasts are system cards, not tinted glass — white --surface-1 card,
+// hairline --border-1, --shadow-pop (a floating layer). Status speaks
+// through a 3px left edge plus a matching icon glyph in the system
+// colour for the kind — never through the card surface, and never
+// through Kilig pink (identity/liveness only, reserved elsewhere).
+const toastClasses: Record<ToastType, { edge: string; icon: string }> = {
+  success: {
+    edge: "border-l-[var(--success)]",
+    icon: "text-[var(--success)]",
   },
-  // Info stays neutral; gold is reserved for priority and warning states.
-  info: { dot: "bg-[var(--info-dot)]", icon: "text-[var(--info-text)]" },
+  error: { edge: "border-l-[var(--danger)]", icon: "text-[var(--danger)]" },
+  // Info stays neutral ink; pink and gold are reserved for identity/liveness.
+  info: { edge: "border-l-[var(--ink)]", icon: "text-[var(--t2)]" },
   warning: {
-    dot: "bg-[var(--signal-gold)]",
-    icon: "text-[var(--signal-gold-text)]",
+    edge: "border-l-[var(--warning)]",
+    icon: "text-[var(--warning)]",
   },
 };
 
@@ -90,13 +92,9 @@ function ToastCard({
       // polite. A single polite role previously under-announced failures.
       role={toast.type === "error" ? "alert" : "status"}
       aria-live={toast.type === "error" ? "assertive" : "polite"}
-      className="pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-card)]"
+      className={`pointer-events-auto flex min-w-[300px] max-w-[400px] items-start gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] border-l-[3px] bg-[var(--surface-1)] px-4 py-3.5 shadow-[var(--shadow-pop)] ${c.edge}`}
     >
-      <div className="flex shrink-0 items-center gap-2 pt-[3px]">
-        <span
-          className={`h-2.5 w-2.5 rounded-full ${c.dot}`}
-          aria-hidden="true"
-        />
+      <div className="flex shrink-0 items-center pt-[3px]">
         <span className={`flex items-center ${c.icon}`}>
           {icons[toast.type]}
         </span>

@@ -34,8 +34,11 @@ describe("Predict Moments market directory", () => {
     assert.doesNotMatch(moments, /buildDiscoverRankings/);
   });
 
-  it("keeps a real nine-card, server-paginated grid scoped to every filter", () => {
-    assert.match(moments, /const PAGE_SIZE = 9/);
+  it("keeps a real server-paginated board scoped to every filter", () => {
+    // Kilig: 12 per page — the lead moment + two "Happening now" markets
+    // take three on the default view, leaving nine grid cards.
+    assert.match(moments, /const PAGE_SIZE = 12/);
+    assert.match(moments, /const LEAD_COUNT = 3/);
     assert.match(
       moments,
       /const requestParams = useMemo\([\s\S]*categoryId,[\s\S]*closeBefore: dateWindowToCloseBefore\(dateWindow\),[\s\S]*q: query\.trim\(\) \|\| undefined,[\s\S]*sort: sortBy/,
@@ -56,8 +59,13 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /loadMoreRequestRef\.current !== requestId/);
   });
 
-  it("preserves the dense responsive 3×3 market grid and paired market actions", () => {
-    assert.match(moments, /<MarketGrid markets=\{markets\} columns=\{3\} \/>/);
+  it("leads with a moment and mixes card sizes instead of a uniform wall", () => {
+    assert.match(moments, /<LeadMoment/);
+    assert.match(moments, /const showLead = !hasFilters && markets\.length >= LEAD_COUNT/);
+    assert.match(moments, /<MarketGrid[\s\S]*columns=\{3\}[\s\S]*pattern="mixed"/);
+    // One quick-trade panel serves the lead, the stack and the grid.
+    assert.match(moments, /<QuickTradePanel target=\{quickTrade\}/);
+    assert.match(moments, /onQuickTrade=\{setQuickTrade\}/);
     assert.match(
       grid,
       /grid-cols-3[\s\S]*max-\[1120px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,

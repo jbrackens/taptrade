@@ -73,7 +73,7 @@ export function PurchaseSuccess({
   return (
     <ResultShell
       testid="purchase-success"
-      dotClass="bg-[var(--reward)]"
+      dotClass="bg-[var(--success)]"
       title={t("result.successTitle", "Points added")}
       body={t(
         "result.successBody",
@@ -215,7 +215,7 @@ export function PurchasePending({
   return (
     <ResultShell
       testid="purchase-pending"
-      dotClass="bg-[var(--reward)]"
+      dotClass="bg-[var(--info-dot)]"
       title={t("result.pendingTitle", "Completion pending")}
       body={t(
         "result.pendingBody",

@@ -17,8 +17,9 @@ import { logger } from "../../lib/logger";
 // - Hidden when tier === 0 (user hasn't earned any points yet).
 // - 36px height with tier-N color swatch on border + pill background.
 // - Links to /rewards for the detail view.
-// - 400ms --accent-glow bloom the first render after a tier promotion.
-//   Respects prefers-reduced-motion: reduce.
+// - 400ms pink bloom ring (a real tier-promotion event, not a decorative
+//   loop — Kilig pink is licensed for a reward moment like this) the first
+//   render after a tier promotion. Respects prefers-reduced-motion: reduce.
 // - aria-label: "Tier: <name>, <n> points. <m> points to <next>"
 // - Below 480px the label truncates to "<Name> · <k-compact>".
 
@@ -35,7 +36,7 @@ interface TierPillProps {
 const TIER_PILL_BASE_CLASS =
   "inline-flex h-9 min-w-11 items-center overflow-hidden whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--tp-color)_30%,transparent)] bg-[color-mix(in_srgb,var(--tp-color)_14%,transparent)] px-[14px] text-xs font-bold tracking-[0.02em] text-[var(--t1)] no-underline [transition:background_120ms_ease,border-color_120ms_ease,box-shadow_400ms_ease] hover:border-[color-mix(in_srgb,var(--tp-color)_48%,transparent)] hover:bg-[color-mix(in_srgb,var(--tp-color)_22%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] max-[480px]:min-w-0 max-[480px]:px-2.5 max-[359px]:hidden";
 const TIER_PILL_BLOOM_CLASS =
-  "shadow-[var(--accent-glow)] motion-reduce:shadow-none motion-reduce:transition-none";
+  "shadow-[0_0_0_4px_var(--live-soft)] motion-reduce:shadow-none motion-reduce:transition-none";
 const TIER_SEPARATOR_CLASS = "mx-1.5 text-[var(--t3)] font-medium";
 const TIER_POINTS_CLASS =
   "font-mono font-semibold [font-variant-numeric:tabular-nums]";

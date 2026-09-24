@@ -815,9 +815,9 @@ describe("MarketFeed composition", () => {
       "side actions separate the side label from the side price",
     );
     assert.ok(
-      feedSource.includes("{market.yesPricePoints}¢") &&
-        feedSource.includes("{market.noPricePoints}¢"),
-      "side actions show the side prices in cents",
+      feedSource.includes("{market.yesPricePoints} pts") &&
+        feedSource.includes("{market.noPricePoints} pts"),
+      "side actions show the side prices in points (never cents)",
     );
   });
 
@@ -901,77 +901,52 @@ describe("Navigation underline treatment", () => {
     return match[1] ?? match[2] ?? "";
   }
 
-  it("uses Tailwind underline links for category and top navigation", () => {
-    for (const [label, source, container, item, active] of [
-      [
-        "category navigation",
-        allMarketsSource,
-        "CATEGORY_LIST_CLASS",
-        "CATEGORY_PILL_BASE_CLASS",
-        "categoryPillClass",
-      ],
-      [
-        "top navigation",
-        topBarSource,
-        "TOP_BAR_NAV_CLASS",
-        "TOP_BAR_LINK_CLASS",
-        "TOP_BAR_LINK_ACTIVE_CLASS",
-      ],
-    ] as const) {
-      // P9 (2026-07-07): the category nav keeps its full-width underline
-      // track; the top-bar nav dropped it — as a flex sibling of the search
-      // field its track ended mid-air, reading as a rendering glitch. The
-      // top bar's own bottom hairline is the line now.
-      if (label === "category navigation") {
-        assert.ok(
-          constValue(source, container).includes(
-            "flex items-center gap-6 border-b border-neutral-200 w-full",
-          ),
-          `${label} should use the shared underline container classes`,
-        );
-      } else {
-        assert.ok(
-          !constValue(source, container).includes("border-b"),
-          `${label} should not draw a mid-air underline track`,
-        );
-      }
-      const itemClass = constValue(source, item);
-      for (const token of [
-        "relative",
-        "pb-3",
-        "pt-2",
-        "text-sm",
-        "font-medium",
-        "border-b-2",
-        "transition-all",
-        "duration-200",
-      ]) {
-        assert.ok(
-          itemClass.includes(token),
-          `${label} should include ${token}`,
-        );
-      }
-      assert.ok(
-        source.includes("text-neutral-500") &&
-          source.includes("border-transparent") &&
-          source.includes("hover:text-neutral-800") &&
-          source.includes("hover:border-neutral-300"),
-        `${label} should keep inactive borders transparent`,
-      );
-      const activeClass =
-        active === "categoryPillClass"
-          ? functionBody(source, active)
-          : constValue(source, active);
-      // P9 (2026-07-07): mint text/underline moved to the white-AA pair —
-      // --accent-text (4.9:1 text) + --accent-lo (3.1:1 indicator). Raw
-      // --accent (1.9:1 on white) is fill-only per DESIGN.md §8.
-      assert.ok(
-        activeClass.includes("text-[var(--accent-text)]") &&
-          source.includes("font-semibold") &&
-          source.includes("border-[var(--accent-lo)]"),
-        `${label} should draw the selected mint underline`,
-      );
+  it("uses quiet Kilig nav pills in the top bar", () => {
+    // Kilig (2026-09-24): top-bar links are sentence-case pills — muted at
+    // rest, a raised well under the current route — on every route.
+    const itemClass = constValue(topBarSource, "TOP_BAR_LINK_CLASS");
+    for (const token of ["rounded-[var(--r-rh-md)]", "px-3", "py-2", "text-sm", "font-semibold"]) {
+      assert.ok(itemClass.includes(token), `top navigation should include ${token}`);
     }
+    assert.ok(
+      constValue(topBarSource, "TOP_BAR_LINK_INACTIVE_CLASS").includes("text-[var(--t3)]"),
+      "inactive links are the muted text tier",
+    );
+    assert.ok(
+      constValue(topBarSource, "TOP_BAR_LINK_ACTIVE_CLASS").includes("bg-[var(--surface-2)]"),
+      "the current route sits in a raised well",
+    );
+    assert.ok(
+      !constValue(topBarSource, "TOP_BAR_NAV_CLASS").includes("border-b"),
+      "top navigation should not draw a mid-air underline track",
+    );
+  });
+
+  it("uses Tailwind underline links for category navigation", () => {
+    // Kilig: token-built underline tabs — hairline track, ink underline
+    // and ink text on the active category, muted text at rest.
+    const container = constValue(allMarketsSource, "CATEGORY_LIST_CLASS");
+    assert.ok(
+      container.includes("flex items-center gap-6 w-full border-b border-[var(--border-1)]"),
+      "category navigation keeps a hairline underline track",
+    );
+    const itemClass = constValue(allMarketsSource, "CATEGORY_PILL_BASE_CLASS");
+    for (const token of ["relative", "pb-3", "pt-2", "text-sm", "font-medium", "border-b-2", "transition-colors", "duration-150"]) {
+      assert.ok(itemClass.includes(token), `category navigation should include ${token}`);
+    }
+    const pillFn = functionBody(allMarketsSource, "categoryPillClass");
+    assert.ok(
+      pillFn.includes("border-transparent text-[var(--t3)]") &&
+        pillFn.includes("hover:text-[var(--t1)]"),
+      "inactive categories are muted with a transparent underline",
+    );
+    assert.ok(
+      pillFn.includes("border-[var(--accent-lo)]") &&
+        pillFn.includes("text-[var(--accent-text)]") &&
+        pillFn.includes("font-semibold"),
+      "the active category draws the ink underline",
+    );
+    assert.ok(!/neutral-(?:200|300|500|800)/.test(allMarketsSource), "no raw Tailwind greys");
 
     assert.ok(
       !functionBody(allMarketsSource, "categoryPillClass").includes(
@@ -997,8 +972,8 @@ describe("Navigation underline treatment", () => {
     ] as const) {
       const classValue = constValue(source, constant);
       assert.ok(
-        classValue.includes("rounded-md"),
-        `${label} should use 6px Tailwind corners`,
+        /rounded-\[var\(--r-rh-(?:sm|md)\)\]/.test(classValue),
+        `${label} should use the Kilig control radius`,
       );
       assert.ok(
         !classValue.includes("var(--r-pill)") && !classValue.includes("999px"),
@@ -1007,29 +982,11 @@ describe("Navigation underline treatment", () => {
     }
   });
 
-  it("uses soft rectangular corners for category navigation pills", () => {
-    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
-    const categoryPillClass = constValue(
-      categoryPillsSource,
-      "PILL_BASE_CLASS",
-    );
-    assert.ok(
-      categoryPillClass.includes("rounded-md"),
-      "Category pills should use 6px Tailwind corners",
-    );
-    assert.ok(
-      !categoryPillClass.includes("var(--r-pill)") &&
-        !categoryPillClass.includes("999px"),
-      "Category pills should not use capsule radius",
-    );
-  });
 });
 
 describe("Navigation pill active colors", () => {
   const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
   const marketChartSource = read("components/prediction/MarketChart.tsx");
-  const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
-
   function functionBody(source: string, name: string): string {
     const match = new RegExp(`function\\s+${name}\\([\\s\\S]*?^\\}`, "m").exec(
       source,
@@ -1041,7 +998,7 @@ describe("Navigation pill active colors", () => {
   // Active selection uses the brand-purple fill with its high-contrast
   // foreground, and a DIRECTION token
   // may never be a selection colour (spec §2 one-job-per-channel).
-  it("uses purple for segmented active fills, never a direction token", () => {
+  it("uses ink for segmented active fills, never a direction token", () => {
     for (const [label, activeClass] of [
       [
         "closing-window active",
@@ -1051,7 +1008,7 @@ describe("Navigation pill active colors", () => {
       assert.ok(
         activeClass.includes("bg-[var(--accent)]") &&
           activeClass.includes("text-[var(--ticket-cta-text)]"),
-        `${label} should be the purple fill with its contrast foreground`,
+        `${label} should be the ink fill with its contrast foreground`,
       );
       assert.ok(
         !activeClass.includes("bg-[var(--yes)]") &&
@@ -1064,9 +1021,9 @@ describe("Navigation pill active colors", () => {
   it("renders the market chart range switcher as quiet text tabs", () => {
     const rangeClass = functionBody(marketChartSource, "rangeButtonClass");
     assert.ok(
-      rangeClass.includes("border-[var(--accent-lo)]") &&
+      rangeClass.includes("border-[var(--t1)]") &&
         rangeClass.includes("border-transparent"),
-      "chart range tabs should underline the active range in terminal violet",
+      "chart range tabs should underline the active range in ink",
     );
     assert.ok(
       !rangeClass.includes("bg-[var(--yes)]") &&
@@ -1075,26 +1032,6 @@ describe("Navigation pill active colors", () => {
     );
   });
 
-  it("uses lavender and purple tokens for active category pills", () => {
-    function constValue(source: string, name: string): string {
-      const match = new RegExp(
-        `const\\s+${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`,
-      ).exec(source);
-      assert.ok(match, `${name} should be declared as a class constant`);
-      return match[1] ?? match[2] ?? "";
-    }
-
-    const categoryActiveClass = constValue(
-      categoryPillsSource,
-      "PILL_ACTIVE_CLASS",
-    );
-    assert.ok(
-      categoryActiveClass.includes("bg-[var(--accent-soft)]") &&
-        categoryActiveClass.includes("border-[var(--accent)]") &&
-        categoryActiveClass.includes("text-[var(--accent-text)]"),
-      "Active category pills should use lavender and purple tokens",
-    );
-  });
 });
 
 describe("Predict discovery controls", () => {
@@ -1168,13 +1105,14 @@ describe("Predict discovery controls", () => {
       "The established search, sort, and closing-window controls should filter in place",
     );
     assert.ok(
-      momentMarketsSource.includes("const PAGE_SIZE = 9") &&
+      momentMarketsSource.includes("const PAGE_SIZE = 12") &&
         momentMarketsSource.includes("pageSize: PAGE_SIZE") &&
         momentMarketsSource.includes(
           "dedupeMarkets([...current, ...(response.data || [])])",
         ) &&
-        momentMarketsSource.includes("<MarketGrid markets={markets} columns={3} />"),
-      "The live Moments grid should remain a responsive 3×3, nine-at-a-time market directory",
+        /<MarketGrid[\s\S]*columns=\{3\}[\s\S]*pattern="mixed"/.test(momentMarketsSource) &&
+        momentMarketsSource.includes("<LeadMoment"),
+      "The live Moments board should lead with a moment and a mixed-size, server-paginated grid",
     );
   });
 
@@ -1616,11 +1554,6 @@ describe("Market copy localization", () => {
     const allMarketsSource = read(
       "components/prediction/AllMarketsSection.tsx",
     );
-    const trendingSource = read("components/prediction/TrendingSidebar.tsx");
-    const categoryPillsSource = read("components/prediction/CategoryPills.tsx");
-    const featuredCarouselSource = read(
-      "components/prediction/FeaturedCarousel.tsx",
-    );
     const marketImageSource = read(
       "components/prediction/utils/marketImage.ts",
     );
@@ -1632,13 +1565,6 @@ describe("Market copy localization", () => {
     assert.ok(predictSource.includes('"entertainment"'));
     assert.ok(!predictSource.includes('"crypto", "politics"'));
     assert.ok(allMarketsSource.includes('slug.toLowerCase() !== "crypto"'));
-    assert.ok(!trendingSource.includes('btc: "Crypto"'));
-    assert.ok(!trendingSource.includes('crypto: "Crypto"'));
-    assert.ok(!trendingSource.includes('btc: "Technology"'));
-    assert.ok(!trendingSource.includes('eth: "Technology"'));
-    assert.ok(!trendingSource.includes('crypto: "Technology"'));
-    assert.ok(!categoryPillsSource.includes("crypto:"));
-    assert.ok(!featuredCarouselSource.includes("Crypto"));
     assert.ok(!marketImageSource.includes("crypto:"));
     assert.ok(!subcategorySource.includes("Crypto Markets"));
     assert.ok(!subcategorySource.includes('label: "Bitcoin"'));

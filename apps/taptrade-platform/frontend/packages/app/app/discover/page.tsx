@@ -25,7 +25,7 @@ import type {
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import TapDot from "../components/TapDot";
-import { Card } from "../components/ui";
+import { Button, Card } from "../components/ui";
 import { localizedMarket } from "../components/prediction/market-content";
 import {
   buildDiscoverRankings,
@@ -123,13 +123,13 @@ function MarketThumbnail({ market }: { market: PredictionMarket }) {
         alt=""
         aria-hidden="true"
         onError={() => setFailed(true)}
-        className="size-10 shrink-0 rounded-[10px] object-cover"
+        className="size-10 shrink-0 rounded-[var(--r-rh-md)] object-cover"
       />
     );
   }
   return (
     <span
-      className="grid size-10 shrink-0 place-items-center rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]"
+      className="grid size-10 shrink-0 place-items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t3)]"
       aria-hidden="true"
     >
       <Icon size={20} weight="duotone" />
@@ -150,7 +150,9 @@ function RankingMetric({
 
   let value = "—";
   let label = "";
-  let tone = "text-[var(--t3)]";
+  // Soft YES/NO chip when the metric is a market-direction number; plain
+  // mono text for neutral counts (volume, discussion).
+  let chip: "yes" | "no" | null = null;
 
   switch (lead) {
     case "volume":
@@ -162,21 +164,21 @@ function RankingMetric({
       label = market.commentCount === 1 ? "comment" : "comments";
       break;
     case "yes":
-      value = `${Math.round(yesShare)}¢`;
+      value = `${Math.round(yesShare)} pts`;
       label = "YES";
-      tone = "text-[var(--yes-text)]";
+      chip = "yes";
       break;
     case "no":
-      value = `${Math.round(noShare)}¢`;
+      value = `${Math.round(noShare)} pts`;
       label = "NO";
-      tone = "text-[var(--no-text)]";
+      chip = "no";
       break;
     case "movement":
       if (movement && movement.direction !== "flat") {
         const up = movement.direction === "up";
-        value = `${up ? "+" : "−"}${Math.abs(movement.deltaPoints)}¢`;
+        value = `${up ? "+" : "−"}${Math.abs(movement.deltaPoints)} pts`;
         label = "24h YES";
-        tone = up ? "text-[var(--yes-text)]" : "text-[var(--no-text)]";
+        chip = up ? "yes" : "no";
       } else {
         label = "24h YES";
       }
@@ -185,12 +187,22 @@ function RankingMetric({
 
   return (
     <div className="flex-none text-right">
-      <span
-        className={`block font-mono text-[15px] font-semibold leading-[1.15] tabular-nums ${tone}`}
-      >
-        {value}
-      </span>
-      <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
+      {chip ? (
+        <span
+          className={`inline-flex items-center justify-end rounded-[var(--r-rh-sm)] px-2 py-1 font-mono text-[13px] font-semibold tabular-nums ${
+            chip === "yes"
+              ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+              : "bg-[var(--no-soft)] text-[var(--no-text)]"
+          }`}
+        >
+          {value}
+        </span>
+      ) : (
+        <span className="block font-mono text-[15px] font-semibold leading-[1.15] tabular-nums text-[var(--t3)]">
+          {value}
+        </span>
+      )}
+      <span className="mt-1 block text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
         {label}
       </span>
     </div>
@@ -237,14 +249,14 @@ function RankingRow({
         <div className="flex min-w-0 items-start gap-2.5">
           <MarketThumbnail market={market} />
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+            <div className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
               <span>{market.categoryName || market.categorySlug || "Market"}</span>
             </div>
             <h3 className="m-0 mt-1 line-clamp-2 text-[16px] font-medium leading-[1.35] tracking-[-0.012em] text-[var(--t1)] group-hover:underline">
               {market.title}
             </h3>
             <span
-              className={`mt-1 hidden font-mono text-[10px] font-medium tabular-nums max-[860px]:block ${
+              className={`mt-1 hidden font-mono text-[10.5px] font-medium tabular-nums max-[860px]:block ${
                 remaining.urgent ? "text-[var(--live-text)]" : "text-[var(--t3)]"
               }`}
             >
@@ -254,7 +266,7 @@ function RankingRow({
         </div>
         <RankingMetric market={market} movement={movement} lead={lead} />
         <div className="text-right max-[860px]:hidden">
-          <span className="block text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
             Closes in
           </span>
           <span
@@ -302,7 +314,7 @@ function RankingBoard({
       role="tabpanel"
       aria-labelledby={tabId}
     >
-      <div className="overflow-hidden rounded-[16px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]">
+      <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
         <div className="flex items-center justify-between gap-4 border-b border-[var(--border-1)] px-5 py-3.5 max-[640px]:px-3.5">
           <span className="font-mono text-[11px] font-medium tabular-nums text-[var(--t3)]">
             {ranking.markets.length} ranked market
@@ -311,13 +323,13 @@ function RankingBoard({
           <Link
             href={ranking.viewAllHref}
             aria-label={`${viewAllLabel} ${ranking.heading} markets`}
-            className="inline-flex min-h-9 shrink-0 items-center text-[13px] font-semibold text-[var(--accent-text)] no-underline transition-colors hover:text-[var(--brand-dark)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:text-[var(--brand-dark)]"
+            className="inline-flex min-h-9 shrink-0 items-center text-[13px] font-semibold text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
           >
             {viewAllLabel}
           </Link>
         </div>
         <div
-          className="grid grid-cols-[42px_minmax(0,1fr)_132px_116px] items-center gap-4 border-b border-[var(--border-1)] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)] max-[860px]:hidden"
+          className="grid grid-cols-[42px_minmax(0,1fr)_132px_116px] items-center gap-4 border-b border-[var(--border-1)] px-5 py-2.5 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)] max-[860px]:hidden"
           aria-hidden="true"
         >
           <span>Rank</span>
@@ -505,9 +517,10 @@ export default function DiscoverPage() {
         aria-labelledby="discover-heading"
       >
         <header>
+          {/* Poster-type page title — the culture-feed voice. */}
           <h1
             id="discover-heading"
-            className="type-display m-0 text-[clamp(27px,3vw,34px)] font-semibold leading-[1.12] tracking-[-0.02em] text-[var(--t1)]"
+            className="type-poster m-0 text-[36px] max-[640px]:text-[28px] text-[var(--t1)]"
           >
             {activeRanking?.heading ??
               t("DISCOVER_HEADING", "What's moving right now")}
@@ -524,7 +537,7 @@ export default function DiscoverPage() {
         {error ? (
           <Card
             as="div"
-            edge="brand"
+            edge="no"
             padding="none"
             className="mt-6 px-[18px] py-4"
             role="alert"
@@ -536,7 +549,7 @@ export default function DiscoverPage() {
                 height="16"
                 fill="currentColor"
                 aria-hidden="true"
-                className="flex-none text-[var(--brand-dark)]"
+                className="flex-none text-[var(--danger)]"
               >
                 <path d={PHOSPHOR_WARNING_CIRCLE_FILL} />
               </svg>
@@ -547,13 +560,14 @@ export default function DiscoverPage() {
             <p className="mb-0 mt-[9px] text-[13px] leading-[1.5] text-[var(--t2)]">
               {error}
             </p>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="md"
+              className="mt-3.5"
               onClick={() => setReloadNonce((value) => value + 1)}
-              className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[background-color,border-color,color] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:border-[var(--brand-dark)] active:bg-[var(--brand-lavender)]"
             >
               {t("RETRY", "Retry")}
-            </button>
+            </Button>
           </Card>
         ) : activeRanking ? (
           <>
@@ -561,10 +575,11 @@ export default function DiscoverPage() {
               className="mt-7 overflow-x-auto pb-1"
               data-testid="discover-ranking-tabs"
             >
+              {/* Quiet segmented pills — ink selected state, never pink. */}
               <div
                 role="tablist"
                 aria-label="Discover rankings"
-                className="flex min-w-max gap-2 border-b border-[var(--border-1)] pb-3"
+                className="inline-flex min-w-max gap-1 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[3px]"
               >
                 {rankings.map((ranking) => {
                   const selected = ranking.key === activeRanking.key;
@@ -578,10 +593,10 @@ export default function DiscoverPage() {
                       aria-controls="discover-ranking-panel"
                       tabIndex={selected ? 0 : -1}
                       onClick={() => setActiveRankingKey(ranking.key)}
-                      className={`min-h-9 cursor-pointer whitespace-nowrap rounded-full border px-3.5 text-[13px] font-semibold transition-[background-color,border-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] ${
+                      className={`min-h-9 cursor-pointer whitespace-nowrap rounded-[var(--r-rh-sm)] border-0 px-3.5 text-[13px] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] ${
                         selected
-                          ? "border-[var(--brand-purple)] bg-[var(--brand-purple)] text-[var(--brand-fg)] hover:bg-[var(--brand-dark)] active:bg-[var(--brand-dark)]"
-                          : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--brand-purple)] hover:bg-[var(--brand-lavender)] hover:text-[var(--brand-purple)] active:border-[var(--brand-dark)] active:bg-[var(--brand-lavender)]"
+                          ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+                          : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]"
                       }`}
                     >
                       {ranking.heading}
@@ -601,7 +616,7 @@ export default function DiscoverPage() {
             </div>
           </>
         ) : (
-          <div className="mt-7 overflow-hidden rounded-[16px] border border-[var(--border-1)] bg-[var(--surface-1)]">
+          <div className="mt-7 overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
             <SectionEmpty>
               No discovery rankings are available right now.
             </SectionEmpty>

@@ -44,13 +44,13 @@ const pageClass = "mx-auto max-w-[800px] px-4 py-6";
 const headerClass =
   "mb-6 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
 const backClass =
-  "rounded-lg border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const cardClass =
-  "mb-4 rounded-xl border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-[22px]";
+  "mb-4 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-[22px]";
 const descClass = "m-0 mb-4 text-[13px] leading-normal text-[var(--t3)]";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
 const selectClass =
-  "cursor-pointer rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+  "cursor-pointer rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 hover:border-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)]";
 
 function browserTimezone(): string {
   try {
@@ -113,7 +113,7 @@ export default function SettingsPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]">
+          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
             {t("TITLE", "Settings")}
           </h1>
           <p className="m-0 text-sm text-[var(--t3)]">
@@ -126,7 +126,10 @@ export default function SettingsPage() {
       </div>
 
       {savedFlash && (
-        <div className="mb-4 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-[14px] py-2.5 text-[13px] font-semibold text-[var(--accent-text)]">
+        <div
+          className="mb-4 rounded-[var(--r-rh-md)] border border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_8%,transparent)] px-[14px] py-2.5 text-[13px] font-semibold text-[var(--success)]"
+          role="status"
+        >
           {savedFlash}
         </div>
       )}
@@ -189,7 +192,7 @@ export default function SettingsPage() {
           </select>
         </div>
         <div className="mt-[14px] flex items-baseline gap-[14px] border-t border-[var(--border-1)] pt-[14px]">
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
             {t("timezone.preview", "Preview")}
           </span>
           <span className="font-mono text-sm font-semibold text-[var(--t1)] tabular-nums">

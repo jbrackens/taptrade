@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "Search markets",
   "SEARCH_MARKETS_PLACEHOLDER": "Search markets, candidates, teams...",
   "SEARCH_NO_MARKETS": "No markets match \"{{query}}\"",
-  "SEARCH_RESULT_META": "{{ticker}} · {{price}}¢ YES",
+  "SEARCH_RESULT_META": "{{ticker}} · {{price}} pts YES",
   "BALANCE_LABEL": "BAL",
   "USER_MENU": "User menu",
   "LOG_IN": "Log in",

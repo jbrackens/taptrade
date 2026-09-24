@@ -11,12 +11,13 @@ import { forwardRef } from "react";
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cx } from "./variants";
 
-// focus-visible ring: keyboard-only affordance from the auth screens
-// (P2), promoted to the primitive. aria-invalid drives the error border
+// Kilig field: white on a strong hairline, ink on focus. The
+// focus-visible ring is the keyboard-only affordance. aria-invalid drives
+// the system danger border (never market-NO colour)
 // (attribute selector outranks the base border class, so the override
 // is deterministic — call-site border classNames are not).
 const FIELD_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] placeholder:text-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] aria-invalid:border-[var(--brand-dark)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-150 placeholder:text-[var(--t3)] hover:border-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] aria-invalid:border-[var(--danger)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 

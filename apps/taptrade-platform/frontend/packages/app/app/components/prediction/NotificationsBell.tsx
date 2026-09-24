@@ -29,8 +29,10 @@ import { settlementNotice } from "./notifications";
 
 const BELL_BUTTON_CLASS =
   "relative grid size-11 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-[var(--t2)] transition-colors duration-150 hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
+// Unread count is a liveness signal — Kilig pink, per DESIGN.md §2 ("Kilig
+// pink is identity and liveness"), white label for contrast on the fill.
 const BADGE_CLASS =
-  "absolute right-1.5 top-1.5 grid min-w-[16px] place-items-center rounded-full bg-[var(--signal-gold)] px-1 font-mono text-[9px] font-bold leading-[16px] text-[var(--brand-dark)]";
+  "absolute right-1.5 top-1.5 grid min-w-[16px] place-items-center rounded-full bg-[var(--live)] px-1 font-mono text-[9px] font-bold leading-[16px] text-[var(--on-kilig)]";
 const PANEL_CLASS =
   "absolute right-0 top-[calc(100%_+_6px)] z-[110] w-[320px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-pop)]";
 const PANEL_HEAD_CLASS =

@@ -99,44 +99,48 @@ const chatClasses = {
     "text-[12px] font-semibold leading-none tracking-[-0.01em] text-[var(--t1)]",
   statusSub:
     "text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--t3)]",
-  onlineDot:
-    "h-2 w-2 shrink-0 rounded-full bg-[var(--live)] shadow-[0_0_9px_var(--live-soft)]",
+  // The dot is a real liveness signal (DESIGN.md §2) — a flat kilig fill,
+  // no glow halo (anti-slop: glow shadows are never a Kilig effect).
+  onlineDot: "h-2 w-2 shrink-0 rounded-full bg-[var(--live)]",
   reportToggle:
-    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-semibold text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-inset active:bg-[var(--brand-lavender)]",
+    "inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 border-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] text-xs font-semibold text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-inset active:bg-[var(--accent-soft)]",
+  // Floating FAB (fixed corner) — --shadow-pop is for floating layers.
   mobileButton:
-    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-semibold text-[var(--on-brand)] shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px",
+    "fixed right-[18px] bottom-[calc(92px+env(safe-area-inset-bottom))] z-[95] inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3.5 text-[13px] font-semibold text-[var(--ticket-cta-text)] shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px",
   mobileOverlay:
     "fixed inset-0 z-[120] flex items-end justify-stretch bg-[color-mix(in_srgb,var(--ink)_28%,transparent)] px-2.5 pt-0 pb-[max(10px,env(safe-area-inset-bottom))]",
   mobileSheet:
-    "chat-mobile-sheet flex h-[min(78vh,680px)] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[var(--border-1)] bg-[var(--surface-2)] shadow-[var(--shadow-pop)]",
+    "chat-mobile-sheet flex h-[min(78vh,680px)] min-h-[420px] w-full flex-col overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-2)] shadow-[var(--shadow-pop)]",
   mobileHeader:
     "flex min-h-12 items-center justify-between gap-3 border-b border-[var(--border-1)] bg-[var(--surface-1)] py-0 pr-3 pl-3.5",
   mobileTitle:
     "flex min-w-0 items-center gap-2 text-[13px] font-extrabold text-[var(--t1)]",
   mobileClose:
-    "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--brand-lavender)]",
+    "grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-2)] text-[var(--t2)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:bg-[var(--accent-soft)]",
+  // Resting card — no shadow (DESIGN.md §5: elevation is none at rest).
   sidebarBase:
-    "sticky top-[82px] left-0 z-[70] flex h-[calc(100vh-104px)] flex-col overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)] max-[1099px]:hidden",
+    "sticky top-[82px] left-0 z-[70] flex h-[calc(100vh-104px)] flex-col overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] max-[1099px]:hidden",
   sidebarOpen: "w-[280px] min-w-[280px]",
   sidebarCollapsed: "w-[52px] min-w-[52px]",
   railButton:
     "inline-flex h-full w-full cursor-pointer flex-col items-center justify-start gap-2 border-0 bg-[var(--surface-1)] pt-3.5 text-xs font-semibold text-[var(--t2)]",
   railIcon:
-    "h-7 w-7 rounded-lg bg-[var(--accent)] p-1.5 text-[var(--on-brand)]",
+    "h-7 w-7 rounded-[var(--r-rh-md)] bg-[var(--accent)] p-1.5 text-[var(--ticket-cta-text)]",
   reportForm:
     "grid gap-2 border-t border-[var(--border-1)] bg-[var(--surface-2)] p-3",
   reportRow: "flex items-center justify-between gap-2",
   reportClose:
-    "grid h-7 w-7 cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-1)] text-[var(--t3)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:bg-[var(--brand-lavender)]",
+    "grid h-7 w-7 cursor-pointer place-items-center rounded-[var(--r-rh-sm)] border-0 bg-[var(--surface-1)] text-[var(--t3)] transition-[background-color,color] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:bg-[var(--accent-soft)]",
   reportLabel: "text-[11px] font-bold text-[var(--t2)]",
   reportInput:
     "w-full rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 text-xs text-[var(--t1)] font-[inherit] outline-none transition-[border-color,box-shadow] focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)]",
   reportTextArea:
     "min-h-[72px] w-full resize-y rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 py-2 text-xs text-[var(--t1)] font-[inherit] outline-none transition-[border-color,box-shadow] focus-visible:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)]",
   reportSubmit:
-    "min-h-9 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] text-xs font-extrabold text-[var(--on-brand)] transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
+    "min-h-9 cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] text-xs font-extrabold text-[var(--ticket-cta-text)] transition-[background-color,transform] hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
   reportStatus: "text-xs font-bold text-[var(--t2)]",
-  reportError: "text-[var(--brand-dark)]",
+  // Error copy uses the system danger colour, never ink/chrome tokens.
+  reportError: "text-[var(--danger)]",
   state:
     "relative grid flex-1 place-items-center bg-[var(--surface-1)] p-3.5 text-center text-xs font-medium text-[var(--t3)]",
   stream: "flex min-h-0 flex-1 flex-col gap-3 bg-[var(--surface-1)] p-3",
@@ -152,19 +156,19 @@ const chatClasses = {
   messageText:
     "m-0 overflow-hidden text-[12px] font-normal leading-[1.45] text-[var(--t1)] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3]",
   readonlyComposer:
-    "shrink-0 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 shadow-[var(--shadow-card)]",
+    "shrink-0 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3",
   readonlyComposerTitle:
     "m-0 text-[12px] font-semibold leading-tight text-[var(--t1)]",
   readonlyComposerCopy:
     "mt-1 mb-2.5 text-[11px] leading-[1.35] text-[var(--t3)]",
   readonlyComposerButton:
-    "inline-flex min-h-8 items-center justify-center rounded-md bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--on-brand)] no-underline transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px",
+    "inline-flex min-h-8 items-center justify-center rounded-[var(--r-rh-md)] bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--ticket-cta-text)] no-underline transition-[background-color,transform] hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px",
   composer:
-    "grid shrink-0 grid-cols-[1fr_auto] gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-1.5 shadow-[var(--shadow-card)]",
+    "grid shrink-0 grid-cols-[1fr_auto] gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-1.5",
   composerInput:
     "h-8 min-w-0 rounded-[var(--r-rh-sm)] border-0 bg-transparent px-1 text-xs font-medium text-[var(--t1)] outline-none placeholder:text-[var(--t3)] focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]",
   composerButton:
-    "h-8 rounded-md border-0 bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--on-brand)] transition-[background-color,transform] hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
+    "h-8 rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-3 text-xs font-semibold text-[var(--ticket-cta-text)] transition-[background-color,transform] hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px disabled:cursor-not-allowed disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100",
 };
 
 export function ChatSidebar() {
@@ -317,7 +321,7 @@ export function ChatSidebar() {
   if (collapsed) {
     return (
       <button
-        className="fixed bottom-6 right-6 z-[70] inline-flex h-12 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] pl-3 pr-4 text-[13px] font-semibold text-[var(--t1)] shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0 max-[1099px]:hidden"
+        className="fixed bottom-6 right-6 z-[70] inline-flex h-12 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] pl-3 pr-4 text-[13px] font-semibold text-[var(--t1)] shadow-[var(--shadow-pop)] transition-[transform,border-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0 max-[1099px]:hidden"
         type="button"
         aria-label="Open chat"
         onClick={() => persistCollapsed(false)}

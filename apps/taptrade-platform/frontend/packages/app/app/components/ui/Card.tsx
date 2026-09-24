@@ -32,10 +32,11 @@ const VARIANT_CLASS: Record<CardVariant, string> = {
   dashed: "border-dashed border-[var(--border-2)]",
 };
 
+// `no` is the error/notice edge: it uses the system danger colour, not
+// market-NO orange, so a failed action never reads as a NO outcome.
 const EDGE_CLASS: Record<CardEdge, string> = {
-  brand:
-    "border-l-[3px] border-l-[var(--brand-dark)] !bg-[var(--brand-lavender)]",
-  no: "border-l-[3px] border-l-[var(--no)]",
+  brand: "border-l-[3px] border-l-[var(--ink)] !bg-[var(--surface-2)]",
+  no: "border-l-[3px] border-l-[var(--danger)]",
   info: "border-l-[3px] border-l-[var(--info-dot)]",
   pending: "border-l-[3px] border-l-[var(--pending-border)]",
 };

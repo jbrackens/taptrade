@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * LoginPage — Predict-native auth entry (purple/lavender, Auth 16a/16b).
+ * LoginPage — Predict-native auth entry (Kilig, 2026-09-24).
  *
- * A centred 440px card, deliberately NOT the register split-screen:
- * someone logging in has already been sold, so the persuasion panel
- * would just be in the way. Two states: default (CTA inert until both
- * fields have content — the inert surface, never faded purple, so the
- * label stays readable) and error (the failure message sits ABOVE the
- * CTA, in the reading path before the retry, while the CTA returns to
- * active purple so retrying is obviously available).
+ * A single left-aligned white card on the paper ground — deliberately NOT
+ * the register split-screen: someone logging in has already been sold, so
+ * a persuasion panel would just be in the way. Two states: default (CTA
+ * inert until both fields have content — the inert surface, never a faded
+ * button, so the label stays readable) and error (the failure message sits
+ * ABOVE the CTA, in the reading path before the retry, while the CTA
+ * returns to active ink so retrying is obviously available).
  */
 
 import { useCallback, useState } from "react";
@@ -24,40 +24,40 @@ import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import BrandMark from "../../components/BrandMark";
 import { Button, Card, Input } from "../../components/ui";
 
-// Card/Input/Button recipes migrated to components/ui primitives (P2).
-const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const HEAD_CLASS = "mb-6 text-center";
-// Ink on the lavender tint: the eyebrow stays readable without turning an
-// informational label into a competing interactive control.
-const EYEBROW_CLASS =
-  "mb-3.5 inline-block rounded-full border border-[var(--border-1)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--t1)]";
-// The selected Tap Trade mark pairs with the data-driven title-case wordmark.
+// Card/Input/Button recipes come from components/ui (P2). Chrome is ink +
+// white + hairlines; the wordmark carries the one Kilig pink flash (the
+// period), matching TopBar. Validation uses --danger, never market colour.
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10 max-[480px]:px-4";
+const HEAD_CLASS = "mb-7";
+const BRAND_ROW_CLASS = "mb-8 inline-flex items-center gap-2.5";
+const BRAND_WORDMARK_CLASS =
+  "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const TITLE_CLASS =
-  "m-0 mb-2 inline-flex items-center justify-center gap-2.5 text-[27px] font-semibold tracking-[-0.025em] text-[var(--t1)]";
+  "type-poster m-0 mb-2 text-[32px] max-[480px]:text-[26px] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
-  "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const ERROR_CLASS =
-  "rounded-[var(--r-sm)] border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-2.5 text-xs leading-[1.5] text-[var(--brand-dark)]";
+  "rounded-[var(--r-rh-md)] border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-3 py-2.5 text-xs leading-[1.5] text-[var(--danger)]";
 const LINKS_CLASS = "flex justify-end";
 const LINK_CLASS =
   "inline-flex min-h-11 items-center text-xs text-[var(--t3)] no-underline transition-colors duration-150 hover:text-[var(--t1)]";
 const LINK_ACCENT_CLASS =
-  "px-1 text-[13px] font-semibold text-[var(--accent-text)] hover:text-[var(--accent-text)] hover:underline";
+  "px-0 text-[13px] font-semibold text-[var(--t1)] hover:underline";
 const DEV_CLASS =
   "mt-[18px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
 const DEV_EYEBROW_CLASS =
-  "mb-1 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-1 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MONO_CLASS = "tabular-nums font-mono";
 const DIVIDER_CLASS =
   "my-5 mb-4 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
-  "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const SOCIAL_CLASS = "mb-5";
 const FOOTER_CLASS =
-  "border-t border-[var(--border-1)] pt-3.5 text-center text-[13px] text-[var(--t2)]";
+  "border-t border-[var(--border-1)] pt-3.5 text-[13px] text-[var(--t2)]";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -107,13 +107,18 @@ export default function LoginPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <Card as="div" padding="lg" className="relative w-full max-w-[440px]">
+      <Card as="div" padding="lg" className="w-full max-w-[440px]">
         <header className={HEAD_CLASS}>
-          <span className={EYEBROW_CLASS}>Player access</span>
-          <h1 className={TITLE_CLASS}>
-            <BrandMark size={32} tone="ink" />
-            <span>{brand.name}</span>
-          </h1>
+          <div className={BRAND_ROW_CLASS}>
+            <BrandMark size={26} tone="ink" />
+            <span className={BRAND_WORDMARK_CLASS}>
+              {brand.name}
+              <span className="text-[var(--brand-period)]" aria-hidden="true">
+                .
+              </span>
+            </span>
+          </div>
+          <h1 className={TITLE_CLASS}>{t("WELCOME_TITLE", "Welcome back")}</h1>
           <p className={SUBTITLE_CLASS}>
             Sign in to track your positions, follow market moves, and trade on
             real-world outcomes.

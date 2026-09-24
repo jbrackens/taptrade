@@ -42,8 +42,10 @@ test.describe("/predict — discovery landing", () => {
       })
       .toBe(expectedColumns);
 
+    // Page two adds 12 markets; the lead moment keeps the first three, so
+    // the grid holds 24 − 3 = 21 cards.
     await page.getByRole("button", { name: /load more markets/i }).click();
-    await expect(cards).toHaveCount(18, { timeout: 10_000 });
+    await expect(cards).toHaveCount(21, { timeout: 10_000 });
 
     // The approved discovery card shows both live market sides as
     // percentage actions, not as a dense single-column price table.

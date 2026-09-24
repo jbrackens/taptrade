@@ -3,8 +3,10 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Lock } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
+import { Button, Input } from "../../components/ui";
 import {
   changePassword,
   getSessions,
@@ -13,39 +15,40 @@ import {
 import type { Session } from "../../lib/api/auth-client";
 import { logger } from "../../lib/logger";
 
+type Tab = "password" | "twofa" | "sessions";
+
 const pageClass = "mx-auto max-w-[800px] px-4 py-6";
 const headerClass =
-  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
+  "mb-6 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
 const backClass =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const cardClass =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const descClass = "mb-6 text-[13px] text-[var(--t2)]";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
-const inputClass =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]";
 
+// Segmented pills, ink selected state (DESIGN.md §6 selection rule).
+const TAB_TRACK_CLASS =
+  "mb-6 inline-flex gap-1 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-1";
 function tabClass(active: boolean) {
-  return `cursor-pointer border-0 border-b-2 bg-transparent px-4 py-3 text-sm font-semibold transition-all duration-150 ${
+  return `min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-rh-sm)] border-0 px-4 py-2 text-[13px] font-semibold transition-colors duration-150 ${
     active
-      ? "border-[var(--accent)] text-[var(--accent)]"
-      : "border-transparent text-[var(--t2)]"
+      ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+      : "bg-transparent text-[var(--t2)] hover:text-[var(--t1)]"
   }`;
 }
 
-function twoFaButtonClass(enabled: boolean) {
-  return `cursor-pointer rounded-lg px-4 py-2.5 text-[13px] font-bold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-    enabled
-      ? "border border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:bg-[var(--border-1)]"
-      : "border-0 bg-[var(--accent)] text-[var(--ticket-cta-text)] hover:opacity-90"
-  }`;
-}
+const TABS: { id: Tab; label: string }[] = [
+  { id: "password", label: "Password" },
+  { id: "twofa", label: "Two-factor auth" },
+  { id: "sessions", label: "Active sessions" },
+];
 
 export default function SecurityPage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [tab, setTab] = useState<"password" | "twofa" | "sessions">("password");
+  const [tab, setTab] = useState<Tab>("password");
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -169,8 +172,8 @@ export default function SecurityPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
-            Security Settings
+          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+            Security
           </h1>
           <p className="text-sm text-[var(--t3)]">
             Manage your password, authentication, and active sessions
@@ -182,35 +185,26 @@ export default function SecurityPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-0 border-b border-[var(--border-1)]">
-        <button
-          type="button"
-          className={tabClass(tab === "password")}
-          onClick={() => setTab("password")}
-        >
-          Password
-        </button>
-        <button
-          type="button"
-          className={tabClass(tab === "twofa")}
-          onClick={() => setTab("twofa")}
-        >
-          Two-Factor Auth
-        </button>
-        <button
-          type="button"
-          className={tabClass(tab === "sessions")}
-          onClick={() => setTab("sessions")}
-        >
-          Active Sessions
-        </button>
+      <div className={TAB_TRACK_CLASS} role="tablist" aria-label="Security settings">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            className={tabClass(tab === t.id)}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* Password Tab */}
       {tab === "password" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
-            Change Password
+            Change password
           </h2>
           <p className={descClass}>
             Update your password to keep your account secure
@@ -219,12 +213,11 @@ export default function SecurityPage() {
           <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="current-password" className={labelClass}>
-                Current Password
+                Current password
               </label>
-              <input
+              <Input
                 id="current-password"
                 type="password"
-                className={inputClass}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password"
@@ -233,12 +226,11 @@ export default function SecurityPage() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="new-password" className={labelClass}>
-                New Password
+                New password
               </label>
-              <input
+              <Input
                 id="new-password"
                 type="password"
-                className={inputClass}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password (min 12 chars)"
@@ -247,12 +239,11 @@ export default function SecurityPage() {
 
             <div className="flex flex-col gap-2">
               <label htmlFor="confirm-password" className={labelClass}>
-                Confirm Password
+                Confirm password
               </label>
-              <input
+              <Input
                 id="confirm-password"
                 type="password"
-                className={inputClass}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
@@ -260,18 +251,17 @@ export default function SecurityPage() {
             </div>
 
             {passwordError && (
-              <div className="rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-2.5 text-[13px] font-medium text-[var(--brand-dark)]">
+              <div
+                className="rounded-[var(--r-rh-md)] border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-3 py-2.5 text-[13px] font-medium text-[var(--danger)]"
+                role="alert"
+              >
                 {passwordError}
               </div>
             )}
 
-            <button
-              type="submit"
-              className="cursor-pointer rounded-lg border-0 bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={passwordLoading}
-            >
-              {passwordLoading ? "Updating..." : "Change Password"}
-            </button>
+            <Button type="submit" variant="primary" disabled={passwordLoading}>
+              {passwordLoading ? "Updating…" : "Change password"}
+            </Button>
           </form>
         </div>
       )}
@@ -280,18 +270,23 @@ export default function SecurityPage() {
       {tab === "twofa" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
-            Two-Factor Authentication
+            Two-factor authentication
           </h2>
           <p className={descClass}>
             Add an extra layer of security to your account
           </p>
 
-          <div className="flex items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-4">
-            <div className="flex flex-1 items-start gap-4">
-              <div className="shrink-0 text-[32px]">🔐</div>
+          <div className="flex items-center justify-between gap-4 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start">
+            <div className="flex flex-1 items-start gap-3">
+              <Lock
+                size={20}
+                strokeWidth={1.75}
+                className="mt-0.5 shrink-0 text-[var(--t2)]"
+                aria-hidden="true"
+              />
               <div>
                 <div className="mb-1 text-[15px] font-bold text-[var(--t1)]">
-                  {twoFaEnabled ? "2FA Enabled" : "2FA Disabled"}
+                  {twoFaEnabled ? "2FA enabled" : "2FA disabled"}
                 </div>
                 <div className="text-[13px] text-[var(--t3)]">
                   {twoFaEnabled
@@ -301,18 +296,20 @@ export default function SecurityPage() {
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant={twoFaEnabled ? "secondary" : "primary"}
+              size="none"
+              className="min-h-11 px-4 text-[13px]"
               onClick={handleToggle2FA}
               disabled={twoFaLoading}
-              className={twoFaButtonClass(twoFaEnabled)}
             >
               {twoFaLoading
-                ? "Updating..."
+                ? "Updating…"
                 : twoFaEnabled
                   ? "Disable 2FA"
                   : "Enable 2FA"}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -321,27 +318,27 @@ export default function SecurityPage() {
       {tab === "sessions" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
-            Active Sessions
+            Active sessions
           </h2>
           <p className={descClass}>
             View and manage devices logged into your account
           </p>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
             {sessionsLoading && (
-              <div className="p-6 text-center text-[var(--t3)]">
-                Loading sessions...
+              <div className="p-6 text-center text-sm text-[var(--t3)]">
+                Loading sessions…
               </div>
             )}
             {!sessionsLoading && sessions.length === 0 && (
-              <div className="p-6 text-center text-[var(--t3)]">
+              <div className="p-6 text-center text-sm text-[var(--t3)]">
                 No active sessions found.
               </div>
             )}
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3"
+                className="flex items-center justify-between gap-3 border-b border-[var(--border-1)] py-4 last:border-b-0 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3"
               >
                 <div className="flex-1">
                   <div className="mb-1 text-sm font-semibold text-[var(--t1)]">
@@ -350,32 +347,34 @@ export default function SecurityPage() {
                   <div className="mb-1 text-xs text-[var(--t3)]">
                     {session.location}
                   </div>
-                  <div className="text-xs text-[var(--t3)]">
+                  <div className="font-mono text-xs text-[var(--t3)]">
                     Last active: {new Date(session.lastActive).toLocaleString()}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   {session.current && (
-                    <span className="inline-block rounded bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent-text)]">
+                    <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent-text)]">
                       Current
                     </span>
                   )}
                   {!session.current && (
-                    <button
+                    <Button
                       type="button"
-                      className="cursor-pointer rounded-md border-0 bg-[var(--brand-dark)] px-3 py-1.5 text-xs font-semibold text-[var(--on-brand)] transition-opacity duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                      variant="secondary"
+                      size="none"
+                      className="min-h-11 px-4 text-[13px]"
                       onClick={() => handleRevokeSession(session.id)}
                       disabled={revokingId === session.id}
                     >
-                      {revokingId === session.id ? "Revoking..." : "Sign Out"}
-                    </button>
+                      {revokingId === session.id ? "Revoking…" : "Sign out"}
+                    </Button>
                   )}
                 </div>
               </div>
             ))}
 
-            <div className="mt-3 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] px-4 py-3 text-xs text-[var(--t3)]">
-              ℹ️ Showing all active sessions. You can sign out of other devices
+            <div className="mt-3 border-t border-[var(--border-1)] pt-3 text-xs text-[var(--t3)]">
+              Showing all active sessions. You can sign out of other devices
               above.
             </div>
           </div>

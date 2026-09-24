@@ -1,21 +1,22 @@
 /**
- * Purple/lavender auth step — /auth/login (Auth.dc.html 16a/16b).
+ * Auth — /auth/login (Auth.dc.html 16a/16b), restyled to Kilig 2026-09-24.
  *
  * Source-level assertions (repo convention — the suite runs node:test,
  * not a DOM harness) pinning the step's contracts:
  *  - login stays a centred 440px card, never the register split-screen
- *  - the eyebrow pill takes ink on the lavender tint, not accent text
- *  - the error card uses neutral brand feedback tokens, not market direction
+ *  - brand row: mark + wordmark with the Kilig pink period, then a
+ *    poster-type title (no decorative eyebrow pill)
+ *  - the error card uses the system danger colour, never market direction
  *    colours; it announces via role="alert", and sits ABOVE the CTA in
- *    the reading path; the CTA itself returns to active purple on error
+ *    the reading path; the CTA itself returns to active ink on error
  *    because disabled derives only from submitting/empty fields
  *  - the disabled CTA is the INERT surface (via Button variant="cta"),
  *    not an opacity fade
  *  - provider registry honesty: every slug the frontend offers has a
  *    matching backend registration in services/auth oauth.go; Apple and
  *    SSO (no backend on any deployment) are gone
- *  - per-provider brand hover colours stay — the one place brand colour
- *    is correct
+ *  - social buttons are neutral secondary/outline (the provider glyphs
+ *    carry their own brand colours)
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -45,31 +46,26 @@ describe("login card shape (step 7)", () => {
     assert.match(login, /items-center justify-center/);
   });
 
-  it("renders the selected Tap Trade mark with a title-case, 600 wordmark", () => {
-    assert.match(login, /text-\[27px\] font-semibold tracking-\[-0\.025em\]/);
-    assert.match(login, /<BrandMark size=\{32\} tone="ink" \/>/);
-    assert.doesNotMatch(login, /text-\[var\(--brand-period\)\]/);
+  it("renders the Tap Trade mark, the wordmark's pink period and a poster title", () => {
+    assert.match(login, /<BrandMark[^>]*tone="ink"/);
+    assert.match(login, /text-\[var\(--brand-period\)\]/);
+    assert.match(login, /type-poster/);
+    assert.match(login, /t\("WELCOME_TITLE", "Welcome back"\)/);
   });
 
-  it("keeps the eyebrow pill ink on the lavender tint", () => {
-    const eyebrow = login.match(/const EYEBROW_CLASS =\s*\n?\s*"([^"]+)"/)?.[1];
-    assert.ok(eyebrow, "EYEBROW_CLASS present");
-    assert.ok(eyebrow.includes("bg-[var(--accent-soft)]"));
-    assert.ok(eyebrow.includes("text-[var(--t1)]"));
-    assert.ok(!eyebrow.includes("text-[var(--accent)]"));
+  it("drops the decorative eyebrow pill and legacy literals", () => {
+    assert.doesNotMatch(login, /const EYEBROW_CLASS =/);
     assert.ok(
       !/rgba\(43,\s*228,\s*128|rgba\(255,\s*155,\s*107/.test(login),
       "mint-era literals must stay gone from login",
     );
+    assert.doesNotMatch(login, /brand-(?:dark|purple|lavender|deep)/);
   });
 });
 
 describe("login error state (step 7, Auth 16b)", () => {
-  it("keeps credential feedback in the purple system and role=alert", () => {
-    assert.match(
-      login,
-      /border-\[var\(--accent\)\] bg-\[var\(--accent-soft\)\][^"]*text-\[var\(--brand-dark\)\]/,
-    );
+  it("keeps credential feedback in the system danger colour and role=alert", () => {
+    assert.match(login, /border-\[var\(--danger\)\][^"]*text-\[var\(--danger\)\]/);
     assert.ok(!login.includes("--no-"));
     assert.match(login, /role="alert"/);
   });
@@ -140,26 +136,17 @@ describe("provider registry honesty (step 7)", () => {
     assert.ok(!social.includes("SSOIcon"));
   });
 
-  it("keeps per-provider brand hover colours — the platform's own affordance", () => {
-    for (const brandHex of [
-      "#4285F4", // Google
-      "#1877F2", // Facebook
-      "#FE2C55", // TikTok
-      "#FF4500", // Reddit
-      "#5865F2", // Discord
-    ]) {
-      assert.ok(
-        social.includes(`hover:border-[${brandHex}]`),
-        `brand hover ${brandHex} must stay`,
-      );
-    }
+  it("keeps social buttons neutral secondary/outline", () => {
+    assert.match(social, /border-\[var\(--border-2\)\] bg-\[var\(--surface-1\)\]/);
+    assert.match(social, /hover:border-\[var\(--t3\)\]/);
+    assert.doesNotMatch(social, /hover:border-\[#[0-9A-Fa-f]{6}\]/);
   });
 });
 
 describe("login link hit targets (step 7)", () => {
-  it("gives the footer and forgot-password links 44px targets and accent-text", () => {
+  it("gives the footer and forgot-password links 44px targets as quiet text", () => {
     assert.match(login, /const LINK_CLASS =\s*\n?\s*"inline-flex min-h-11/);
-    assert.match(login, /text-\[var\(--accent-text\)\]/);
+    assert.match(login, /const LINK_CLASS =[^;]*text-\[var\(--t3\)\][^;]*hover:text-\[var\(--t1\)\]/);
     assert.ok(
       !/LINK_ACCENT_CLASS =[^;]*text-\[var\(--accent\)\]/.test(login),
       "the create-account link never uses lime fill colour as text",

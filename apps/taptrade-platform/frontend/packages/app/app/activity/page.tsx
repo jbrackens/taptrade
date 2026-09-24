@@ -12,15 +12,16 @@ import { ApiError } from "../lib/api/client";
 import { logger } from "../lib/logger";
 
 const WRAP_CLASS = "mx-auto max-w-[920px] px-4 pb-16 text-[var(--t1)]";
-const HEADER_CLASS = "mb-5 flex items-end justify-between gap-4";
-const TITLE_CLASS = "m-0 text-[28px] font-extrabold tracking-[-0.02em]";
+const HEADER_CLASS = "mb-6 flex items-end justify-between gap-4";
+const TITLE_CLASS = "type-poster m-0 text-[32px] max-[640px]:text-[28px] text-[var(--t1)]";
 const LINK_CLASS =
-  "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
+  "text-[13px] font-semibold text-[var(--t2)] underline-offset-4 hover:text-[var(--t1)] hover:underline";
 // Card shell (padding="lg") replaced the p-6 section recipe.
 const LIST_CLASS = "flex flex-col gap-3";
 const ITEM_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
-const META_CLASS = "mb-1 text-xs text-[var(--t3)]";
+// Dates are comparable numerals — mono, per DESIGN.md §4.
+const META_CLASS = "mb-1 font-mono text-[11px] text-[var(--t3)]";
 const BODY_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t1)]";
 const STATE_CLASS = "py-12 text-center text-sm text-[var(--t3)]";
 

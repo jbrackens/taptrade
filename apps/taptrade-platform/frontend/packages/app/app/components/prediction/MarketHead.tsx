@@ -6,7 +6,7 @@
  *
  *   Row 1: eyebrow — LIVE dot · CATEGORY · closes-in · close date
  *   Row 2: market question (28px)
- *   Row 3: sides strip — [● Yes · prob%]   8¢ — 92¢   [prob% · No ●]
+ *   Row 3: sides strip — [● Yes · prob%]   8 pts — 92 pts   [prob% · No ●]
  *
  * The old pill rows (volume / trader count / ticker) are gone: volume
  * belongs to the discovery surfaces, machine tickers are plumbing, and
@@ -68,7 +68,7 @@ function formatCloseDate(iso: string): string {
 
 const MARKET_HEAD_CLASS = "flex h-full flex-col";
 const MARKET_HEAD_EYEBROW_CLASS =
-  "mb-4 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "mb-4 flex flex-wrap items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MARKET_HEAD_LIVE_CLASS =
   "inline-flex items-center gap-1.5 text-[var(--live-text)]";
 const MARKET_HEAD_LIVE_DOT_CLASS =
@@ -78,18 +78,18 @@ const MARKET_HEAD_SETTLED_CLASS =
 const MARKET_HEAD_COUNTDOWN_CLASS =
   "font-mono text-[10px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_TITLE_CLASS =
-  "type-display m-0 mb-8 text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-[var(--t1)] max-[720px]:mb-6 max-[720px]:text-[27px]";
+  "type-display m-0 mb-8 text-[32px] font-semibold leading-[1.12] tracking-[-0.03em] text-[var(--t1)] max-[720px]:mb-6 max-[720px]:text-[26px]";
 const MARKET_HEAD_SIDES_CLASS =
   "mt-auto grid grid-cols-2 gap-3 border-t border-[var(--hairline)] pt-5";
 const MARKET_HEAD_SIDE_CLASS =
-  "min-w-0 rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--card)] p-3";
+  "min-w-0 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5";
 const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
 const MARKET_HEAD_SIDE_NAME_CLASS =
   "text-xs font-semibold text-[var(--t1)] leading-tight";
 const MARKET_HEAD_SIDE_SUB_CLASS =
   "font-mono whitespace-nowrap text-[10px] text-[var(--t3)] leading-tight [font-variant-numeric:tabular-nums]";
 const MARKET_HEAD_PRICE_CLASS =
-  "font-mono mt-3 text-[30px] font-semibold leading-none tracking-[-0.045em] [font-variant-numeric:tabular-nums] max-[720px]:text-[27px]";
+  "font-mono mt-3 whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.04em] [font-variant-numeric:tabular-nums] max-[720px]:text-[22px] [&_small]:ml-1 [&_small]:text-[13px] [&_small]:font-semibold [&_small]:tracking-normal";
 
 export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   const { t } = useTranslation("prediction");
@@ -209,12 +209,12 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             ? t("FINAL_PRICES", {
                 yes,
                 no,
-                defaultValue: `Final prices: Yes ${yes} cents, No ${no} cents`,
+                defaultValue: `Final prices: Yes ${yes} points, No ${no} points`,
               })
             : t("YES_NO_PRICES", {
                 yes,
                 no,
-                defaultValue: `Yes ${yes} cents, No ${no} cents`,
+                defaultValue: `Yes ${yes} points, No ${no} points`,
               })
         }
       >
@@ -227,7 +227,8 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("YES")}</span>
           </div>
           <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--yes-text)]`}>
-            {yes}¢
+            {yes}
+            <small>{t("PTS", "pts")}</small>
           </div>
           <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
             {yes}% {t("PROB")}
@@ -242,7 +243,8 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             />
           </div>
           <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--no-text)]`}>
-            {no}¢
+            {no}
+            <small>{t("PTS", "pts")}</small>
           </div>
           <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
             {no}% {t("PROB")}

@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "搜索市场",
   "SEARCH_MARKETS_PLACEHOLDER": "搜索市场、候选人、球队...",
   "SEARCH_NO_MARKETS": "没有找到“{{query}}”相关市场",
-  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}}¢",
+  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}} pts",
   "BALANCE_LABEL": "余额",
   "USER_MENU": "用户菜单",
   "LOG_IN": "登录",

@@ -47,10 +47,11 @@ const LEDGER_LIMIT = 20;
 
 const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
+// Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
 const KICKER_CLASS =
-  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--reward-text)]";
+  "mb-1.5 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const TITLE_CLASS =
-  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[768px]:text-[26px]";
+  "type-poster m-0 text-[34px] text-[var(--t1)] max-[768px]:text-[26px]";
 const CROSS_LINK_CLASS =
   "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const LADDER_CLASS =
@@ -68,7 +69,7 @@ const TIER_CARD_HEAD_CLASS =
 const TIER_PILL_BASE_CLASS =
   "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold tracking-[0.04em] text-[var(--t1)]";
 const BALANCE_CLASS =
-  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums font-mono max-[768px]:text-[28px]";
+  "mono-wide m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums font-mono max-[768px]:text-[28px]";
 const BALANCE_UNIT_CLASS = "ml-1 text-sm font-medium text-[var(--t3)]";
 const PROGRESS_CLASS = "mb-5";
 const PROGRESS_HEAD_CLASS =
@@ -97,16 +98,22 @@ const PACK_ROW_CLASS =
   "flex items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
 const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
 const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
+// Generic point balance — ink, not the reward pink (pink is reserved for
+// progress bars and streak highlights, DESIGN.md §3.2 + the Kilig brief).
 const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--reward-text)] tabular-nums font-mono";
+  "whitespace-nowrap text-sm font-bold text-[var(--t1)] tabular-nums font-mono";
 const MISSION_PROGRESS_CLASS =
   "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
+// Streak highlight: the one progress figure licensed to read in Kilig pink.
+const STREAK_PROGRESS_CLASS =
+  "mt-1 text-xs font-semibold text-[var(--reward-text)] tabular-nums font-mono";
 const BADGE_GRID_CLASS = "mt-3 grid grid-cols-3 gap-2 max-[768px]:grid-cols-1";
 const BADGE_CARD_BASE_CLASS = "rounded-[var(--r-rh-md)] border p-3 text-left";
-const BADGE_EARNED_CLASS =
-  "border-[color-mix(in_srgb,var(--reward)_45%,var(--border-1))] bg-[var(--reward-soft)]";
+// Earned = the raised-well selection treatment (ink), never pink — badges
+// are a status marker, not a progress/streak signal.
+const BADGE_EARNED_CLASS = "border-[var(--border-2)] bg-[var(--surface-2)]";
 const BADGE_LOCKED_CLASS =
-  "border-[var(--border-1)] bg-[var(--surface-2)] opacity-70";
+  "border-[var(--border-1)] bg-[var(--surface-1)] opacity-60";
 const BADGE_STATUS_CLASS =
   "mt-2 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
 const LIMIT_CLASS =
@@ -124,13 +131,14 @@ const MONO_CLASS =
 const DATE_CLASS = `${MONO_CLASS} whitespace-nowrap text-[var(--t2)]`;
 const EVENT_CLASS = "text-[var(--t1)]";
 const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";
-const POS_CLASS = "text-[var(--reward-text)]";
+// Ledger deltas are generic point-balance changes, not market P&L — ink
+// carries the signal (weight), not colour.
+const POS_CLASS = "font-semibold text-[var(--t1)]";
 const NEG_CLASS = "text-[var(--t2)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";
 const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
 const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
-const PREFIRST_TITLE_CLASS =
-  "m-0 mb-2.5 text-[26px] font-extrabold text-[var(--t1)]";
+const PREFIRST_TITLE_CLASS = "type-poster m-0 mb-2.5 text-[26px] text-[var(--t1)]";
 const PREFIRST_BODY_CLASS = "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
 // CTA / claim-button / state-card recipes migrated to the Button and Card
 // primitives (primary lg; lift-hover and 13px text unified away).
@@ -679,6 +687,7 @@ export default function RewardsPage() {
               )}
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className={LEDGER_TABLE_CLASS}>
               <caption className="sr-only">
                 {t(
@@ -734,6 +743,7 @@ export default function RewardsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </Card>
       </div>
@@ -999,7 +1009,7 @@ function StreaksControl({
             <div>
               <p className={PACK_NAME_CLASS}>{streak.name}</p>
               <p className={PACK_DESC_CLASS}>{streak.description}</p>
-              <div className={MISSION_PROGRESS_CLASS}>
+              <div className={STREAK_PROGRESS_CLASS}>
                 {t("streaks.progress", "{{current}} / {{target}} days", {
                   current: streak.currentStreak,
                   target: streak.target,

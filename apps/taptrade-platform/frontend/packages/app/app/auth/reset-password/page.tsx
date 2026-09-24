@@ -4,33 +4,38 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { resetPassword } from "../../lib/api";
+import { brand } from "../../lib/brand";
+import BrandMark from "../../components/BrandMark";
 import { Button, Card, Input } from "../../components/ui";
 
 // Card/Input/Button recipes migrated to components/ui primitives (P2).
-const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
-const HEAD_CLASS = "mb-6 text-center";
-const EYEBROW_CLASS =
-  "mb-3.5 inline-block rounded-[var(--r-pill)] border border-[var(--accent)] bg-[var(--accent-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--accent-text)]";
+// Chrome is ink + white + hairlines (Kilig, 2026-09-24); validation uses
+// --danger, success uses --success — never market direction colour.
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10 max-[480px]:px-4";
+const HEAD_CLASS = "mb-6";
+const BRAND_ROW_CLASS = "mb-8 inline-flex items-center gap-2.5";
+const BRAND_WORDMARK_CLASS =
+  "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const TITLE_CLASS =
-  "m-0 mb-2 text-[28px] font-extrabold tracking-[-0.02em] text-[var(--t1)]";
+  "type-poster m-0 mb-2 text-[32px] max-[480px]:text-[26px] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
-const ALERT_BASE_CLASS = "mb-4 rounded-[var(--r-sm)] px-3 py-2.5 text-xs";
+const ALERT_BASE_CLASS = "mb-4 rounded-[var(--r-rh-md)] px-3 py-2.5 text-xs";
 const ALERT_ERROR_CLASS =
-  "border border-[var(--border-2)] bg-[var(--surface-2)] text-[var(--t2)]";
+  "border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] text-[var(--danger)]";
 const ALERT_SUCCESS_CLASS =
-  "border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-text)]";
+  "border border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_8%,transparent)] text-[var(--success)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
 const LABEL_CLASS =
-  "mb-1.5 block text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
-const FIELD_ERROR_CLASS = "mt-1 text-xs text-[var(--brand-dark)]";
+  "mb-1.5 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const FIELD_ERROR_CLASS = "mt-1 text-xs text-[var(--danger)]";
 const DIVIDER_CLASS =
   "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
-  "text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-const LINKS_CLASS = "text-center text-[13px] text-[var(--t2)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const LINKS_CLASS = "text-[13px] text-[var(--t2)]";
 const LINK_ROW_CLASS = "mb-2 last:mb-0";
 const LINK_CLASS =
-  "font-semibold text-[var(--accent)] no-underline hover:text-[var(--accent)] hover:brightness-110 hover:underline";
+  "font-semibold text-[var(--t1)] no-underline hover:underline";
 
 interface Errors {
   [key: string]: string;
@@ -113,13 +118,17 @@ export default function ResetPasswordPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <Card
-        as="div"
-        padding="lg"
-        className="relative w-full max-w-[440px] text-[var(--t1)]"
-      >
+      <Card as="div" padding="lg" className="w-full max-w-[440px]">
         <div className={HEAD_CLASS}>
-          <span className={EYEBROW_CLASS}>Set a new password</span>
+          <div className={BRAND_ROW_CLASS}>
+            <BrandMark size={26} tone="ink" />
+            <span className={BRAND_WORDMARK_CLASS}>
+              {brand.name}
+              <span className="text-[var(--brand-period)]" aria-hidden="true">
+                .
+              </span>
+            </span>
+          </div>
           <h1 className={TITLE_CLASS}>Reset password</h1>
           <p className={SUBTITLE_CLASS}>Pick something at least 8 characters long.</p>
         </div>

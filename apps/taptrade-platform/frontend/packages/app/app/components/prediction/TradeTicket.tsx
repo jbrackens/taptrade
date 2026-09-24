@@ -142,43 +142,43 @@ const TICKET_MODE_BUTTON_BASE_CLASS =
 // action channel; direction color stays on the side's own text only.
 const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[8px] border px-3 [font-family:inherit] text-[11px] font-semibold uppercase tracking-[0.08em] transition-[background-color,border-color,box-shadow,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
+  "flex min-h-12 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-[var(--r-rh-md)] border-[1.5px] px-3 [font-family:inherit] text-[12px] font-bold uppercase tracking-[0.06em] transition-[background-color,border-color,box-shadow,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const TICKET_SIDE_PRICE_CLASS =
-  "font-mono text-[14px] font-semibold tabular-nums";
+  "font-mono text-[15px] font-semibold normal-case tracking-normal tabular-nums";
 // (The P9.2 sliding underline indicator retired with the tabs.)
 const TICKET_ROWS_CLASS =
   "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
 const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
 const TICKET_ROW_LABEL_CLASS =
-  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const TICKET_ROW_VALUE_CLASS = "font-mono font-semibold text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
   "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
 const TICKET_INPUT_CLASS =
-  "font-mono w-[128px] rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  "font-mono w-[128px] rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 // Mobile quick controls (≤1023px): 44px touch targets per DESIGN.md §8.
 const TICKET_STEP_BTN_CLASS =
-  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--raised)] font-mono text-[18px] font-semibold text-[var(--ink)] transition-[background-color,border-color,color,transform] duration-[120ms] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--raised)] font-mono text-[18px] font-semibold text-[var(--ink)] transition-[background-color,border-color,color,transform] duration-[120ms] [&:not(:disabled):hover]:border-[var(--t3)] [&:not(:disabled):hover]:text-[var(--t1)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 const TICKET_QUICK_CHIP_CLASS =
-  "h-11 flex-1 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--hairline)] bg-[var(--card)] font-mono text-[12px] font-semibold text-[var(--ink-3)] transition-[background-color,border-color,color,transform] duration-[120ms] [font-variant-numeric:tabular-nums] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "h-11 flex-1 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--hairline)] bg-[var(--card)] font-mono text-[12px] font-semibold text-[var(--ink-3)] transition-[background-color,border-color,color,transform] duration-[120ms] [font-variant-numeric:tabular-nums] [&:not(:disabled):hover]:border-[var(--t3)] [&:not(:disabled):hover]:text-[var(--t1)] [&:not(:disabled):active]:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 const TICKET_TRUST_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t3)]";
 const TICKET_ERROR_CLASS =
-  "mt-2.5 text-center text-xs text-[var(--brand-dark)]";
+  "mt-2.5 text-center text-xs font-medium text-[var(--danger)]";
 // Hold threshold: long enough to be deliberate, short enough to not feel
 // broken. Matches the prototype's 0.7s timed transition within jitter.
 const HOLD_TO_PLACE_MS = 650;
 const TICKET_COMPLIANCE_CLASS =
-  "mt-3 rounded-[var(--r-rh-sm)] border border-[var(--brand-dark)] bg-[var(--brand-lavender)] p-2.5 text-center text-xs leading-[1.45] text-[var(--brand-dark)]";
+  "mt-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] border-l-[3px] border-l-[var(--warning)] bg-[var(--surface-2)] px-3 py-2.5 text-left text-xs leading-[1.45] text-[var(--t1)]";
 const TICKET_CLOSED_CLASS =
   "mt-3 rounded-[var(--r-rh-sm)] border border-dashed border-[var(--border-1)] p-2.5 text-center text-xs text-[var(--t3)]";
 // Insufficient-balance escape hatch: a secondary link-button into the Point
 // Store, below the (kept) disabled trade CTA. Carries the current market
 // path as a validated ?return= context so the store can route back.
 const TICKET_ADD_POINTS_CLASS =
-  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-[background-color,border-color,color,transform] duration-[120ms] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
+  "mt-2 flex w-full cursor-pointer items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 py-3 text-[13px] font-semibold text-[var(--t1)] no-underline transition-[border-color,transform] duration-150 hover:border-[var(--t3)] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 // Preview requests are debounced so per-keystroke amount edits don't fire
 // an api.previewOrder round-trip each; 250ms trails typing comfortably.
 const PREVIEW_DEBOUNCE_MS = 250;
@@ -186,21 +186,25 @@ const PREVIEW_DEBOUNCE_MS = 250;
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--accent-soft)] text-[var(--accent-text)] shadow-[var(--shadow-card)]"
-      : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-1)] hover:text-[var(--t1)] active:translate-y-px"
+      ? "bg-[var(--surface-1)] text-[var(--t1)] ring-1 ring-[var(--border-2)]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)] active:translate-y-px"
   }`;
 }
 
 function ticketSideTabClass(side: OrderSide, selected: boolean): string {
+  // Unselected sides still carry their direction colour; selection adds
+  // the side's stroke and soft wash (never the ink/brand voice).
   if (!selected) {
-    return `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] active:translate-y-px`;
+    return side === "yes"
+      ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--yes-text)] hover:border-[var(--yes-border)] active:translate-y-px`
+      : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--no-text)] hover:border-[var(--no-border)] active:translate-y-px`;
   }
   return side === "yes"
-    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--yes-text)]`
-    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--accent-lo)] bg-[var(--accent-soft)] text-[var(--no-text)]`;
+    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--yes)] bg-[var(--yes-soft)] text-[var(--yes-text)]`
+    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--no)] bg-[var(--no-soft)] text-[var(--no-text)]`;
 }
 
-// Points are whole cent-equivalent units (1 Point = 1c of play value) —
+// Points are whole units of play value —
 // never fractional in display.
 function formatPointAmount(points: number): string {
   return `${Math.round(points).toLocaleString()} pts`;
@@ -472,7 +476,7 @@ export function TradeTicket({
       ? "!rounded-none !border-0 !bg-transparent !p-0"
       : undefined;
   const ticketStyle = {
-    "--ticket-cta-text": "var(--on-brand)",
+    "--ticket-cta-text": "var(--on-ink)",
     ...(variant === "terminal" ? { fontFamily: "var(--font-terminal)" } : {}),
   } as CSSProperties;
 
@@ -758,7 +762,7 @@ export function TradeTicket({
         // Limit order rested without crossing — most common outcome on a
         // thin book. (filled=0, status=open.)
         const priceLabel =
-          mode === "limit" ? `${limitPricePoints}¢` : `${price}¢`;
+          mode === "limit" ? `${limitPricePoints} pts` : `${price} pts`;
         toast.info(
           t("ORDER_RESTING"),
           t("ORDER_RESTING_BODY", {
@@ -974,7 +978,7 @@ export function TradeTicket({
             >
               <span>{t("BUY_YES")}</span>
               <span className={TICKET_SIDE_PRICE_CLASS}>
-                {market.yesPricePoints}¢
+                {market.yesPricePoints} pts
               </span>
             </button>
             <button
@@ -986,14 +990,14 @@ export function TradeTicket({
             >
               <span>{t("BUY_NO")}</span>
               <span className={TICKET_SIDE_PRICE_CLASS}>
-                {market.noPricePoints}¢
+                {market.noPricePoints} pts
               </span>
             </button>
           </div>
 
           {/* Limit price input — appears in exchange + limit mode. Bounded
             [1, 99] cents per the engine's price bounds (out-of-range prices
-            are rejected at the API). Step is 1¢ to match tick size. */}
+            are rejected at the API). Step is 1 pt to match tick size. */}
           {isExchange && mode === "limit" && (
             <div className="mb-3">
               <div className={TICKET_ROW_CLASS}>
@@ -1119,7 +1123,7 @@ export function TradeTicket({
                   {t("MIN_ONE_SHARE_HINT", {
                     price,
                     defaultValue:
-                      "At {{price}}¢ a share, you need at least {{price}} pts.",
+                      "At {{price}} pts a share, you need at least {{price}} pts.",
                   })}
                 </p>
               )}
@@ -1132,7 +1136,7 @@ export function TradeTicket({
                  * the frozen figure holds and the pending dot on the
                  * total row carries the in-flight signal. */}
                 <span className={TICKET_ROW_VALUE_CLASS}>
-                  {displayPrice}¢
+                  {displayPrice} pts
                 </span>
               </div>
               <p className={TICKET_ROW_SUB_CLASS}>
@@ -1270,6 +1274,17 @@ export function TradeTicket({
                 variant="cta"
                 size="none"
                 className="relative mt-4 select-none touch-none overflow-hidden"
+                // Buying commits in the side's colour (blue YES, orange NO)
+                // so the button restates the direction being taken; a sell
+                // stays ink. The cta recipe reads --accent, so the side
+                // colour is scoped to this element only.
+                style={
+                  action === "sell"
+                    ? undefined
+                    : ({
+                        "--accent": side === "yes" ? "var(--yes)" : "var(--no)",
+                      } as CSSProperties)
+                }
                 onPointerDown={(e) => {
                   if (e.button !== 0) return;
                   // Claim the pointer explicitly: the vaul Sheet captures
@@ -1305,7 +1320,7 @@ export function TradeTicket({
                 {holdProgress > 0 && (
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 left-0 bg-[var(--ink-on-lime)] opacity-[0.16]"
+                    className="pointer-events-none absolute inset-y-0 left-0 bg-[var(--on-ink)] opacity-[0.2]"
                     style={{ width: `${Math.round(holdProgress * 100)}%` }}
                   />
                 )}

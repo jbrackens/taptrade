@@ -53,8 +53,10 @@ test.describe("/market/[ticker] — market detail", () => {
     // as the largest text on the page.
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 10_000 });
 
-    // YES and NO prices are both rendered somewhere on the page.
-    await expect(page.getByText(/\d+¢/).first()).toBeVisible();
+    // YES and NO prices are both rendered somewhere on the page, in
+    // points (Kilig copy rule: "44 pts", never "44¢").
+    await expect(page.getByText(/\d+\s*pts\b/i).first()).toBeVisible();
+    await expect(page.getByText(/\d+¢/)).toHaveCount(0);
 
     // Trade ticket exists — we match the "Review trade" CTA text since the
     // component structure is redesigned in Phase 3.

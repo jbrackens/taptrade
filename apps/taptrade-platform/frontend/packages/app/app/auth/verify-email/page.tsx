@@ -4,15 +4,22 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { verifyEmail } from "../../lib/api/auth-client";
+import { brand } from "../../lib/brand";
+import BrandMark from "../../components/BrandMark";
 import { Button, Card } from "../../components/ui";
 
 // Card + CTA-link recipes migrated to components/ui primitives (P2).
-const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
+// Chrome is ink + white + hairlines (Kilig, 2026-09-24); the failure
+// message uses --danger, never market colour.
+const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10 max-[480px]:px-4";
+const BRAND_ROW_CLASS = "mb-8 inline-flex items-center gap-2.5";
+const BRAND_WORDMARK_CLASS =
+  "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const TITLE_CLASS =
-  "m-0 mb-4 text-2xl font-bold tracking-[-0.01em] text-[var(--t1)]";
+  "type-poster m-0 mb-4 text-[28px] max-[480px]:text-[24px] text-[var(--t1)]";
 const MESSAGE_CLASS = "m-0 mb-6 text-sm leading-[1.6] text-[var(--t2)]";
-const ERROR_CLASS = "m-0 mb-4 text-[13px] text-[var(--brand-dark)]";
-const SPINNER_WRAP_CLASS = "mb-6 flex justify-center";
+const ERROR_CLASS = "m-0 mb-4 text-[13px] text-[var(--danger)]";
+const SPINNER_WRAP_CLASS = "mb-6 flex justify-start";
 const SPINNER_CLASS =
   "inline-block size-7 animate-spin rounded-full border-2 border-[var(--border-2)] border-t-[var(--accent)]";
 
@@ -48,11 +55,17 @@ export default function VerifyEmailPage() {
 
   return (
     <div className={SHELL_CLASS}>
-      <Card
-        as="div"
-        padding="lg"
-        className="relative w-full max-w-[440px] text-center text-[var(--t1)]"
-      >
+      <Card as="div" padding="lg" className="w-full max-w-[440px] text-[var(--t1)]">
+        <div className={BRAND_ROW_CLASS}>
+          <BrandMark size={26} tone="ink" />
+          <span className={BRAND_WORDMARK_CLASS}>
+            {brand.name}
+            <span className="text-[var(--brand-period)]" aria-hidden="true">
+              .
+            </span>
+          </span>
+        </div>
+
         {state === "loading" && (
           <>
             <h1 className={TITLE_CLASS}>Verifying email…</h1>

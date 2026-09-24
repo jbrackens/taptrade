@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "Cari pasaran",
   "SEARCH_MARKETS_PLACEHOLDER": "Cari pasaran, calon, pasukan...",
   "SEARCH_NO_MARKETS": "Tiada pasaran sepadan dengan “{{query}}”",
-  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}}¢",
+  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}} pts",
   "BALANCE_LABEL": "BAKI",
   "USER_MENU": "Menu pengguna",
   "LOG_IN": "Log masuk",

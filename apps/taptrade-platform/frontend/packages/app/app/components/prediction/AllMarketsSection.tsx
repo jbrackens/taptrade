@@ -75,19 +75,19 @@ const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
 ];
 
 const FILTER_HEAD_CLASS =
-  "mt-6 mb-[18px] flex flex-wrap items-center justify-between gap-4 [font-family:var(--font-terminal)] max-[768px]:mt-5 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
+  "mt-6 mb-[18px] flex flex-wrap items-center justify-between gap-4 max-[768px]:mt-5 max-[768px]:mb-4 max-[768px]:flex-col max-[768px]:flex-nowrap max-[768px]:items-stretch max-[768px]:justify-start max-[768px]:gap-2.5";
 
 const CATEGORY_LIST_CLASS =
-  "flex items-center gap-6 border-b border-neutral-200 w-full !border-[var(--border-1)] max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "flex items-center gap-6 w-full border-b border-[var(--border-1)] max-[768px]:mx-[-16px] max-[768px]:w-[calc(100%+32px)] max-[768px]:flex-[0_0_auto] max-[768px]:flex-row max-[768px]:flex-nowrap max-[768px]:overflow-x-auto max-[768px]:overflow-y-hidden max-[768px]:whitespace-nowrap max-[768px]:px-4 max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const CATEGORY_PILL_BASE_CLASS =
-  "relative min-h-11 cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-all duration-200 [font-family:inherit] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "relative min-h-11 cursor-pointer appearance-none bg-transparent pb-3 pt-2 text-sm font-medium border-b-2 transition-colors duration-150 [font-family:inherit] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const TIME_PILLS_CLASS =
-  "inline-flex shrink-0 gap-1 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 gap-1 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[3px] max-[768px]:max-w-full max-[768px]:self-start max-[768px]:overflow-x-auto max-[768px]:[scrollbar-width:none] max-[768px]:[-ms-overflow-style:none] max-[768px]:[-webkit-overflow-scrolling:touch] max-[768px]:[&::-webkit-scrollbar]:hidden";
 
 const TIME_PILL_BASE_CLASS =
-  "min-w-11 min-h-[38px] cursor-pointer appearance-none rounded-md border-0 px-[14px] [font-family:inherit] text-xs font-semibold transition-colors duration-[120ms] max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
+  "min-w-11 min-h-[38px] cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border-0 px-[14px] [font-family:inherit] text-xs font-semibold transition-colors duration-150 max-[768px]:flex-[0_0_auto] max-[768px]:whitespace-nowrap";
 
 const DISCOVERY_CONTROLS_CLASS =
   "flex w-full flex-wrap items-center justify-between gap-3 max-[768px]:items-stretch";
@@ -100,20 +100,20 @@ const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1600px]:col-span-1";
 const SUBNAV_CLASS =
   "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1600px]:order-first max-[1600px]:static max-[1600px]:border-b max-[1600px]:border-l-0 max-[1600px]:pb-3 max-[1600px]:pl-0";
 const SUBNAV_LABEL_CLASS =
-  "mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--t3)]";
+  "mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const SUBNAV_LIST_CLASS =
   "flex flex-col items-stretch gap-1 max-[1600px]:flex-row max-[1600px]:overflow-x-auto max-[1600px]:[scrollbar-width:none] max-[1600px]:[-ms-overflow-style:none] max-[1600px]:[-webkit-overflow-scrolling:touch] max-[1600px]:[&::-webkit-scrollbar]:hidden";
 const SUBNAV_BUTTON_BASE_CLASS =
-  "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1600px]:flex-[0_0_auto]";
+  "cursor-pointer appearance-none rounded-[var(--r-rh-md)] border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[1600px]:flex-[0_0_auto]";
 
-const EMPTY_TITLE_CLASS = "m-0 text-[18px] font-bold text-[var(--t1)]";
+const EMPTY_TITLE_CLASS = "m-0 text-[18px] font-semibold text-[var(--t1)]";
 const EMPTY_TEXT_CLASS = "mt-2 mb-0 text-[13px] text-[var(--t3)]";
 
 function categoryPillClass(active: boolean): string {
   return `${CATEGORY_PILL_BASE_CLASS} ${
     active
-      ? "text-[var(--accent-text)] font-semibold border-[var(--accent-lo)]"
-      : "text-neutral-500 border-transparent hover:text-neutral-800 hover:border-neutral-300 !text-[var(--t3)] hover:!border-[var(--border-2)] hover:!text-[var(--t1)]"
+      ? "border-[var(--accent-lo)] font-semibold text-[var(--accent-text)]"
+      : "border-transparent text-[var(--t3)] hover:border-[var(--border-2)] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -178,22 +178,23 @@ function orderCategories(categories: Category[]): Category[] {
 const PHOSPHOR_WARNING_CIRCLE_FILL =
   "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z";
 
-const SKELETON_SHIMMER_CLASS =
-  "animate-[shimmer_1.5s_infinite] rounded-full bg-[linear-gradient(90deg,var(--surface-2)_25%,var(--border-1)_50%,var(--surface-2)_75%)] bg-[length:200%_100%]";
+// Kilig loading state: a quiet solid pulse (no gradient shimmer), matching
+// MomentMarketsSection's GridSkeleton.
+const SKELETON_SHIMMER_CLASS = "animate-pulse rounded-full bg-[var(--surface-2)]";
 
 function MarketCardSkeleton() {
   return (
-    <div className="relative flex h-full min-h-[248px] flex-col rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[640px]:min-h-[238px] max-[640px]:p-4">
+    <div className="relative flex h-full min-h-[248px] flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[640px]:min-h-[238px] max-[640px]:p-4">
       <div className="flex items-center gap-2">
-        <span className={`h-10 w-10 rounded-xl ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-10 w-10 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
         <span className={`h-2.5 w-20 ${SKELETON_SHIMMER_CLASS}`} />
       </div>
       <span className={`mt-4 block h-3.5 w-full ${SKELETON_SHIMMER_CLASS}`} />
       <span className={`mt-2 block h-3.5 w-3/4 ${SKELETON_SHIMMER_CLASS}`} />
       <span className={`mt-4 block h-2 w-28 ${SKELETON_SHIMMER_CLASS}`} />
       <div className="mt-auto grid grid-cols-2 gap-2.5 pt-4">
-        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
-        <span className={`h-11 !rounded-lg ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-11 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-11 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
       </div>
       <span className={`mt-3 block h-2.5 w-2/3 ${SKELETON_SHIMMER_CLASS}`} />
     </div>
@@ -465,7 +466,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
   // when the user can DO something about it — filters qualify because the
   // user created the emptiness themselves.
   const emptyState = (
-    <div className="rounded-2xl border border-dashed border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] py-[26px] text-center">
+    <div className="rounded-[var(--r-rh-lg)] border border-dashed border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] py-[26px] text-center">
       <h3 className={EMPTY_TITLE_CLASS}>
         {filtered ? t("NO_FILTER_MATCH") : t("NO_OPEN_MARKETS")}
       </h3>
@@ -473,8 +474,10 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
         {filtered ? t("TRY_DIFFERENT_FILTER") : t("CHECK_BACK_SOON")}
       </p>
       {filtered && (
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="md"
+          className="mt-3.5"
           onClick={() => {
             setCategorySlug("all");
             setDateWindow("all");
@@ -482,10 +485,9 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
             setQuery("");
             setShowWatchlistOnly(false);
           }}
-          className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--accent-text)] transition-[border-color] hover:border-[var(--t3)]"
         >
           {t("CLEAR_FILTERS", "Clear filters")}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -598,7 +600,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
       {loading && markets.length === 0 ? (
         // Match the loaded grid's nine-card first page to avoid layout shift.
         <div
-          className="grid auto-rows-fr grid-cols-3 items-stretch gap-5 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4"
+          className="grid grid-cols-3 items-stretch gap-5 min-[641px]:auto-rows-fr max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4"
           aria-hidden="true"
         >
           {Array.from({ length: PAGE_SIZE }, (_, i) => (
@@ -607,10 +609,11 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
         </div>
       ) : error && markets.length === 0 ? (
         // Step 3 (States 18c): hairline card with a coloured left edge,
-        // the phosphor warning glyph, and a ≥44px retry.
+        // the phosphor warning glyph, and a ≥44px retry. Errors use the
+        // system danger colour — never market-NO orange.
         <div
           role="alert"
-          className="rounded-2xl border border-[var(--border-1)] border-l-[3px] border-l-[var(--no)] bg-[var(--surface-1)] px-[18px] py-4"
+          className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] border-l-[3px] border-l-[var(--danger)] bg-[var(--surface-1)] px-[18px] py-4"
         >
           <div className="flex items-center gap-[9px]">
             <svg
@@ -619,7 +622,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
               height="16"
               fill="currentColor"
               aria-hidden="true"
-              className="flex-none text-[var(--no)]"
+              className="flex-none text-[var(--danger)]"
             >
               {/* phosphor warning-circle-fill — verbatim from
                   design_handoff_taptrade/logos/phosphor-paths.json */}
@@ -632,13 +635,14 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
           <p className="mb-0 mt-[9px] text-[13px] leading-[1.5] text-[var(--t2)]">
             {error}
           </p>
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="md"
+            className="mt-3.5"
             onClick={() => setReloadNonce((n) => n + 1)}
-            className="mt-3.5 inline-flex min-h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--t1)] transition-[border-color] hover:border-[var(--t3)]"
           >
             {t("RETRY", "Retry")}
-          </button>
+          </Button>
         </div>
       ) : !loading && markets.length === 0 ? (
         emptyState
@@ -698,8 +702,9 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
           {hasNext && subcategory === null && (
             <div className={LOAD_MORE_CLASS}>
               <Button
-                size="none"
-                className="px-7 py-3 text-sm [font-family:var(--font-terminal)]"
+                variant="secondary"
+                size="lg"
+                className="px-7"
                 onClick={loadMore}
                 disabled={loadingMore}
               >

@@ -31,6 +31,8 @@ interface PredictionWorkspaceProps {
   activeCategoryId?: string;
 }
 
+// A quiet one-line pointer for first-timers: no box, no fill, so the
+// lead moment stays the first thing the eye lands on.
 function WorkspaceNotice({
   children,
   href,
@@ -40,15 +42,15 @@ function WorkspaceNotice({
 }) {
   const { t } = useTranslation("prediction");
   return (
-    <div className="flex min-h-10 items-center justify-between gap-4 rounded-lg border border-[var(--border-1)] bg-[color-mix(in_srgb,var(--card)_64%,var(--raised))] px-3 text-[12px] text-[var(--ink-3)]">
-      <span className="min-w-0 truncate">{children}</span>
+    <p className="m-0 flex flex-wrap items-baseline gap-x-2 text-[13px] text-[var(--t3)]">
+      <span>{children}</span>
       <Link
         href={href}
-        className="shrink-0 font-semibold text-[var(--brand-purple)] no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+        className="font-semibold text-[var(--t1)] underline decoration-[var(--border-2)] underline-offset-4 transition-colors hover:decoration-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
       >
-        {t("WORKSPACE_START_GUIDE", "Start guide")}
+        {t("WORKSPACE_START_GUIDE", "Start guide")} →
       </Link>
-    </div>
+    </p>
   );
 }
 
@@ -75,22 +77,19 @@ export function PredictionWorkspace({
       />
 
       <main
-        className="min-w-0 px-12 py-8 max-[1199px]:px-8 max-[1023px]:px-5 max-[1023px]:py-5"
+        className="min-w-0 px-10 py-7 max-[1199px]:px-8 max-[1023px]:px-4 max-[1023px]:py-5"
         data-discovery-market-count={discoveryMarketCount}
       >
-        <div className="mx-auto max-w-[1120px]">
+        <div className="mx-auto max-w-[1180px]">
           {/* The desktop rail already shows this title, so it stays in the
               accessibility tree there as the page's h1 without repeating. */}
           <div className="min-[1024px]:sr-only">
-            <h1 className="type-display m-0 text-[24px] font-semibold leading-[1.2] tracking-[-0.025em] text-[var(--ink)]">
+            <h1 className="type-poster m-0 text-[40px] text-[var(--t1)]">
               {t("WORKSPACE_MOMENTS_TITLE", "Trending moments")}
             </h1>
-            <p className="mb-0 mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--brand-purple)]">
-              {t("WORKSPACE_EXPLORE_TOPICS", "Explore topics · all moments")}
-            </p>
           </div>
 
-          <div className="mt-4 min-[1024px]:mt-0">
+          <div className="mt-2 mb-4 min-[1024px]:mt-0">
             <WorkspaceNotice href="/about">
               {t(
                 "WORKSPACE_GUIDE_NOTICE",
@@ -99,7 +98,7 @@ export function PredictionWorkspace({
             </WorkspaceNotice>
           </div>
 
-          <div className="mt-4 min-[761px]:mt-6">
+          <div>
             <AllMarketsSection
               categories={catalogCategories}
               categoryId={activeCategoryId}

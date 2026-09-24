@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
+import { Button, Input, Textarea } from "../components/ui";
 import {
   buildSupportMailto,
   SUPPORT_EMAIL,
@@ -10,12 +11,14 @@ import {
 
 type FormData = SupportRequest;
 
-const STATUS_CLASS =
-  "mb-6 rounded-md border border-[var(--accent)] bg-[var(--accent-soft)] p-4 text-sm text-[var(--brand-dark)]";
-const INPUT_CLASS =
-  "box-border w-full rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)]";
-const TEXTAREA_CLASS =
-  "box-border min-h-[140px] w-full resize-y rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3 font-[inherit] text-sm text-[var(--t1)] transition-all duration-300 focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--accent-soft)]";
+// Status banners follow the toast recipe (DESIGN.md §6): white surface,
+// hairline, a 3px left edge in the system colour for the kind — never
+// the ink/accent treatment for a success or error message.
+const STATUS_BASE_CLASS =
+  "mb-6 rounded-[var(--r-rh-md)] border border-[var(--border-1)] border-l-[3px] bg-[var(--surface-1)] p-4 text-sm text-[var(--t1)]";
+const SUCCESS_STATUS_CLASS = `${STATUS_BASE_CLASS} border-l-[var(--success)]`;
+const ERROR_STATUS_CLASS = `${STATUS_BASE_CLASS} border-l-[var(--danger)]`;
+const LABEL_CLASS = "mb-2 block text-sm font-semibold text-[var(--t2)]";
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState<FormData>({
@@ -50,33 +53,30 @@ export default function ContactUsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[600px] px-5 py-10">
-      <h1 className="mb-6 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+    <div className="mx-auto max-w-[720px] px-4 py-12 md:py-16">
+      <h1 className="type-poster m-0 mb-8 text-[clamp(32px,5vw,48px)] text-[var(--t1)]">
         Contact Us
       </h1>
 
       {submitted && (
-        <div role="status" className={STATUS_CLASS}>
+        <div role="status" className={SUCCESS_STATUS_CLASS}>
           Your email app should have opened with your message ready to send. If
           it didn't, email us directly at {SUPPORT_EMAIL}.
         </div>
       )}
 
       {error && (
-        <div role="alert" className={STATUS_CLASS}>
+        <div role="alert" className={ERROR_STATUS_CLASS}>
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-5">
-          <label
-            htmlFor="name"
-            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
-          >
+          <label htmlFor="name" className={LABEL_CLASS}>
             Full Name
           </label>
-          <input
+          <Input
             id="name"
             type="text"
             name="name"
@@ -84,18 +84,15 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="Your name"
-            className={INPUT_CLASS}
+            className="w-full"
           />
         </div>
 
         <div className="mb-5">
-          <label
-            htmlFor="email"
-            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
-          >
+          <label htmlFor="email" className={LABEL_CLASS}>
             Email Address
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             name="email"
@@ -103,18 +100,15 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="your@email.com"
-            className={INPUT_CLASS}
+            className="w-full"
           />
         </div>
 
         <div className="mb-5">
-          <label
-            htmlFor="subject"
-            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
-          >
+          <label htmlFor="subject" className={LABEL_CLASS}>
             Subject
           </label>
-          <input
+          <Input
             id="subject"
             type="text"
             name="subject"
@@ -122,37 +116,31 @@ export default function ContactUsPage() {
             onChange={handleChange}
             required
             placeholder="What is this about?"
-            className={INPUT_CLASS}
+            className="w-full"
           />
         </div>
 
         <div className="mb-5">
-          <label
-            htmlFor="message"
-            className="mb-2 block text-sm font-semibold text-[var(--t2)]"
-          >
+          <label htmlFor="message" className={LABEL_CLASS}>
             Message
           </label>
-          <textarea
+          <Textarea
             id="message"
             name="message"
             value={formData.message}
             onChange={handleChange}
             required
             placeholder="Please tell us more..."
-            className={TEXTAREA_CLASS}
+            className="w-full min-h-[140px]"
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full cursor-pointer rounded-md border-0 bg-[var(--accent)] px-5 py-3 text-[15px] font-semibold text-[var(--ticket-cta-text)] transition-[filter] duration-300 hover:brightness-[1.05] disabled:cursor-not-allowed disabled:opacity-70"
-        >
+        <Button type="submit" variant="primary" size="lg" className="w-full">
           Send Message
-        </button>
+        </Button>
       </form>
 
-      <div className="mt-10 rounded-lg border border-[var(--border-1)] bg-[var(--surface-2)] p-5">
+      <div className="mt-10 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-2)] p-5">
         <div className="mb-3 text-base font-bold text-[var(--t1)]">
           Other Ways to Reach Us
         </div>

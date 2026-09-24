@@ -256,7 +256,7 @@ test.describe("J1 browse markets", () => {
 
     const ticker = await openLiquidMarket(page);
     expect(ticker).toBeTruthy();
-    await expect(page.getByText(/¢/).first()).toBeVisible();
+    await expect(page.getByText(/\d+\s*pts\b/i).first()).toBeVisible();
     await expect(page.getByText(/prob/i).first()).toBeVisible();
     await expect(page.getByText(/Closes|Closed|close/i).first()).toBeVisible();
 

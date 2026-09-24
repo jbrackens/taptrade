@@ -65,13 +65,13 @@ describe("account values are neutral ink (step 8)", () => {
   });
 });
 
-describe("account actions grid (step 8)", () => {
-  it("hover is hairline + shadow, never a background change", () => {
-    assert.match(
-      account,
-      /hover:border-\[var\(--border-2\)\] hover:shadow-\[var\(--shadow-card-hover\)\]/,
-    );
-    assert.ok(!account.includes("hover:bg-["));
+describe("account settings list (Kilig)", () => {
+  it("renders the actions as one hairline-divided settings list", () => {
+    // Kilig: an Apple-Settings list (label + description left, chevron
+    // right) inside one white card, not a grid of shadowed cards.
+    assert.match(account, /function SettingsRow/);
+    assert.match(account, /hover:bg-\[var\(--surface-2\)\]/);
+    assert.ok(!account.includes("shadow-[var(--shadow-card"));
   });
 
   it("keeps the five Lucide icons read from source", () => {
@@ -86,21 +86,14 @@ describe("account actions grid (step 8)", () => {
     assert.match(account, /href="\/account\/security"[\s\S]{0,200}actions\.security\.title/);
   });
 
-  it("survives five cards as well as six — Play responsibly is flag-gated", () => {
+  it("keeps Play responsibly flag-gated", () => {
     assert.match(account, /\{FEATURE_RG && \(/);
-    assert.match(
-      account,
-      /grid-cols-\[repeat\(auto-fill,minmax\(260px,1fr\)\)\]/,
-      "auto-fill is count-agnostic, and collapses to one column at 390",
-    );
   });
 
-  it("keeps the privacy save-error out of market-direction colors", () => {
-    assert.match(
-      account,
-      /border-\[var\(--brand-dark\)\] bg-\[var\(--brand-lavender\)\][^"]*text-\[var\(--brand-dark\)\]/,
-    );
+  it("keeps the privacy save-error in the system danger colour, never market direction", () => {
+    assert.match(account, /var\(--danger\)/);
     assert.ok(!/rgba\(255,\s*155,\s*107/.test(account));
+    assert.doesNotMatch(account, /brand-(?:dark|lavender|purple)/);
   });
 });
 
@@ -124,15 +117,16 @@ describe("header chips at 390 (step 8)", () => {
     );
   });
 
-  it("uses an accessible lavender avatar state in the top bar", () => {
+  it("uses the Kilig ink avatar disc in the top bar", () => {
     assert.ok(!topBar.includes("#6d63dc"));
+    // Kilig: an ink disc with white initials (the interaction voice).
     assert.match(
       topBar,
-      /TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}bg-\[var\(--accent-soft\)\][\s\S]{0,400}text-\[var\(--accent-text\)\]/,
+      /TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}bg-\[var\(--accent\)\][\s\S]{0,400}text-\[var\(--ticket-cta-text\)\]/,
     );
     assert.ok(
-      !/TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}text-white/.test(topBar),
-      "ink on lime, never white",
+      !/TOP_BAR_AVATAR_CLASS =[\s\S]{0,400}brand-lavender/.test(topBar),
+      "no lavender",
     );
   });
 

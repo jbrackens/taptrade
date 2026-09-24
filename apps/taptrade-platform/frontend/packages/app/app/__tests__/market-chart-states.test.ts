@@ -128,7 +128,7 @@ describe("24h range stat", () => {
   });
 
   it("formats real bounds", () => {
-    assert.equal(format24hRange(58, 64), "58¢ – 64¢");
+    assert.equal(format24hRange(58, 64), "58 – 64 pts");
   });
 });
 

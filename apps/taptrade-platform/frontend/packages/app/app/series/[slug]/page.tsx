@@ -14,19 +14,20 @@ import { logger } from "../../lib/logger";
 const api = createPredictionClient();
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
-const SERIES_HEAD_CLASS =
-  "mb-6 font-sans";
+const SERIES_HEAD_CLASS = "mb-6";
 const SERIES_TITLE_ROW_CLASS =
   "flex flex-wrap items-baseline justify-between gap-3";
+// Poster-type header, matching the category page.
 const SERIES_TITLE_CLASS =
-  "m-0 font-sans text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+  "type-poster m-0 text-[36px] max-[640px]:text-[28px] text-[var(--t1)]";
 const SERIES_META_CLASS =
-  "font-mono text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[12px] text-[var(--t3)] tabular-nums";
 const SERIES_DESC_CLASS =
   "mt-2 max-w-3xl text-[14px] leading-6 text-[var(--t2)]";
 const SERIES_TAGS_CLASS = "mt-4 flex flex-wrap items-center gap-2";
+// Pills are reserved for tags, search and the balance chip — DESIGN.md §5.
 const SERIES_TAG_CLASS =
-  "rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--t2)]";
+  "rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-1 text-[12px] font-semibold text-[var(--t2)]";
 const SERIES_EMPTY_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-14 text-center text-[13px] text-[var(--t3)]";
 

@@ -16,6 +16,7 @@ import type {
 import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
+import { Button, Input } from "../components/ui";
 import { FEATURE_KYC, FEATURE_LIMITS } from "../lib/features";
 import {
   legacyLocaleStorageKey,
@@ -30,48 +31,58 @@ const tabValues: TabType[] = (
   ["settings", "limits", "verification", "security"] as TabType[]
 ).filter((v) => FEATURE_LIMITS || v !== "limits");
 
+// Status badges use system-message tokens, never Kilig pink (identity +
+// liveness only) and never YES/NO (market direction only): verified =
+// success, pending = warning, failed = danger, unverified = neutral ink.
 const statusBadgeClasses: Record<string, string> = {
   verified:
-    "inline-block rounded-[4px] bg-[var(--brand-lavender)] px-3 py-1 text-[12px] font-semibold text-[var(--brand-dark)]",
+    "inline-flex items-center rounded-[var(--r-rh-sm)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] px-2.5 py-1 text-xs font-semibold text-[var(--success)]",
   pending:
-    "inline-block rounded-[4px] bg-[var(--reward-soft)] px-3 py-1 text-[12px] font-semibold text-[var(--reward-text)]",
+    "inline-flex items-center rounded-[var(--r-rh-sm)] bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] px-2.5 py-1 text-xs font-semibold text-[var(--warning)]",
   failed:
-    "inline-block rounded-[4px] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-semibold text-[var(--t2)]",
+    "inline-flex items-center rounded-[var(--r-rh-sm)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-2.5 py-1 text-xs font-semibold text-[var(--danger)]",
   unverified:
-    "inline-block rounded-[4px] bg-[var(--surface-2)] px-3 py-1 text-[12px] font-semibold text-[var(--t3)]",
+    "inline-flex items-center rounded-[var(--r-rh-sm)] bg-[var(--surface-2)] px-2.5 py-1 text-xs font-semibold text-[var(--t3)]",
   default:
-    "inline-block rounded-[4px] bg-[var(--brand-lavender)] px-3 py-1 text-[12px] font-semibold text-[var(--accent-text)]",
+    "inline-flex items-center rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--accent-text)]",
 };
 
-const tabListClass = "mb-6 flex border-b border-[var(--border-1)]";
+// Segmented pills, ink selected state (DESIGN.md §6 selection rule).
+const tabTrackClass =
+  "mb-6 inline-flex flex-wrap gap-1 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-1";
 const tabButtonClass = (active: boolean) =>
   active
-    ? "cursor-pointer border-0 border-b-2 border-b-[var(--accent)] bg-transparent px-4 py-3 text-[14px] font-medium text-[var(--accent)]"
-    : "cursor-pointer border-0 bg-transparent px-4 py-3 text-[14px] font-medium text-[var(--t2)]";
+    ? "min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-rh-sm)] border-0 bg-[var(--accent)] px-4 py-2 text-[13px] font-semibold text-[var(--ticket-cta-text)]"
+    : "min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-rh-sm)] border-0 bg-transparent px-4 py-2 text-[13px] font-semibold text-[var(--t2)] hover:text-[var(--t1)]";
 
-const inputClass =
-  "box-border w-full rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-[14px] text-[var(--t1)]";
+const selectClass =
+  "box-border w-full cursor-pointer rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm text-[var(--t1)] outline-none transition-colors duration-150 hover:border-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)]";
 const labelClass = "mb-2 block text-[14px] font-semibold text-[var(--t1)]";
-const buttonClass =
-  "cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 py-2.5 text-[14px] font-semibold text-[var(--ticket-cta-text)] disabled:cursor-not-allowed disabled:opacity-60";
-const loadingClass = "max-w-[800px] p-10 text-[var(--t3)]";
-const pageClass = "max-w-[800px]";
-const pageTitleClass = "mb-6 text-[28px] font-bold text-[var(--t1)]";
+const loadingClass =
+  "mx-auto max-w-[800px] px-4 py-10 text-center text-sm text-[var(--t3)]";
+const pageClass = "mx-auto max-w-[800px] px-4 py-6";
+const pageTitleClass =
+  "type-poster m-0 mb-6 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]";
 const cardClass =
   "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const sectionClass = "mb-6";
 const sectionTitleClass = "mb-4 text-[16px] font-semibold text-[var(--t1)]";
-const twoColumnGridClass = "grid grid-cols-2 gap-4";
+const twoColumnGridClass = "grid grid-cols-2 gap-4 max-[480px]:grid-cols-1";
 const hintClass = "mt-2 text-[12px] text-[var(--t3)]";
 const preferenceSectionClass = "border-t border-[var(--border-1)] pt-6";
 const fieldClass = "mb-4";
 const verificationRowClass =
-  "flex justify-between border-b border-[var(--border-1)] py-3";
+  "flex justify-between gap-3 border-b border-[var(--border-1)] py-3 last:border-b-0";
 const mutedTextClass = "text-[14px] text-[var(--t3)]";
 const securityRowClass =
-  "flex items-center justify-between border-b border-[var(--border-1)] py-4";
+  "flex items-center justify-between gap-3 border-b border-[var(--border-1)] py-4 last:border-b-0";
 const accountValueClass = "font-semibold text-[var(--t1)]";
-const checkboxSwitchClass = "h-6 w-[50px] cursor-pointer";
+// Same visual toggle-switch recipe as /account/notifications — purely a
+// style upgrade over the native (uncontrolled) checkbox; no behaviour change.
+const toggleWrapClass = "relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center";
+const toggleInputClass = "peer sr-only";
+const toggleSliderClass =
+  "absolute inset-0 cursor-pointer rounded-[var(--r-pill)] bg-[var(--border-2)] transition-all duration-150 before:absolute before:bottom-[3px] before:left-[3px] before:h-[22px] before:w-[22px] before:rounded-full before:bg-[var(--on-ink)] before:transition-all before:duration-150 peer-checked:bg-[var(--accent)] peer-checked:before:translate-x-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--focus-ring)] peer-focus-visible:outline-offset-2";
 
 function StatusBadge({
   status,
@@ -100,10 +111,12 @@ function TabNavigation({
   );
 
   return (
-    <div className={tabListClass}>
+    <div className={tabTrackClass} role="tablist" aria-label="Profile sections">
       {tabs.map((label, index) => (
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTabIndex === index}
           key={label}
           onClick={() => onChange(index)}
           className={tabButtonClass(activeTabIndex === index)}
@@ -381,7 +394,7 @@ export default function ProfilePage() {
   }, [user?.id, toast]);
 
   if (profileLoading) {
-    return <div className={loadingClass}>Loading profile...</div>;
+    return <div className={loadingClass}>Loading profile…</div>;
   }
 
   return (
@@ -403,24 +416,24 @@ export default function ProfilePage() {
                   <label htmlFor="first-name" className={labelClass}>
                     First Name
                   </label>
-                  <input
+                  <Input
                     id="first-name"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className={inputClass}
+                    className="w-full"
                   />
                 </div>
                 <div>
                   <label htmlFor="last-name" className={labelClass}>
                     Last Name
                   </label>
-                  <input
+                  <Input
                     id="last-name"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className={inputClass}
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -430,12 +443,12 @@ export default function ProfilePage() {
               <label htmlFor="email-address" className={labelClass}>
                 Email Address
               </label>
-              <input
+              <Input
                 id="email-address"
                 type="email"
                 value={email}
                 disabled
-                className={`${inputClass} opacity-60`}
+                className="w-full"
               />
               <p className={hintClass}>
                 Email cannot be changed. Contact support if you need to update
@@ -447,13 +460,13 @@ export default function ProfilePage() {
               <label htmlFor="phone-number" className={labelClass}>
                 Phone Number
               </label>
-              <input
+              <Input
                 id="phone-number"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 123-4567"
-                className={inputClass}
+                className="w-full"
               />
             </div>
 
@@ -461,24 +474,24 @@ export default function ProfilePage() {
               <label htmlFor="date-of-birth" className={labelClass}>
                 Date of Birth
               </label>
-              <input
+              <Input
                 id="date-of-birth"
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
-                className={inputClass}
+                className="w-full font-mono"
               />
             </div>
 
             <div className={sectionClass}>
-              <button
+              <Button
                 type="button"
+                variant="primary"
                 onClick={handleSaveProfile}
                 disabled={saving}
-                className={buttonClass}
               >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
+                {saving ? "Saving…" : "Save Changes"}
+              </Button>
             </div>
 
             {/* Preferences Section */}
@@ -495,7 +508,7 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setPrefLanguage(normalizeLocale(e.target.value))
                   }
-                  className={inputClass}
+                  className={selectClass}
                 >
                   {supportedLocales.map((lang) => (
                     <option key={lang.code} value={lang.code}>
@@ -513,7 +526,7 @@ export default function ProfilePage() {
                   id="timezone"
                   value={prefTimezone}
                   onChange={(e) => setPrefTimezone(e.target.value)}
-                  className={inputClass}
+                  className={selectClass}
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz} value={tz}>
@@ -523,13 +536,9 @@ export default function ProfilePage() {
                 </select>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSavePreferences}
-                className={buttonClass}
-              >
+              <Button type="button" variant="primary" onClick={handleSavePreferences}>
                 Save Preferences
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -543,39 +552,42 @@ export default function ProfilePage() {
                   <label htmlFor="daily-limit-pts" className={labelClass}>
                     Daily Limit (pts)
                   </label>
-                  <input
+                  <Input
                     id="daily-limit-pts"
                     type="number"
+                    inputMode="numeric"
                     value={dailyLimit}
                     onChange={(e) => setDailyLimit(e.target.value)}
                     placeholder="1000"
-                    className={inputClass}
+                    className="w-full font-mono"
                   />
                 </div>
                 <div>
                   <label htmlFor="weekly-limit-pts" className={labelClass}>
                     Weekly Limit (pts)
                   </label>
-                  <input
+                  <Input
                     id="weekly-limit-pts"
                     type="number"
+                    inputMode="numeric"
                     value={weeklyLimit}
                     onChange={(e) => setWeeklyLimit(e.target.value)}
                     placeholder="5000"
-                    className={inputClass}
+                    className="w-full font-mono"
                   />
                 </div>
                 <div>
                   <label htmlFor="monthly-limit-pts" className={labelClass}>
                     Monthly Limit (pts)
                   </label>
-                  <input
+                  <Input
                     id="monthly-limit-pts"
                     type="number"
+                    inputMode="numeric"
                     value={monthlyLimit}
                     onChange={(e) => setMonthlyLimit(e.target.value)}
                     placeholder="10000"
-                    className={inputClass}
+                    className="w-full font-mono"
                   />
                 </div>
               </div>
@@ -588,27 +600,28 @@ export default function ProfilePage() {
                   <label htmlFor="max-order-size-pts" className={labelClass}>
                     Max Order Size (pts)
                   </label>
-                  <input
+                  <Input
                     id="max-order-size-pts"
                     type="number"
+                    inputMode="numeric"
                     value={maxOrderPoints}
                     onChange={(e) => setMaxOrderPoints(e.target.value)}
                     placeholder="500"
-                    className={inputClass}
+                    className="w-full font-mono"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <button
+              <Button
                 type="button"
+                variant="primary"
                 onClick={handleSaveLimits}
                 disabled={savingLimits}
-                className={buttonClass}
               >
-                {savingLimits ? "Saving..." : "Update Limits"}
-              </button>
+                {savingLimits ? "Saving…" : "Update Limits"}
+              </Button>
             </div>
           </>
         )}
@@ -657,14 +670,14 @@ export default function ProfilePage() {
                   Verify your identity to unlock higher limits and improved
                   features.
                 </p>
-                <button
+                <Button
                   type="button"
-                  className={buttonClass}
+                  variant="primary"
                   onClick={handleStartVerification}
                   disabled={verifying}
                 >
                   {verifying ? "Verifying…" : "Start Verification"}
-                </button>
+                </Button>
               </div>
             )}
           </>
@@ -678,48 +691,44 @@ export default function ProfilePage() {
                 <label htmlFor="current-password" className={labelClass}>
                   Current Password
                 </label>
-                <input
+                <Input
                   id="current-password"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter current password"
-                  className={inputClass}
+                  className="w-full"
                 />
               </div>
               <div className={fieldClass}>
                 <label htmlFor="new-password" className={labelClass}>
                   New Password
                 </label>
-                <input
+                <Input
                   id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className={inputClass}
+                  className="w-full"
                 />
               </div>
               <div className={fieldClass}>
                 <label htmlFor="confirm-password" className={labelClass}>
                   Confirm Password
                 </label>
-                <input
+                <Input
                   id="confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  className={inputClass}
+                  className="w-full"
                 />
               </div>
-              <button
-                type="button"
-                onClick={handleChangePassword}
-                className={buttonClass}
-              >
+              <Button type="button" variant="primary" onClick={handleChangePassword}>
                 Change Password
-              </button>
+              </Button>
             </div>
 
             <div className={sectionClass}>
@@ -728,7 +737,10 @@ export default function ProfilePage() {
                 <span className={mutedTextClass}>
                   Enable 2FA for added security
                 </span>
-                <input type="checkbox" className={checkboxSwitchClass} />
+                <label className={toggleWrapClass}>
+                  <input type="checkbox" className={toggleInputClass} />
+                  <span className={toggleSliderClass} />
+                </label>
               </div>
             </div>
 
@@ -743,7 +755,7 @@ export default function ProfilePage() {
                 </div>
                 <div className={verificationRowClass}>
                   <span className={mutedTextClass}>Member Since</span>
-                  <span className={accountValueClass}>
+                  <span className={`${accountValueClass} font-mono tabular-nums`}>
                     {profile?.createdAt
                       ? new Date(profile.createdAt).toLocaleDateString()
                       : "-"}

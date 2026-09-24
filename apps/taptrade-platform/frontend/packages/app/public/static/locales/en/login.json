@@ -18,5 +18,6 @@
   "USERNAME_PLACEHOLDER": "Enter your username or email",
   "PASSWORD_PLACEHOLDER": "Enter your password",
   "SIGNING_IN": "Signing In...",
-  "INCORRECT_CREDENTIALS": "Incorrect username or password."
+  "INCORRECT_CREDENTIALS": "Incorrect username or password.",
+  "WELCOME_TITLE": "Welcome back"
 }

@@ -47,17 +47,18 @@ export function TerminalCategoryRail({
   const homeLabel = isPredict
     ? t("WORKSPACE_ALL_MOMENTS", "All moments")
     : t("FOR_YOU");
+  // Kilig light chrome: a white rail on a hairline edge. Selection is the
+  // ink pill (the interaction voice), never pink.
   const railClass = isPredict
-    ? "sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto bg-[var(--brand-deep)] px-5 pb-8 pt-8 max-[1199px]:px-2.5 max-[1023px]:hidden"
-    : "terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] bg-[var(--brand-deep)] px-2.5 pb-5 pt-4 max-[1023px]:hidden";
+    ? "terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-5 pb-8 pt-8 max-[1199px]:px-2.5 max-[1023px]:hidden"
+    : "terminal-scrollbar sticky top-16 flex h-[calc(100vh-64px)] min-w-0 flex-col overflow-y-auto border-r border-[var(--border-1)] bg-[var(--surface-1)] px-2.5 pb-5 pt-4 max-[1023px]:hidden";
   const linkBase = isPredict
-    ? "group flex min-h-[34px] items-center gap-2 rounded-lg px-3 text-[13px] font-medium no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1199px]:justify-center max-[1199px]:px-2"
-    : "group flex min-h-[30px] items-center gap-2 rounded-[6px] px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.09em] no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-lavender)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-deep)] max-[1279px]:justify-center max-[1279px]:px-2";
-  const activeLink = isPredict
-    ? "bg-[var(--brand-purple)] text-[var(--on-brand)]"
-    : "bg-[var(--accent)] text-[var(--on-brand)]";
+    ? "group flex min-h-9 items-center gap-2 rounded-[var(--r-rh-md)] px-3 text-[14px] font-medium no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[1199px]:justify-center max-[1199px]:px-2"
+    : "group flex min-h-9 items-center gap-2 rounded-[var(--r-rh-md)] px-2.5 text-[13px] font-medium no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[1279px]:justify-center max-[1279px]:px-2";
+  const activeLink =
+    "bg-[var(--accent)] font-semibold text-[var(--ticket-cta-text)]";
   const inactiveLink =
-    "text-[var(--brand-lavender)] hover:bg-[color-mix(in_srgb,var(--brand-lavender)_12%,transparent)] hover:text-[var(--on-brand)]";
+    "text-[var(--t2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]";
   const labelClass = isPredict
     ? "max-[1199px]:sr-only"
     : "max-[1279px]:sr-only";
@@ -69,18 +70,20 @@ export function TerminalCategoryRail({
     <aside className={railClass}>
       {isPredict && (
         <header className="max-[1199px]:hidden">
-          <h2 className="type-display m-0 text-[28px] font-semibold leading-[1.03] tracking-[-0.04em] text-[var(--on-brand)]">
+          <h2 className="type-poster m-0 text-[38px] font-black text-[var(--t1)]">
             {t("WORKSPACE_MOMENTS_RAIL_LINE_ONE", "Trending")}
             <br />
-            {t("WORKSPACE_MOMENTS_RAIL_LINE_TWO", "Moments")}
+            <span className="text-[var(--kilig)]">
+              {t("WORKSPACE_MOMENTS_RAIL_LINE_TWO", "Moments")}
+            </span>
           </h2>
-          <p className="mb-0 mt-4 text-[13px] leading-[1.34] text-[var(--brand-lavender)]">
+          <p className="mb-0 mt-3 text-[13px] leading-[1.45] text-[var(--t2)]">
             {t(
               "WORKSPACE_MOMENTS_RAIL_COPY",
               "See what people are watching— and decide where you stand.",
             )}
           </p>
-          <p className="mb-0 mt-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--signal-gold)]">
+          <p className="mb-0 mt-6 font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
             {t("WORKSPACE_EXPLORE_TOPICS_LABEL", "Explore topics")}
           </p>
         </header>
@@ -137,8 +140,8 @@ export function TerminalCategoryRail({
       </nav>
 
       {!isPredict && (
-        <div className="mt-auto border-t border-[color-mix(in_srgb,var(--brand-lavender)_28%,transparent)] px-2 pt-5 max-[1279px]:px-0">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--brand-lavender)] max-[1279px]:justify-center">
+        <div className="mt-auto border-t border-[var(--border-1)] px-2 pt-5 max-[1279px]:px-0">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-[var(--t2)] max-[1279px]:justify-center">
             <span
               className="h-2 w-2 rounded-full bg-[var(--live)]"
               aria-hidden="true"
@@ -147,7 +150,7 @@ export function TerminalCategoryRail({
               {t("MARKET_DATA_LIVE")}
             </span>
           </div>
-          <p className="mt-2 text-[11px] leading-[1.45] text-[var(--brand-lavender)] max-[1279px]:hidden">
+          <p className="mt-2 text-[11px] leading-[1.45] text-[var(--t3)] max-[1279px]:hidden">
             {t("MARKET_RISK_SHORT")}
           </p>
         </div>

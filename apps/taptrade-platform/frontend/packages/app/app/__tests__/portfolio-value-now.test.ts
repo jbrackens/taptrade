@@ -76,7 +76,9 @@ describe("Card 18b/18c variants (step 4)", () => {
 
   it("ships dashed and left-edge variants", () => {
     assert.match(card, /dashed: "border-dashed border-\[var\(--border-2\)\]"/);
-    assert.match(card, /border-l-\[3px\] border-l-\[var\(--no\)\]/);
+    // Kilig: the error edge is the system danger colour, never market NO.
+    assert.match(card, /border-l-\[3px\] border-l-\[var\(--danger\)\]/);
+    assert.doesNotMatch(card, /border-l-\[var\(--no\)\]/);
     assert.match(card, /border-l-\[3px\] border-l-\[var\(--info-dot\)\]/);
   });
 });

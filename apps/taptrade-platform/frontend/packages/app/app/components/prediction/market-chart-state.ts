@@ -130,5 +130,5 @@ export function format24hRange(
   if (typeof lowPoints !== "number" || typeof highPoints !== "number") {
     return null;
   }
-  return `${lowPoints}¢ – ${highPoints}¢`;
+  return `${lowPoints} – ${highPoints} pts`;
 }

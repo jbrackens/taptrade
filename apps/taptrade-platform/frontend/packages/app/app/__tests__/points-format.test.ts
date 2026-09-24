@@ -139,7 +139,6 @@ const POINTS_SURFACES = [
   "../leaderboards/page.tsx",
   "../components/prediction/OrderBook.tsx",
   "../components/prediction/RecentTrades.tsx",
-  "../components/prediction/DiscoveryHero.tsx",
   "../components/prediction/MarketFeed.tsx",
 ];
 

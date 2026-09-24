@@ -2,17 +2,13 @@
 
 import { useEffect } from "react";
 import { logger } from "../lib/logger";
+import { Button } from "../components/ui";
 
 const shellClass =
   "flex min-h-[50vh] flex-col items-center justify-center px-5 py-10 text-center";
-const iconClass = "mb-4 text-[48px] leading-none opacity-60";
-const titleClass = "mb-2 text-[20px] font-bold text-[var(--t1)]";
-const copyClass = "mb-6 max-w-[400px] text-[14px] leading-[1.6] text-[var(--t2)]";
+const titleClass = "mb-2 text-xl font-bold text-[var(--t1)]";
+const copyClass = "mb-6 max-w-[400px] text-sm leading-[1.6] text-[var(--t2)]";
 const actionRowClass = "flex gap-3";
-const primaryActionClass =
-  "cursor-pointer rounded-[8px] border-0 bg-[var(--accent)] px-6 py-2.5 text-[14px] font-semibold text-[var(--ticket-cta-text)]";
-const secondaryActionClass =
-  "flex items-center rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-2)] px-6 py-2.5 text-[14px] font-semibold text-[var(--t1)] no-underline";
 
 export default function ProfileError({
   error,
@@ -27,19 +23,34 @@ export default function ProfileError({
 
   return (
     <div className={shellClass}>
-      <div className={iconClass}>👤</div>
-      <h2 className={titleClass}>Profile Error</h2>
+      <svg
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className="mb-4 text-[var(--t3)]"
+      >
+        <circle cx="12" cy="12" r="9.25" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M12 7.5v5.25M12 16v.01"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+      <h2 className={titleClass}>Profile error</h2>
       <p className={copyClass}>
         {error.message ||
           "We couldn't load your profile. Please check your connection and try again."}
       </p>
       <div className={actionRowClass}>
-        <button type="button" onClick={reset} className={primaryActionClass}>
-          Try Again
-        </button>
-        <a href="/" className={secondaryActionClass}>
-          Back to Home
-        </a>
+        <Button variant="primary" onClick={reset}>
+          Try again
+        </Button>
+        <Button variant="secondary" render={<a href="/" />}>
+          Back to home
+        </Button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
+import { Button } from "../../components/ui";
 import {
   getTransactions,
   type GetTransactionsPaginatedResponse,
@@ -22,20 +23,20 @@ type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
 const pageClass = "mx-auto max-w-[1200px] px-4 py-6";
 const headerClass =
   "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
-const actionClass =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50";
+const backClass =
+  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const filterButtonBase =
-  "cursor-pointer rounded-[var(--r-rh-sm)] border px-3 py-2 text-xs font-semibold transition-all duration-150";
+  "min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-pill)] border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150";
 const tableHeadCellClass =
-  "px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.05em] text-[var(--t3)]";
+  "px-4 py-3 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const tableCellClass =
   "border-b border-[var(--border-1)] px-4 py-3 text-[13px] text-[var(--t1)]";
 
 function filterButtonClass(active: boolean) {
   return `${filterButtonBase} ${
     active
-      ? "border-[var(--accent)] bg-[var(--surface-1)] text-[var(--accent)]"
-      : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      ? "border-transparent bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+      : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)]"
   }`;
 }
 
@@ -180,7 +181,7 @@ export default function PointsLedgerPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
+          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
             Point ledger
           </h1>
           <p className="text-sm text-[var(--t3)]">
@@ -188,16 +189,18 @@ export default function PointsLedgerPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
-            className={actionClass}
+            variant="secondary"
+            size="none"
+            className="min-h-11 px-4 text-[13px]"
             onClick={handleExportCSV}
             disabled={exporting}
           >
-            {exporting ? "Exporting..." : "Export CSV"}
-          </button>
-          <Link href="/account" className={actionClass}>
-            Back to Account
+            {exporting ? "Exporting…" : "Export CSV"}
+          </Button>
+          <Link href="/account" className={backClass}>
+            Back to account
           </Link>
         </div>
       </div>
@@ -205,7 +208,7 @@ export default function PointsLedgerPage() {
       <div className="mb-6">
         <span
           id="tx-date-range-label"
-          className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--t3)]"
+          className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]"
         >
           Date range
         </span>
@@ -248,16 +251,14 @@ export default function PointsLedgerPage() {
       <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
         {loading ? (
           <div className="p-10 text-center text-sm text-[var(--t3)]">
-            Loading point ledger...
+            Loading point ledger…
           </div>
         ) : loadError ? (
           <div className="p-10 text-center text-sm text-[var(--t3)]">
             Point ledger is temporarily unavailable.
           </div>
         ) : transactions.length === 0 ? (
-          <div className="p-10 text-center text-sm text-[var(--t3)]">
-            No point movements found for this period.
-          </div>
+          <LedgerEmptyState />
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -279,26 +280,27 @@ export default function PointsLedgerPage() {
                         key={tx.transactionId}
                         className="hover:bg-[var(--surface-2)]"
                       >
-                        <td className={tableCellClass}>
+                        <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>
                           {new Date(tx.createdAt).toLocaleString()}
                         </td>
                         <td className={tableCellClass}>
-                          <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent)]">
+                          <span className="inline-block rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-2 py-1 text-xs font-semibold text-[var(--accent-text)]">
                             {pointLedgerTypeLabel(tx)}
                           </span>
                         </td>
                         <td className={tableCellClass}>
+                          {/* Ledger deltas are a movement, not a market
+                           * outcome — credits read ink (t1), debits read
+                           * the quieter ink-2 (t2). Never YES/NO colour. */}
                           <span
-                            className={
-                              positive
-                                ? "font-bold text-[var(--reward-text)]"
-                                : "font-bold text-[var(--brand-dark)]"
-                            }
+                            className={`font-mono font-semibold tabular-nums ${
+                              positive ? "text-[var(--t1)]" : "text-[var(--t2)]"
+                            }`}
                           >
                             {formatPointDelta(tx)}
                           </span>
                         </td>
-                        <td className={tableCellClass}>
+                        <td className={`${tableCellClass} font-mono tabular-nums`}>
                           {formatPoints(tx.balanceAfter)}
                         </td>
                         <td className={tableCellClass}>
@@ -315,8 +317,10 @@ export default function PointsLedgerPage() {
 
             {windowTruncated && (
               <div className="border-t border-[var(--border-1)] px-4 py-3 text-center text-xs text-[var(--t3)]">
-                Showing your most recent {LEDGER_WINDOW} point movements. Export
-                CSV covers up to the most recent {EXPORT_WINDOW}.
+                Showing your most recent{" "}
+                <span className="font-mono">{LEDGER_WINDOW}</span> point
+                movements. Export CSV covers up to the most recent{" "}
+                <span className="font-mono">{EXPORT_WINDOW}</span>.
               </div>
             )}
 
@@ -324,18 +328,18 @@ export default function PointsLedgerPage() {
               <div className="flex items-center justify-center gap-4 border-t border-[var(--border-1)] p-4">
                 <button
                   type="button"
-                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-colors duration-150 hover:border-[var(--border-2)] disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={() => setPage(() => Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                 >
                   Prev
                 </button>
-                <div className="text-[13px] font-semibold text-[var(--t2)]">
+                <div className="font-mono text-[13px] font-semibold text-[var(--t2)]">
                   Page {currentPage} of {totalPages}
                 </div>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-1)] px-3 py-2 text-xs font-semibold text-[var(--t2)] transition-colors duration-150 hover:border-[var(--border-2)] disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={() =>
                     setPage(() => Math.min(totalPages, currentPage + 1))
                   }
@@ -347,6 +351,30 @@ export default function PointsLedgerPage() {
             )}
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+function LedgerEmptyState() {
+  return (
+    <div className="flex flex-col items-center gap-3 p-12 text-center">
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className="text-[var(--t3)]"
+      >
+        <rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M7 9h10M7 12.5h10M7 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+      <div className="text-sm font-semibold text-[var(--t1)]">
+        No point movements
+      </div>
+      <div className="max-w-[280px] text-xs leading-normal text-[var(--t3)]">
+        Nothing to show for this period. Try a wider date range.
       </div>
     </div>
   );

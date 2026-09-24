@@ -88,15 +88,18 @@ export function InspectorPanel({
       </h2>
 
       <div className="flex items-start justify-between gap-3">
-        <span className="font-mono text-[28px] font-semibold leading-none tracking-[-0.02em] text-[var(--t1)] tabular-nums">
-          {market.yesPricePoints}¢
+        <span className="flex items-baseline gap-2">
+          <span className="mono mono-wide text-[32px] font-semibold leading-none tracking-[-0.05em] text-[var(--t1)] tabular-nums">
+            {yes}%
+          </span>
+          <span className="text-[12px] text-[var(--t3)]">{t("CHANCE", "chance")}</span>
         </span>
         <span className="flex flex-col items-end gap-0.5 font-mono text-[11px] font-semibold tabular-nums">
           <span className="text-[var(--yes-text)]">
-            {t("YES")} {market.yesPricePoints}¢
+            {t("YES")} {market.yesPricePoints} pts
           </span>
           <span className="text-[var(--no-text)]">
-            {t("NO")} {market.noPricePoints}¢
+            {t("NO")} {market.noPricePoints} pts
           </span>
         </span>
       </div>
@@ -119,7 +122,7 @@ export function InspectorPanel({
           </span>
           <span className="font-mono text-[10.5px] font-semibold text-[var(--accent-text)] tabular-nums">
             {position.quantity} {position.side === "yes" ? t("YES") : t("NO")}{" "}
-            @ {position.avgPricePoints}¢
+            @ {position.avgPricePoints} {t("PTS", "pts")}
           </span>
         </div>
       )}
@@ -132,7 +135,12 @@ export function InspectorPanel({
           })}
         </span>
         <p className="m-0 line-clamp-3 text-[11.5px] leading-[1.5] text-[var(--t2)]">
-          {market.settlementRule?.trim() ||
+          {/* A rule without whitespace is a machine key such as
+              "manual_attestation", not prose: fall through, as the
+              market page does. */}
+          {(market.settlementRule && /\s/.test(market.settlementRule.trim())
+            ? market.settlementRule.trim()
+            : "") ||
             market.description?.trim() ||
             t("FLOOR_RULES_FALLBACK", "Resolves under the published market rules.")}
         </p>

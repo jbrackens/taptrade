@@ -66,8 +66,8 @@ export default function AccountPage() {
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-[60px] pt-6">
-      <header className="mb-5">
-        <h1 className="m-0 mb-1 text-[26px] font-semibold tracking-[-0.02em] text-[var(--t1)]">
+      <header className="mb-6">
+        <h1 className="type-poster m-0 mb-1.5 text-[34px] text-[var(--t1)] max-[640px]:text-[28px]">
           {t("hub.title", "Account")}
         </h1>
         <p className="m-0 text-[13px] text-[var(--t3)]">
@@ -91,7 +91,7 @@ export default function AccountPage() {
           </div>
         </div>
         <div className="flex flex-col gap-0.5 text-right">
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
             {t("hub.availableBalance", "Available points")}
           </span>
           {/* The largest number on the screen is a magnitude — neutral ink,
@@ -106,51 +106,54 @@ export default function AccountPage() {
 
       <PrivacyCard />
 
-      <section className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+      <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+        {t("hub.manage", "Manage")}
+      </p>
+      <section className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
         {/* Step 8: Profile pointed at /account/security — a stale link from
          * when /account/settings was the crashed pages-router page (see the
          * header comment in account/settings/page.tsx). Settings has been a
          * working App Router page since that rewrite; "details and account
-         * setup" is that page. Security keeps its own card below. */}
-        <ActionCard
+         * setup" is that page. Security keeps its own row below. */}
+        <SettingsRow
           href="/account/settings"
-          icon={<Settings size={20} />}
+          icon={<Settings size={18} />}
           title={t("actions.profile.title", "Profile")}
           desc={t(
             "actions.profile.desc",
             "Update your details and account setup",
           )}
         />
-        <ActionCard
+        <SettingsRow
           href="/portfolio"
-          icon={<TrendingUp size={20} />}
+          icon={<TrendingUp size={18} />}
           title={t("actions.portfolio.title", "Portfolio")}
           desc={t(
             "actions.portfolio.desc",
             "Open positions, orders, settled history",
           )}
         />
-        <ActionCard
+        <SettingsRow
           href="/account/transactions"
-          icon={<TrendingUp size={20} />}
+          icon={<TrendingUp size={18} />}
           title={t("actions.points.title", "Point ledger")}
           desc={t(
             "actions.points.desc",
             "Starter grants, predictions, and rewards",
           )}
         />
-        <ActionCard
+        <SettingsRow
           href="/account/security"
-          icon={<Lock size={20} />}
+          icon={<Lock size={18} />}
           title={t("actions.security.title", "Security")}
           desc={t(
             "actions.security.desc",
             "Password, sessions, and sign-in protection",
           )}
         />
-        <ActionCard
+        <SettingsRow
           href="/account/notifications"
-          icon={<Bell size={20} />}
+          icon={<Bell size={18} />}
           title={t("actions.alerts.title", "Alerts")}
           desc={t(
             "actions.alerts.desc",
@@ -158,9 +161,9 @@ export default function AccountPage() {
           )}
         />
         {FEATURE_RG && (
-          <ActionCard
+          <SettingsRow
             href="/responsible-gaming"
-            icon={<HeartHandshake size={20} />}
+            icon={<HeartHandshake size={18} />}
             title={t("actions.responsible.title", "Play responsibly")}
             desc={t(
               "actions.responsible.desc",
@@ -227,7 +230,7 @@ function PrivacyCard() {
       aria-labelledby="acct-privacy-title"
     >
       <div className="mb-[14px]">
-        <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+        <span className="mb-0.5 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
           {t("privacy.kicker", "Privacy")}
         </span>
         <h2
@@ -266,7 +269,7 @@ function PrivacyCard() {
       </label>
       {error && (
         <div
-          className="mt-2.5 rounded-[var(--r-sm)] border border-[var(--brand-dark)] bg-[var(--brand-lavender)] px-3 py-2 text-xs text-[var(--brand-dark)]"
+          className="mt-2.5 rounded-[var(--r-rh-md)] border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-3 py-2 text-xs font-medium text-[var(--danger)]"
           role="alert"
         >
           {error}
@@ -284,7 +287,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
     <section className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
       <header className="mb-[14px] flex items-baseline justify-between gap-[14px]">
         <div>
-          <span className="mb-0.5 block text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="mb-0.5 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
             {t("portfolio.kicker", "Portfolio")}
           </span>
           <h2 className="m-0 text-base font-bold text-[var(--t1)]">
@@ -353,7 +356,7 @@ function Stat({
 
   return (
     <div className="flex flex-col gap-0.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3">
-      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]">
+      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
         {label}
       </span>
       <span
@@ -366,7 +369,11 @@ function Stat({
   );
 }
 
-function ActionCard({
+// Apple-Settings-grade navigation row: label + description left, chevron
+// right, hairline divider between rows (the group's own border supplies
+// the top/bottom edge — see the wrapping <section>). Hover is the same
+// raised-well step TopBar's own menu items use, never a shadow or lift.
+function SettingsRow({
   href,
   icon,
   title,
@@ -380,15 +387,38 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-[18px] no-underline shadow-[var(--shadow-card)] transition-[border-color,box-shadow,transform] duration-150 hover:-translate-y-px hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)]"
+      className="flex min-h-11 items-center gap-3 border-b border-[var(--border-1)] px-5 py-4 no-underline transition-colors duration-150 last:border-b-0 hover:bg-[var(--surface-2)]"
     >
-      <div className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-[var(--r-sm)] bg-[var(--accent-soft)] text-[var(--accent-text)]">
+      <span
+        className="flex shrink-0 items-center justify-center text-[var(--t2)]"
+        aria-hidden="true"
+      >
         {icon}
-      </div>
-      <div className="mb-0.5 text-sm font-semibold text-[var(--t1)]">
-        {title}
-      </div>
-      <div className="text-xs leading-normal text-[var(--t3)]">{desc}</div>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold text-[var(--t1)]">
+          {title}
+        </span>
+        <span className="block text-xs leading-normal text-[var(--t3)]">
+          {desc}
+        </span>
+      </span>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+        className="shrink-0 text-[var(--t3)]"
+      >
+        <path
+          d="M6 3.5 10.5 8 6 12.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </Link>
   );
 }

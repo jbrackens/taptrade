@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "Maghanap ng markets",
   "SEARCH_MARKETS_PLACEHOLDER": "Maghanap ng markets, kandidato, teams...",
   "SEARCH_NO_MARKETS": "Walang market na tugma sa “{{query}}”",
-  "SEARCH_RESULT_META": "{{ticker}} · {{price}}¢ YES",
+  "SEARCH_RESULT_META": "{{ticker}} · {{price}} pts YES",
   "BALANCE_LABEL": "BAL",
   "USER_MENU": "User menu",
   "LOG_IN": "Log in",

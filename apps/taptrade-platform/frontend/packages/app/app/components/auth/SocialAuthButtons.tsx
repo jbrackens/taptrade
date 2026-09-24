@@ -17,8 +17,10 @@
  * registration in services/auth/internal/http/oauth.go (X is slug
  * "twitter") — step 7 (2026-07-26) dropped Apple and SSO, which had no
  * backend on any deployment: a tile that can only fail is not an option.
- * The per-provider hover borders are brand colours ON PURPOSE — the one
- * place brand colour is right, as the platform's own affordance.
+ * Kilig (2026-09-24): the buttons themselves are secondary/outline —
+ * neutral hairline, ink hover — never coloured chrome. Each provider's
+ * icon keeps its own authentic mark (Google's four colours, Facebook
+ * blue, etc.) since that's the provider's identity, not ours.
  */
 
 import { useState, type MouseEvent, type ReactNode } from "react";
@@ -26,7 +28,6 @@ import { useState, type MouseEvent, type ReactNode } from "react";
 interface Provider {
   slug: string;
   name: string;
-  brandClass: string;
   icon: ReactNode;
 }
 
@@ -34,45 +35,42 @@ const PROVIDERS: Provider[] = [
   {
     slug: "google",
     name: "Google",
-    brandClass: "hover:border-[#4285F4] focus-visible:border-[#4285F4]",
     icon: <GoogleIcon />,
   },
   {
     slug: "twitter",
     name: "X",
-    brandClass: "hover:border-[#000000] focus-visible:border-[#000000]",
     icon: <XIcon />,
   },
   {
     slug: "facebook",
     name: "Facebook",
-    brandClass: "hover:border-[#1877F2] focus-visible:border-[#1877F2]",
     icon: <FacebookIcon />,
   },
   {
     slug: "tiktok",
     name: "TikTok",
-    brandClass: "hover:border-[#FE2C55] focus-visible:border-[#FE2C55]",
     icon: <TikTokIcon />,
   },
   {
     slug: "reddit",
     name: "Reddit",
-    brandClass: "hover:border-[#FF4500] focus-visible:border-[#FF4500]",
     icon: <RedditIcon />,
   },
   {
     slug: "discord",
     name: "Discord",
-    brandClass: "hover:border-[#5865F2] focus-visible:border-[#5865F2]",
     icon: <DiscordIcon />,
   },
 ];
 
+// Secondary/outline everywhere — neutral hairline at rest, ink stroke on
+// hover/focus (the ui/Button "secondary" recipe). Never provider-coloured
+// chrome; the icon glyph alone carries each brand's identity.
 const GRID_CLASS = "grid grid-cols-3 gap-2.5";
 const STACK_CLASS = "flex flex-col gap-2.5";
 const STACK_BUTTON_CLASS =
-  "flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--t1)] no-underline transition-[border-color,transform] duration-150 ease-[ease] hover:-translate-y-px active:scale-[0.99] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)]";
+  "flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 text-sm font-semibold text-[var(--t1)] no-underline transition-[border-color,transform] duration-150 ease-[ease] hover:border-[var(--t3)] hover:-translate-y-px active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const NOTICE_CLASS =
   "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--t2)]";
 const DEFAULT_GRID_SLUGS = [
@@ -84,7 +82,7 @@ const DEFAULT_GRID_SLUGS = [
   "discord",
 ];
 const BUTTON_BASE_CLASS =
-  "flex min-h-[46px] items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-0 text-[13px] font-semibold text-[var(--t2)] no-underline transition-[border-color,color,transform] duration-150 ease-[ease] hover:-translate-y-px hover:text-[var(--t1)] active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[460px]:px-0";
+  "flex min-h-[46px] items-center justify-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-2 py-0 text-[13px] font-semibold text-[var(--t2)] no-underline transition-[border-color,color,transform] duration-150 ease-[ease] hover:border-[var(--t3)] hover:-translate-y-px hover:text-[var(--t1)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[460px]:px-0";
 const ICON_CLASS = "inline-flex";
 const NAME_CLASS = "whitespace-nowrap max-[460px]:hidden";
 
@@ -144,11 +142,7 @@ export default function SocialAuthButtons({
       {list.map((p) => (
         <a
           key={p.slug}
-          className={
-            stacked
-              ? `${STACK_BUTTON_CLASS} ${p.brandClass}`
-              : `${BUTTON_BASE_CLASS} ${p.brandClass}`
-          }
+          className={stacked ? STACK_BUTTON_CLASS : BUTTON_BASE_CLASS}
           href={`/api/v1/auth/oauth/${p.slug}/start/`}
           onClick={(e) => startOAuth(e, p)}
           title={`Continue with ${p.name}`}

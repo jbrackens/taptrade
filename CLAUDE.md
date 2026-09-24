@@ -9,7 +9,7 @@ Contracts are priced in **Points**, 1–99, where the price is the implied proba
 The project was **forked from Taya Na Sportsbook on 2026-04-16** and transformed: the sports-betting domain (sports/fixtures/markets/selections/bets) was replaced with a prediction-market domain (categories/series/events/markets/orders/positions). Shared infrastructure — auth, wallet/ledger, WebSocket hub, CSRF, OpenTelemetry — was preserved.
 
 The app has three surfaces:
-- **Player app** (Next.js 16 App Router) — discovery with in-place quick trade, market detail, event pages, trade ticket, portfolio
+- **Player app** (Next.js 16 App Router) — moment-led discovery with in-place quick trade, market detail, event pages, trade ticket, portfolio
 - **Backoffice** (Next.js 16 App Router + Ant Design v5) — market creation, settlement queue, risk, access control, analytics
 - **Gateway API + Auth service** (Go) — HTTP+WebSocket API backed by PostgreSQL, with Redis for auth sessions, rate limiting and optional WS fan-out
 
@@ -50,10 +50,10 @@ taptrade/
 ├── Makefile                               ← one target: `make cashier-check` (validates the dormant trees)
 ├── CLAUDE.md                              ← this file
 ├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
-└── DESIGN.md                              ← design system (Tap Trade purple + gold); mirrors the code, does not govern it
+└── DESIGN.md                              ← design system (Kilig: ink + white, Kilig pink, blue/orange YES/NO); mirrors the code
 ```
 
-Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root`, not in prose: the current brand identity (adopted 2026-08-22) is `--brand-purple #6334a8` for actions/focus/links, `--signal-gold #f5c454` for live/reward/featured, `--paper #f1f4f6` page ground, `--dir-yes #126d68` teal and `--dir-no #9c3b65` mulberry for market direction only, and `--reward-lime #c6f24e` reserved with no current consumer (the "Pick. Win. Redeem." reward hero was removed on 2026-09-24 because Points are non-redeemable — never advertise redemption or prizes; lime is never a generic CTA or YES signal). Type is Switzer for UI and Geist Mono for every numeral. Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section).
+Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root` and the fonts in `app/layout.tsx`, not in prose. The current system is **Kilig** (adopted 2026-09-24): ink `#111114` and white chrome with ink as the interaction colour (primary buttons, selection, focus), `--kilig #e0126e` pink for identity and liveness only (text on light uses `--kilig-text #c40f60`; never the default button), `--paper #f5f5f7` page ground, YES blue `--dir-yes #1f5fe0` and NO orange `--dir-no #c94a12` for market direction only, Instrument Sans for UI, Big Shoulders (`.type-poster`) for uppercase poster headlines, and Martian Mono for every comparable numeral. Cards are 8px with no resting shadow; controls are 6px. Prices read "44 pts", never "¢". Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `DESIGN.md`, `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section). The old `--brand-*` / `--signal-gold*` / `--on-brand` names are deprecated aliases kept only so unmigrated files render; replace them when you touch a file.
 
 ## GitHub Repo
 

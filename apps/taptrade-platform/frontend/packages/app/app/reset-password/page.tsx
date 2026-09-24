@@ -13,8 +13,8 @@ export default function ResetPasswordRedirect() {
   }, [router, searchParams]);
 
   return (
-    <div className="p-10 text-center text-[14px] text-[var(--t3)]">
-      Redirecting...
+    <div className="flex min-h-screen items-center justify-center px-5 py-10 text-sm text-[var(--t3)]">
+      Redirecting…
     </div>
   );
 }

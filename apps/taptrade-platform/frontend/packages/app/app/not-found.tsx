@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+// Styling lives in globals.css (`.not-found-*`, `.home-button`): a
+// Martian Mono numeral, a poster-type title and the ink action.
+
 export default function NotFound() {
   return (
     <div className="not-found-container">

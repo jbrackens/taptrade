@@ -30,7 +30,7 @@ import { InspectorPanel } from "../../components/prediction/InspectorPanel";
 const api = createPredictionClient();
 
 const EYEBROW_CLASS =
-  "font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 
 function formatCloseAt(iso: string): string {
   return new Date(iso)
@@ -148,7 +148,7 @@ export default function EventWorkspacePage() {
             {Array.from({ length: 4 }, (_, i) => (
               <div
                 key={i}
-                className="h-[62px] animate-[shimmer_1.5s_infinite] rounded-[8px] bg-[linear-gradient(90deg,var(--surface-2)_25%,var(--border-1)_50%,var(--surface-2)_75%)] bg-[length:200%_100%]"
+                className="h-[62px] animate-pulse rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-2)]"
                 aria-hidden="true"
               />
             ))}
@@ -156,7 +156,7 @@ export default function EventWorkspacePage() {
         ) : error ? (
           <div
             role="alert"
-            className="mt-4 rounded-[8px] border border-[var(--border-1)] border-l-[3px] border-l-[var(--no)] bg-[var(--surface-1)] px-4 py-3"
+            className="mt-4 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] border-l-[3px] border-l-[var(--danger)] bg-[var(--surface-1)] px-4 py-3"
           >
             <p className="m-0 text-[13px] font-semibold text-[var(--t1)]">
               {t("COULD_NOT_LOAD_MARKETS")}
@@ -165,14 +165,14 @@ export default function EventWorkspacePage() {
             <button
               type="button"
               onClick={() => setReloadNonce((n) => n + 1)}
-              className="mt-2.5 inline-flex min-h-9 cursor-pointer items-center rounded-[6px] border border-[var(--border-2)] bg-[var(--surface-1)] px-3.5 text-[12px] font-semibold text-[var(--t1)]"
+              className="mt-2.5 inline-flex min-h-9 cursor-pointer items-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3.5 text-[12px] font-semibold text-[var(--t1)] transition-colors hover:border-[var(--t3)]"
             >
               {t("RETRY", "Retry")}
             </button>
           </div>
         ) : event ? (
           <>
-            <header className="mt-3 rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5">
+            <header className="mt-3 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5">
               <span className={EYEBROW_CLASS}>
                 {t("FLOOR_EVENT", "Event")} · {event.status.toUpperCase()}
               </span>
@@ -191,7 +191,7 @@ export default function EventWorkspacePage() {
             </header>
 
             {myEventPositions.length > 0 && (
-              <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-[8px] bg-[var(--accent-soft)] px-4 py-2.5">
+              <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-[var(--r-rh-lg)] bg-[var(--accent-soft)] px-4 py-2.5">
                 <span className={EYEBROW_CLASS}>
                   {t("FLOOR_EVENT_EXPOSURE", "My exposure in this event")}
                 </span>
@@ -201,7 +201,7 @@ export default function EventWorkspacePage() {
                     className="font-mono text-[10.5px] font-semibold text-[var(--accent-text)] tabular-nums"
                   >
                     {pos.quantity} {pos.side === "yes" ? t("YES") : t("NO")} @{" "}
-                    {pos.avgPricePoints}¢ · {market.ticker}
+                    {pos.avgPricePoints} {t("PTS", "pts")} · {market.ticker}
                   </span>
                 ))}
               </div>
@@ -212,7 +212,7 @@ export default function EventWorkspacePage() {
                 {t("FLOOR_EVENT_MARKETS", "Markets — one question-space, comparable")}
               </span>
               {markets.length === 0 ? (
-                <div className="rounded-[8px] border border-dashed border-[var(--border-2)] bg-[var(--surface-1)] px-4 py-6 text-center">
+                <div className="rounded-[var(--r-rh-lg)] border border-dashed border-[var(--border-2)] bg-[var(--surface-1)] px-4 py-6 text-center">
                   <p className="m-0 text-[13px] font-semibold text-[var(--t1)]">
                     {t("NO_OPEN_MARKETS")}
                   </p>
@@ -251,7 +251,7 @@ export default function EventWorkspacePage() {
       </div>
 
       {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-[90] hidden max-h-[70vh] overflow-y-auto rounded-t-[14px] border-t border-[var(--border-1)] bg-[var(--surface-1)] p-4 pb-6 shadow-[var(--shadow-pop)] max-[1179px]:block">
+        <div className="fixed inset-x-0 bottom-0 z-[90] hidden max-h-[70vh] overflow-y-auto rounded-t-[var(--r-lg)] border-t border-[var(--border-1)] bg-[var(--surface-1)] p-4 pb-6 shadow-[var(--shadow-pop)] max-[1179px]:block">
           <button
             type="button"
             onClick={() => setSelectedId(null)}

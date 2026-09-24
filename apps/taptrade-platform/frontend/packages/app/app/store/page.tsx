@@ -54,10 +54,12 @@ import {
 
 const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
+// Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
 const KICKER_CLASS =
-  "mb-1.5 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--reward-text)]";
+  "mb-1.5 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+// Poster-type page title (DESIGN.md §4 — page titles are the broadcast voice).
 const TITLE_CLASS =
-  "m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] max-[768px]:text-[26px]";
+  "type-poster m-0 text-[34px] text-[var(--t1)] max-[768px]:text-[26px]";
 const CROSS_LINK_CLASS =
   "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const GRID_CLASS =

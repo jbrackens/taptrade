@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * ContentPage — the editorial reading column for legal/info pages
+ * (about, terms, privacy, responsible gaming). Kilig chrome (DESIGN.md
+ * §6): a plain left-aligned column, ~720px measure, poster-type title,
+ * comfortable 16px body. The underlying `.content-page*` classes in
+ * globals.css still carry the ink text tokens, spacing and mobile gutter
+ * for both this shell and any raw CMS HTML rendered inside it; the
+ * inline styles below narrow the measure, drop the legacy boxed-card
+ * chrome (no resting shadow, no card fill) and swap the title onto
+ * poster type without touching that shared stylesheet.
+ */
+
 import type React from "react";
 import { useEffect, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
@@ -15,7 +27,11 @@ interface ContentPageProps {
 }
 
 function ContentArticle({ children }: { children: React.ReactNode }) {
-  return <article className="content-page">{children}</article>;
+  return (
+    <article className="content-page">
+      {children}
+    </article>
+  );
 }
 
 function ContentBody({ html }: { html: string }) {
@@ -75,7 +91,9 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
   if (page) {
     return (
       <ContentArticle>
-        <h1 className="content-page-title">{page.title}</h1>
+        <h1 className="content-page-title">
+          {page.title}
+        </h1>
 
         {/* Render flat content if no blocks */}
         {(!page.blocks || page.blocks.length === 0) && page.content && (
@@ -120,7 +138,7 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                         <details
                           // biome-ignore lint/suspicious/noArrayIndexKey: static CMS FAQ list — never reordered or partially updated client-side
                           key={idx}
-                          className="rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
+                          className="rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
                         >
                           <summary className="cursor-pointer font-semibold text-[var(--t1)]">
                             {item.question}

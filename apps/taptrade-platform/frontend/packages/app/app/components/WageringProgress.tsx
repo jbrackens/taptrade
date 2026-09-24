@@ -33,7 +33,7 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
     <div className="flex flex-col gap-1.5">
       {/* Progress bar */}
       <progress
-        className="block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-[var(--surface-2)] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--signal-gold)] [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-[var(--surface-2)] [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--signal-gold)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-500"
+        className="block h-2 w-full appearance-none overflow-hidden rounded-full border-0 bg-[var(--surface-2)] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--reward)] [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-[var(--surface-2)] [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--reward)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-500"
         value={clampedPct}
         max={100}
         aria-label="Play progress"
@@ -49,7 +49,7 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
         </span>
         <span
           className={
-            isExpired ? "text-[var(--signal-gold-text)]" : "text-[var(--t3)]"
+            isExpired ? "text-[var(--warning)]" : "text-[var(--t3)]"
           }
         >
           {isExpired ? t("expired") : t("expiresIn", { days: daysLeft })}

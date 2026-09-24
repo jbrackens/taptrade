@@ -10,7 +10,8 @@
   "hub": {
     "title": "Account",
     "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points"
+    "availableBalance": "Available points",
+    "manage": "Manage"
   },
   "actions": {
     "profile": {

@@ -16,7 +16,7 @@
  */
 
 export interface SeriesMovement {
-  /** Absolute change over the fetched range, in whole points (¢). */
+  /** Absolute change over the fetched range, in whole points. */
   deltaPoints: number;
   /** Percent change relative to the range's opening price. */
   pct: number;
@@ -89,7 +89,7 @@ function smoothPath(coords: Array<[number, number]>): string {
  * coordinate (for the live dot) from a REAL price series (or, on the
  * demo box only, the labeled synthetic fill).
  *
- * P9: the y-domain auto-scales to the series range (with a 6¢ minimum
+ * P9: the y-domain auto-scales to the series range (with a 6-point minimum
  * span so quiet markets still show topology) instead of the absolute
  * 0–100 band. `baselineY` is the session open (first sample) for the
  * dashed reference line.

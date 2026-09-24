@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "搜尋市場",
   "SEARCH_MARKETS_PLACEHOLDER": "搜尋市場、候選人、球隊...",
   "SEARCH_NO_MARKETS": "沒有找到「{{query}}」相關市場",
-  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}}¢",
+  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}} pts",
   "BALANCE_LABEL": "餘額",
   "USER_MENU": "使用者選單",
   "LOG_IN": "登入",

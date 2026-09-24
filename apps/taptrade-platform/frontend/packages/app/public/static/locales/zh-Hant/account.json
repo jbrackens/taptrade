@@ -10,7 +10,8 @@
   "hub": {
     "title": "帳戶",
     "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points"
+    "availableBalance": "Available points",
+    "manage": "管理"
   },
   "actions": {
     "profile": {

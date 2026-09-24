@@ -1,9 +1,31 @@
 import type React from "react";
 import "./globals.css";
-import { GeistMono } from "geist/font/mono";
+import { Big_Shoulders, Instrument_Sans, Martian_Mono } from "next/font/google";
 import AppShell from "./components/AppShell";
 import { brand } from "./lib/brand";
 import { SUSPENSE_REVEAL_BOOTSTRAP } from "./lib/suspense-reveal-bootstrap";
+
+// Kilig type system (DESIGN.md §4). next/font downloads these at build
+// time and serves them from this origin, so there are no runtime requests
+// to Google and the CSP's font-src 'self' holds.
+const uiSans = Instrument_Sans({
+  subsets: ["latin"],
+  axes: ["wdth"],
+  variable: "--font-instrument-sans",
+  display: "swap",
+});
+const poster = Big_Shoulders({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  variable: "--font-big-shoulders",
+  display: "swap",
+});
+const numerals = Martian_Mono({
+  subsets: ["latin"],
+  axes: ["wdth"],
+  variable: "--font-martian-mono",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -11,24 +33,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={GeistMono.variable}>
+    <html
+      lang="en"
+      className={`${uiSans.variable} ${poster.variable} ${numerals.variable}`}
+    >
       <head>
         <title>{brand.name}</title>
         <meta
           name="description"
           content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
         />
-        {/* Ink & lime type pivot, step 2 (handoff spec §1, 2026-07-26):
-         * two families, both self-hosted, zero third-party font requests.
-         * Switzer (Fontshare, self-hosted woff2 in public/fonts/, declared
-         * via @font-face in globals.css) carries display, UI and body;
-         * Geist Mono (geist npm package → --font-geist-mono on <html>)
-         * carries every numeric with tabular figures. Removed: the Google
-         * Fonts stylesheet (Inter, Inter Tight, IBM Plex Mono, Schibsted
-         * Grotesk) and its preconnects, Geist Sans (its only consumer was
-         * the .predict-terminal font override deleted in step 1), and the
-         * Martian Grotesk wordmark font (148KB of variable font for eight
-         * letters — the wordmark is now Switzer 600 lowercase). */}
         {/* Streamed-Suspense reveal bootstrap: React 19.2 defers the
          * $RC("B:n","S:n") payload swap to requestAnimationFrame, which
          * never fires on hidden pages (background tab, prerender, headless

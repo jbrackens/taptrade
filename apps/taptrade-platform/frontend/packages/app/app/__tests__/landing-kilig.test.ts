@@ -2,7 +2,7 @@
  * Landing (deep-purple) — source contracts for the front door.
  *
  * The landing was rebuilt 2026-08-09 to the Figma purple/gold recipe (03 Screens →
- * Landing / 1440): Fraunces display on the `.landing-1c` tokens, real-data
+ * Landing / 1440), restyled to Kilig 2026-09-24: poster-type display on the `.landing-1c` tokens, real-data
  * ticker, the actual trade loop as steps, editorial desk chips, the
  * 500-PTS welcome band, and inline compliance copy. These pins replace the
  * old page's contracts (interactive YES/NO demo, ambient video, lime
@@ -73,12 +73,9 @@ describe("landing purple/gold recipe (Figma 03 Screens)", () => {
     );
   });
 
-  it("uses Fraunces for display type", () => {
-    assert.ok(page.includes("Fraunces({"), "Fraunces must load via next/font");
-    assert.ok(
-      page.includes("fraunces.className"),
-      "the display headings must use the loaded Fraunces class",
-    );
+  it("uses Kilig poster type for display, not a serif", () => {
+    assert.ok(page.includes("type-poster"), "display headings use poster type");
+    assert.ok(!page.includes("Fraunces"), "the serif display face is retired");
   });
 });
 

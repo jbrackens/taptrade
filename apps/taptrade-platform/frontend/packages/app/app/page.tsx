@@ -1,34 +1,47 @@
 "use client";
 
 /**
- * Landing — the deep-purple front door (Figma: 03 Screens → Landing / 1440).
+ * Landing — the "arena night" front door (Kilig, DESIGN.md).
  *
- * The deep-purple recipe: Fraunces Light display on the landing tokens
- * (globals.css `.landing-1c`), Geist Mono micro-labels, purple for
- * structural action, and gold strictly for the LIVE signal and priority.
- * Every section sells something the product actually does: the ticker is
- * the REAL discovery feed (honest-data rule — no fabricated markets, no
- * invented deltas), the three steps are the real trade loop (moments →
- * hold-to-place → settlement notifications), the desk chips mirror the
- * gateway's editorial event names, and the welcome band promises exactly
- * what the starter grant pays.
+ * The recipe: ink-deep ground, poster type (Big Shoulders, uppercase) for
+ * the hero and section titles, Instrument Sans body copy, Martian Mono
+ * micro-labels, the warm-white button for structural action, and Kilig
+ * pink strictly for the LIVE signal and one accent word. Every section
+ * sells something the product actually does: the ticker is the REAL
+ * discovery feed (honest-data rule — no fabricated markets, no invented
+ * deltas), the three steps are the real trade loop (moments → hold-to-place
+ * → settlement notifications), the desk chips mirror the gateway's
+ * editorial event names, and the welcome band promises exactly what the
+ * starter grant pays.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Fraunces } from "next/font/google";
 import { useTranslation } from "react-i18next";
 import BrandMark from "./components/BrandMark";
 import { LanguageSelector } from "./components/i18n/LanguageSelector";
 import { brand } from "./lib/brand";
 import { logger } from "./lib/logger";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: "300",
-  display: "swap",
-});
+/**
+ * Splits a translated headline into a lead run and one trailing accent
+ * (the closing punctuation, or — for locales without one — the last
+ * word) so the poster hero can carry a single Kilig-pink flourish without
+ * a new i18n key, mirroring the wordmark's "brand name + pink period".
+ */
+function splitHeroEmphasis(text: string): { lead: string; accent: string } {
+  const trailing = text.match(/[.。！!?？]+\s*$/);
+  if (trailing) {
+    return {
+      lead: text.slice(0, text.length - trailing[0].length),
+      accent: trailing[0],
+    };
+  }
+  const lastSpace = text.lastIndexOf(" ");
+  if (lastSpace === -1) return { lead: "", accent: text };
+  return { lead: text.slice(0, lastSpace + 1), accent: text.slice(lastSpace + 1) };
+}
 
 /** Mirrors syntheticEventTitles in discover/promote.go — product desk
  *  names, rendered in English everywhere, exactly as the feed shows them. */
@@ -174,13 +187,15 @@ const LIVE_MICRO_CLASS =
 const CHIP_CLASS =
   "rounded-full border border-[var(--l-hairline)] px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em]";
 const PRIMARY_CTA_CLASS =
-  "inline-flex items-center rounded-lg bg-[var(--l-purple)] font-semibold text-[var(--l-on-purple)] no-underline transition-colors duration-150 hover:bg-[var(--l-purple-hover)] active:bg-[var(--l-purple-active)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
+  "inline-flex items-center rounded-[var(--r-rh-md)] bg-[var(--l-purple)] font-semibold text-[var(--l-on-purple)] no-underline transition-colors duration-150 hover:bg-[var(--l-purple-hover)] active:bg-[var(--l-purple-active)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
 const GHOST_CTA_CLASS =
-  "inline-flex items-center rounded-lg border border-[var(--l-hairline)] font-semibold text-[var(--l-t1)] no-underline transition-colors duration-150 hover:border-[var(--l-lavender)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
+  "inline-flex items-center rounded-[var(--r-rh-md)] border border-[var(--l-hairline)] font-semibold text-[var(--l-t1)] no-underline transition-colors duration-150 hover:border-[var(--l-lavender)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
 
 export default function LandingPage() {
   const { t } = useTranslation("page-home");
   const ticker = useTickerMarkets();
+  const heroTitle = t("hero.title");
+  const heroEmphasis = splitHeroEmphasis(heroTitle);
 
   return (
     <div className="landing-1c min-h-screen bg-[var(--l-bg)] text-[var(--l-t1)]">
@@ -197,6 +212,9 @@ export default function LandingPage() {
           />
           <span className="text-[17px] font-semibold text-[var(--l-t1)]">
             {brand.name}
+            <span className="text-[var(--brand-period-dark)]" aria-hidden="true">
+              .
+            </span>
           </span>
         </Link>
         <nav className="flex items-center gap-4 md:gap-6">
@@ -227,10 +245,11 @@ export default function LandingPage() {
           />
           {t("hero.eyebrow")}
         </p>
-        <h1
-          className={`${fraunces.className} mb-0 mt-6 max-w-[720px] text-[44px] font-light leading-[1.08] md:text-[76px]`}
-        >
-          {t("hero.title")}
+        <h1 className="type-poster m-0 mt-6 max-w-[920px] text-[clamp(56px,9vw,128px)] text-[var(--l-t1)]">
+          {heroEmphasis.lead}
+          {heroEmphasis.accent && (
+            <span className="text-[var(--l-gold)]">{heroEmphasis.accent}</span>
+          )}
         </h1>
         <p className="mt-6 max-w-[620px] text-[17px] leading-[1.55] text-[var(--l-t2)]">
           {t("hero.subtitle")}
@@ -273,7 +292,7 @@ export default function LandingPage() {
                     : m.title}
                 </span>
                 <span className="text-[12px] font-semibold text-[var(--l-t1)]">
-                  {m.yesPricePoints}¢
+                  {m.yesPricePoints} pts
                 </span>
               </span>
             ))}
@@ -292,7 +311,7 @@ export default function LandingPage() {
             {STEP_KEYS.map((step) => (
               <div
                 key={step.num}
-                className="rounded-xl border border-[var(--l-hairline)] bg-[var(--l-raised)] p-7"
+                className="rounded-[var(--r-rh-lg)] border border-[var(--l-hairline)] bg-[var(--l-raised)] p-7"
               >
                 <p className="m-0 font-mono text-[12px] font-semibold tracking-[0.11em] text-[var(--l-lavender)]">
                   {step.num}
@@ -314,9 +333,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1360px] px-6 pb-20 pt-16 md:px-10">
           <Reveal>
             <p className={`m-0 ${MICRO_CLASS}`}>{t("desks.eyebrow")}</p>
-            <p
-              className={`${fraunces.className} mb-0 mt-7 text-[26px] font-light text-[var(--l-t1)] md:text-[34px]`}
-            >
+            <p className="type-poster m-0 mt-7 text-[28px] text-[var(--l-t1)] md:text-[38px]">
               {t("desks.title")}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -340,9 +357,7 @@ export default function LandingPage() {
       {/* Welcome grant */}
       <section className="mx-auto flex max-w-[860px] flex-col items-center px-6 py-24 text-center md:py-28">
         <Reveal className="flex flex-col items-center">
-          <h2
-            className={`${fraunces.className} m-0 text-[34px] font-light leading-[1.15] md:text-[52px]`}
-          >
+          <h2 className="type-poster m-0 text-[34px] leading-[0.95] text-[var(--l-t1)] md:text-[48px]">
             {t("grant.title")}
           </h2>
           <p className="mb-0 mt-6 max-w-[560px] text-[17px] leading-[1.55] text-[var(--l-t2)]">

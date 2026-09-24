@@ -16,11 +16,12 @@ const api = createPredictionClient();
 
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const CATEGORY_HEAD_CLASS =
-  "mb-6 flex flex-wrap items-baseline justify-between gap-3 font-sans";
+  "mb-6 flex flex-wrap items-baseline justify-between gap-3";
+// Poster-type header: the category name, uppercase Big Shoulders.
 const CATEGORY_TITLE_CLASS =
-  "m-0 font-sans text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]";
+  "type-poster m-0 text-[36px] max-[640px]:text-[28px] text-[var(--t1)]";
 const CATEGORY_SUB_CLASS =
-  "font-mono text-xs text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "font-mono text-[12px] text-[var(--t3)] tabular-nums";
 // Step 11: category browse propagates the /predict single-column feed
 // (checkpoint rule: the lead surface shipped first and was approved).
 const CATEGORY_EMPTY_CLASS =

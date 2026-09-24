@@ -98,7 +98,7 @@ const MARKET_CONTENT_CLASS =
 const MARKET_CRUMB_CLASS =
   "mb-4 flex min-h-9 flex-wrap items-center gap-2 text-[12px] text-[var(--t3)]";
 const MARKET_CRUMB_LINK_CLASS =
-  "inline-flex min-h-9 items-center gap-2 rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-3 font-semibold text-[var(--t2)] no-underline transition-colors hover:border-[var(--border-2)] hover:text-[var(--t1)]";
+  "inline-flex min-h-9 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-semibold text-[var(--t1)] no-underline transition-colors hover:text-[var(--t2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
 // <=1023px the workspace lives in the vaul Sheet (P3) — the aside is
 // desktop-only and the old in-flow card styles are retired.
@@ -109,20 +109,20 @@ const MARKET_TICKET_STICKY_CLASS =
 const MARKET_TICKET_CONTEXT_CLASS =
   "mb-5 border-b border-[var(--border-1)] pb-5";
 const MARKET_TICKET_EYEBROW_CLASS =
-  "mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--accent-text)]";
+  "mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MARKET_TICKET_TITLE_CLASS =
   "type-display m-0 text-[20px] font-semibold leading-[1.22] text-[var(--t1)]";
 const MARKET_TICKET_QUOTE_CLASS = "mt-5 flex items-end justify-between gap-4";
 const MARKET_TICKET_QUOTE_LABEL_CLASS = "text-xs text-[var(--t3)]";
 const MARKET_TICKET_QUOTE_VALUE_CLASS =
   // Step 3: probability readout is a magnitude — ink, never the accent.
-  "font-mono mt-1 text-[44px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)]";
+  "mono mono-wide mt-1 text-[48px] font-semibold leading-none tracking-[-0.05em] text-[var(--t1)]";
 const MARKET_TICKET_BAR_CLASS =
   "mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]";
 const MARKET_TICKET_SOURCE_CLASS =
   "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-[12px] leading-[1.5] text-[var(--t2)]";
 const MARKET_MOBILE_TRADE_LINK_CLASS =
-  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--on-brand)] no-underline shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[1023px]:flex min-[900px]:bottom-4";
+  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--ticket-cta-text)] no-underline shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[1023px]:flex min-[900px]:bottom-4";
 const MARKET_DATA_ROW_CLASS =
   "grid grid-cols-2 gap-4 pt-4 max-[720px]:grid-cols-1";
 const MARKET_DEPTH_DISCLOSURE_CLASS =
@@ -180,18 +180,19 @@ const MARKET_HERO_GRID_CLASS =
 const MARKET_HEAD_PANEL_CLASS = "min-w-0 p-7 max-[720px]:p-5";
 const MARKET_CHART_PANEL_CLASS =
   "min-w-0 border-l border-[var(--border-1)] p-7 max-[1180px]:border-l-0 max-[1180px]:border-t max-[720px]:p-5 [&_svg]:h-[268px] max-[720px]:[&_svg]:h-[220px]";
+// Stats are cells on one hairline grid, not boxes inside the box.
 const MARKET_STATS_CLASS =
-  "grid grid-cols-4 gap-2.5 border-t border-[var(--hairline)] p-4 max-[640px]:grid-cols-2";
+  "grid grid-cols-4 border-t border-[var(--border-1)] max-[640px]:grid-cols-2";
 const MARKET_STAT_CLASS =
-  "min-w-0 rounded-[var(--radius-md)] border border-[var(--hairline)] bg-[var(--paper)] px-3.5 py-2.5";
+  "min-w-0 border-r border-[var(--border-1)] px-5 py-3.5 last:border-r-0 max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-child(-n+2)]:border-b";
 const MARKET_STAT_LABEL_CLASS =
-  "font-mono mb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-3)]";
+  "font-mono mb-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const MARKET_STAT_VALUE_CLASS =
   "font-mono truncate text-[14px] font-semibold text-[var(--ink)] [font-variant-numeric:tabular-nums]";
 const MARKET_DETAILS_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
 const MARKET_DETAILS_TITLE_CLASS =
-  "mb-3 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "type-poster mb-3 text-[24px] text-[var(--t1)]";
 const MARKET_DETAILS_COPY_CLASS =
   "mb-2.5 text-sm leading-[1.6] text-[var(--t2)]";
 const MARKET_RULES_CLASS =
@@ -204,13 +205,13 @@ const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
 const RELATED_TITLE_CLASS =
-  "mb-[14px] border-b border-[var(--border-1)] pb-3 text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
+  "type-poster mb-4 text-[24px] text-[var(--t1)]";
 const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_LIST_CLASS = "grid grid-cols-2 gap-3 max-[640px]:grid-cols-1";
 const RELATED_ROW_CLASS =
-  "group block rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 no-underline transition-colors hover:border-[var(--border-2)] hover:bg-[var(--surface-3)]";
+  "group block rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const RELATED_QUESTION_CLASS =
-  "mb-3 text-[13px] font-semibold leading-[1.4] text-[var(--t1)] group-hover:text-[var(--accent-text)]";
+  "mb-3 text-[14px] font-semibold leading-[1.35] text-[var(--t1)] group-hover:underline";
 const RELATED_LINE_CLASS =
   "font-mono flex items-center justify-between text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
@@ -224,12 +225,12 @@ const PAGE_STATE_TITLE_CLASS =
 const PAGE_STATE_COPY_CLASS =
   "mt-2.5 mb-0 text-sm leading-[1.5] text-[var(--t2)]";
 const PAGE_STATE_ACTION_CLASS =
-  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 text-sm font-bold text-[var(--on-brand)] no-underline transition-[background-color,transform] duration-[150ms] hover:-translate-y-px hover:bg-[var(--brand-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0";
+  "mt-[22px] inline-flex min-h-11 items-center justify-center rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-5 text-sm font-semibold text-[var(--ticket-cta-text)] no-underline transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-0";
 
 function pageStateEyebrowClass(isError: boolean): string {
   return `${PAGE_STATE_EYEBROW_BASE_CLASS} ${
     isError
-      ? "border-[var(--brand-dark)] bg-[var(--brand-lavender)] text-[var(--brand-dark)]"
+      ? "border-[color-mix(in_srgb,var(--danger)_30%,transparent)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] text-[var(--danger)]"
       : "border-[var(--border-1)] bg-[var(--accent-soft)] text-[var(--accent-text)]"
   }`;
 }
@@ -364,11 +365,11 @@ function LiquiditySnapshot({
   const metrics = [
     {
       label: t("YES_PRICE", "YES price"),
-      value: `${market.yesPricePoints}¢`,
+      value: `${market.yesPricePoints} pts`,
     },
     {
       label: t("NO_PRICE", "NO price"),
-      value: `${market.noPricePoints}¢`,
+      value: `${market.noPricePoints} pts`,
     },
     {
       label: t("VISIBLE_LIQUIDITY", "Liquidity"),
@@ -444,7 +445,7 @@ function AMMCurve({
             {t("AMM_PRICE_MARKER", "Price marker")}
           </span>
           <span className={AMM_CURVE_VALUE_CLASS}>
-            {t("YES_PRICE_VALUE", "YES {{price}}¢", {
+            {t("YES_PRICE_VALUE", "YES {{price}} pts", {
               price: Math.round(yesPrice),
             })}
           </span>
@@ -464,8 +465,8 @@ function AMMCurve({
           />
         </div>
         <div className={AMM_CURVE_AXIS_CLASS}>
-          <span>0¢</span>
-          <span>100¢</span>
+          <span>0 pts</span>
+          <span>100 pts</span>
         </div>
       </div>
 
@@ -570,7 +571,7 @@ function AMMCurve({
                     {formatCompactPoints(totalCost)}
                   </span>
                   <span className={AMM_QUOTE_VALUE_CLASS}>
-                    {t("AMM_AFTER_IMPACT", "{{avg}}¢ avg -> {{after}}¢", {
+                    {t("AMM_AFTER_IMPACT", "{{avg}} pts avg → {{after}} pts", {
                       avg: avgPrice,
                       after: afterPrice,
                       impact,
@@ -1244,15 +1245,15 @@ export default function MarketDetailPage() {
                     : t("LATEST_PROBABILITY", "Latest probability")}
                 </div>
                 <div className={MARKET_TICKET_QUOTE_VALUE_CLASS}>
-                  {railYes}¢
+                  {railYes}%
                 </div>
               </div>
               <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
                 <div className="font-semibold text-[var(--yes-text)]">
-                  {t("YES")} {railYes}¢
+                  {t("YES")} {railYes} pts
                 </div>
                 <div>
-                  {t("NO")} {railNo}¢
+                  {t("NO")} {railNo} pts
                 </div>
               </div>
             </div>
@@ -1377,20 +1378,17 @@ export default function MarketDetailPage() {
             </div>
             <div className={MARKET_CHART_PANEL_CLASS}>
               <div className="mb-3 flex items-end justify-between gap-4">
-                <div>
-                  <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
-                    {t("PRICE_HISTORY", "Price history")}
-                  </p>
-                  <p className="m-0 mt-1 text-xs text-[var(--t2)]">
-                    {t("LIVE_MARKET_DATA", "Live market data")}
-                  </p>
-                </div>
-                <span className="font-mono text-[18px] font-semibold text-[var(--accent-lo)]">
-                  {selectedSide.toUpperCase()}{" "}
+                {/* No "live data" subtitle: the chart can be flat, empty or
+                    (demo boxes only) simulated, and says so itself. */}
+                <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
+                  {t("PRICE_HISTORY", "Price history")}
+                </p>
+                <span className="font-mono text-[18px] font-semibold text-[var(--t1)]">
+                  {selectedSide === "yes" ? t("YES") : t("NO")}{" "}
                   {selectedSide === "yes"
                     ? market.yesPricePoints
-                    : market.noPricePoints}
-                  ¢
+                    : market.noPricePoints}{" "}
+                  {t("PTS", "pts")}
                 </span>
               </div>
               <MarketChart
@@ -1464,7 +1462,7 @@ export default function MarketDetailPage() {
           {market.status !== "voided" && (
             <span className="font-mono">
               {selectedSide.toUpperCase()}{" "}
-              {selectedSide === "yes" ? railYes : railNo}¢
+              {selectedSide === "yes" ? railYes : railNo} pts
             </span>
           )}
         </button>
@@ -1623,7 +1621,7 @@ export default function MarketDetailPage() {
                     <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
                     <div className={RELATED_LINE_CLASS}>
                       <span className={RELATED_YES_CLASS}>
-                        {t("YES")} {m.yesPricePoints}¢
+                        {t("YES")} {m.yesPricePoints} pts
                       </span>
                       <span>
                         {t("VOLUME_VALUE", {

@@ -45,7 +45,7 @@
   "SEARCH_MARKETS": "Cari pasar",
   "SEARCH_MARKETS_PLACEHOLDER": "Cari pasar, kandidat, tim...",
   "SEARCH_NO_MARKETS": "Tidak ada pasar yang cocok dengan “{{query}}”",
-  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}}¢",
+  "SEARCH_RESULT_META": "{{ticker}} · YES {{price}} pts",
   "BALANCE_LABEL": "SALDO",
   "USER_MENU": "Menu pengguna",
   "LOG_IN": "Masuk",

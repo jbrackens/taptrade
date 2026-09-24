@@ -85,7 +85,7 @@ export function CommandPalette({
       id: `m-${m.id}`,
       kind: "market",
       label: m.title,
-      meta: `${m.yesPricePoints}¢ · ${m.eventTitle || m.ticker}`,
+      meta: `${m.yesPricePoints} pts · ${m.eventTitle || m.ticker}`,
       href: `/market/${m.ticker}`,
     }));
     const seen = new Set<string>();
@@ -152,7 +152,7 @@ export function CommandPalette({
       aria-modal="true"
       aria-label={t("CMDK_TITLE", "Command palette")}
     >
-      <div className="w-full max-w-[560px] overflow-hidden rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-pop)]">
+      <div className="w-full max-w-[560px] overflow-hidden rounded-[var(--r-rh-xl)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-pop)]">
         <input
           ref={inputRef}
           type="text"

@@ -58,9 +58,9 @@ interface MarketFeedProps {
 const FEED_CLASS = "mx-auto flex w-full max-w-[680px] flex-col gap-3";
 
 const CARD_CLASS =
-  "relative rounded-[16px] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)] transition-[transform,border-color,box-shadow] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--border-2)] focus-within:shadow-[var(--shadow-card-hover)]";
+  "relative rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] transition-[border-color] duration-150 hover:border-[var(--border-2)] focus-within:border-[var(--t3)]";
 const EYEBROW_CLASS =
-  "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
 const META_DOT_CLASS =
   "h-[3px] w-[3px] flex-none rounded-full bg-[var(--border-2)]";
 const STAR_BUTTON_CLASS =
@@ -182,8 +182,8 @@ function FeedHeroCard({
             {t("LATEST_PROBABILITY", "Latest probability")}
           </div>
           <div className="mt-0.5 flex items-baseline gap-2">
-            <span className="font-mono text-[40px] font-medium leading-none tracking-[-0.04em] text-[var(--t1)] tabular-nums">
-              {market.yesPricePoints}¢
+            <span className="mono mono-wide text-[40px] font-semibold leading-none tracking-[-0.05em] text-[var(--t1)] tabular-nums">
+              {market.yesPricePoints}%
             </span>
             {showDelta && (
               <span
@@ -194,7 +194,7 @@ function FeedHeroCard({
                 }`}
               >
                 {movement.direction === "up" ? "↑" : "↓"}{" "}
-                {Math.abs(movement.deltaPoints)}¢
+                {Math.abs(movement.deltaPoints)} pts
               </span>
             )}
           </div>
@@ -204,26 +204,26 @@ function FeedHeroCard({
       <div className="mt-3.5 grid grid-cols-2 gap-2.5">
         <Link
           href={`/market/${market.ticker}?side=yes`}
-          className="flex min-h-12 items-center justify-between gap-2 rounded-[12px] border border-[var(--yes-border)] bg-[var(--yes-soft)] px-3.5 no-underline transition-colors duration-150 hover:border-[var(--yes-bar)]"
+          className="flex min-h-12 items-center justify-between gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--yes-soft)] px-3.5 text-[var(--yes-text)] no-underline transition-colors duration-150 hover:bg-[var(--yes)] hover:text-[var(--on-ink)] [&:hover_*]:!text-[var(--on-ink)]"
           aria-label={t("BUY_YES")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--yes-text)]">
             {t("YES")}
           </span>
           <span className="font-mono text-[16px] font-medium text-[var(--yes-text)] tabular-nums">
-            {market.yesPricePoints}¢
+            {market.yesPricePoints} pts
           </span>
         </Link>
         <Link
           href={`/market/${market.ticker}?side=no`}
-          className="flex min-h-12 items-center justify-between gap-2 rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] px-3.5 no-underline transition-colors duration-150 hover:border-[var(--no-bar)]"
+          className="flex min-h-12 items-center justify-between gap-2 rounded-[var(--r-rh-md)] border-0 bg-[var(--no-soft)] px-3.5 text-[var(--no-text)] no-underline transition-colors duration-150 hover:bg-[var(--no)] hover:text-[var(--on-ink)] [&:hover_*]:!text-[var(--on-ink)]"
           aria-label={t("BUY_NO")}
         >
           <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--no-text)]">
             {t("NO")}
           </span>
           <span className="font-mono text-[16px] font-medium text-[var(--no-text)] tabular-nums">
-            {market.noPricePoints}¢
+            {market.noPricePoints} pts
           </span>
         </Link>
       </div>
@@ -292,6 +292,17 @@ function FeedRow({
     image_url: market.image_url,
     categoryLabel: displayCategory,
   });
+  // A photo that fails to load falls back to the monogram, never a
+  // broken-image glyph.
+  const [imageFailed, setImageFailed] = useState(false);
+  const fallback =
+    image.kind === "monogram"
+      ? image
+      : getMarketImageProps({
+          ticker: market.ticker,
+          categoryLabel: displayCategory,
+        });
+  const monogram = fallback.kind === "monogram" ? fallback.monogram : "";
   const sentiment = calculateMarketSentiment(market.yesPricePoints);
   const leadPct =
     sentiment.sentimentState === "no"
@@ -305,19 +316,20 @@ function FeedRow({
         className="flex items-start gap-3 text-inherit no-underline"
         aria-label={market.title}
       >
-        {image.kind === "image" ? (
+        {image.kind === "image" && !imageFailed ? (
           <img
-            className="h-10 w-10 flex-none rounded-[12px] border border-[var(--border-1)] object-cover"
+            className="h-10 w-10 flex-none rounded-[var(--r-rh-md)] border border-[var(--border-1)] object-cover"
             src={image.src}
             alt=""
             aria-hidden="true"
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <span
-            className="grid h-10 w-10 flex-none place-items-center rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-2)] font-mono text-[12px] font-medium text-[var(--t3)]"
+            className="grid h-10 w-10 flex-none place-items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-mono text-[12px] font-medium text-[var(--t3)]"
             aria-hidden="true"
           >
-            {image.monogram}
+            {monogram}
           </span>
         )}
         <span className="min-w-0 flex-1">
@@ -343,7 +355,7 @@ function FeedRow({
         </span>
         <span className="flex-none text-right">
           <span className="block font-mono text-[20px] font-medium leading-[1.1] text-[var(--t1)] tabular-nums">
-            {market.yesPricePoints}¢
+            {market.yesPricePoints} pts
           </span>
         </span>
       </Link>
@@ -449,8 +461,8 @@ export function FeedHeroSkeleton() {
       <span className={`mt-2 block h-5 w-2/3 ${SHIMMER_CLASS}`} />
       <span className={`mt-4 block h-10 w-32 ${SHIMMER_CLASS}`} />
       <div className="mt-3.5 grid grid-cols-2 gap-2.5">
-        <span className={`h-12 !rounded-[12px] ${SHIMMER_CLASS}`} />
-        <span className={`h-12 !rounded-[12px] ${SHIMMER_CLASS}`} />
+        <span className={`h-12 !rounded-[var(--r-rh-md)] ${SHIMMER_CLASS}`} />
+        <span className={`h-12 !rounded-[var(--r-rh-md)] ${SHIMMER_CLASS}`} />
       </div>
       <span className={`mt-3.5 block h-2.5 w-1/2 ${SHIMMER_CLASS}`} />
     </div>
@@ -461,7 +473,7 @@ export function FeedRowSkeleton() {
   return (
     <div className={`${CARD_CLASS} p-4`} aria-hidden="true">
       <div className="flex items-start gap-3">
-        <span className={`h-10 w-10 !rounded-[12px] ${SHIMMER_CLASS}`} />
+        <span className={`h-10 w-10 !rounded-[var(--r-rh-md)] ${SHIMMER_CLASS}`} />
         <span className="min-w-0 flex-1">
           <span className={`h-2.5 w-24 ${SHIMMER_CLASS}`} />
           <span className={`mt-2 block h-3.5 w-full ${SHIMMER_CLASS}`} />

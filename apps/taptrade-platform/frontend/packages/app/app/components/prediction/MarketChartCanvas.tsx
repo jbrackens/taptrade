@@ -64,8 +64,8 @@ export default function MarketChartCanvas({
       return;
     }
 
-    const accent = cssVar(container, "--accent") || "#6334a8";
-    const accentLo = cssVar(container, "--accent-lo") || "#28153f";
+    const accent = cssVar(container, "--accent") || "#111114";
+    const accentLo = cssVar(container, "--accent-lo") || "#111114";
     const muted = cssVar(container, "--t4") || "#576066";
     const guide = cssVar(container, "--border-1") || "#dde2e5";
     const surface = cssVar(container, "--surface-1") || "#ffffff";
@@ -78,7 +78,7 @@ export default function MarketChartCanvas({
         textColor: axisText,
         fontSize: 10,
         // Canvas text cannot resolve CSS var() itself, so the numeric
-        // mono stack (--font-mono → Geist Mono via next/font's hashed
+        // mono stack (--font-mono → Martian Mono via next/font's hashed
         // family) is read off the computed style like the color tokens.
         fontFamily:
           cssVar(container, "--font-mono") ||
@@ -93,6 +93,10 @@ export default function MarketChartCanvas({
       leftPriceScale: { visible: false },
       timeScale: {
         borderVisible: false,
+        // Intraday ranges label ticks with the hour; day boundaries still
+        // print the date, so 1W/ALL read as dates.
+        timeVisible: true,
+        secondsVisible: false,
         fixLeftEdge: true,
         fixRightEdge: true,
         lockVisibleTimeRangeOnResize: true,
@@ -110,7 +114,7 @@ export default function MarketChartCanvas({
         },
       },
       localization: {
-        priceFormatter: (p: number) => `${Math.round(p)}¢`,
+        priceFormatter: (p: number) => `${Math.round(p)}`,
       },
     });
     chartRef.current = chart;
@@ -187,7 +191,7 @@ export default function MarketChartCanvas({
       }
       const when = new Date((param.time as number) * 1000);
       setReadout(
-        `${Math.round(point.value)}¢ · ${when.toLocaleString("en-US", {
+        `${Math.round(point.value)} pts · ${when.toLocaleString("en-US", {
           month: "short",
           day: "numeric",
           hour: "2-digit",

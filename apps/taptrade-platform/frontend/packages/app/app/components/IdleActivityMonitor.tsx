@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { logger } from "../lib/logger";
+import { Button } from "./ui";
 
 interface IdleActivityMonitorProps {
   onLogout: () => void;
@@ -172,8 +173,8 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   if (!showWarning || !isAuthenticated) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[color-mix(in_srgb,var(--brand-deep)_58%,transparent)]">
-      <div className="max-w-[400px] rounded-xl bg-[var(--card)] p-8 text-center shadow-[var(--shadow-pop)]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[color-mix(in_srgb,var(--ink-deep)_58%,transparent)]">
+      <div className="max-w-[400px] rounded-[var(--r-rh-xl)] bg-[var(--card)] p-8 text-center shadow-[var(--shadow-pop)]">
         <h2 className="mb-3 text-xl font-bold text-[var(--t1)]">
           Inactivity Warning
         </h2>
@@ -183,29 +184,31 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
           in.
         </p>
 
-        <div className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--reward)_45%,var(--border-1))] bg-[var(--reward-soft)] p-4">
-          <p className="text-2xl font-bold text-[var(--on-gold)]">
+        <div className="mb-6 rounded-[var(--r-rh-md)] border border-[var(--border-1)] border-l-[3px] border-l-[var(--warning)] bg-[var(--surface-2)] p-4">
+          <p className="font-mono text-2xl font-bold text-[var(--t1)]">
             {countdown}s
           </p>
           <p className="mt-2 text-xs text-[var(--t2)]">Seconds remaining</p>
         </div>
 
         <div className="flex flex-col gap-3">
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={handleActivity}
-            className="cursor-pointer rounded-lg border-0 bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--on-brand)] transition-all duration-200 ease-in-out hover:bg-[var(--brand-deep)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] active:translate-y-px"
+            className="w-full"
           >
             Stay Logged In
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => onLogoutRef.current()}
-            className="cursor-pointer rounded-lg border border-[var(--border-1)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium text-[var(--t2)] transition-all duration-200 ease-in-out hover:border-[var(--accent)] hover:text-[var(--accent-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] active:translate-y-px"
+            className="w-full"
           >
             Log Out Now
-          </button>
+          </Button>
         </div>
       </div>
     </div>

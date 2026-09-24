@@ -6,7 +6,7 @@
  *
  * Draws BOTH sides of the binary from one history: the selected side's
  * line at full strength, its complement (100 − price) muted underneath —
- * the two lines mirror around 50¢ and cross exactly like the two-outcome
+ * the two lines mirror around 50 and cross exactly like the two-outcome
  * charts on Robinhood/Kalshi event pages. No gradient wash, no gridlines,
  * no in-chart price header (MarketHead owns the numbers now); a quiet
  * mono text-tab range switcher sits under the plot.
@@ -89,13 +89,13 @@ const CHART_CARD_CLASS = "";
 // 2px ink underline; inactive = --t3.
 const CHART_SWITCHER_CLASS = "mt-4 flex items-center gap-5";
 const CHART_BUTTON_BASE_CLASS =
-  "font-mono cursor-pointer border-0 border-b-2 bg-transparent p-0 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] transition-[border-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
+  "font-mono cursor-pointer border-0 border-b-2 bg-transparent p-0 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-[border-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${
     active
-      ? "text-[var(--accent-text)] border-[var(--accent-lo)] hover:text-[var(--brand-dark)] active:border-[var(--brand-dark)]"
-      : "text-[var(--t3)] border-transparent hover:text-[var(--accent-text)] active:text-[var(--brand-dark)]"
+      ? "text-[var(--t1)] border-[var(--t1)]"
+      : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
   }`;
 }
 
@@ -204,7 +204,7 @@ export default function MarketChart({
           </div>
           <button
             type="button"
-            className="cursor-pointer rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-1.5 text-xs font-semibold text-[var(--t1)] transition-[background-color,border-color,color] duration-[120ms] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:border-[var(--brand-dark)] active:bg-[var(--brand-lavender)]"
+            className="cursor-pointer rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 py-1.5 text-xs font-semibold text-[var(--t1)] transition-[background-color,border-color,color] duration-[120ms] hover:border-[var(--t3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-2)] active:translate-y-px"
             onClick={() => setRetryNonce((n) => n + 1)}
           >
             {t("RETRY")}

@@ -18,5 +18,6 @@
   "USERNAME_PLACEHOLDER": "Enter your username or email",
   "PASSWORD_PLACEHOLDER": "Enter your password",
   "SIGNING_IN": "Signing In...",
-  "INCORRECT_CREDENTIALS": "Mali ang username o password."
+  "INCORRECT_CREDENTIALS": "Mali ang username o password.",
+  "WELCOME_TITLE": "Maligayang pagbabalik"
 }

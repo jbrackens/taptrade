@@ -28,7 +28,7 @@ export type ButtonSize = "sm" | "md" | "lg" | "none";
 // transition-*, font-weight, and radius live in the VARIANT, not the
 // base: same-property Tailwind classes resolve by generated-CSS order,
 // not class order, so the base must never set a property a variant
-// overrides (cta uses rounded-md/font-semibold; the rest r-rh-md/bold).
+// overrides (every variant uses r-rh-md + font-semibold today).
 const BUTTON_FOCUS_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const BUTTON_INERT_CLASS =
@@ -37,33 +37,30 @@ const BUTTON_INERT_CLASS =
 const buttonVariant = variants<ButtonVariant>(
   `inline-flex cursor-pointer select-none items-center justify-center gap-1.5 disabled:cursor-not-allowed ${BUTTON_FOCUS_CLASS}`,
   {
-    // Purple is the generic action color. Foreground remains theme-scoped
-    // so the token can keep its AA contrast contract in every route.
+    // Kilig: ink is the action colour. Hover lifts the ink toward the
+    // surface (a brightness filter does nothing on near-black); press is a
+    // 1px drop with a 1% squash.
     primary:
-      `rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-bold text-[var(--ticket-cta-text)] transition-[filter,transform] [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:brightness-[0.96] ${BUTTON_INERT_CLASS}`,
-    // The discussion/panel action recipe.
-    // Hover elevates the purple action channel without changing the
-    // component's neutral default state.
+      `rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] font-semibold tracking-[-0.005em] text-[var(--ticket-cta-text)] transition-[background-color,transform] duration-150 [&:not(:disabled):hover]:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:scale-[0.99] ${BUTTON_INERT_CLASS}`,
+    // White on a strong hairline; hover darkens the stroke only.
     secondary:
-      `rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] font-bold text-[var(--t1)] transition-[background-color,border-color,color,transform] [&:not(:disabled):hover]:border-[var(--accent)] [&:not(:disabled):hover]:bg-[var(--accent-soft)] [&:not(:disabled):hover]:text-[var(--accent-text)] [&:not(:disabled):active]:translate-y-px ${BUTTON_INERT_CLASS}`,
+      `rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] font-semibold tracking-[-0.005em] text-[var(--t1)] transition-[background-color,border-color,transform] duration-150 [&:not(:disabled):hover]:border-[var(--t3)] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:scale-[0.99] ${BUTTON_INERT_CLASS}`,
     // Toolbar/inline affordances: no chrome until hover.
     ghost:
-      `rounded-[var(--r-rh-md)] border border-transparent bg-transparent font-bold text-[var(--t2)] transition-[background-color,border-color,color,transform] [&:not(:disabled):hover]:border-[var(--border-1)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--t1)] [&:not(:disabled):active]:translate-y-px ${BUTTON_INERT_CLASS}`,
-    // Destructive confirms use the deep brand anchor. Red remains reserved
-    // for market NO positions and negative market outcomes.
+      `rounded-[var(--r-rh-md)] border border-transparent bg-transparent font-semibold tracking-[-0.005em] text-[var(--t2)] transition-[background-color,color,transform] duration-150 [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--t1)] [&:not(:disabled):active]:translate-y-px ${BUTTON_INERT_CLASS}`,
+    // Destructive confirms use the system danger colour. YES/NO colours
+    // stay reserved for market direction.
     danger:
-      `rounded-[var(--r-rh-md)] border-0 bg-[var(--brand-dark)] font-bold text-[var(--on-brand)] transition-[filter,transform] [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:brightness-[0.96] ${BUTTON_INERT_CLASS}`,
-    // The money button (trade ticket / store checkout): full-width,
+      `rounded-[var(--r-rh-md)] border-0 bg-[var(--danger)] font-semibold tracking-[-0.005em] text-[var(--on-ink)] transition-[filter,transform] duration-150 [&:not(:disabled):hover]:brightness-[1.08] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:scale-[0.99] ${BUTTON_INERT_CLASS}`,
+    // The commit button (trade ticket / store checkout): full-width,
     // self-sized — pair with size="none".
     //
     // Disabled uses the neutral inert treatment: explicit surface —
-    // --inert-fill / --inert-border /
-    // --inert-label — with NO opacity and NO filter. The old
-    // disabled:opacity-[0.45] put the label near 2.4:1 on the accent
-    // fill, making every blocked trade state unreadable. The disabled:
-    // classes beat the base border-0/bg/text by :disabled specificity,
-    // not by class order (see the class-order note above).
-    cta: "w-full min-h-[52px] rounded-[var(--radius-md)] border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-[filter,transform] duration-[120ms] [&:not(:disabled):hover]:-translate-y-px [&:not(:disabled):hover]:brightness-[1.05] [&:not(:disabled):active]:translate-y-0 [&:not(:disabled):active]:brightness-[0.96] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 disabled:filter-none disabled:transform-none",
+    // --inert-fill / --inert-border / --inert-label — with NO opacity and
+    // NO filter, so a blocked state stays readable. The disabled: classes
+    // beat the base border-0/bg/text by :disabled specificity, not by
+    // class order.
+    cta: "w-full min-h-[52px] rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-4 py-[14px] text-[15px] font-semibold tracking-[-0.005em] text-[var(--ticket-cta-text)] no-underline transition-[background-color,transform] duration-150 [&:not(:disabled):hover]:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] [&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:scale-[0.99] disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 disabled:filter-none disabled:transform-none",
   },
 );
 
@@ -78,9 +75,9 @@ const CTA_INERT_CUSTOM =
   "w-full rounded-md border border-[var(--inert-border)] bg-[var(--inert-fill)] px-4 py-[14px] text-[15px] font-semibold text-[var(--inert-label)] no-underline";
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "min-h-9 px-3 text-xs",
-  md: "min-h-10 px-4 text-xs",
-  lg: "min-h-11 px-5 text-sm",
+  sm: "min-h-9 px-3 text-[13px]",
+  md: "min-h-10 px-4 text-sm",
+  lg: "min-h-12 px-5 text-[15px]",
   none: "",
 };
 

@@ -52,11 +52,15 @@ const MONO =
 // Stat-tile shell lives on the Card primitive now; the tile's own density
 // (px-[18px] py-4) and layout stay per-usage below.
 const STAT_TILE_LAYOUT =
-  "relative flex flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline font-sans";
-const STAT_LABEL = "text-xs font-medium text-[var(--t3)]";
+  "relative flex min-w-0 flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline font-sans";
+// Micro-label: mono, uppercase, tracked wide (DESIGN.md §4 eyebrow spec).
+const STAT_LABEL =
+  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+// Hero figure: mono-wide (112.5 width axis) — every comparable numeral in
+// the summary strip is Martian Mono, and this is the page's headline data.
 const STAT_VALUE = cx(
   MONO,
-  "text-[22px] font-semibold tracking-normal text-[var(--t1)]",
+  "mono-wide truncate text-[22px] font-semibold tracking-normal text-[var(--t1)]",
 );
 const STAT_SUB = "text-[11px] text-[var(--t3)]";
 const DIM_TEXT = "text-[var(--t3)]";
@@ -239,9 +243,9 @@ export default function PortfolioPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] pb-[60px]">
-      <header className="mb-5 flex items-end justify-between gap-4">
+      <header className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="m-0 mb-1 text-[28px] font-extrabold tracking-normal text-[var(--t1)]">
+          <h1 className="type-poster m-0 mb-1 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
             {t("title", "Portfolio")}
           </h1>
           <p className="m-0 text-[13px] text-[var(--t3)]">
@@ -505,11 +509,11 @@ function TabBar({
       count: counts.history,
     },
   ];
-  // Step 4 (11a/11b): underline tabs on a hairline, ≥44px targets. The
-  // old lime pill-track promoted a view switcher to a primary action.
+  // Quiet segmented control: an ink pill marks the active tab, everything
+  // else stays text-only until hover. Replaces the old underline track.
   return (
     <div
-      className="mb-[18px] flex gap-[22px] overflow-x-auto border-b border-[var(--border-1)]"
+      className="mb-[18px] inline-flex max-w-full gap-1 overflow-x-auto rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1"
       role="tablist"
       aria-label="Portfolio tabs"
     >
@@ -520,16 +524,24 @@ function TabBar({
           role="tab"
           aria-selected={tab === t.key}
           className={cx(
-            "inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 border-0 border-b-2 bg-transparent px-0 pb-[11px] pt-3 text-sm whitespace-nowrap transition-colors duration-150",
+            "inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 rounded-[var(--r-rh-sm)] border-0 px-3.5 text-sm font-semibold whitespace-nowrap transition-colors duration-150",
             tab === t.key
-              ? "border-b-[var(--t1)] font-semibold text-[var(--t1)]"
-              : "border-b-transparent font-medium text-[var(--t3)] hover:text-[var(--t1)]",
+              ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+              : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]",
           )}
           onClick={() => setTab(t.key)}
         >
           <span>{t.label}</span>
           {t.count > 0 && (
-            <span className={cx(MONO, "text-[11px] text-[var(--t3)]")}>
+            <span
+              className={cx(
+                MONO,
+                "text-[11px]",
+                tab === t.key
+                  ? "text-[var(--ticket-cta-text)] opacity-80"
+                  : "text-[var(--t3)]",
+              )}
+            >
               {t.count}
             </span>
           )}
@@ -554,12 +566,9 @@ function PositionsTable({
       <EmptyState
         line={t("positions.empty", "No open positions.")}
         action={
-          <Link
-            href="/predict"
-            className="mt-1 inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[var(--border-2)] bg-[var(--surface-1)] px-[18px] text-[13px] font-semibold text-[var(--accent-text)] no-underline transition-[border-color] hover:border-[var(--t3)]"
-          >
+          <Button variant="primary" size="lg" render={<Link href="/predict" />}>
             {t("positions.browse", "Browse markets")}
-          </Link>
+          </Button>
         }
       />
     );
@@ -653,7 +662,7 @@ function PositionsTable({
                 mirrors Qty to a lock note shown only when shares really
                 are reserved by a resting sell. */}
             {reserved > 0 && (
-              <div className="mt-3 flex items-center gap-2 rounded-[10px] bg-[var(--surface-2)] px-3 py-2.5">
+              <div className="mt-3 flex items-center gap-2 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] px-3 py-2.5">
                 <svg
                   viewBox="0 0 256 256"
                   className="h-3.5 w-3.5 flex-none text-[var(--accent-text)]"
@@ -696,7 +705,16 @@ function OrdersTable({
   const [pendingCancel, setPendingCancel] = useState<string | null>(null);
 
   if (orders.length === 0) {
-    return <EmptyState line={t("orders.empty", "No open orders.")} />;
+    return (
+      <EmptyState
+        line={t("orders.empty", "No open orders.")}
+        action={
+          <Button variant="primary" size="lg" render={<Link href="/predict" />}>
+            {t("positions.browse", "Browse markets")}
+          </Button>
+        }
+      />
+    );
   }
 
   const handleCancel = async (orderID: string, marketTicker: string) => {
@@ -751,8 +769,10 @@ function OrdersTable({
                   </span>
                 </div>
                 <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                  {/* Fill progress is neutral (ink), not a YES-side signal —
+                      it tracks quantity filled, not market direction. */}
                   <span
-                    className="block h-full rounded-full bg-[var(--yes-bar)]"
+                    className="block h-full rounded-full bg-[var(--accent)]"
                     style={{
                       width: `${Math.min(100, Math.round((filled / Math.max(1, o.quantity)) * 100))}%`,
                     }}
@@ -776,7 +796,7 @@ function OrdersTable({
                 destructive action this screen owns. */}
             <button
               type="button"
-              className="mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] text-[13px] font-semibold text-[var(--no-text)] transition-[border-color] duration-150 hover:border-[var(--no-border)] disabled:cursor-default disabled:opacity-50"
+              className="mt-3 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] text-[13px] font-semibold text-[var(--danger)] transition-[border-color] duration-150 hover:border-[var(--danger)] disabled:cursor-default disabled:opacity-50"
               disabled={isCancelling}
               onClick={() => void handleCancel(o.id, ticker)}
             >
@@ -949,7 +969,7 @@ function SideChip({ side }: { side: "yes" | "no" }) {
  * future additions don't render blank.
  */
 const FAILURE_REASON_TEXT: Record<string, string> = {
-  price_band_violation: "price out of bounds (1¢–99¢)",
+  price_band_violation: "price out of bounds (1–99 pts)",
   post_only_would_take: "post-only would have crossed the book",
   self_match_rejected: "blocked: would have crossed your own order",
   closed_market: "market is no longer open",
@@ -972,9 +992,11 @@ function StatusChip({
     : undefined;
   // Step 4: a resting order is the palette's INFO state (§4f), not an
   // accent state; terminal-era white/black literals go to tokens.
+  // "filled" is a system success state, not a YES-side signal — YES/NO
+  // colour stays reserved for market direction only.
   const statusTone =
     status === "filled"
-      ? "border-[var(--yes-border)] bg-[var(--yes-soft)] text-[var(--yes-text)]"
+      ? "border-[color-mix(in_srgb,var(--success)_32%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[var(--success)]"
       : status === "open" || status === "partial"
         ? "border-[var(--info-dot)] bg-[var(--info-soft)] text-[var(--info-text)]"
         : status === "cancelled" || status === "expired"

@@ -69,7 +69,8 @@ describe("§3-03 quote freeze", () => {
 
   it("no longer swaps the price to loading text — the figure holds", () => {
     assert.ok(!ticket.includes('previewLoading ? t("LOADING")'));
-    assert.match(ticket, /\{displayPrice\}¢/);
+    assert.match(ticket, /\{displayPrice\} pts/);
+    assert.doesNotMatch(ticket, /¢/);
   });
 
   it("makes the CTA wait for the quote to settle, twice over", () => {

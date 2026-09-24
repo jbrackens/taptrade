@@ -103,7 +103,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                     <td
                       className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--no-text)]`}
                     >
-                      {t("NO")} {100 - l.pricePoints}¢
+                      {t("NO")} {100 - l.pricePoints} pts
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {l.shares}
@@ -145,7 +145,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                     <td
                       className={`${ORDER_BOOK_TD_CLASS} font-semibold text-[var(--yes-text)]`}
                     >
-                      {t("YES")} {l.pricePoints}¢
+                      {t("YES")} {l.pricePoints} pts
                     </td>
                     <td className={`${ORDER_BOOK_TD_CLASS} text-right`}>
                       {l.shares}

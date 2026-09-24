@@ -10,7 +10,8 @@
   "hub": {
     "title": "Account mo",
     "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points"
+    "availableBalance": "Available points",
+    "manage": "Pamahalaan"
   },
   "actions": {
     "profile": {

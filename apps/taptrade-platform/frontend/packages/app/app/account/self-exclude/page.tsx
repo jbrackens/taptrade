@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
+import { Button, Textarea } from "../../components/ui";
 import {
   selfExclude,
   type SelfExcludeResponse,
@@ -31,17 +32,14 @@ const descClass = "mb-6 text-[13px] text-[var(--t3)]";
 const fieldClass = "flex flex-col gap-2";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
 const actionsClass = "mt-6 flex gap-3 max-[640px]:flex-col-reverse";
-const buttonBaseClass =
-  "flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-5 py-3 text-center text-sm font-bold no-underline transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50";
-const primaryButtonClass = `${buttonBaseClass} border-transparent bg-[var(--accent)] text-[var(--ticket-cta-text)] hover:-translate-y-px hover:brightness-105`;
-const secondaryButtonClass = `${buttonBaseClass} border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t1)] hover:border-[var(--accent)] hover:text-[var(--accent)]`;
-const dangerButtonClass = `${buttonBaseClass} border-transparent bg-[var(--brand-dark)] text-[var(--on-brand)] hover:brightness-105`;
 
+// Quiet segmented pills, ink selected state — same recipe as every other
+// selection control in the app (never a coloured selection).
 function durationButtonClass(active: boolean) {
-  return `flex-1 cursor-pointer rounded-[var(--r-rh-md)] border px-4 py-3 text-center text-[13px] font-semibold transition-all duration-150 ${
+  return `flex-1 min-h-11 cursor-pointer rounded-[var(--r-rh-md)] border px-4 py-3 text-center text-[13px] font-semibold transition-colors duration-150 ${
     active
-      ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-      : "border-[var(--border-1)] bg-[var(--surface-2)] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+      ? "border-transparent bg-[var(--accent)] text-[var(--ticket-cta-text)]"
+      : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)]"
   }`;
 }
 
@@ -123,27 +121,30 @@ function SelfExcludePageContent() {
 
   return (
     <div className={pageClass}>
-      <div className="mb-8 text-center">
-        <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
-          Self-Exclusion
+      <div className="mb-8">
+        <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+          Self-exclusion
         </h1>
         <p className="text-sm text-[var(--t3)]">
           Permanently exclude yourself from your account
         </p>
       </div>
 
-      {/* Warning Step */}
+      {/* Warning Step — plain and serious: no colour beyond ink, per the
+       * responsible-play doctrine. Danger colour is reserved for the
+       * destructive action itself, on the confirm step below. */}
       {step === "warning" && (
-        <div className={`${cardClass} border-[var(--signal-gold-text)]`}>
-          <div className="mb-4 text-center text-5xl">
+        <div className={cardClass}>
+          <div className="mb-4 text-center">
             <AlertTriangle
-              size={48}
+              size={40}
               strokeWidth={1.5}
-              className="mx-auto text-[var(--signal-gold-text)]"
+              className="mx-auto text-[var(--t2)]"
+              aria-hidden="true"
             />
           </div>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
-            Important Notice
+            Important notice
           </h2>
           <div className="flex flex-col gap-5">
             <p className="text-sm leading-relaxed text-[var(--t1)]">
@@ -154,25 +155,25 @@ function SelfExcludePageContent() {
             <div className="flex flex-col gap-3">
               <Consequence
                 icon={<Ban size={20} strokeWidth={1.75} />}
-                title="Account Closure"
+                title="Account closure"
                 desc="Your account will be completely blocked and cannot be reopened"
               />
               <Consequence
                 icon={<Coins size={20} strokeWidth={1.75} />}
-                title="Point Handling"
+                title="Point handling"
                 desc="Any remaining gameplay points will be locked or cleared according to our policy"
               />
               <Consequence
                 icon={<Lock size={20} strokeWidth={1.75} />}
-                title="No Access"
+                title="No access"
                 desc="You will not be able to place orders or use any account features"
               />
               <Consequence
                 icon={<Clock size={20} strokeWidth={1.75} />}
                 title={
                   duration === "lifetime"
-                    ? "Permanent Exclusion"
-                    : `${durationLabel} Exclusion`
+                    ? "Permanent exclusion"
+                    : `${durationLabel} exclusion`
                 }
                 desc={
                   duration === "lifetime"
@@ -182,9 +183,9 @@ function SelfExcludePageContent() {
               />
             </div>
 
-            <div className="rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-2)] p-4">
+            <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4">
               <strong className="mb-2 block text-[13px] text-[var(--t1)]">
-                Need Help?
+                Need help?
               </strong>
               <p className="mb-2 text-xs text-[var(--t2)]">
                 If you're struggling with gambling, please contact our support
@@ -202,16 +203,20 @@ function SelfExcludePageContent() {
           </div>
 
           <div className={actionsClass}>
-            <Link href="/account" className={secondaryButtonClass}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              render={<Link href="/account" />}
+            >
               Cancel
-            </Link>
-            <button
-              type="button"
-              className={primaryButtonClass}
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1"
               onClick={handleProceed}
             >
-              I Understand, Continue
-            </button>
+              I understand, continue
+            </Button>
           </div>
         </div>
       )}
@@ -220,7 +225,7 @@ function SelfExcludePageContent() {
       {step === "form" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
-            Self-Exclusion Request
+            Self-exclusion request
           </h2>
           <p className={descClass}>
             Please provide a reason for your self-exclusion request
@@ -229,11 +234,11 @@ function SelfExcludePageContent() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className={fieldClass}>
               <span id="exclusion-duration-label" className={labelClass}>
-                Exclusion Duration
+                Exclusion duration
               </span>
               {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
               <div
-                className="flex flex-row gap-2.5"
+                className="flex flex-row gap-2"
                 role="group"
                 aria-labelledby="exclusion-duration-label"
               >
@@ -263,22 +268,21 @@ function SelfExcludePageContent() {
 
             <div className={fieldClass}>
               <label htmlFor="reason-for-self-exclusion" className={labelClass}>
-                Reason for Self-Exclusion
+                Reason for self-exclusion
               </label>
-              <textarea
+              <Textarea
                 id="reason-for-self-exclusion"
-                className="resize-y rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] text-[var(--t1)] outline-none transition-colors duration-150 focus:border-[var(--accent)]"
                 value={reason}
                 onChange={handleReasonChange}
                 placeholder="Please tell us why you want to self-exclude (optional but helpful)"
                 rows={6}
               />
-              <div className="text-[11px] text-[var(--t3)]">
+              <div className="font-mono text-[11px] text-[var(--t3)]">
                 {reason.length} characters
               </div>
             </div>
 
-            <div className="rounded-[var(--r-rh-md)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3">
               <label className="flex cursor-pointer items-start gap-2.5">
                 <input
                   className="mt-0.5 cursor-pointer accent-[var(--accent)]"
@@ -294,20 +298,22 @@ function SelfExcludePageContent() {
             </div>
 
             <div className={actionsClass}>
-              <button
+              <Button
                 type="button"
-                className={secondaryButtonClass}
+                variant="secondary"
+                className="flex-1"
                 onClick={() => setStep("warning")}
               >
                 Back
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                className={primaryButtonClass}
+                variant="primary"
+                className="flex-1"
                 disabled={!confirmed || !reason.trim()}
               >
-                Continue to Confirmation
-              </button>
+                Continue to confirmation
+              </Button>
             </div>
           </form>
         </div>
@@ -316,15 +322,16 @@ function SelfExcludePageContent() {
       {/* Confirmation Step */}
       {step === "confirm" && (
         <div className={`${cardClass} text-center`}>
-          <div className="mb-4 text-5xl">
+          <div className="mb-4">
             <ShieldCheck
-              size={48}
+              size={40}
               strokeWidth={1.5}
-              className="mx-auto text-[var(--signal-gold)]"
+              className="mx-auto text-[var(--t2)]"
+              aria-hidden="true"
             />
           </div>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
-            Confirm Self-Exclusion
+            Confirm self-exclusion
           </h2>
           <p className={descClass}>
             Please review your request before proceeding
@@ -334,29 +341,38 @@ function SelfExcludePageContent() {
             <ReviewItem label="Duration" value={durationLabel} />
             <ReviewItem label="Reason" value={reason} />
 
-            <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[color-mix(in_srgb,var(--signal-gold)_45%,var(--border-1))] bg-[var(--signal-gold-soft)] px-4 py-3 text-[13px] font-semibold text-[var(--brand-dark)]">
-              <AlertTriangle size={16} strokeWidth={2} className="shrink-0" />
+            <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-2)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--t1)]">
+              <AlertTriangle
+                size={16}
+                strokeWidth={2}
+                className="shrink-0 text-[var(--t2)]"
+                aria-hidden="true"
+              />
               This action cannot be undone. Your account will be permanently
               closed.
             </div>
           </div>
 
           <div className={actionsClass}>
-            <button
+            <Button
               type="button"
-              className={secondaryButtonClass}
+              variant="secondary"
+              className="flex-1"
               onClick={() => setStep("form")}
             >
-              Back to Edit
-            </button>
-            <button
+              Back to edit
+            </Button>
+            {/* The one place danger colour appears on this page: the
+             * irreversible action itself. */}
+            <Button
               type="button"
-              className={dangerButtonClass}
+              variant="danger"
+              className="flex-1"
               onClick={handleConfirmExclude}
               disabled={loading}
             >
-              {loading ? "Processing..." : "Confirm Self-Exclusion"}
-            </button>
+              {loading ? "Processing…" : "Confirm self-exclusion"}
+            </Button>
           </div>
         </div>
       )}
@@ -364,15 +380,16 @@ function SelfExcludePageContent() {
       {/* Success Step */}
       {step === "success" && result && (
         <div className={`${cardClass} border-[var(--accent)] text-center`}>
-          <div className="mb-4 text-[56px]">
+          <div className="mb-4">
             <CheckCircle2
-              size={56}
+              size={44}
               strokeWidth={1.5}
               className="mx-auto text-[var(--accent)]"
+              aria-hidden="true"
             />
           </div>
           <h2 className="mb-2 text-xl font-bold text-[var(--t1)]">
-            Self-Exclusion Confirmed
+            Self-exclusion confirmed
           </h2>
           <p className={descClass}>
             Your account has been successfully self-excluded
@@ -381,13 +398,13 @@ function SelfExcludePageContent() {
           <div className="my-6 rounded-[var(--r-rh-md)] bg-[var(--surface-2)] p-5">
             <DetailItem label="Status:" value={result.status} />
             <DetailItem
-              label="Excluded Until:"
+              label="Excluded until:"
               value={new Date(result.excludedUntil).toLocaleDateString()}
             />
           </div>
 
           <div className="my-4 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--accent-soft)] p-4">
-            <strong className="mb-2 block text-sm text-[var(--accent)]">
+            <strong className="mb-2 block text-sm text-[var(--t1)]">
               Your account is now permanently closed.
             </strong>
             <p className="text-[13px] text-[var(--t2)]">
@@ -397,9 +414,9 @@ function SelfExcludePageContent() {
           </div>
 
           <div className={actionsClass}>
-            <a href="/" className={primaryButtonClass}>
-              Return to Home
-            </a>
+            <Button variant="primary" className="flex-1" render={<a href="/" />}>
+              Return to home
+            </Button>
           </div>
         </div>
       )}
@@ -417,8 +434,10 @@ function Consequence({
   desc: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-3 rounded-[var(--r-rh-md)] border-l-[3px] border-l-[var(--no)] bg-[var(--surface-2)] p-3">
-      <span className="shrink-0 text-xl text-[var(--no)]">{icon}</span>
+    <div className="flex gap-3 border-b border-[var(--border-1)] pb-3 last:border-b-0 last:pb-0">
+      <span className="shrink-0 text-[var(--t2)]" aria-hidden="true">
+        {icon}
+      </span>
       <div>
         <strong className="mb-0.5 block text-[13px] text-[var(--t1)]">
           {title}
@@ -454,7 +473,7 @@ function DetailItem({
   return (
     <div className="flex justify-between border-b border-[var(--border-1)] py-2 text-[13px] last:border-b-0">
       <span className="font-semibold text-[var(--t3)]">{label}</span>
-      <span className="font-bold text-[var(--t1)]">{value}</span>
+      <span className="font-mono font-bold text-[var(--t1)]">{value}</span>
     </div>
   );
 }

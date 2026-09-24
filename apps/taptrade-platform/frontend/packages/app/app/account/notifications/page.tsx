@@ -2,26 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Calendar, Gift, Megaphone, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
+import { Button } from "../../components/ui";
 import { updatePreferences } from "../../lib/api/user-client";
 
 const pageClass = "mx-auto max-w-[800px] px-4 py-6";
 const headerClass =
   "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
 const backClass =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-all duration-150 hover:border-[var(--accent)] hover:text-[var(--accent)]";
+  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const cardClass =
   "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const descClass = "mb-6 text-[13px] text-[var(--t2)]";
-const itemClass =
-  "flex items-center justify-between rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3";
-const itemTitleClass = "mb-1 text-sm font-bold text-[var(--t1)]";
-const itemDescClass = "text-xs text-[var(--t3)]";
-const toggleClass = "relative inline-flex h-7 w-12 cursor-pointer items-center";
+const rowClass =
+  "flex items-center justify-between gap-4 border-b border-[var(--border-1)] py-4 first:pt-0 last:border-b-0 last:pb-0 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3";
+const rowTitleClass = "mb-1 text-sm font-bold text-[var(--t1)]";
+const rowDescClass = "text-xs text-[var(--t3)]";
+const toggleClass = "relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center";
 const toggleInputClass = "peer sr-only";
 const toggleSliderClass =
-  "absolute inset-0 cursor-pointer rounded-[14px] bg-[var(--border-2)] transition-all duration-300 before:absolute before:bottom-[3px] before:left-[3px] before:h-[22px] before:w-[22px] before:rounded-full before:bg-[var(--t3)] before:transition-all before:duration-300 peer-checked:bg-[var(--accent)] peer-checked:before:translate-x-5 peer-checked:before:bg-white";
+  "absolute inset-0 cursor-pointer rounded-[var(--r-pill)] bg-[var(--border-2)] transition-all duration-150 before:absolute before:bottom-[3px] before:left-[3px] before:h-[22px] before:w-[22px] before:rounded-full before:bg-[var(--on-ink)] before:transition-all before:duration-150 peer-checked:bg-[var(--accent)] peer-checked:before:translate-x-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--focus-ring)] peer-focus-visible:outline-offset-2";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -90,8 +92,8 @@ export default function NotificationsPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="mb-1 text-[28px] font-extrabold text-[var(--t1)]">
-            Notification Preferences
+          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+            Alerts
           </h1>
           <p className="text-sm text-[var(--t3)]">
             Choose how you want to receive updates
@@ -105,32 +107,27 @@ export default function NotificationsPage() {
       {/* Notification Settings Card */}
       <div className={cardClass}>
         <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
-          Communication Channels
+          Communication channels
         </h2>
         <p className={descClass}>
           Select which channels you want to receive notifications on
         </p>
 
         <div
-          className="mb-6 flex items-start gap-2.5 rounded-[var(--r-rh-md)] border border-l-[3px] border-[var(--border-1)] border-l-[var(--accent)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] leading-normal text-[var(--t2)]"
+          className="mb-6 rounded-[var(--r-rh-md)] border border-[var(--border-1)] border-l-[3px] border-l-[var(--t1)] bg-[var(--surface-2)] px-[14px] py-3 text-[13px] leading-normal text-[var(--t2)]"
           role="status"
         >
-          <span className="shrink-0" aria-hidden="true">
-            ⚠️
-          </span>
-          <span>
-            Heads up — notification preferences aren&apos;t saved yet.
-            We&apos;re still building this, so your selections won&apos;t
-            persist after you leave this page.
-          </span>
+          Heads up — notification preferences aren&apos;t saved yet.
+          We&apos;re still building this, so your selections won&apos;t
+          persist after you leave this page.
         </div>
 
-        <div className="mb-6 flex flex-col gap-4">
+        <div className="mb-6 flex flex-col">
           {/* Email Notifications */}
-          <div className={itemClass}>
+          <div className={rowClass}>
             <div className="flex-1">
-              <div className={itemTitleClass}>Email Notifications</div>
-              <div className={itemDescClass}>
+              <div className={rowTitleClass}>Email notifications</div>
+              <div className={rowDescClass}>
                 Receive notifications about your account activity via email
               </div>
             </div>
@@ -146,10 +143,10 @@ export default function NotificationsPage() {
           </div>
 
           {/* SMS Notifications */}
-          <div className={itemClass}>
+          <div className={rowClass}>
             <div className="flex-1">
-              <div className={itemTitleClass}>SMS Notifications</div>
-              <div className={itemDescClass}>
+              <div className={rowTitleClass}>SMS notifications</div>
+              <div className={rowDescClass}>
                 Receive important alerts via text message
               </div>
             </div>
@@ -165,10 +162,10 @@ export default function NotificationsPage() {
           </div>
 
           {/* Push Notifications */}
-          <div className={itemClass}>
+          <div className={rowClass}>
             <div className="flex-1">
-              <div className={itemTitleClass}>Push Notifications</div>
-              <div className={itemDescClass}>
+              <div className={rowTitleClass}>Push notifications</div>
+              <div className={rowDescClass}>
                 Get real-time notifications on your browser or mobile app
               </div>
             </div>
@@ -184,10 +181,10 @@ export default function NotificationsPage() {
           </div>
 
           {/* Marketing Email */}
-          <div className={itemClass}>
+          <div className={rowClass}>
             <div className="flex-1">
-              <div className={itemTitleClass}>Marketing Emails</div>
-              <div className={itemDescClass}>
+              <div className={rowTitleClass}>Marketing emails</div>
+              <div className={rowDescClass}>
                 Receive emails about new features, promotions, and special
                 offers
               </div>
@@ -206,10 +203,10 @@ export default function NotificationsPage() {
 
         {/* Email Frequency */}
         <div className="mb-6">
-          <h3 className="mb-3 text-[15px] font-bold text-[var(--t1)]">
-            Email Frequency
+          <h3 className="mb-1 text-[15px] font-bold text-[var(--t1)]">
+            Email frequency
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {(
               [
                 {
@@ -219,23 +216,23 @@ export default function NotificationsPage() {
                 },
                 {
                   value: "daily",
-                  label: "Daily Digest",
+                  label: "Daily digest",
                   desc: "One summary email per day",
                 },
                 {
                   value: "weekly",
-                  label: "Weekly Digest",
+                  label: "Weekly digest",
                   desc: "One summary email per week",
                 },
               ] as const
             ).map((opt) => (
-              <label key={opt.value} className={`${itemClass} cursor-pointer`}>
+              <label key={opt.value} className={`${rowClass} cursor-pointer`}>
                 <div className="flex-1">
-                  <div className={itemTitleClass}>{opt.label}</div>
-                  <div className={itemDescClass}>{opt.desc}</div>
+                  <div className={rowTitleClass}>{opt.label}</div>
+                  <div className={rowDescClass}>{opt.desc}</div>
                 </div>
                 <input
-                  className="h-[18px] w-[18px] accent-[var(--accent)]"
+                  className="h-[18px] w-[18px] shrink-0 accent-[var(--accent)]"
                   type="radio"
                   name="emailFrequency"
                   value={opt.value}
@@ -249,14 +246,14 @@ export default function NotificationsPage() {
 
         {/* Notification Categories */}
         <div className="mb-6">
-          <h3 className="mb-3 text-[15px] font-bold text-[var(--t1)]">
-            Notification Categories
+          <h3 className="mb-1 text-[15px] font-bold text-[var(--t1)]">
+            Notification categories
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {[
               {
                 key: "market_results" as const,
-                label: "Market Results",
+                label: "Market results",
                 desc: "Get notified when your positions are settled",
               },
               {
@@ -266,27 +263,27 @@ export default function NotificationsPage() {
               },
               {
                 key: "account_updates" as const,
-                label: "Account Updates",
+                label: "Account updates",
                 desc: "Point ledger activity, profile changes, and security alerts",
               },
               {
                 key: "new_markets" as const,
-                label: "New Markets",
+                label: "New markets",
                 desc: "Be notified when new topics or series are added",
               },
               {
                 key: "price_alerts" as const,
-                label: "Price Alerts",
+                label: "Price alerts",
                 desc: "Get alerted when prices change significantly on your favorites",
               },
             ].map((cat) => (
-              <label key={cat.key} className={`${itemClass} cursor-pointer`}>
+              <label key={cat.key} className={`${rowClass} cursor-pointer`}>
                 <div className="flex-1">
-                  <div className={itemTitleClass}>{cat.label}</div>
-                  <div className={itemDescClass}>{cat.desc}</div>
+                  <div className={rowTitleClass}>{cat.label}</div>
+                  <div className={rowDescClass}>{cat.desc}</div>
                 </div>
                 <input
-                  className="h-[18px] w-[18px] accent-[var(--accent)]"
+                  className="h-[18px] w-[18px] shrink-0 accent-[var(--accent)]"
                   type="checkbox"
                   checked={categories[cat.key]}
                   onChange={() => handleCategoryToggle(cat.key)}
@@ -297,42 +294,40 @@ export default function NotificationsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            className="cursor-pointer rounded-[var(--r-rh-md)] border-0 bg-[var(--accent)] px-6 py-3 text-sm font-bold text-white transition-all duration-150 hover:-translate-y-px hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={handleSave}
-            disabled={saveLoading}
-          >
-            {saveLoading ? "Saving..." : "Save Preferences"}
-          </button>
-        </div>
+        <Button
+          type="button"
+          variant="primary"
+          onClick={handleSave}
+          disabled={saveLoading}
+        >
+          {saveLoading ? "Saving…" : "Save preferences"}
+        </Button>
       </div>
 
       {/* Notification Types Info */}
       <div className={cardClass}>
         <h3 className="mb-4 text-base font-bold text-[var(--t1)]">
-          What You'll Receive
+          What you&apos;ll receive
         </h3>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-          <InfoItem
-            icon="📢"
+        <div className="flex flex-col">
+          <InfoRow
+            icon={<Megaphone size={18} strokeWidth={1.75} />}
             title="Announcements"
             desc="Important updates about your account and our service"
           />
-          <InfoItem
-            icon="🎁"
+          <InfoRow
+            icon={<Gift size={18} strokeWidth={1.75} />}
             title="Promotions"
             desc="Point bonus updates and community events"
           />
-          <InfoItem
-            icon="📅"
+          <InfoRow
+            icon={<Calendar size={18} strokeWidth={1.75} />}
             title="Market Updates"
             desc="Reminders for followed markets and closing windows"
           />
-          <InfoItem
-            icon="🔐"
-            title="Sign-in Notifications"
+          <InfoRow
+            icon={<ShieldCheck size={18} strokeWidth={1.75} />}
+            title="Sign-in notifications"
             desc="Alerts when your account is accessed"
           />
         </div>
@@ -341,20 +336,24 @@ export default function NotificationsPage() {
   );
 }
 
-function InfoItem({
+function InfoRow({
   icon,
   title,
   desc,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   desc: string;
 }) {
   return (
-    <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-center">
-      <div className="mb-2 text-[32px]">{icon}</div>
-      <div className="mb-1 text-[13px] font-bold text-[var(--t1)]">{title}</div>
-      <div className="text-xs leading-snug text-[var(--t3)]">{desc}</div>
+    <div className="flex items-start gap-3 border-b border-[var(--border-1)] py-3 first:pt-0 last:border-b-0 last:pb-0">
+      <span className="mt-0.5 shrink-0 text-[var(--t2)]" aria-hidden="true">
+        {icon}
+      </span>
+      <div>
+        <div className="text-[13px] font-bold text-[var(--t1)]">{title}</div>
+        <div className="text-xs leading-snug text-[var(--t3)]">{desc}</div>
+      </div>
     </div>
   );
 }
