@@ -1,10 +1,10 @@
 /**
- * Tap Trade brand mark.
+ * Tap Trade brand mark — "Call it" (2026-09-24): a check (you called it)
+ * whose long stroke launches into the pink tap dot.
  *
- * These are the approved, editable Figma production exports for the selected
- * Tap Trade territory. Keep the artwork as a source asset rather than
- * reconstructing its vector geometry in application code.
- * Figma master: 178:7 · production export: 193:10.
+ * The artwork lives in public/brand/ as source SVGs (ink, light, brand);
+ * app/icon.svg is the tile version for favicons and home-screen icons.
+ * Geometry: 14-unit round stroke, 8.5-unit dot, tight 80.36 × 72.10 box.
  */
 
 import Image from "next/image";
@@ -13,7 +13,7 @@ type BrandMarkTone = "brand" | "ink" | "light";
 
 type BrandMarkProps = {
   className?: string;
-  /** Width in pixels; the exported Tap Trade mark keeps its Figma aspect ratio. */
+  /** Width in pixels; the height follows the mark's 80.36 × 72.10 box. */
   size?: number;
   tone?: BrandMarkTone;
 };
@@ -29,7 +29,7 @@ export default function BrandMark({
   size = 30,
   tone = "ink",
 }: BrandMarkProps) {
-  const height = (size * 17.8604) / 24.001;
+  const height = (size * 72.1) / 80.36;
 
   return (
     <Image

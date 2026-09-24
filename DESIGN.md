@@ -120,6 +120,13 @@ together.
   read as objects on the paper; hover lifts to `--shadow-card-hover` with a
   border step. Rows inside a list (settings list, board rows) take a
   `--surface-2` wash instead. `--shadow-pop` is for floating layers only.
+- **Brand mark — "Call it"** (`BrandMark`, `public/brand/`): a round-stroked
+  check (you called it) whose long stroke launches into the pink tap dot.
+  Ink on light, warm white on dark; wordmark = mark + brand name + pink
+  period. The favicon (`app/icon.svg`) is tile-less with a heavier dot and
+  flips to warm white on dark tabs, so it never reads as a ticked checkbox;
+  home-screen icons (`app/icon.png`, `app/apple-icon.png`,
+  `public/brand/taptrade-app-icon.svg`) are an ink tile with a white check.
 - **Market images** (`MarketThumb`): every market carries a square image —
   its photo when it has one (falling back on load error), otherwise its
   category's icon on a soft tile of the category tint. 40px in cards, 48px
@@ -218,5 +225,6 @@ not part of this system. Do not copy values between them.
 |---|---|
 | 2026-08-22 | Purple + gold system adopted. **Superseded 2026-09-24.** |
 | 2026-09-24 | "Pick. Win. Redeem." iPhone reward hero removed (points are non-redeemable). |
+| 2026-09-24 | Brand mark replaced: the stepped "staircase" glyph gives way to **Call it** (check + pink tap dot). |
 | 2026-09-24 | **Kilig revised** after review ("looks like a high-school project"): poster type (Big Shoulders), Martian Mono numerals, typographic poster tiles, the mixed-size grid and the left topic rail are retired. One typeface (Inter), market image tiles, a featured market with its real chart, a uniform 3-column grid, topic tabs, 12px cards with a whisper of elevation. Palette unchanged. |
 | 2026-09-24 | **Kilig adopted** (`/design-consultation`): research across Kalshi, Polymarket, PrizePicks, Robinhood, Maya; Codex and an independent agent converged on hot pink + condensed poster type. Light default, dark primitives defined; poster words auto-derived. Preview: `~/.gstack/projects/jbrackens-taptrade/designs/design-system-20260924/kilig-preview.html`. |
