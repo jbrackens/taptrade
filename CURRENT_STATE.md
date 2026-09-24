@@ -107,9 +107,13 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
   code, and the `2fa/toggle` endpoint flips an in-memory boolean that login never checks. That
   and seven other verified gaps are registered in `docs/licensability-gaps.md`; the design
   record is in `docs/archive/2026-07-pam-modernization/`.
-- **`app/components/chat/ChatSidebar.tsx`** ships `MOCK_CHAT_MESSAGES` — fourteen
-  hardcoded messages — behind `NEXT_PUBLIC_FEATURE_CHAT` (off). It is a stub sitting in
-  production code, not a working feature.
+- **Community chat is a stub.** `app/components/chat/ChatSidebar.tsx` is flag-gated by
+  `NEXT_PUBLIC_FEATURE_CHAT` (default off in `features.ts`, but `deploy-demo.yml` builds
+  the demo with it **on**). The gateway serves no `/api/v1/chat/*` routes, so
+  `app/lib/api/chat-client.ts` has nothing to call and no importers. On 2026-09-24 the
+  panel's fabricated feed (`MOCK_CHAT_MESSAGES`), local-only send echo and "Live activity"
+  claim were removed; it now says chat isn't connected. Both are `STUBBED` in
+  `FEATURE_MANIFEST.json`.
 - **The Lighthouse performance ceiling** is structural: the player app is effectively a
   client-rendered SPA (109 files carry `"use client"`), so content-bearing routes hydrate
   a full client tree before their data paints. The July 2026 audit concluded this cannot

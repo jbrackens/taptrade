@@ -1408,9 +1408,8 @@ describe("Mobile navigation and chat parity", () => {
   it("opens mobile chat in the native in-app chat surface", () => {
     assert.ok(
       chatSidebarSource.includes("chat-mobile-sheet") &&
-        chatSidebarSource.includes("renderChatPanel(false)") &&
-        chatSidebarSource.includes("<ChatFrame"),
-      "mobile chat should render the same in-app ChatFrame as desktop",
+        chatSidebarSource.includes("renderChatPanel(false)"),
+      "mobile chat should render the same in-app chat panel as desktop",
     );
     assert.ok(
       !chatSidebarSource.includes("window.open"),
@@ -1418,25 +1417,60 @@ describe("Mobile navigation and chat parity", () => {
     );
   });
 
-  it("keeps chat seed messages away from sportsbook and cash-value topics", () => {
-    for (const retired of [
-      "oddswatcher",
-      "sportsbook_sam",
-      "BTC",
-      "$100K",
-      "Solana",
-      "ETH",
-      "$90",
-      "oil above",
+  // The desktop pill opens the panel with persistCollapsed(false), which is
+  // stored in localStorage; without a matching close control the 280px panel
+  // stayed open on every route for good.
+  it("lets desktop users close the chat panel they opened", () => {
+    const statusRow = sliceBetween(
+      chatSidebarSource,
+      "className={chatClasses.statusRow}",
+      'role="status"',
+    );
+    assert.ok(
+      statusRow.includes("className={chatClasses.closeButton}") &&
+        statusRow.includes('aria-label="Close chat"') &&
+        statusRow.includes("onClick={() => persistCollapsed(true)}"),
+      "desktop status row should carry a Close chat button that collapses and persists",
+    );
+
+    const closeButtonClass = sliceBetween(chatSidebarSource, "closeButton:", ",\n");
+    assert.ok(
+      !closeButtonClass.includes("shadow") &&
+        closeButtonClass.includes("rounded-[var(--r-rh-sm)]") &&
+        closeButtonClass.includes("hover:text-[var(--accent-text)]") &&
+        closeButtonClass.includes("ring-[var(--focus-ring)]"),
+      "chat close button should be an ink control with a 6px radius and no resting shadow",
+    );
+    assert.equal(
+      chatSidebarSource.split("className={chatClasses.closeButton}").length - 1,
+      2,
+      "mobile sheet and desktop panel should share one close button style",
+    );
+  });
+
+  // DESIGN.md §2 rule 5: honest data or no data. There is no chat transport
+  // (the gateway serves no /api/v1/chat/* routes), so the panel must not seed
+  // a fake feed, echo sends locally, or claim liveness.
+  it("does not invent chat activity without a chat transport", () => {
+    for (const invented of [
+      "MOCK_CHAT_MESSAGES",
+      "pricewatcher",
+      "marketmaker23",
+      "Live activity",
+      "onlineDot",
+      "--live",
+      "setMessages",
     ]) {
       assert.ok(
-        !chatSidebarSource.includes(retired),
-        `chat seed messages should not include ${retired}`,
+        !chatSidebarSource.includes(invented),
+        `chat panel should not ship invented activity: ${invented}`,
       );
     }
 
-    assert.ok(chatSidebarSource.includes("pricewatcher"));
-    assert.ok(chatSidebarSource.includes("grand prix safety-car market"));
+    assert.ok(
+      chatSidebarSource.includes("Chat isn&apos;t connected yet."),
+      "chat panel should say plainly that chat is not connected",
+    );
   });
 
   it("keeps footer and geo denial copy point-native", () => {

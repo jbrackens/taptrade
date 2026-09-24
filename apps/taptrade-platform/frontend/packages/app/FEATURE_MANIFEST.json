@@ -3,8 +3,8 @@
   "generated": "2026-04-13",
   "summary": {
     "total_features": 74,
-    "real": 74,
-    "stubbed": 0,
+    "real": 72,
+    "stubbed": 2,
     "missing": 0
   },
   "pages": [
@@ -186,9 +186,9 @@
   "components": [
     {
       "name": "ChatSidebar",
-      "status": "REAL",
+      "status": "STUBBED",
       "module": "chat",
-      "notes": "Feature-gated Rocket.Chat iframe shell with desktop collapse, mobile external open, provider unavailable state, and Tap Trade-owned report form"
+      "notes": "Feature-gated chat shell only (desktop pill + sidebar, mobile sheet) that says chat isn't connected. No chat transport exists: the gateway serves no /api/v1/chat/* routes. The fabricated seed feed, local-only send echo, 'Live activity' claim and report form were removed 2026-09-24 (DESIGN.md \u00a72 rule 5)."
     },
     {
       "legacy_path": "components/auth/login",
@@ -573,9 +573,9 @@
   "services": [
     {
       "name": "chat-client",
-      "status": "REAL",
+      "status": "STUBBED",
       "module": "chat",
-      "notes": "Gateway-backed room resolution, session creation, and report submission client"
+      "notes": "Client for /api/v1/chat/rooms/resolve, /chat/session and /chat/report. The gateway serves none of these routes, and nothing in app/ imports this client."
     },
     {
       "legacy_path": "services/api/api-service",
