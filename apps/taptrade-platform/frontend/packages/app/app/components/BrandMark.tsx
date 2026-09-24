@@ -18,10 +18,16 @@ type BrandMarkProps = {
   tone?: BrandMarkTone;
 };
 
+// Bump whenever the artwork changes. /brand/* is served with a 4-hour
+// browser cache under a stable filename, so without a new URL returning
+// visitors keep painting the previous mark (the staircase lingered after
+// the "Call it" deploy for exactly this reason).
+const MARK_VERSION = "call-it-1";
+
 const MARK_SOURCE: Record<BrandMarkTone, string> = {
-  brand: "/brand/taptrade-mark-brand.svg",
-  ink: "/brand/taptrade-mark-ink.svg",
-  light: "/brand/taptrade-mark-light.svg",
+  brand: `/brand/taptrade-mark-brand.svg?v=${MARK_VERSION}`,
+  ink: `/brand/taptrade-mark-ink.svg?v=${MARK_VERSION}`,
+  light: `/brand/taptrade-mark-light.svg?v=${MARK_VERSION}`,
 };
 
 export default function BrandMark({

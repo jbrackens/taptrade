@@ -41,6 +41,16 @@ describe("Call it brand mark", () => {
     assert.match(favicon, /fill="#E0126E"/);
   });
 
+  it("versions the mark URL so browsers never paint a cached old mark", () => {
+    assert.match(component, /const MARK_VERSION = "[^"]+";/);
+    for (const tone of ["brand", "ink", "light"]) {
+      assert.match(
+        component,
+        new RegExp(`${tone}: \`/brand/taptrade-mark-${tone}\\.svg\\?v=\\$\\{MARK_VERSION\\}\``),
+      );
+    }
+  });
+
   it("keeps BrandMark on the mark's own proportions", () => {
     assert.match(ink, /viewBox="0 0 80\.36 72\.10"/);
     assert.match(component, /\(size \* 72\.1\) \/ 80\.36/);
