@@ -3,8 +3,11 @@
 /**
  * Predict discovery workspace.
  *
- * Topic tabs under the top bar, then the board: a featured market with
- * its chart beside a trending list, then the filterable market grid. The
+ * The home page and /predict. Topic tabs under the top bar; a welcome
+ * strip for signed-out visitors; the curated "This week in the
+ * Philippines" photo rail when enough featured moments are live; then the
+ * board: a featured market with its chart beside a trending list, then
+ * the filterable market grid. The
  * "Pick. Win. Redeem." reward hero (iPhone featured reward) was removed on
  * 2026-09-24: Points are non-redeemable play value, so /predict must not
  * advertise redemption or prizes.
@@ -17,6 +20,8 @@ import type {
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { AllMarketsSection } from "./AllMarketsSection";
 import { CategoryTabs } from "./CategoryTabs";
+import { ThisWeekRail } from "./ThisWeekRail";
+import { WelcomeStrip } from "./WelcomeStrip";
 
 interface PredictionWorkspaceProps {
   discovery: DiscoveryResponse;
@@ -53,6 +58,10 @@ export function PredictionWorkspace({
         <h1 className="sr-only">
           {t("WORKSPACE_MOMENTS_TITLE", "Trending moments")}
         </h1>
+        <WelcomeStrip />
+        {/* The curated photo rail leads the unfiltered home board; a topic
+            tab narrows the board and drops it. */}
+        {!activeCategorySlug && <ThisWeekRail />}
         <AllMarketsSection
           categories={catalogCategories}
           categoryId={activeCategoryId}

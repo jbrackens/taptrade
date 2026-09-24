@@ -30,6 +30,9 @@ type Repository interface {
 	ListEvents(ctx context.Context, filter EventFilter) ([]Event, int, error)
 	GetEvent(ctx context.Context, id string) (*Event, error)
 	CreateEvent(ctx context.Context, e *Event) error
+	// UpdateEventPresentation sets featured and/or the cover photo. A nil
+	// argument leaves that column unchanged; an empty cover clears it.
+	UpdateEventPresentation(ctx context.Context, id string, featured *bool, coverImageURL *string) error
 	UpdateEventStatus(ctx context.Context, id string, status EventStatus) error
 
 	// Markets

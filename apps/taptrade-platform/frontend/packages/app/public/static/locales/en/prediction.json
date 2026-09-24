@@ -312,5 +312,12 @@
   "PTS_COUNT_one": "{{count}} pt",
   "PTS_COUNT_other": "{{count}} pts",
   "CLOSES_IN_SHORT": "Closes in {{time}}",
-  "CLOSES_IN_LABEL": "Closes in"
+  "CLOSES_IN_LABEL": "Closes in",
+  "HOME_WELCOME_TITLE": "Call what happens next.",
+  "HOME_WELCOME_BODY": "Pick Yes or No on the moments everyone's talking about. Free to play with points.",
+  "HOME_WELCOME_CTA": "Start free",
+  "HOME_WELCOME_HOW": "How it works",
+  "THIS_WEEK_TITLE": "This week in the Philippines",
+  "THIS_WEEK_SUB": "The moments everyone's watching, priced by the crowd.",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% Yes"
 }

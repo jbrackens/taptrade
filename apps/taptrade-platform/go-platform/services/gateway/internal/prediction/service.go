@@ -1470,19 +1470,30 @@ func (s *Service) CreateEvent(ctx context.Context, req CreateEventRequest) (*Eve
 	if req.CloseAt.IsZero() {
 		return nil, fmt.Errorf("event closeAt is required")
 	}
+	var cover *string
+	if req.CoverImageURL != nil {
+		normalized, err := normalizeCoverImageURL(*req.CoverImageURL)
+		if err != nil {
+			return nil, err
+		}
+		if normalized != "" {
+			cover = &normalized
+		}
+	}
 	event := &Event{
-		SeriesID:    req.SeriesID,
-		Title:       req.Title,
-		Description: req.Description,
-		CategoryID:  req.CategoryID,
-		Status:      EventStatusDraft,
-		Featured:    req.Featured,
-		OpenAt:      req.OpenAt,
-		CloseAt:     req.CloseAt,
-		Metadata:    defaultJSONObject(req.Metadata),
-		CreatedBy:   req.CreatedBy,
-		CreatedAt:   time.Now().UTC(),
-		UpdatedAt:   time.Now().UTC(),
+		SeriesID:      req.SeriesID,
+		Title:         req.Title,
+		Description:   req.Description,
+		CategoryID:    req.CategoryID,
+		Status:        EventStatusDraft,
+		Featured:      req.Featured,
+		CoverImageURL: cover,
+		OpenAt:        req.OpenAt,
+		CloseAt:       req.CloseAt,
+		Metadata:      defaultJSONObject(req.Metadata),
+		CreatedBy:     req.CreatedBy,
+		CreatedAt:     time.Now().UTC(),
+		UpdatedAt:     time.Now().UTC(),
 	}
 	if err := s.repo.CreateEvent(ctx, event); err != nil {
 		return nil, fmt.Errorf("create event: %w", err)

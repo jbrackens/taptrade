@@ -416,6 +416,9 @@ func (r *jsonDefaultRepo) GetEvent(context.Context, string) (*Event, error) {
 	return nil, errors.New("not found")
 }
 func (r *jsonDefaultRepo) CreateEvent(context.Context, *Event) error { return nil }
+func (r *jsonDefaultRepo) UpdateEventPresentation(context.Context, string, *bool, *string) error {
+	return nil
+}
 func (r *jsonDefaultRepo) UpdateEventStatus(context.Context, string, EventStatus) error {
 	return nil
 }

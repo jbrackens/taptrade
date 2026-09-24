@@ -291,5 +291,12 @@
   "PTS_COUNT_one": "{{count}} pt",
   "PTS_COUNT_other": "{{count}} pts",
   "CLOSES_IN_SHORT": "Magsasara sa {{time}}",
-  "CLOSES_IN_LABEL": "Magsasara sa"
+  "CLOSES_IN_LABEL": "Magsasara sa",
+  "HOME_WELCOME_TITLE": "Hulaan kung ano ang susunod.",
+  "HOME_WELCOME_BODY": "Pumili ng Oo o Hindi sa mga eksenang pinag-uusapan ng lahat. Libre, gamit ang points.",
+  "HOME_WELCOME_CTA": "Magsimula nang libre",
+  "HOME_WELCOME_HOW": "Paano ito gumagana",
+  "THIS_WEEK_TITLE": "Ngayong linggo sa Pilipinas",
+  "THIS_WEEK_SUB": "Ang mga eksenang pinapanood ng lahat, may presyo mula sa madla.",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% Oo"
 }

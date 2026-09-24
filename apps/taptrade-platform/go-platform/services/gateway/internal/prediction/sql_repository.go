@@ -150,7 +150,8 @@ func (r *SQLRepository) ListEvents(ctx context.Context, filter EventFilter) ([]E
 	}
 
 	q := `SELECT id, series_id, title, description, category_id, status, featured,
-	             open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at
+	             open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at,
+	             cover_image_url
 	      FROM prediction_events` + where + ` ORDER BY close_at ASC`
 	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
 	args = append(args, filter.PageSize, (filter.Page-1)*filter.PageSize)
@@ -175,17 +176,22 @@ func (r *SQLRepository) ListEvents(ctx context.Context, filter EventFilter) ([]E
 func (r *SQLRepository) GetEvent(ctx context.Context, id string) (*Event, error) {
 	row := r.db.QueryRowContext(ctx,
 		`SELECT id, series_id, title, description, category_id, status, featured,
-		        open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at
+		        open_at, close_at, settle_at, settled_at, metadata, created_by, created_at, updated_at,
+		        cover_image_url
 		 FROM prediction_events WHERE id = $1`, id)
 
 	var e Event
-	var seriesID, desc, createdBy sql.NullString
+	var seriesID, desc, createdBy, cover sql.NullString
 	var openAt, settleAt, settledAt sql.NullTime
 	var categoryID sql.NullString // nullable — see scanEvent
 	err := row.Scan(&e.ID, &seriesID, &e.Title, &desc, &categoryID, &e.Status, &e.Featured,
-		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt)
+		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt,
+		&cover)
 	if err != nil {
 		return nil, err
+	}
+	if cover.Valid && cover.String != "" {
+		e.CoverImageURL = &cover.String
 	}
 	e.CategoryID = categoryID.String
 	if seriesID.Valid {
@@ -210,12 +216,37 @@ func (r *SQLRepository) GetEvent(ctx context.Context, id string) (*Event, error)
 func (r *SQLRepository) CreateEvent(ctx context.Context, e *Event) error {
 	return r.db.QueryRowContext(ctx,
 		`INSERT INTO prediction_events (series_id, title, description, category_id, status, featured,
-		  open_at, close_at, settle_at, metadata, created_by)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		  open_at, close_at, settle_at, metadata, created_by, cover_image_url)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		 RETURNING id, created_at, updated_at`,
 		e.SeriesID, e.Title, nullStr(e.Description), e.CategoryID, e.Status, e.Featured,
-		e.OpenAt, e.CloseAt, e.SettleAt, e.Metadata, e.CreatedBy,
+		e.OpenAt, e.CloseAt, e.SettleAt, e.Metadata, e.CreatedBy, e.CoverImageURL,
 	).Scan(&e.ID, &e.CreatedAt, &e.UpdatedAt)
+}
+
+// UpdateEventPresentation curates an event's home-page presentation. The
+// boolean $3 says whether the cover is being written at all, so a nil
+// cover leaves it alone while "" clears it.
+func (r *SQLRepository) UpdateEventPresentation(ctx context.Context, id string, featured *bool, coverImageURL *string) error {
+	setCover := coverImageURL != nil
+	cover := ""
+	if coverImageURL != nil {
+		cover = *coverImageURL
+	}
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE prediction_events
+		    SET featured = COALESCE($2, featured),
+		        cover_image_url = CASE WHEN $3 THEN NULLIF($4, '') ELSE cover_image_url END,
+		        updated_at = NOW()
+		  WHERE id = $1`,
+		id, featured, setCover, cover)
+	if err != nil {
+		return err
+	}
+	if n, err := res.RowsAffected(); err == nil && n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
 }
 
 func (r *SQLRepository) UpdateEventStatus(ctx context.Context, id string, status EventStatus) error {
@@ -2008,16 +2039,20 @@ func scanMarkets(rows *sql.Rows) ([]Market, error) {
 
 func scanEvent(rows *sql.Rows) (*Event, error) {
 	var e Event
-	var seriesID, desc, createdBy sql.NullString
+	var seriesID, desc, createdBy, cover sql.NullString
 	var openAt, settleAt, settledAt sql.NullTime
 	// category_id is nullable in the schema (integration-test events and
 	// legacy rows carry NULL). Scanning it into a bare string made ONE such
 	// row 500 the whole /api/v1/events listing.
 	var categoryID sql.NullString
 	err := rows.Scan(&e.ID, &seriesID, &e.Title, &desc, &categoryID, &e.Status, &e.Featured,
-		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt)
+		&openAt, &e.CloseAt, &settleAt, &settledAt, &e.Metadata, &createdBy, &e.CreatedAt, &e.UpdatedAt,
+		&cover)
 	if err != nil {
 		return nil, err
+	}
+	if cover.Valid && cover.String != "" {
+		e.CoverImageURL = &cover.String
 	}
 	e.CategoryID = categoryID.String
 	if seriesID.Valid {

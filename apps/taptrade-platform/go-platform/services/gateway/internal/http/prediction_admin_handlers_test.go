@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -122,7 +123,13 @@ func (r *predictionAdminRepo) ListEvents(context.Context, prediction.EventFilter
 	return nil, 0, nil
 }
 
-func (r *predictionAdminRepo) GetEvent(context.Context, string) (*prediction.Event, error) {
+func (r *predictionAdminRepo) GetEvent(_ context.Context, id string) (*prediction.Event, error) {
+	for i := range r.events {
+		if r.events[i].ID == id {
+			event := r.events[i]
+			return &event, nil
+		}
+	}
 	return nil, errors.New("not found")
 }
 
@@ -136,6 +143,27 @@ func (r *predictionAdminRepo) CreateEvent(_ context.Context, e *prediction.Event
 
 func (r *predictionAdminRepo) UpdateEventStatus(context.Context, string, prediction.EventStatus) error {
 	return nil
+}
+
+func (r *predictionAdminRepo) UpdateEventPresentation(_ context.Context, id string, featured *bool, cover *string) error {
+	for i := range r.events {
+		if r.events[i].ID != id {
+			continue
+		}
+		if featured != nil {
+			r.events[i].Featured = *featured
+		}
+		if cover != nil {
+			if *cover == "" {
+				r.events[i].CoverImageURL = nil
+			} else {
+				value := *cover
+				r.events[i].CoverImageURL = &value
+			}
+		}
+		return nil
+	}
+	return sql.ErrNoRows
 }
 
 func (r *predictionAdminRepo) ListMarkets(_ context.Context, filter prediction.MarketFilter) ([]prediction.Market, int, error) {
@@ -2640,5 +2668,83 @@ func TestPredictionAdminSettlementReplayResumesIncompleteDisbursements(t *testin
 	}
 	if secondPayload.CompletedSettlements != 0 {
 		t.Fatalf("expected idempotent second replay to find no incomplete settlements, got %+v", secondPayload)
+	}
+}
+
+func TestPredictionAdminUpdateEventPresentation(t *testing.T) {
+	// TestMain turns on the dev admin bypass; this test checks that a
+	// non-admin is rejected, so switch it off.
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+	repo := newPredictionAdminRepo()
+	svc := prediction.NewService(repo, predictionAdminWallet{})
+	mux := http.NewServeMux()
+	registerSettlementRoutes(mux, svc)
+
+	admin := func(req *http.Request) *http.Request {
+		return req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@taptrade.local", "admin"))
+	}
+	serve := func(req *http.Request) *httptest.ResponseRecorder {
+		res := httptest.NewRecorder()
+		mux.ServeHTTP(res, req)
+		return res
+	}
+
+	create := serve(admin(httptest.NewRequest(http.MethodPost, "/api/v1/admin/events",
+		strings.NewReader(`{"title":"PBA Philippine Cup Finals","categoryId":"cat-1","closeAt":"2026-12-31T23:59:00Z"}`))))
+	if create.Code != http.StatusCreated {
+		t.Fatalf("create event: %d %s", create.Code, create.Body.String())
+	}
+	id := repo.events[0].ID
+
+	// Feature it and give it a cover.
+	res := serve(admin(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/"+id,
+		strings.NewReader(`{"featured":true,"coverImageUrl":"/images/covers/basketball.jpg"}`))))
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var event prediction.Event
+	if err := json.Unmarshal(res.Body.Bytes(), &event); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if !event.Featured || event.CoverImageURL == nil || *event.CoverImageURL != "/images/covers/basketball.jpg" {
+		t.Fatalf("presentation not applied: %+v", event)
+	}
+
+	// An empty cover clears it and leaves featured alone.
+	res = serve(admin(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/"+id,
+		strings.NewReader(`{"coverImageUrl":""}`))))
+	if res.Code != http.StatusOK || repo.events[0].CoverImageURL != nil || !repo.events[0].Featured {
+		t.Fatalf("clearing the cover failed: %d %+v", res.Code, repo.events[0])
+	}
+
+	// Unsafe cover URLs never persist.
+	for _, cover := range []string{"javascript:alert(1)", "http://example.com/a.jpg", "/images/../auth"} {
+		res = serve(admin(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/"+id,
+			strings.NewReader(`{"coverImageUrl":"`+cover+`"}`))))
+		if res.Code != http.StatusBadRequest {
+			t.Fatalf("cover %q: expected 400, got %d", cover, res.Code)
+		}
+	}
+	if repo.events[0].CoverImageURL != nil {
+		t.Fatalf("unsafe cover persisted: %v", *repo.events[0].CoverImageURL)
+	}
+
+	// Unknown event -> 404; empty body -> 400; wrong verb -> 405.
+	if res = serve(admin(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/nope",
+		strings.NewReader(`{"featured":true}`)))); res.Code != http.StatusNotFound {
+		t.Fatalf("unknown event: expected 404, got %d", res.Code)
+	}
+	if res = serve(admin(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/"+id,
+		strings.NewReader(`{}`)))); res.Code != http.StatusBadRequest {
+		t.Fatalf("empty patch: expected 400, got %d", res.Code)
+	}
+	if res = serve(admin(httptest.NewRequest(http.MethodGet, "/api/v1/admin/events/"+id, nil))); res.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("GET: expected 405, got %d", res.Code)
+	}
+
+	// Non-admins cannot curate.
+	anon := serve(httptest.NewRequest(http.MethodPatch, "/api/v1/admin/events/"+id, strings.NewReader(`{"featured":false}`)))
+	if anon.Code == http.StatusOK || !repo.events[0].Featured {
+		t.Fatalf("non-admin patch was applied: %d", anon.Code)
 	}
 }

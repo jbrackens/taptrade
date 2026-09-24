@@ -79,6 +79,10 @@ type Event struct {
 	CreatedAt   time.Time       `json:"createdAt" db:"created_at"`
 	UpdatedAt   time.Time       `json:"updatedAt" db:"updated_at"`
 
+	// CoverImageURL is the moment's cover photo for the home rail: a
+	// site-relative /images/ path or an https URL (migration 057).
+	CoverImageURL *string `json:"coverImageUrl,omitempty" db:"cover_image_url"`
+
 	// Joined data
 	Markets []Market `json:"markets,omitempty" db:"-"`
 }
@@ -907,6 +911,18 @@ type CreateEventRequest struct {
 	CloseAt     time.Time       `json:"closeAt" validate:"required"`
 	Metadata    json.RawMessage `json:"metadata,omitempty"`
 	CreatedBy   *string         `json:"-"`
+
+	// CoverImageURL: optional home-rail cover (/images/ path or https URL).
+	CoverImageURL *string `json:"coverImageUrl,omitempty"`
+}
+
+// UpdateEventPresentationRequest is the admin request that curates how an
+// event appears on the home page: whether it is featured and its cover
+// photo. Nil fields are left unchanged; an empty CoverImageURL clears it.
+// It never touches lifecycle, pricing or settlement.
+type UpdateEventPresentationRequest struct {
+	Featured      *bool   `json:"featured,omitempty"`
+	CoverImageURL *string `json:"coverImageUrl,omitempty"`
 }
 
 // CreateMarketRequest is the admin request to create a new market.

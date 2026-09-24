@@ -433,6 +433,20 @@ export class PredictionApiClient {
     return this.request(`/api/v1/events/${id}`);
   }
 
+  /**
+   * Admin: curate an event's home-page presentation — featured flag and
+   * cover photo. Omitted fields stay unchanged; coverImageUrl "" clears it.
+   */
+  async updateEventPresentation(
+    id: string,
+    body: { featured?: boolean; coverImageUrl?: string },
+  ): Promise<PredictionEvent> {
+    return this.request(`/api/v1/admin/events/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  }
+
   // --- Markets ---
 
   async getMarkets(params?: {

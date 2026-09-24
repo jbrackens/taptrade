@@ -20,11 +20,9 @@ import enPortfolio from "../../../public/static/locales/en/portfolio.json";
 import enLeaderboards from "../../../public/static/locales/en/leaderboards.json";
 import enPrediction from "../../../public/static/locales/en/prediction.json";
 import enMarketContent from "../../../public/static/locales/en/market-content.json";
-// Landing-page namespaces (app/page.tsx + its language selector). "/" is the
-// primary FCP/LCP surface and its copy uses bare keys with no inline
-// fallbacks, so without bundling these the server would emit raw keys
-// ("hero.title") into the prerendered HTML. 3.9KB combined.
-import enPageHome from "../../../public/static/locales/en/page-home.json";
+// The language selector's namespace is bundled so SSR never emits raw keys.
+// (The old marketing landing's page-home namespace was retired when "/"
+// became the market board, 2026-09-24.)
 import enLanguageSelector from "../../../public/static/locales/en/language-selector.json";
 
 /**
@@ -51,7 +49,6 @@ const NAMESPACES = [
   "language-selector",
   "api-errors",
   "error-component",
-  "page-home",
   "page-about",
   "page-terms",
   "page-privacy-policy",
@@ -124,7 +121,6 @@ const INIT_NAMESPACES = [
   "leaderboards",
   "prediction",
   "market-content",
-  "page-home",
   "language-selector",
 ];
 
@@ -145,7 +141,6 @@ const EN_RESOURCES = {
   leaderboards: enLeaderboards,
   prediction: enPrediction,
   "market-content": enMarketContent,
-  "page-home": enPageHome,
   "language-selector": enLanguageSelector,
 };
 

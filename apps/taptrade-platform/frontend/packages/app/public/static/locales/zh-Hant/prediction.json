@@ -289,5 +289,12 @@
   "PTS_COUNT_one": "{{count}} 積分",
   "PTS_COUNT_other": "{{count}} 積分",
   "CLOSES_IN_SHORT": "{{time}} 後截止",
-  "CLOSES_IN_LABEL": "截止倒數"
+  "CLOSES_IN_LABEL": "截止倒數",
+  "HOME_WELCOME_TITLE": "預測接下來會發生什麼。",
+  "HOME_WELCOME_BODY": "對大家都在討論的時刻選擇「是」或「否」。使用積分免費參與。",
+  "HOME_WELCOME_CTA": "免費開始",
+  "HOME_WELCOME_HOW": "玩法說明",
+  "THIS_WEEK_TITLE": "本週菲律賓熱點",
+  "THIS_WEEK_SUB": "大家都在關注的時刻，由群體定價。",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% 是"
 }

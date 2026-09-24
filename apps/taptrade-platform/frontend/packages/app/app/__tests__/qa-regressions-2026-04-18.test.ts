@@ -242,23 +242,28 @@ describe("points-only safety boundary", () => {
   });
 
   it("keeps public homepage teasers away from crypto and cash-value framing", () => {
-    // The 2026-08-09 dark-landing rebuild replaced the hardcoded teaser
-    // cards with editorial desk chips + a real-data ticker; the invariant
-    // (no crypto tease on the homepage) is now expressed through the desk
-    // list. The 2026-09-24 Kilig redesign then moved the desk labels from
-    // all-caps mono overline text to title case, mirroring the feed's
-    // editorial event titles — the crypto check stays case-insensitive so
-    // it still guards the desk list regardless of casing.
-    const homepageSource = read("page.tsx");
-    assert.ok(homepageSource.includes('"Esports & Arenas"'));
-    assert.ok(!/crypto\s*&\s*chains/i.test(homepageSource));
+    // The home page is the market board (2026-09-24): its only marketing
+    // copy is the welcome strip and the "This week" rail. Their locale
+    // strings stay free of crypto/cash-value framing in every locale; the
+    // points-only boundary line lives inline in WelcomeStrip as an English
+    // constant.
+    const home = read("page.tsx");
+    assert.match(home, /export \{ default \} from "\.\/predict\/page"/);
+    assert.doesNotMatch(home, /crypto/i);
 
     const forbiddenHomepageCopy =
       /crypto|bitcoin|btc|usd|\$|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|加密|pembayaran|赔付|賠付/i;
-    const offenders = listSourceFiles("../public/static/locales")
-      .filter((rel) => rel.endsWith("/page-home.json"))
-      .filter((rel) => forbiddenHomepageCopy.test(read(rel)));
-
+    const offenders: string[] = [];
+    for (const rel of listSourceFiles("../public/static/locales").filter((r) =>
+      r.endsWith("/prediction.json"),
+    )) {
+      const dict = JSON.parse(read(rel)) as Record<string, string>;
+      for (const [key, value] of Object.entries(dict)) {
+        if (/^(HOME_WELCOME_|THIS_WEEK_)/.test(key) && forbiddenHomepageCopy.test(value)) {
+          offenders.push(`${rel}:${key}`);
+        }
+      }
+    }
     assert.deepEqual(offenders, []);
   });
 });

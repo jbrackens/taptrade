@@ -289,5 +289,12 @@
   "PTS_COUNT_one": "{{count}} poin",
   "PTS_COUNT_other": "{{count}} poin",
   "CLOSES_IN_SHORT": "Tutup dalam {{time}}",
-  "CLOSES_IN_LABEL": "Tutup dalam"
+  "CLOSES_IN_LABEL": "Tutup dalam",
+  "HOME_WELCOME_TITLE": "Tebak apa yang terjadi selanjutnya.",
+  "HOME_WELCOME_BODY": "Pilih Ya atau Tidak pada momen yang sedang ramai dibicarakan. Gratis dengan poin.",
+  "HOME_WELCOME_CTA": "Mulai gratis",
+  "HOME_WELCOME_HOW": "Cara kerjanya",
+  "THIS_WEEK_TITLE": "Minggu ini di Filipina",
+  "THIS_WEEK_SUB": "Momen yang ditonton semua orang, dihargai oleh publik.",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% Ya"
 }

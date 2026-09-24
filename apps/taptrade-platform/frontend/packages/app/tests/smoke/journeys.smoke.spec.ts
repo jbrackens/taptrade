@@ -231,10 +231,12 @@ test.describe("J1 browse markets", () => {
       allow: [WS_CSP_LOCAL_ARTIFACT],
     });
 
-    await page.goto("/");
-    await expect(
-      page.getByRole("link", { name: /browse/i }).first(),
-    ).toBeVisible();
+    // "/" is the market board (the marketing landing was retired
+    // 2026-09-24): it renders market cards straight away.
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("market-card").first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     // domcontentloaded, not load: Firefox starves the load event on the
     // dev server (many parallel compile-time responses hold Gecko's

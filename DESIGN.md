@@ -157,6 +157,15 @@ together.
   synthetic demo series wear the "Simulated data" badge.
 - **MarketHead:** image, status · category · closes-in line, question, then
   the chance figure with a Yes/No price legend.
+- **WelcomeStrip:** one card above the board for signed-out visitors —
+  headline, one line of pitch, the points-only line (inline English, never
+  a locale string), ink "Start free" + "How it works".
+- **ThisWeekRail:** photo-led tiles for featured moments (events flagged in
+  the back office): one large tile + four, a swipeable row on phones. Each
+  tile shows the moment title, its lead market question and a "N% Yes"
+  chip over a dark scrim. Image order: event cover → lead market photo →
+  licensed topic cover (`topic-covers.ts`, `public/images/covers/`) →
+  tinted category tile. Hidden below 4 live moments.
 - **QuickTradePanel:** Yes/No opens the real ticket in place (Dialog
   >1023px, vaul Sheet ≤1023px).
 - **Chrome:** TopBar and MobileTabBar are white with a hairline; wordmark =
@@ -174,9 +183,11 @@ states that no points were taken. Amounts and payouts are in points.
 ## 8. Layout
 
 - Top bar 64px, sticky, white. Mobile tab bar fixed, white, safe-area padded.
-- `/predict`: topic tabs, then a 1280px column: FeaturedMarket + Trending
-  list → section title + search/sort/window → 3-column card grid.
-  Filters drop the hero and show the grid only.
+- `/` (home) and `/predict`: topic tabs, then a 1280px column: welcome
+  strip (signed-out only) → "This week in the Philippines" rail (curated
+  featured moments; shown only when ≥4 are live) → FeaturedMarket +
+  Trending list → section title + search/sort/window → 3-column card grid.
+  A topic tab drops the rail; filters drop the hero and show the grid only.
 - `/market/[ticker]`: market column (max 920px: header + chart + stats card,
   rules, discussion, related) · 400px sticky trade rail; the rail moves to a
   Sheet ≤1023px. Breadcrumb: Markets / category / event.

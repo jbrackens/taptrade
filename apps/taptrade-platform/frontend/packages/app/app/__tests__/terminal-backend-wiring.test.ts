@@ -151,7 +151,11 @@ describe("prediction terminal backend wiring", () => {
       );
     }
 
-    for (const pathname of [null, "/", "/auth/login", "/portfolio"]) {
+    // The home page became the market board on 2026-09-24, so "/" now
+    // shares the terminal shell with /predict.
+    assert.equal(isPredictionTerminalRoute("/"), true, "/ is the market board");
+
+    for (const pathname of [null, "/auth/login", "/portfolio"]) {
       assert.equal(
         isPredictionTerminalRoute(pathname),
         false,

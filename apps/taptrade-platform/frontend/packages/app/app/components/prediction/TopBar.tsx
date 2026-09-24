@@ -377,6 +377,7 @@ export function TopBar() {
       // gray on its own page while every other tab lit up. Accept either
       // form plus the /category/* subroutes that belong under Markets.
       return (
+        pathname === "/" ||
         pathname === "/predict" ||
         pathname.startsWith("/predict/") ||
         pathname.startsWith("/category/") ||

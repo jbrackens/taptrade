@@ -341,7 +341,10 @@ func (r *memRepo) CreateSeries(context.Context, *Series) error                  
 func (r *memRepo) ListEvents(context.Context, EventFilter) ([]Event, int, error) { return nil, 0, nil }
 func (r *memRepo) GetEvent(context.Context, string) (*Event, error)              { return nil, nil }
 func (r *memRepo) CreateEvent(context.Context, *Event) error                     { return nil }
-func (r *memRepo) UpdateEventStatus(context.Context, string, EventStatus) error  { return nil }
+func (r *memRepo) UpdateEventPresentation(context.Context, string, *bool, *string) error {
+	return nil
+}
+func (r *memRepo) UpdateEventStatus(context.Context, string, EventStatus) error { return nil }
 func (r *memRepo) ListMarkets(context.Context, MarketFilter) ([]Market, int, error) {
 	return nil, 0, nil
 }

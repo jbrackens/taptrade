@@ -289,5 +289,12 @@
   "PTS_COUNT_one": "{{count}} mata",
   "PTS_COUNT_other": "{{count}} mata",
   "CLOSES_IN_SHORT": "Ditutup dalam {{time}}",
-  "CLOSES_IN_LABEL": "Ditutup dalam"
+  "CLOSES_IN_LABEL": "Ditutup dalam",
+  "HOME_WELCOME_TITLE": "Ramal apa yang berlaku seterusnya.",
+  "HOME_WELCOME_BODY": "Pilih Ya atau Tidak pada detik yang semua orang bualkan. Percuma dengan mata.",
+  "HOME_WELCOME_CTA": "Mula percuma",
+  "HOME_WELCOME_HOW": "Cara ia berfungsi",
+  "THIS_WEEK_TITLE": "Minggu ini di Filipina",
+  "THIS_WEEK_SUB": "Detik yang semua orang tonton, dinilai oleh orang ramai.",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% Ya"
 }

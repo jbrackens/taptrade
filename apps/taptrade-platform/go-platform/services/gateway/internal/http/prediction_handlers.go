@@ -1289,6 +1289,34 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, event)
 	}))
 
+	// Admin: curate an event's home-page presentation — the featured flag
+	// that puts it in the "This week" rail and its cover photo. Metadata
+	// only: it never moves points or changes lifecycle/settlement state.
+	mux.Handle("/api/v1/admin/events/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminPermission(r, "markets:edit"); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPatch {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPatch)
+		}
+		id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/admin/events/"), "/")
+		if id == "" || strings.Contains(id, "/") {
+			return httpx.NotFound("route not found")
+		}
+		var req prediction.UpdateEventPresentationRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		event, err := svc.UpdateEventPresentation(r.Context(), id, req)
+		if err != nil {
+			if errors.Is(err, prediction.ErrEventNotFound) {
+				return httpx.NotFound("event not found")
+			}
+			return serviceBadRequestError(err, nil)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, predictionEventPayload(*event))
+	}))
+
 	// Admin: AI-drafting budget pre-flight (per-admin rate + daily token cap).
 	mux.Handle("/api/v1/admin/ai-budget", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {

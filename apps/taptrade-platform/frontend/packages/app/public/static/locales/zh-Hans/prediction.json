@@ -289,5 +289,12 @@
   "PTS_COUNT_one": "{{count}} 积分",
   "PTS_COUNT_other": "{{count}} 积分",
   "CLOSES_IN_SHORT": "{{time}} 后截止",
-  "CLOSES_IN_LABEL": "截止倒计时"
+  "CLOSES_IN_LABEL": "截止倒计时",
+  "HOME_WELCOME_TITLE": "预测接下来会发生什么。",
+  "HOME_WELCOME_BODY": "对大家都在讨论的时刻选择“是”或“否”。使用积分免费参与。",
+  "HOME_WELCOME_CTA": "免费开始",
+  "HOME_WELCOME_HOW": "玩法说明",
+  "THIS_WEEK_TITLE": "本周菲律宾热点",
+  "THIS_WEEK_SUB": "大家都在关注的时刻，由群体定价。",
+  "THIS_WEEK_YES_CHIP": "{{pct}}% 是"
 }

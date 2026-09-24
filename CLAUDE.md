@@ -36,7 +36,7 @@ taptrade/
 │   │   │   ├── internal/wallet/           ← wallet + ledger (kept from sportsbook, adapted)
 │   │   │   ├── internal/ws/               ← WebSocket hub
 │   │   │   ├── internal/http/             ← HTTP handlers
-│   │   │   ├── migrations/                ← 014 created the prediction schema; 056 is the highest today
+│   │   │   ├── migrations/                ← 014 created the prediction schema; 057 is the highest today
 │   │   │   └── seed-data/seed_prediction.sql
 │   │   ├── services/auth/                 ← Auth service (Go, port 18081)
 │   │   └── modules/platform/              ← Shared Go module `taptrade/platform` (canonical, logging, runtime, transport/httpx)
@@ -107,7 +107,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/`.
 2. **Fix errors at the root, don't work around them.** Zero bug policy.
 3. **Keep the `prediction` Go package decoupled from `wallet`.** It uses the `prediction.WalletAdapter` interface — the concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Don't import `wallet` from `prediction/`.
-4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (056 is the highest today, so the next is 057). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
+4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (057 is the highest today, so the next is 058). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
 
 ## Points-only launch boundary
 
@@ -163,7 +163,8 @@ The app ships 37 pages (plus one API route) under `app/`. The ones that matter:
 - Trading surface: `app/predict/page.tsx` (discovery — featured, trending, closingSoon, recent), `app/market/[ticker]/page.tsx` (market detail + trade ticket; its breadcrumb links to the market's event), `app/portfolio/page.tsx` (Positions / Orders / History tabs + accuracy), `app/category/[slug]/page.tsx`, `app/event/[id]/page.tsx` (every market of one event + aggregate exposure, beside `InspectorPanel`)
 - **Quick trade:** every `MarketGrid` hosts one `QuickTradePanel` — a card's YES/NO opens `InspectorPanel` (the real `ConnectedTradeTicket`, side preselected, plus a link to the full market) in a Dialog above 1023px or the vaul Sheet at or below it. Closed markets keep the `/market/<ticker>?side=` deep link.
 - **Retired:** the 2026-08-12 Floor redesign trial (`/floor`, `/book`, `/standing`, `components/floor/`) was removed on 2026-09-23 in favour of the surface above. `next.config.js` redirects those routes to `/predict`, `/portfolio` and `/leaderboards`; `app/__tests__/floor-retirement.test.ts` keeps them gone. The Event page, `InspectorPanel`, `RowMarketV2` and the ⌘K `CommandPalette` survived and now live in `components/prediction/`. Discovery pages use `CategoryTabs` (topic strip) — the old left `TerminalCategoryRail` is gone.
-- Other product surfaces: `/` (landing), `/discover`, `/live`, `/series/[slug]`, `/leaderboards` + `/leaderboards/[id]`, `/users/[userId]`, `/activity`, `/rewards`, `/store`, `/profile`, `/account/*`, `/auth/*`
+- Home: `/` is the market board (same page as `/predict`) with a welcome strip for signed-out visitors and the curated "This week in the Philippines" photo rail (`ThisWeekRail`), which appears once at least 4 events are flagged featured with an open market. Curate it in the back office under **Featured Moments** (`PATCH /api/v1/admin/events/{id}`: featured flag + cover photo, migration 057). Licensed topic covers live in `public/images/covers/` (credits in `CREDITS.md`); the approved Q4 2026 Philippine slate is `docs/content/2026-q4-ph-market-slate.md`.
+- Other product surfaces: `/discover`, `/live`, `/series/[slug]`, `/leaderboards` + `/leaderboards/[id]`, `/users/[userId]`, `/activity`, `/rewards`, `/store`, `/profile`, `/account/*`, `/auth/*`
 - Components: `app/components/prediction/` — MarketCard, MarketThumb, FeaturedMarket, CategoryTabs, TradeTicket, ConnectedTradeTicket, PredictionWorkspace, OrderBook, MarketChart, TopBar, and more
 
 ### Redux slices

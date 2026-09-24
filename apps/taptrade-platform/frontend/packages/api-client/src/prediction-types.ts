@@ -48,6 +48,8 @@ export interface PredictionEvent {
   categoryId: string;
   status: EventStatus;
   featured: boolean;
+  /** The moment's cover photo for the home rail: a /images/ path or https URL. */
+  coverImageUrl?: string;
   openAt?: string;
   closeAt: string;
   settleAt?: string;
