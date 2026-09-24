@@ -100,12 +100,15 @@ describe("landing ticker — honest data", () => {
   });
 
   it("keeps homepage teasers away from the crypto desk", () => {
+    // 2026-09-24 redesign: the desk strip mirrors the feed's editorial
+    // event titles, so the DESKS array is title case now, not all-caps
+    // mono overline text.
     assert.ok(
-      page.includes('"ESPORTS & ARENAS"'),
+      page.includes('"Esports & Arenas"'),
       "the desk strip teases real desks",
     );
     assert.ok(
-      !page.includes("CRYPTO & CHAINS"),
+      !/crypto\s*&\s*chains/i.test(page),
       "the crypto desk is launch-prohibited and never teased on the homepage",
     );
   });

@@ -13,7 +13,7 @@ import { logger } from "../lib/logger";
 
 const WRAP_CLASS = "mx-auto max-w-[920px] px-4 pb-16 text-[var(--t1)]";
 const HEADER_CLASS = "mb-6 flex items-end justify-between gap-4";
-const TITLE_CLASS = "type-poster m-0 text-[32px] max-[640px]:text-[28px] text-[var(--t1)]";
+const TITLE_CLASS = "type-poster m-0 text-[28px] max-[640px]:text-[24px] text-[var(--t1)]";
 const LINK_CLASS =
   "text-[13px] font-semibold text-[var(--t2)] underline-offset-4 hover:text-[var(--t1)] hover:underline";
 // Card shell (padding="lg") replaced the p-6 section recipe.

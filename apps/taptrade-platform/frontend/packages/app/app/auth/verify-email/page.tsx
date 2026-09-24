@@ -16,7 +16,7 @@ const BRAND_ROW_CLASS = "mb-8 inline-flex items-center gap-2.5";
 const BRAND_WORDMARK_CLASS =
   "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const TITLE_CLASS =
-  "type-poster m-0 mb-4 text-[28px] max-[480px]:text-[24px] text-[var(--t1)]";
+  "type-poster m-0 mb-4 text-[24px] max-[480px]:text-[22px] text-[var(--t1)]";
 const MESSAGE_CLASS = "m-0 mb-6 text-sm leading-[1.6] text-[var(--t2)]";
 const ERROR_CLASS = "m-0 mb-4 text-[13px] text-[var(--danger)]";
 const SPINNER_WRAP_CLASS = "mb-6 flex justify-start";

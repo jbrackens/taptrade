@@ -5,12 +5,13 @@
  * Source-level assertions (repo convention — node:test, no DOM harness):
  *  - the gateway stitches commentCount onto user-facing ListMarkets only
  *    (worker sweeps use Sort:"id" and keep their cheap shape)
- *  - the feed draws NO sparkline and invents no deltas: one real /prices
- *    fetch for the hero, rows lean on the live price only
+ *  - discovery draws NO hand-made sparkline and invents no deltas: the
+ *    only price history is the featured market's real MarketChart; cards
+ *    lean on the live price only
  *  - commentCount is trusted only when the API sent it
- *  - rows keep the watchlist star — the list star is the app's only save
- *    affordance (documented deviation from the reference)
- *  - movement derivation is shared between /discover and the feed
+ *  - cards carry the watchlist bookmark wherever the host wires watchlist
+ *    state (the single-column MarketFeed was retired 2026-09-24)
+ *  - movement derivation lives in one module that /discover imports
  *  - de/ is retired; SELL_SHARES_HOLD_CTA uses native i18next plurals
  */
 import { describe, it } from "node:test";
@@ -24,7 +25,9 @@ function read(rel: string): string {
   return readFileSync(resolve(appRoot, rel), "utf-8");
 }
 
-const feed = read("components/prediction/MarketFeed.tsx");
+const card = read("components/prediction/MarketCard.tsx");
+const featured = read("components/prediction/FeaturedMarket.tsx");
+const rankings = read("components/prediction/discover-rankings.ts");
 const section = read("components/prediction/AllMarketsSection.tsx");
 const grid = read("components/prediction/MarketGrid.tsx");
 const sqlRepo = readFileSync(
@@ -64,9 +67,9 @@ describe("§3-09 commentCount (step 10)", () => {
   it("exposes the field as unknown-when-absent on the client", () => {
     assert.match(apiTypes, /commentCount\?: number/);
     assert.match(
-      feed,
-      /typeof market\.commentCount === "number"/,
-      "the feed trusts the count only when the API sent it",
+      rankings,
+      /\.filter\(\(market\) => market\.commentCount != null\)/,
+      "the discussion ranking trusts the count only when the API sent it",
     );
   });
 
@@ -100,9 +103,11 @@ describe("Markets grid and discovery feed", () => {
       "Load More should append the next batch to the existing grid",
     );
     assert.match(section, /<MarketGrid[\s\S]*columns=\{3\}/);
+    // The 2026-09-24 redesign moved the 3→2 column breakpoint from 1120px
+    // to 1020px (MarketGrid's GRID_CLASS_BY_COLUMNS).
     assert.match(
       grid,
-      /grid-cols-3[\s\S]*max-\[1120px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
+      /grid-cols-3[\s\S]*max-\[1020px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
       "the restored grid should retain its desktop, tablet, and mobile columns",
     );
     assert.ok(
@@ -112,30 +117,30 @@ describe("Markets grid and discovery feed", () => {
   });
 
   it("draws no sparkline and invents no deltas", () => {
-    assert.ok(
-      !feed.includes("<svg"),
-      "no hand-drawn chart markup: the price-history endpoint for cards doesn't exist — draw nothing (icons are phosphor components)",
-    );
-    const historyCalls = feed.match(/getMarketPriceHistory/g) ?? [];
+    for (const src of [card, featured]) {
+      assert.ok(
+        !src.includes("<svg"),
+        "no hand-drawn chart markup (icons are phosphor components)",
+      );
+      assert.doesNotMatch(src, /getMarketPriceHistory|market-movement/);
+    }
     assert.equal(
-      historyCalls.length,
+      (featured.match(/<MarketChart\b/g) ?? []).length,
       1,
-      "exactly one real history fetch — the hero; rows never fabricate movement",
+      "exactly one real price history on the board — the featured market's chart",
     );
-    assert.match(feed, /movement !== null && movement\.direction !== "flat"/);
   });
 
-  it("keeps the activity meta row: comments + volume, magnitudes in mono ink", () => {
-    assert.match(feed, /DISCUSSION_COUNT/);
-    assert.match(feed, /formatCompactPoints\(market\.volumePoints\)/);
+  it("keeps the activity meta row: volume in points", () => {
+    assert.match(card, /formatCompactPoints\(volumePoints\)/);
+    assert.match(card, /t\("VOL_SHORT", "vol"\)/);
   });
 
-  it("keeps the watchlist star on rows — the app's only save affordance", () => {
-    const rowSlice = feed.slice(
-      feed.indexOf("function FeedRow"),
-      feed.indexOf("export function MarketFeed"),
-    );
-    assert.match(rowSlice, /aria-pressed=\{watched\}/);
+  it("keeps the watchlist bookmark on cards when the host wires it", () => {
+    assert.match(card, /\{onToggleWatchlist && \(/);
+    assert.match(card, /aria-pressed=\{watched\}/);
+    assert.match(card, /ADD_TO_WATCHLIST/);
+    assert.match(card, /onClick=\{\(\) => onToggleWatchlist\(marketId\)\}/);
   });
 
   it("ships a nine-card skeleton that matches the real grid", () => {
@@ -143,11 +148,10 @@ describe("Markets grid and discovery feed", () => {
     assert.match(section, /Array\.from\(\{ length: PAGE_SIZE \}/);
   });
 
-  it("shares movement derivation with /discover", () => {
+  it("keeps movement derivation in one shared module", () => {
     const discover = read("discover/page.tsx");
-    for (const src of [feed, discover]) {
-      assert.match(src, /from "(\.\.\/components\/prediction|\.)\/market-movement"/);
-    }
+    assert.match(discover, /from "\.\.\/components\/prediction\/market-movement"/);
+    assert.match(rankings, /from "\.\/market-movement"/);
   });
 });
 

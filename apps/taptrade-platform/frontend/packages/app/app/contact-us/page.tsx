@@ -54,7 +54,7 @@ export default function ContactUsPage() {
 
   return (
     <div className="mx-auto max-w-[720px] px-4 py-12 md:py-16">
-      <h1 className="type-poster m-0 mb-8 text-[clamp(32px,5vw,48px)] text-[var(--t1)]">
+      <h1 className="type-poster m-0 mb-8 text-[clamp(28px,4vw,36px)] text-[var(--t1)]">
         Contact Us
       </h1>
 

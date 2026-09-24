@@ -29,7 +29,7 @@ interface Entry {
 }
 
 const EYEBROW_CLASS =
-  "font-mono text-[8.5px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]";
+  "text-[8.5px] font-semibold text-[var(--t3)]";
 
 export function CommandPalette({
   open,
@@ -195,7 +195,7 @@ export function CommandPalette({
                     <span className="line-clamp-1 text-[12.5px] font-semibold text-[var(--t1)]">
                       {entry.label}
                     </span>
-                    <span className="flex-none font-mono text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)] tabular-nums">
+                    <span className="flex-none text-[12px] font-semibold text-[var(--t3)] tabular-nums">
                       {entry.meta}
                     </span>
                   </button>

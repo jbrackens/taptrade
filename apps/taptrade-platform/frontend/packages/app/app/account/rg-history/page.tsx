@@ -24,7 +24,7 @@ const backClass =
 const sectionClass =
   "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const tableHeadCellClass =
-  "px-4 py-3 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "px-4 py-3 text-left text-[12px] font-semibold text-[var(--t3)]";
 const tableCellClass =
   "border-b border-[var(--border-1)] px-4 py-3 text-[13px] text-[var(--t1)]";
 
@@ -153,7 +153,7 @@ function RGHistoryPageContent() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
             Responsible play history
           </h1>
           <p className="text-sm text-[var(--t3)]">

@@ -26,8 +26,7 @@ function formatCloseAt(iso: string): string {
       month: "short",
       day: "numeric",
       ...(sameYear ? {} : { year: "2-digit" }),
-    })
-    .toUpperCase();
+    });
 }
 
 function ColStack({
@@ -41,7 +40,7 @@ function ColStack({
 }) {
   return (
     <span className="flex flex-col gap-[3px] max-[720px]:hidden">
-      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+      <span className="text-[12px] font-semibold text-[var(--t3)]">
         {label}
       </span>
       <span
@@ -80,23 +79,23 @@ export function RowMarketV2({
           ? "border-[var(--border-2)] border-l-[var(--accent-lo)] bg-[var(--accent-soft)]"
           : "border-[var(--border-1)] bg-[var(--surface-1)] hover:border-[var(--border-2)] hover:bg-[var(--surface-2)]"
       }`}
-    >
-      <span className="flex min-w-0 flex-col gap-1.5">
-        <span className="flex items-center gap-2">
-          <span className="line-clamp-2 text-[14px] font-semibold leading-[1.33] text-[var(--t1)]">
-            {market.title}
-          </span>
-          {position && (
-            <span className="flex-none rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-text)]">
-              {t("FLOOR_HOLD_BADGE", "Hold")} {position.quantity}{" "}
-              {position.side === "yes" ? t("YES") : t("NO")}
-            </span>
-          )}
-        </span>
-        <span
-          className="flex h-[5px] max-w-[220px] gap-[2px]"
-          role="img"
-          aria-label={`${yes}%`}
+ >
+ <span className="flex min-w-0 flex-col gap-1.5">
+ <span className="flex items-center gap-2">
+ <span className="line-clamp-2 text-[14px] font-semibold leading-[1.33] text-[var(--t1)]">
+ {market.title}
+ </span>
+ {position && (
+ <span className="flex-none rounded-[var(--r-rh-sm)] bg-[var(--accent-soft)] px-1.5 py-0.5 text-[12px] font-semibold text-[var(--accent-text)]">
+ {t("FLOOR_HOLD_BADGE", "Hold")} {position.quantity}{" "}
+ {position.side === "yes" ? t("YES") : t("NO")}
+ </span>
+ )}
+ </span>
+ <span
+ className="flex h-[5px] max-w-[220px] gap-[2px]"
+ role="img"
+ aria-label={`${yes}%`}
         >
           <span
             className="h-full rounded-[var(--r-pill)] bg-[var(--yes-bar)]"
@@ -107,7 +106,7 @@ export function RowMarketV2({
       </span>
 
       <span className="flex flex-col gap-[3px]">
-        <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+        <span className="text-[12px] font-semibold text-[var(--t3)]">
           {t("COL_PROB", "Prob")}
         </span>
         <span className="font-mono text-[14px] font-semibold text-[var(--t1)] tabular-nums">

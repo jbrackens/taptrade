@@ -54,6 +54,8 @@ interface MarketChartProps {
   side?: "yes" | "no";
   yesPricePoints: number;
   noPricePoints?: number;
+  /** Plot height in px (default 300). */
+  height?: number;
 }
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
@@ -84,18 +86,17 @@ const MarketChartCanvas = dynamic(() => import("./MarketChartCanvas"), {
 });
 
 const CHART_CARD_CLASS = "";
-// P9.2: the range switcher is a quiet mono text-tab row under the plot
-// (Robinhood-style), not a segmented fill control. Active = ink text +
-// 2px ink underline; inactive = --t3.
-const CHART_SWITCHER_CLASS = "mt-4 flex items-center gap-5";
+// The range switcher is a row of quiet text tabs under the plot; the
+// current range sits on a soft raised chip (Robinhood / Kalshi pattern).
+const CHART_SWITCHER_CLASS = "mt-3 flex items-center gap-1";
 const CHART_BUTTON_BASE_CLASS =
-  "font-mono cursor-pointer border-0 border-b-2 bg-transparent p-0 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] transition-[border-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
+  "cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 text-[12px] font-semibold tabular-nums transition-[background-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${
     active
-      ? "text-[var(--t1)] border-[var(--t1)]"
-      : "text-[var(--t3)] border-transparent hover:text-[var(--t1)]"
+      ? "bg-[var(--surface-2)] text-[var(--t1)]"
+      : "text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -104,6 +105,7 @@ export default function MarketChart({
   side = "yes",
   yesPricePoints,
   noPricePoints,
+  height = 300,
 }: MarketChartProps) {
   const { t } = useTranslation("prediction");
   const [range, setRange] = useState<TimeRange>("1D");
@@ -185,20 +187,24 @@ export default function MarketChart({
   return (
     <section className={`${CHART_CARD_CLASS} relative`}>
       {synthetic && (
-        <span className="absolute right-3 top-3 z-10 rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+        <span className="absolute right-2 top-2 z-10 rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-medium text-[var(--t3)]">
           {t("SIMULATED_DATA", "Simulated data")}
         </span>
       )}
       {chartState === "loading" && (
         <div
-          className="h-[300px] w-full animate-pulse rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]"
+          className="w-full animate-pulse rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]"
+          style={{ height }}
           role="status"
           aria-label={t("CHART_LOADING")}
         />
       )}
 
       {chartState === "error" && (
-        <div className="flex h-[300px] w-full flex-col items-center justify-center gap-3 rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)]">
+        <div
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)]"
+          style={{ height }}
+        >
           <div className="text-sm font-medium text-[var(--t3)]">
             {t("PRICE_HISTORY_UNAVAILABLE")}
           </div>
@@ -217,6 +223,8 @@ export default function MarketChart({
           <MarketChartCanvas
             values={values}
             times={times}
+            height={height}
+            tone={side}
             ariaLabel={t(
               side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART",
               { ticker },
@@ -224,7 +232,7 @@ export default function MarketChart({
           />
           {chartState === "empty" && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-7">
-              <span className="[font-family:var(--font-terminal)] text-sm text-[var(--t3)]">
+              <span className="text-sm text-[var(--t3)]">
                 {t("NO_TRADES_IN_RANGE")}
               </span>
             </div>

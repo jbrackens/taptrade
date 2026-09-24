@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { MarketFeed } from "../../components/prediction/MarketFeed";
+import { MarketGrid } from "../../components/prediction/MarketGrid";
 import { categoryName } from "../../components/prediction/market-content";
 import { logger } from "../../lib/logger";
 import type {
@@ -17,13 +17,11 @@ const api = createPredictionClient();
 const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const CATEGORY_HEAD_CLASS =
   "mb-6 flex flex-wrap items-baseline justify-between gap-3";
-// Poster-type header: the category name, uppercase Big Shoulders.
+// Page header: the category name as a sentence-case page title.
 const CATEGORY_TITLE_CLASS =
-  "type-poster m-0 text-[36px] max-[640px]:text-[28px] text-[var(--t1)]";
-const CATEGORY_SUB_CLASS =
-  "font-mono text-[12px] text-[var(--t3)] tabular-nums";
-// Step 11: category browse propagates the /predict single-column feed
-// (checkpoint rule: the lead surface shipped first and was approved).
+  "type-poster m-0 text-[28px] max-[640px]:text-[24px] text-[var(--t1)]";
+const CATEGORY_SUB_CLASS = "text-[13px] text-[var(--t3)] tabular-nums";
+// Category browse uses the same card grid as /predict.
 const CATEGORY_EMPTY_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-14 text-center text-[13px] text-[var(--t3)]";
 
@@ -73,7 +71,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-[1232px]">
       <header className={CATEGORY_HEAD_CLASS}>
         <h1 className={CATEGORY_TITLE_CLASS}>
           {category ? categoryName(contentT, category) : slug}
@@ -88,7 +86,7 @@ export default function CategoryPage() {
           {t("NO_OPEN_MARKETS_IN_CATEGORY")}
         </div>
       ) : (
-        <MarketFeed markets={markets} />
+        <MarketGrid markets={markets} columns={3} />
       )}
     </div>
   );

@@ -2,14 +2,11 @@
 
 /**
  * ContentPage — the editorial reading column for legal/info pages
- * (about, terms, privacy, responsible gaming). Kilig chrome (DESIGN.md
- * §6): a plain left-aligned column, ~720px measure, poster-type title,
- * comfortable 16px body. The underlying `.content-page*` classes in
- * globals.css still carry the ink text tokens, spacing and mobile gutter
- * for both this shell and any raw CMS HTML rendered inside it; the
- * inline styles below narrow the measure, drop the legacy boxed-card
- * chrome (no resting shadow, no card fill) and swap the title onto
- * poster type without touching that shared stylesheet.
+ * (about, terms, privacy, responsible gaming): a plain left-aligned
+ * column, ~720px measure, sentence-case semibold title, comfortable 16px
+ * body. The `.content-page*` classes in globals.css carry the text
+ * tokens, spacing and mobile gutter for both this shell and any raw CMS
+ * HTML rendered inside it.
  */
 
 import type React from "react";

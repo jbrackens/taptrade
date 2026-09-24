@@ -139,7 +139,8 @@ const POINTS_SURFACES = [
   "../leaderboards/page.tsx",
   "../components/prediction/OrderBook.tsx",
   "../components/prediction/RecentTrades.tsx",
-  "../components/prediction/MarketFeed.tsx",
+  "../components/prediction/MarketCard.tsx",
+  "../components/prediction/FeaturedMarket.tsx",
 ];
 
 describe("points surfaces use the shared module", () => {

@@ -3,7 +3,7 @@
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-[720px] px-4 py-12 text-left md:py-16">
-      <h1 className="type-poster m-0 text-[clamp(32px,5vw,48px)] text-[var(--t1)]">
+      <h1 className="type-poster m-0 text-[clamp(28px,4vw,36px)] text-[var(--t1)]">
         Privacy Policy
       </h1>
       <p className="mb-8 mt-3 font-mono text-xs tracking-[0.04em] text-[var(--t3)]">

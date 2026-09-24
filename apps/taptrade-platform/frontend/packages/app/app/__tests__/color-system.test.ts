@@ -22,6 +22,10 @@ const marketCard = readFileSync(
   resolve(appRoot, "components/prediction/MarketCard.tsx"),
   "utf8",
 );
+const marketHead = readFileSync(
+  resolve(appRoot, "components/prediction/MarketHead.tsx"),
+  "utf8",
+);
 
 // The Kilig system (adopted 2026-09-24, DESIGN.md): ink and white chrome,
 // Kilig pink for identity and liveness, blue/orange for YES/NO only.
@@ -94,21 +98,41 @@ describe("Tap Trade Kilig color system", () => {
     assert.doesNotMatch(globals, /--reward-lime|--reward-hero|--lime(?:-text|-wash|-tint)?:/);
   });
 
-  it("drops resting card shadows and collapses the radius scales", () => {
-    assert.match(globals, /--shadow-card:\s*none;/);
-    assert.match(globals, /--shadow-card-hover:\s*none;/);
-    assert.match(globals, /--r-rh-md:\s*6px;/);
-    assert.match(globals, /--r-rh-lg:\s*8px;/);
+  it("gives resting cards a whisper of shadow and pins the radius scale", () => {
+    // Kilig cards read as objects on the paper at rest, with a small lift
+    // on hover — both a step up from the earlier flat/shadowless treatment.
+    assert.match(
+      globals,
+      /--shadow-card:\s*0 1px 2px rgba\(17, 17, 20, 0\.04\);/,
+    );
+    assert.match(globals, /--shadow-card-hover:\s*\n?\s*0 1px 2px rgba\(17, 17, 20, 0\.04\), 0 6px 16px -4px rgba\(17, 17, 20, 0\.08\);/);
+    assert.match(globals, /--r-rh-sm:\s*6px;/);
+    assert.match(globals, /--r-rh-md:\s*8px;/);
+    assert.match(globals, /--r-rh-lg:\s*12px;/);
+    assert.match(globals, /--r-rh-xl:\s*16px;/);
   });
 
-  it("loads the three Kilig faces through next/font and maps them in the theme", () => {
-    assert.match(layout, /Instrument_Sans\(/);
-    assert.match(layout, /Big_Shoulders\(/);
-    assert.match(layout, /Martian_Mono\(/);
-    assert.match(globals, /--font-sans:\s*var\(--font-instrument-sans\)/);
-    assert.match(globals, /--font-mono:\s*var\(--font-martian-mono\)/);
-    assert.match(globals, /--font-poster:\s*var\(--font-big-shoulders\)/);
+  it("loads a single Inter face through next/font and maps it across sans, mono and poster", () => {
+    // The 2026-09-24 type system retires Big Shoulders, Martian Mono and
+    // Instrument Sans in favour of one face, Inter, with its optical-size
+    // axis so headings get the Display cut.
+    assert.match(layout, /Inter\(/);
+    assert.match(layout, /axes:\s*\[["']opsz["']\]/);
+    assert.match(layout, /variable:\s*["']--font-inter["']/);
+    assert.doesNotMatch(layout, /Instrument_Sans\(|Big_Shoulders\(|Martian_Mono\(/);
+    assert.match(globals, /--font-sans:\s*var\(--font-inter\)/);
+    assert.match(globals, /--font-mono:\s*var\(--font-inter\)/);
+    assert.match(globals, /--font-poster:\s*var\(--font-inter\)/);
     assert.doesNotMatch(globals, /@font-face\s*\{[^}]*Switzer/);
+  });
+
+  it("keeps .type-poster a sentence-case heading style, not an uppercase display face", () => {
+    // The retired poster treatment was an all-caps Big Shoulders headline;
+    // the replacement is a semibold Inter heading with no text-transform.
+    const posterRule = globals.match(/\.type-poster\s*\{[^}]*\}/);
+    assert.ok(posterRule, ".type-poster rule should exist in globals.css");
+    assert.match(posterRule[0], /text-transform:\s*none;/);
+    assert.doesNotMatch(posterRule[0], /text-transform:\s*uppercase;/);
   });
 
   it("keeps primary, focus, and disabled controls contrast-safe", () => {
@@ -140,10 +164,15 @@ describe("Tap Trade Kilig color system", () => {
     );
     assert.doesNotMatch(workspaceCode, /WORKSPACE_REWARD_|RewardHero/);
     assert.doesNotMatch(workspaceCode, /redeem|prize|iphone/i);
-    assert.match(marketCard, /bg-\[var\(--live\)\]/);
+    // MarketCard's grid anatomy carries no live badge at all (Kilig
+    // discovery cards dropped it); the market-detail head is where the
+    // live dot lives, beside the YES/NO price legend, so that is where the
+    // "pink is never a market direction colour" guard is checked now.
+    assert.doesNotMatch(marketCard, /var\(--live\)/);
+    assert.match(marketHead, /bg-\[var\(--live\)\]/);
     assert.doesNotMatch(
-      marketCard,
-      /bg-\[var\(--live\)\][\s\S]{0,160}--(?:yes|no)/,
+      marketHead,
+      /bg-\[var\(--live\)\][\s\S]{0,200}--(?:yes|no)\)/,
       "the pink live signal must not borrow YES/NO market semantics",
     );
   });

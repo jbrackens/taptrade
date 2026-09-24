@@ -1,29 +1,18 @@
 import type React from "react";
 import "./globals.css";
-import { Big_Shoulders, Instrument_Sans, Martian_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import AppShell from "./components/AppShell";
 import { brand } from "./lib/brand";
 import { SUSPENSE_REVEAL_BOOTSTRAP } from "./lib/suspense-reveal-bootstrap";
 
-// Kilig type system (DESIGN.md §4). next/font downloads these at build
-// time and serves them from this origin, so there are no runtime requests
-// to Google and the CSP's font-src 'self' holds.
-const uiSans = Instrument_Sans({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-instrument-sans",
-  display: "swap",
-});
-const poster = Big_Shoulders({
+// One typeface for the whole product (DESIGN.md §4): Inter, with its
+// optical-size axis so large headings get the Display cut. next/font
+// downloads it at build time and serves it from this origin, so there are
+// no runtime requests to Google and the CSP's font-src 'self' holds.
+const inter = Inter({
   subsets: ["latin"],
   axes: ["opsz"],
-  variable: "--font-big-shoulders",
-  display: "swap",
-});
-const numerals = Martian_Mono({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-martian-mono",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -35,7 +24,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${uiSans.variable} ${poster.variable} ${numerals.variable}`}
+      className={inter.variable}
     >
       <head>
         <title>{brand.name}</title>

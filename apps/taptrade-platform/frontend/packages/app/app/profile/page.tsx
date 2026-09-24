@@ -62,7 +62,7 @@ const loadingClass =
   "mx-auto max-w-[800px] px-4 py-10 text-center text-sm text-[var(--t3)]";
 const pageClass = "mx-auto max-w-[800px] px-4 py-6";
 const pageTitleClass =
-  "type-poster m-0 mb-6 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]";
+  "type-poster m-0 mb-6 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]";
 const cardClass =
   "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
 const sectionClass = "mb-6";

@@ -8,7 +8,7 @@ import type {
   PredictionMarket,
   Series,
 } from "@taptrade-ui/api-client/src/prediction-types";
-import { MarketFeed } from "../../components/prediction/MarketFeed";
+import { MarketGrid } from "../../components/prediction/MarketGrid";
 import { logger } from "../../lib/logger";
 
 const api = createPredictionClient();
@@ -17,9 +17,9 @@ const ROUTE_LOADING_CLASS = "p-20 text-center text-[13px] text-[var(--t3)]";
 const SERIES_HEAD_CLASS = "mb-6";
 const SERIES_TITLE_ROW_CLASS =
   "flex flex-wrap items-baseline justify-between gap-3";
-// Poster-type header, matching the category page.
+// Page header, matching the category page.
 const SERIES_TITLE_CLASS =
-  "type-poster m-0 text-[36px] max-[640px]:text-[28px] text-[var(--t1)]";
+  "type-poster m-0 text-[28px] max-[640px]:text-[24px] text-[var(--t1)]";
 const SERIES_META_CLASS =
   "font-mono text-[12px] text-[var(--t3)] tabular-nums";
 const SERIES_DESC_CLASS =
@@ -106,7 +106,7 @@ export default function SeriesPage() {
           {t("NO_OPEN_MARKETS_IN_CATEGORY")}
         </div>
       ) : (
-        <MarketFeed markets={markets} />
+        <MarketGrid markets={markets} columns={3} />
       )}
     </div>
   );

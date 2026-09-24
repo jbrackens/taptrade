@@ -126,34 +126,42 @@ interface TradeTicketProps {
 
 type TicketMode = "market" | "limit";
 
+/** A side or result as the localized word ("Yes"/"No"), never a raw
+ *  uppercased enum — interpolated copy reads "Points if Yes is correct". */
+function sideWord(value: string, t: (key: string) => string): string {
+  if (value === "yes") return t("YES");
+  if (value === "no") return t("NO");
+  return value;
+}
+
+
 const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
-// FEED2-006: the ticket head speaks the composed Organism/TradeTicket —
-// a mono uppercase eyebrow, not a sentence-case heading.
+// The ticket head is a quiet sentence-case label beside the order-type
+// segmented control.
 const TICKET_TITLE_CLASS =
-  "font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "text-[14px] font-semibold text-[var(--t1)]";
 const TICKET_MODE_CLASS =
-  "inline-flex gap-0.5 rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-[3px]";
+  "inline-flex gap-0.5 rounded-[10px] bg-[var(--surface-2)] p-[3px]";
 const TICKET_MODE_BUTTON_BASE_CLASS =
   // Step 3: 38px — THE documented hit-target exception (44px inside a
   // 3px-padded track forces the track to 50px and dominates the ticket).
-  "min-h-[38px] cursor-pointer rounded-md border-0 px-3 [font-family:inherit] text-[10px] font-mono font-semibold uppercase tracking-[0.08em] transition-[background-color,border-color,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "min-h-[32px] cursor-pointer rounded-[8px] border-0 px-3 [font-family:inherit] text-[12.5px] font-semibold transition-[background-color,border-color,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 // FEED2-006: sides are the composed price cells (label + live price),
 // superseding the P9.2 underline tabs. Selection uses the purple/lavender
 // action channel; direction color stays on the side's own text only.
 const TICKET_SIDES_CLASS = "mb-4 grid grid-cols-2 gap-2.5";
 const TICKET_SIDE_TAB_BASE_CLASS =
-  "flex min-h-12 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-[var(--r-rh-md)] border-[1.5px] px-3 [font-family:inherit] text-[12px] font-bold uppercase tracking-[0.06em] transition-[background-color,border-color,box-shadow,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
+  "flex min-h-12 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-[var(--r-rh-md)] border-[1.5px] px-3.5 [font-family:inherit] text-[14px] font-semibold transition-[background-color,border-color,box-shadow,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const TICKET_SIDE_PRICE_CLASS =
-  "font-mono text-[15px] font-semibold normal-case tracking-normal tabular-nums";
+  "text-[15px] font-semibold tabular-nums";
 // (The P9.2 sliding underline indicator retired with the tabs.)
 const TICKET_ROWS_CLASS =
   "flex flex-col gap-3 text-[13px] [font-variant-numeric:tabular-nums]";
 const TICKET_ROW_CLASS = "flex items-center justify-between gap-3";
-const TICKET_ROW_LABEL_CLASS =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-const TICKET_ROW_VALUE_CLASS = "font-mono font-semibold text-[var(--t1)]";
+const TICKET_ROW_LABEL_CLASS = "text-[13px] font-medium text-[var(--t2)]";
+const TICKET_ROW_VALUE_CLASS = "font-semibold tabular-nums text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
-  "font-mono mt-0.5 text-right text-[11px] font-normal text-[var(--t4)]";
+  "mt-0.5 text-right text-[11.5px] font-normal tabular-nums text-[var(--t3)]";
 const TICKET_INPUT_CLASS =
   "font-mono w-[128px] rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_NOTE_CLASS =
@@ -266,7 +274,7 @@ function SettlementBand({
   const rows: Array<{ label: string; value: string; className?: string }> = [
     {
       label: t("YOUR_POSITION"),
-      value: `${s.quantity} ${s.side.toUpperCase()}`,
+      value: `${s.quantity} ${sideWord(s.side, t)}`,
     },
     {
       label: t("SETTLED_AT"),
@@ -332,7 +340,7 @@ function SettlementBand({
         </div>
       </div>
       <div className="rounded-b-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-4 py-3.5">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+        <div className="text-[13px] font-semibold text-[var(--t1)]">
           {t("HOW_THIS_PAID")}
         </div>
         <div className="mt-2.5 flex flex-col gap-2">
@@ -391,14 +399,14 @@ function renderSettledTicket(
   const explainer = isSettled
     ? market.result
       ? t("MARKET_RESOLVED_EXPLAINER", {
-          result: market.result.toUpperCase(),
+          result: sideWord(market.result, t),
         })
       : t("MARKET_SETTLED_CLOSED")
     : isVoided
       ? t("MARKET_VOIDED_EXPLAINER")
       : isProposed
         ? t("RESOLUTION_PROPOSED_BODY", {
-            result: (market.result ?? "").toUpperCase() || t("RESOLVED"),
+            result: market.result ? sideWord(market.result, t) : t("RESOLVED"),
           })
         : isDisputed
           ? t("DISPUTED_BODY")
@@ -688,7 +696,7 @@ export function TradeTicket({
       // Keep the user's chosen amount in either branch so a follow-up
       // click reissues the same size — most users want to repeat the
       // prediction order, not restart from the default point amount.
-      const sideLabel = side.toUpperCase();
+      const sideLabel = sideWord(side, t);
       const status = response?.order?.status;
       const filled = response?.order?.filledQuantity ?? 0;
       const failureReason = response?.order?.failureReason;
@@ -955,7 +963,7 @@ export function TradeTicket({
                     ? t("NO_SHARES_TO_SELL")
                     : t("SELL_UP_TO_SHARES", {
                         quantity: availableShares,
-                        side: side.toUpperCase(),
+                        side: sideWord(side, t),
                       })
                 }
               >
@@ -1002,7 +1010,7 @@ export function TradeTicket({
             <div className="mb-3">
               <div className={TICKET_ROW_CLASS}>
                 <span className={TICKET_ROW_LABEL_CLASS}>
-                  {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
+                  {t("LIMIT_PRICE_SIDE", { side: sideWord(side, t) })}
                 </span>
                 <input
                   type="number"
@@ -1166,7 +1174,7 @@ export function TradeTicket({
 
             <div className={TICKET_ROW_CLASS}>
               <span className={TICKET_ROW_LABEL_CLASS}>
-                {t("POINTS_IF_SIDE", { side: side.toUpperCase() })}
+                {t("POINTS_IF_SIDE", { side: sideWord(side, t) })}
               </span>
               <span
                 className={`${TICKET_ROW_VALUE_CLASS} ${
@@ -1204,7 +1212,7 @@ export function TradeTicket({
                   href={loginHref}
                   className="text-inherit underline decoration-[var(--border-2)] underline-offset-2 hover:decoration-[var(--t2)]"
                 >
-                  {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
+                  {t("SIGN_IN_TO_PLACE_ORDER", { side: sideWord(side, t) })}
                 </Link>
               </p>
             </>
@@ -1263,7 +1271,7 @@ export function TradeTicket({
               <p className={TICKET_NOTE_CLASS} role="alert">
                 {t("NOT_ENOUGH_SHARES_DETAIL", {
                   available: availableShares,
-                  side: side.toUpperCase(),
+                  side: sideWord(side, t),
                   quantity: Math.floor(quantity),
                 })}
               </p>

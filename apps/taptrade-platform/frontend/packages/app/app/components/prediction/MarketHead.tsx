@@ -1,18 +1,14 @@
 "use client";
 
 /**
- * MarketHead — the identity block at the top of /market/[ticker]
- * (P9.2, 2026-07-07 — Robinhood-structure pass).
+ * MarketHead — the identity block at the top of /market/[ticker].
  *
- *   Row 1: eyebrow — LIVE dot · CATEGORY · closes-in · close date
- *   Row 2: market question (28px)
- *   Row 3: sides strip — [● Yes · prob%]   8 pts — 92 pts   [prob% · No ●]
+ *   Row 1: market image · status dot · category · closes-in
+ *   Row 2: market question
+ *   Row 3: the YES chance as the hero number, with both side prices
  *
- * The old pill rows (volume / trader count / ticker) are gone: volume
- * belongs to the discovery surfaces, machine tickers are plumbing, and
- * the countdown carries the only time-critical fact. Settled markets
- * swap the eyebrow for the outcome and keep the sides strip as a
- * historical record.
+ * Settled markets swap the status for the outcome and show final
+ * settlement prices (100/0) as the historical record.
  *
  * Live countdown to closeAt — updates every 30s for a fresh but cheap
  * "closes in …" string.
@@ -23,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { categoryLabel, localizedMarket } from "./market-content";
 import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
+import { MarketThumb } from "./MarketThumb";
 
 interface MarketHeadProps {
   market: PredictionMarket;
@@ -66,30 +63,25 @@ function formatCloseDate(iso: string): string {
   return `${month} ${day}, ${hours}:${mins} UTC`;
 }
 
-const MARKET_HEAD_CLASS = "flex h-full flex-col";
-const MARKET_HEAD_EYEBROW_CLASS =
-  "mb-4 flex flex-wrap items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+const MARKET_HEAD_CLASS = "flex flex-col";
+const MARKET_HEAD_META_CLASS =
+  "m-0 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-medium text-[var(--t3)]";
 const MARKET_HEAD_LIVE_CLASS =
-  "inline-flex items-center gap-1.5 text-[var(--live-text)]";
+  "inline-flex items-center gap-1.5 font-semibold text-[var(--live-text)]";
 const MARKET_HEAD_LIVE_DOT_CLASS =
   "h-[7px] w-[7px] rounded-full bg-[var(--live)]";
 const MARKET_HEAD_SETTLED_CLASS =
-  "font-mono inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.1em] text-[var(--t2)]";
-const MARKET_HEAD_COUNTDOWN_CLASS =
-  "font-mono text-[10px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "inline-flex items-center gap-1.5 font-semibold text-[var(--t1)]";
+const MARKET_HEAD_COUNTDOWN_CLASS = "tabular-nums";
 const MARKET_HEAD_TITLE_CLASS =
-  "type-display m-0 mb-8 text-[32px] font-semibold leading-[1.12] tracking-[-0.03em] text-[var(--t1)] max-[720px]:mb-6 max-[720px]:text-[26px]";
+  "type-display m-0 mt-1 text-[28px] font-semibold leading-[1.2] tracking-[-0.025em] text-[var(--t1)] max-[720px]:text-[22px]";
 const MARKET_HEAD_SIDES_CLASS =
-  "mt-auto grid grid-cols-2 gap-3 border-t border-[var(--hairline)] pt-5";
-const MARKET_HEAD_SIDE_CLASS =
-  "min-w-0 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5";
-const MARKET_HEAD_SIDE_DOT_CLASS = "h-2.5 w-2.5 shrink-0 rounded-full";
-const MARKET_HEAD_SIDE_NAME_CLASS =
-  "text-xs font-semibold text-[var(--t1)] leading-tight";
-const MARKET_HEAD_SIDE_SUB_CLASS =
-  "font-mono whitespace-nowrap text-[10px] text-[var(--t3)] leading-tight [font-variant-numeric:tabular-nums]";
-const MARKET_HEAD_PRICE_CLASS =
-  "font-mono mt-3 whitespace-nowrap text-[26px] font-semibold leading-none tracking-[-0.04em] [font-variant-numeric:tabular-nums] max-[720px]:text-[22px] [&_small]:ml-1 [&_small]:text-[13px] [&_small]:font-semibold [&_small]:tracking-normal";
+  "mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3";
+const MARKET_HEAD_CHANCE_CLASS =
+  "text-[44px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--t1)] max-[720px]:text-[36px]";
+const MARKET_HEAD_LEGEND_CLASS =
+  "flex items-center gap-5 pb-1 text-[14px] text-[var(--t2)]";
+const MARKET_HEAD_SIDE_DOT_CLASS = "h-2 w-2 shrink-0 rounded-full";
 
 export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   const { t } = useTranslation("prediction");
@@ -153,52 +145,57 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   const no =
     isSettled && finalYes !== null ? 100 - finalYes : displayMarket.noPricePoints;
 
+  const chance = Math.max(0, Math.min(100, Math.round(yes)));
+
   return (
     <section className={MARKET_HEAD_CLASS}>
-      <div className={MARKET_HEAD_EYEBROW_CLASS}>
-        {isLive && (
-          <span className={MARKET_HEAD_LIVE_CLASS}>
-            <span
-              className={`${MARKET_HEAD_LIVE_DOT_CLASS} ${dotBeat ? "live-dot-beat" : ""}`}
-              aria-hidden="true"
-            />
-            {t("LIVE")}
-          </span>
-        )}
-        {/* settledLabel already reads "Settled · NO wins" — render it alone
-            so the eyebrow shows exactly one status token. */}
-        {isSettled && settledLabel && (
-          <span className={MARKET_HEAD_SETTLED_CLASS}>{settledLabel}</span>
-        )}
-        {displayCategory && (
-          <>
-            <span aria-hidden="true">·</span>
-            <span className="text-[var(--accent-text)]">{displayCategory}</span>
-          </>
-        )}
-        {/* For settled markets the settled badge above already carries the
-            status — repeating lifecycleLabel here rendered a third
-            "Settled" token. Other non-live statuses (halted/closed/…) keep
-            the lifecycle label as their only status. */}
-        {!isSettled && (
-          <>
-            <span aria-hidden="true">·</span>
-            <span className={MARKET_HEAD_COUNTDOWN_CLASS}>
-              {isLive ? (
-                <>
-                  {countdown}
-                  <span className="mx-1.5 text-[var(--t4)]">·</span>
-                  {formatCloseDate(displayMarket.closeAt)}
-                </>
-              ) : (
-                lifecycleLabel
-              )}
-            </span>
-          </>
-        )}
+      <div className="flex items-start gap-4">
+        <MarketThumb
+          categorySlug={displayMarket.categorySlug}
+          imageUrl={displayMarket.imagePath || displayMarket.imageUrl || displayMarket.image_url}
+          size={56}
+          className="max-[720px]:hidden"
+        />
+        <div className="min-w-0 flex-1">
+          <p className={MARKET_HEAD_META_CLASS}>
+            {isLive && (
+              <span className={MARKET_HEAD_LIVE_CLASS}>
+                <span
+                  className={`${MARKET_HEAD_LIVE_DOT_CLASS} ${dotBeat ? "live-dot-beat" : ""}`}
+                  aria-hidden="true"
+                />
+                {t("LIVE")}
+              </span>
+            )}
+            {/* settledLabel already reads "Settled · NO wins" — render it
+                alone so the line shows exactly one status token. */}
+            {isSettled && settledLabel && (
+              <span className={MARKET_HEAD_SETTLED_CLASS}>{settledLabel}</span>
+            )}
+            {displayCategory && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{displayCategory}</span>
+              </>
+            )}
+            {/* Settled markets already carry their status above; other
+                non-live statuses (halted/closed/…) show the lifecycle
+                label as their only status. */}
+            {!isSettled && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span
+                  className={MARKET_HEAD_COUNTDOWN_CLASS}
+                  title={isLive ? formatCloseDate(displayMarket.closeAt) : undefined}
+                >
+                  {isLive ? countdown : lifecycleLabel}
+                </span>
+              </>
+            )}
+          </p>
+          <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
+        </div>
       </div>
-
-      <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
 
       {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass */}
       <div
@@ -218,36 +215,32 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
               })
         }
       >
-        <div className={MARKET_HEAD_SIDE_CLASS}>
-          <div className="flex min-w-0 items-center gap-2">
-            <span
-              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes-bar)]`}
-              aria-hidden="true"
-            />
-            <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("YES")}</span>
-          </div>
-          <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--yes-text)]`}>
-            {yes}
-            <small>{t("PTS", "pts")}</small>
-          </div>
-          <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
-            {yes}% {t("PROB")}
+        <div className="flex items-baseline gap-2">
+          <span className={MARKET_HEAD_CHANCE_CLASS}>{chance}%</span>
+          <span className="text-[15px] font-medium text-[var(--t3)]">
+            {t("CHANCE", "chance")}
           </span>
         </div>
-        <div className={`${MARKET_HEAD_SIDE_CLASS} text-right`}>
-          <div className="flex min-w-0 items-center justify-end gap-2">
-            <span className={MARKET_HEAD_SIDE_NAME_CLASS}>{t("NO")}</span>
+        <div className={MARKET_HEAD_LEGEND_CLASS}>
+          <span className="inline-flex items-center gap-2">
             <span
-              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no-bar)]`}
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--yes)]`}
               aria-hidden="true"
             />
-          </div>
-          <div className={`${MARKET_HEAD_PRICE_CLASS} text-[var(--no-text)]`}>
-            {no}
-            <small>{t("PTS", "pts")}</small>
-          </div>
-          <span className={`${MARKET_HEAD_SIDE_SUB_CLASS} mt-1 block`}>
-            {no}% {t("PROB")}
+            {t("YES")}
+            <strong className="font-semibold tabular-nums text-[var(--yes-text)]">
+              {t("PTS_COUNT", { count: yes })}
+            </strong>
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span
+              className={`${MARKET_HEAD_SIDE_DOT_CLASS} bg-[var(--no)]`}
+              aria-hidden="true"
+            />
+            {t("NO")}
+            <strong className="font-semibold tabular-nums text-[var(--no-text)]">
+              {t("PTS_COUNT", { count: no })}
+            </strong>
           </span>
         </div>
       </div>

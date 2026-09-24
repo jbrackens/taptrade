@@ -36,7 +36,8 @@ describe("prediction terminal backend wiring", () => {
     const catalog = read("components/prediction/AllMarketsSection.tsx");
     const moments = read("components/prediction/MomentMarketsSection.tsx");
     const predictPage = read("predict/page.tsx");
-    const rail = read("components/prediction/TerminalCategoryRail.tsx");
+    const categoryTabs = read("components/prediction/CategoryTabs.tsx");
+    const topBar = read("components/prediction/TopBar.tsx");
 
     assert.ok(workspace.includes("<AllMarketsSection"));
     assert.ok(workspace.includes('variant="moments"'));
@@ -56,7 +57,15 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(predictPage.includes("activeCategoryId"));
     assert.ok(workspace.includes("activeCategorySlug={activeCategorySlug}"));
     assert.ok(moments.includes("categoryId,"));
-    assert.ok(rail.includes('href="/portfolio"'));
+    // TerminalCategoryRail (the left discovery rail) was deleted with the
+    // redesign; CategoryTabs is the horizontal topic strip that replaced
+    // it on /predict, and TopBar keeps the quick link to Portfolio the
+    // rail used to carry.
+    assert.ok(workspace.includes("<CategoryTabs"));
+    assert.ok(categoryTabs.includes('basePath = "/predict"'));
+    assert.ok(
+      topBar.includes('{ href: "/portfolio", labelKey: "NAV_PORTFOLIO"'),
+    );
   });
 
   it("loads seven in-place discovery ranking tabs and real movement from backend APIs", () => {
@@ -78,9 +87,15 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(discover.includes('role="tabpanel"'));
     assert.ok(discover.includes("<RankingBoard"));
     assert.ok(discover.includes("overflow-x-auto"));
-    assert.ok(discover.includes("max-w-none"));
-    assert.ok(!discover.includes("grid-cols-2 items-start gap-x-8 gap-y-10"));
-    assert.ok(discover.includes("max-[1023px]:grid-cols-1"));
+    // The old side-by-side ranking grid is gone at every breakpoint: one
+    // ranking shows at a time, in a full-width panel below a horizontally
+    // scrollable tab row, at the page's standard content width.
+    assert.ok(discover.includes("max-w-[1280px]"));
+    assert.ok(discover.includes('data-testid="discover-ranking-tabs"'));
+    assert.doesNotMatch(
+      discover,
+      /grid-cols-2 items-start gap-x-8 gap-y-10|max-\[1023px\]:grid-cols-1/,
+    );
     assert.equal(DISCOVER_RANKING_SECTIONS.length, 7);
     assert.deepEqual(
       DISCOVER_RANKING_SECTIONS.map((section) => section.key),
@@ -144,8 +159,16 @@ describe("prediction terminal backend wiring", () => {
       );
     }
 
+    // TerminalCategoryRail was deleted with the redesign; market detail
+    // is now a two-column layout — the market column and a sticky
+    // TradeTicket rail (variant="terminal") — with no category rail.
     const marketPage = read("market/[ticker]/page.tsx");
-    assert.ok(marketPage.includes("<TerminalCategoryRail"));
+    assert.ok(!marketPage.includes("<TerminalCategoryRail"));
+    assert.ok(marketPage.includes("<MarketHead"));
     assert.ok(marketPage.includes('variant="terminal"'));
+    assert.match(
+      marketPage,
+      /grid-cols-\[minmax\(0,1fr\)_400px\][\s\S]*grid-rows-\[auto_1fr\]/,
+    );
   });
 });

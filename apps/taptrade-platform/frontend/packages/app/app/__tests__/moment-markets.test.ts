@@ -35,10 +35,11 @@ describe("Predict Moments market directory", () => {
   });
 
   it("keeps a real server-paginated board scoped to every filter", () => {
-    // Kilig: 12 per page — the lead moment + two "Happening now" markets
-    // take three on the default view, leaving nine grid cards.
-    assert.match(moments, /const PAGE_SIZE = 12/);
-    assert.match(moments, /const LEAD_COUNT = 3/);
+    // 2026-09-24 redesign: 18 per page — the FeaturedMarket hero plus its
+    // five-row Trending list take six on the default view, leaving twelve
+    // grid cards (four full rows of three at desktop widths).
+    assert.match(moments, /const PAGE_SIZE = 18/);
+    assert.match(moments, /const TRENDING_LIST_COUNT = 5/);
     assert.match(
       moments,
       /const requestParams = useMemo\([\s\S]*categoryId,[\s\S]*closeBefore: dateWindowToCloseBefore\(dateWindow\),[\s\S]*q: query\.trim\(\) \|\| undefined,[\s\S]*sort: sortBy/,
@@ -59,16 +60,22 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /loadMoreRequestRef\.current !== requestId/);
   });
 
-  it("leads with a moment and mixes card sizes instead of a uniform wall", () => {
-    assert.match(moments, /<LeadMoment/);
-    assert.match(moments, /const showLead = !hasFilters && markets\.length >= LEAD_COUNT/);
-    assert.match(moments, /<MarketGrid[\s\S]*columns=\{3\}[\s\S]*pattern="mixed"/);
-    // One quick-trade panel serves the lead, the stack and the grid.
+  it("leads with a FeaturedMarket and trending list, then a uniform grid", () => {
+    // LeadMoment/PosterTile and the "mixed" wide/standard grid pattern
+    // were deleted with the redesign. The default view now leads with one
+    // FeaturedMarket (real chart, both outcomes) beside a ranked Trending
+    // list, then every remaining market renders at the same card size.
+    assert.match(moments, /<FeaturedMarket/);
+    assert.match(moments, /const showHero = !hasFilters && markets\.length > TRENDING_LIST_COUNT/);
+    assert.match(moments, /const featured = showHero \? pickFeatured\(markets\.slice\(0, PAGE_SIZE\)\) : undefined/);
+    assert.match(moments, /<MarketGrid[\s\S]*columns=\{3\}/);
+    assert.doesNotMatch(moments, /pattern="mixed"|<LeadMoment|<PosterTile/);
+    // One quick-trade panel serves the hero and the grid.
     assert.match(moments, /<QuickTradePanel target=\{quickTrade\}/);
     assert.match(moments, /onQuickTrade=\{setQuickTrade\}/);
     assert.match(
       grid,
-      /grid-cols-3[\s\S]*max-\[1120px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
+      /grid-cols-3[\s\S]*max-\[1020px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
     );
     assert.doesNotMatch(moments, /<MarketFeed/);
   });

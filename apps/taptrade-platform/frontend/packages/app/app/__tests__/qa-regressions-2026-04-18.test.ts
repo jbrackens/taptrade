@@ -245,10 +245,13 @@ describe("points-only safety boundary", () => {
     // The 2026-08-09 dark-landing rebuild replaced the hardcoded teaser
     // cards with editorial desk chips + a real-data ticker; the invariant
     // (no crypto tease on the homepage) is now expressed through the desk
-    // list.
+    // list. The 2026-09-24 Kilig redesign then moved the desk labels from
+    // all-caps mono overline text to title case, mirroring the feed's
+    // editorial event titles — the crypto check stays case-insensitive so
+    // it still guards the desk list regardless of casing.
     const homepageSource = read("page.tsx");
-    assert.ok(homepageSource.includes('"ESPORTS & ARENAS"'));
-    assert.ok(!homepageSource.includes("CRYPTO & CHAINS"));
+    assert.ok(homepageSource.includes('"Esports & Arenas"'));
+    assert.ok(!/crypto\s*&\s*chains/i.test(homepageSource));
 
     const forbiddenHomepageCopy =
       /crypto|bitcoin|btc|usd|\$|dollar|cash|deposit|withdraw|withdrawal|prize|redeem|payout|wager|stake|fiat|kripto|加密|pembayaran|赔付|賠付/i;
@@ -723,16 +726,16 @@ describe("compliance-client: cool-off stub", () => {
 });
 
 // ── Bug D: card styling must not be inside <Link> ─────────────────
-// Updated for Ink & lime step 11: MarketCard/MarketGrid retired — the
-// feed (MarketFeed) is the browse card everywhere. Same invariant, new
-// file: an accessible name must never swallow style text.
+// MarketCard is the browse card everywhere again (the single-column
+// MarketFeed was retired 2026-09-24). Same invariant: an accessible name
+// must never swallow style text.
 
-describe("MarketFeed: Tailwind styling outside Link", () => {
-  const source = read("components/prediction/MarketFeed.tsx");
+describe("MarketCard: Tailwind styling outside Link", () => {
+  const source = read("components/prediction/MarketCard.tsx");
 
   it("does not render <style> as a child of <Link>", () => {
     const linkBlock = /<Link[\s\S]*?<\/Link>/.exec(source);
-    assert.ok(linkBlock, "<Link> should exist in MarketFeed");
+    assert.ok(linkBlock, "<Link> should exist in MarketCard");
     assert.ok(
       !linkBlock![0].includes("<style>"),
       "Link element should not contain a <style> tag — keep styling in Tailwind classes outside the Link body",
@@ -742,55 +745,38 @@ describe("MarketFeed: Tailwind styling outside Link", () => {
   it("does not reintroduce a local style helper", () => {
     assert.ok(
       !/MarketCardStyles|MarketFeedStyles/.test(source),
-      "MarketFeed should not rely on a local style helper",
+      "MarketCard should not rely on a local style helper",
     );
   });
 });
 
 // ── Bug F: browse-card invariants ─────────────────────────────────
 //
-// Updated for Ink & lime step 11: the P8 MarketCard/MarketGrid pair is
-// retired — the single-column feed (MarketFeed, Predict Light Social 3a)
-// is the browse card on /predict, /category/* and /series/*. The
-// invariants that survived the redesign are pinned against the feed:
-// sentiment-not-probability-pill, priced side actions with real tap
-// sizes, ?side= deep links, no fake sparklines/deltas, and the
-// point-native volume contract.
+// The browse card on /predict, /category/* and /series/* is MarketCard
+// (via MarketGrid). The invariants pinned here: probability shown as
+// "N% chance" from the live price, priced side actions with real tap
+// sizes, ?side= deep links for closed markets, no fake sparklines/deltas,
+// and the point-native volume contract.
 
-describe("MarketFeed composition", () => {
-  const feedSource = read("components/prediction/MarketFeed.tsx");
-  const marketSentimentSource = read(
-    "components/prediction/marketSentiment.ts",
-  );
+describe("MarketCard composition", () => {
+  const cardSource = read("components/prediction/MarketCard.tsx");
 
-  it("renders the sentiment sentence, not a probability pill", () => {
+  it("shows the YES chance from the live price, never a sentiment sentence", () => {
     assert.ok(
-      feedSource.includes("calculateMarketSentiment") &&
-        feedSource.includes("t(sentiment.displayStringKey"),
-      "feed rows should render the helper-provided market sentiment translation key",
+      cardSource.includes("{yesPercentage}%") &&
+        cardSource.includes('t("CHANCE", "chance")'),
+      "cards should show the YES chance as a percentage",
     );
     assert.ok(
-      marketSentimentSource.includes("MARKET_SENTIMENT_SPLIT_ROOM") &&
-        marketSentimentSource.includes("MARKET_SENTIMENT_STRONG_DOUBT") &&
-        marketSentimentSource.includes("MARKET_SENTIMENT_HEAVY_BACKING"),
-      "Market sentiment helper should cover neutral and heavy leading translation keys",
-    );
-    assert.ok(
-      !feedSource.includes("PROBABILITY_CHANCE") &&
-        !feedSource.includes("probabilityDescriptorKey"),
-      "the feed should not render the old chance/descriptor probability pill",
+      !cardSource.includes("calculateMarketSentiment") &&
+        !cardSource.includes("MARKET_SENTIMENT_"),
+      "the retired sentiment sentence should not come back",
     );
   });
 
-  it("ships translated market sentiment keys in every prediction locale", () => {
+  it("ships the card strings in every prediction locale", () => {
     const locales = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
-    const keys = [
-      "MARKET_SENTIMENT_STRONG_DOUBT",
-      "MARKET_SENTIMENT_LEANING_NO",
-      "MARKET_SENTIMENT_SPLIT_ROOM",
-      "MARKET_SENTIMENT_LEANING_YES",
-      "MARKET_SENTIMENT_HEAVY_BACKING",
-    ];
+    const keys = ["CHANCE", "VOL_SHORT", "PTS_COUNT_one", "PTS_COUNT_other"];
 
     for (const locale of locales) {
       const predictionLocale = read(
@@ -807,46 +793,41 @@ describe("MarketFeed composition", () => {
 
   it("keeps YES/NO actions priced without losing tap size", () => {
     assert.ok(
-      feedSource.includes("min-h-12"),
-      "hero side actions keep a firm (48px) tap size",
+      cardSource.includes("h-10") && cardSource.includes("max-[640px]:h-11"),
+      "side actions are 40px on desktop and 44px on phones",
     );
     assert.ok(
-      feedSource.includes("justify-between"),
-      "side actions separate the side label from the side price",
-    );
-    assert.ok(
-      feedSource.includes("{market.yesPricePoints} pts") &&
-        feedSource.includes("{market.noPricePoints} pts"),
+      cardSource.includes('t("PTS_COUNT", { count: price'),
       "side actions show the side prices in points (never cents)",
     );
   });
 
   it("YES/NO actions deep-link with ?side= so the trade ticket pre-selects", () => {
     assert.ok(
-      /\?side=yes/.test(feedSource) && /\?side=no/.test(feedSource),
-      "feed side actions should link to /market/<ticker>?side=yes|no",
+      /\/market\/\$\{ticker\}\?side=\$\{side\}/.test(cardSource),
+      "card side actions should link to /market/<ticker>?side=yes|no",
     );
   });
 
   it("does not render seeded placeholder sparklines or fake deltas", () => {
     assert.ok(
-      !feedSource.includes("seededSparklinePoints"),
-      "the feed should not render seeded placeholder sparklines",
+      !cardSource.includes("seededSparklinePoints"),
+      "the card should not render seeded placeholder sparklines",
     );
     assert.ok(
-      !feedSource.includes("mkt-delta"),
-      "the feed should not render placeholder cent deltas",
+      !cardSource.includes("mkt-delta"),
+      "the card should not render placeholder cent deltas",
     );
   });
 
   it("keeps activity volume on the point-native prop contract", () => {
     // Points unit-model (2026-07-07): single canonical *Points wire key.
     assert.ok(
-      feedSource.includes("formatCompactPoints(market.volumePoints)") &&
-        !feedSource.includes("volumePointsCents") &&
-        !feedSource.includes("volumeCents") &&
-        !feedSource.includes("liquidityPoints"),
-      "the feed should render activity from the canonical volumePoints field only",
+      cardSource.includes("formatCompactPoints(volumePoints)") &&
+        !cardSource.includes("volumePointsCents") &&
+        !cardSource.includes("volumeCents") &&
+        !cardSource.includes("liquidityPoints"),
+      "the card should render activity from the canonical volumePoints field only",
     );
   });
 });
@@ -1019,11 +1000,14 @@ describe("Navigation pill active colors", () => {
   });
 
   it("renders the market chart range switcher as quiet text tabs", () => {
+    // The 2026-09-24 redesign swapped the ink underline for a soft raised
+    // chip under the active range — still a quiet text tab, never a
+    // segmented direction fill.
     const rangeClass = functionBody(marketChartSource, "rangeButtonClass");
     assert.ok(
-      rangeClass.includes("border-[var(--t1)]") &&
-        rangeClass.includes("border-transparent"),
-      "chart range tabs should underline the active range in ink",
+      rangeClass.includes("bg-[var(--surface-2)]") &&
+        rangeClass.includes("text-[var(--t1)]"),
+      "the active chart range should sit on a soft raised chip",
     );
     assert.ok(
       !rangeClass.includes("bg-[var(--yes)]") &&
@@ -1044,9 +1028,11 @@ describe("Predict discovery controls", () => {
   );
   const discoverPageSource = read("discover/page.tsx");
   const seriesPageSource = read("series/[slug]/page.tsx");
-  // Step 11: MarketGrid/MarketCard retired — MarketFeed is the browse
-  // card everywhere; the watch-control pins moved onto it.
-  const marketFeedSource = read("components/prediction/MarketFeed.tsx");
+  // MarketGrid/MarketCard are the browse card everywhere again (the
+  // single-column MarketFeed was retired 2026-09-24); the watch-control
+  // pins moved back onto them.
+  const marketGridSource = read("components/prediction/MarketGrid.tsx");
+  const marketCardSource = read("components/prediction/MarketCard.tsx");
   const watchlistClientSource = read("lib/api/market-watchlist-client.ts");
   const predictionClientSource = read(
     "../../api-client/src/prediction-client.ts",
@@ -1104,15 +1090,20 @@ describe("Predict discovery controls", () => {
         !momentMarketsSource.includes("DISCOVER_RANKING_SECTIONS"),
       "The established search, sort, and closing-window controls should filter in place",
     );
+    // 2026-09-24: PAGE_SIZE moved to 18 and the "mixed" wide/standard grid
+    // (LeadMoment) was deleted in favour of one FeaturedMarket hero beside
+    // a ranked Trending list, then a uniform MarketGrid.
     assert.ok(
-      momentMarketsSource.includes("const PAGE_SIZE = 12") &&
+      momentMarketsSource.includes("const PAGE_SIZE = 18") &&
         momentMarketsSource.includes("pageSize: PAGE_SIZE") &&
         momentMarketsSource.includes(
           "dedupeMarkets([...current, ...(response.data || [])])",
         ) &&
-        /<MarketGrid[\s\S]*columns=\{3\}[\s\S]*pattern="mixed"/.test(momentMarketsSource) &&
-        momentMarketsSource.includes("<LeadMoment"),
-      "The live Moments board should lead with a moment and a mixed-size, server-paginated grid",
+        /<MarketGrid[\s\S]*columns=\{3\}/.test(momentMarketsSource) &&
+        momentMarketsSource.includes("<FeaturedMarket") &&
+        !momentMarketsSource.includes("<LeadMoment") &&
+        !momentMarketsSource.includes('pattern="mixed"'),
+      "The live Moments board should lead with a featured market and a uniform, server-paginated grid",
     );
   });
 
@@ -1136,15 +1127,15 @@ describe("Predict discovery controls", () => {
       "AllMarketsSection should filter by watched markets and pass toggle state into the grid",
     );
     assert.ok(
-      marketFeedSource.includes("watched={watchedMarketIds?.has(") &&
-        marketFeedSource.includes("onToggleWatchlist={onToggleWatchlist}"),
-      "MarketFeed should pass market identity and watch state into hero and rows",
+      marketGridSource.includes("watched={watchedMarketIds?.has(") &&
+        marketGridSource.includes("onToggleWatchlist={onToggleWatchlist}"),
+      "MarketGrid should pass market identity and watch state into each card",
     );
     assert.ok(
-      marketFeedSource.includes("aria-pressed={watched}") &&
-        marketFeedSource.includes("REMOVE_FROM_WATCHLIST") &&
-        marketFeedSource.includes("ADD_TO_WATCHLIST"),
-      "MarketFeed should expose an accessible watch/unwatch control",
+      marketCardSource.includes("aria-pressed={watched}") &&
+        marketCardSource.includes("REMOVE_FROM_WATCHLIST") &&
+        marketCardSource.includes("ADD_TO_WATCHLIST"),
+      "MarketCard should expose an accessible watch/unwatch control",
     );
   });
 
@@ -1179,10 +1170,13 @@ describe("Predict discovery controls", () => {
         !allMarketsSource.includes("href={`/series/${item.slug}`}"),
       "AllMarketsSection should omit the crowded Series/Tags controls",
     );
+    // MarketFeed (the single-column feed row) was retired further as part
+    // of the 2026-09-24 redesign; /series/[slug] now lists its markets
+    // with the same MarketGrid card every other directory surface uses.
     assert.ok(
       seriesPageSource.includes("getSeries") &&
         seriesPageSource.includes("seriesId: match.id") &&
-        seriesPageSource.includes("MarketFeed"),
+        seriesPageSource.includes("MarketGrid"),
       "/series/[slug] should resolve a real series and list its open markets",
     );
   });
@@ -1554,9 +1548,9 @@ describe("Market copy localization", () => {
     const allMarketsSource = read(
       "components/prediction/AllMarketsSection.tsx",
     );
-    const marketImageSource = read(
-      "components/prediction/utils/marketImage.ts",
-    );
+    // Market image tiles (the category icon map) must not carry a crypto
+    // entry either.
+    const marketImageSource = read("components/prediction/MarketThumb.tsx");
     const subcategorySource = read(
       "components/prediction/marketSubcategories.ts",
     );

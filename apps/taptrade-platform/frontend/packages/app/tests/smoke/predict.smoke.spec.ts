@@ -30,9 +30,12 @@ test.describe("/predict — discovery landing", () => {
 
     const cards = page.getByTestId("market-card");
     const grid = page.getByTestId("market-grid");
-    await expect(cards).toHaveCount(9, { timeout: 10_000 });
+    // First page is 18 markets; the FeaturedMarket hero takes six
+    // (the featured market + its five-row Trending list), leaving twelve
+    // grid cards.
+    await expect(cards).toHaveCount(12, { timeout: 10_000 });
     const viewportWidth = await page.evaluate(() => window.innerWidth);
-    const expectedColumns = viewportWidth > 1120 ? 3 : viewportWidth > 640 ? 2 : 1;
+    const expectedColumns = viewportWidth > 1020 ? 3 : viewportWidth > 640 ? 2 : 1;
     await expect
       .poll(async () => {
         const template = await grid.evaluate(
@@ -42,10 +45,10 @@ test.describe("/predict — discovery landing", () => {
       })
       .toBe(expectedColumns);
 
-    // Page two adds 12 markets; the lead moment keeps the first three, so
-    // the grid holds 24 − 3 = 21 cards.
+    // Page two adds another 18 markets, all of which land in the grid
+    // (the hero only ever draws from the first page): 12 + 18 = 30.
     await page.getByRole("button", { name: /load more markets/i }).click();
-    await expect(cards).toHaveCount(21, { timeout: 10_000 });
+    await expect(cards).toHaveCount(30, { timeout: 10_000 });
 
     // The approved discovery card shows both live market sides as
     // percentage actions, not as a dense single-column price table.

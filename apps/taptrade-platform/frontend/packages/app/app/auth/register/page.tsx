@@ -54,9 +54,9 @@ const BRAND_WORDMARK_CLASS =
   "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const HEAD_CLASS = "mb-6";
 const EYEBROW_CLASS =
-  "mb-3 inline-block font-mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]";
+  "mb-3 inline-block text-[12px] font-semibold text-[var(--t3)]";
 const TITLE_CLASS =
-  "type-poster m-0 mb-1.5 text-[32px] max-[480px]:text-[26px] text-[var(--t1)]";
+  "type-poster m-0 mb-1.5 text-[26px] max-[480px]:text-[24px] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const PROGRESS_CLASS =
   "relative mb-[22px] h-1 overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)]";
@@ -65,7 +65,7 @@ const PROGRESS_FILL_BASE_CLASS =
 const DIVIDER_CLASS =
   "my-0.5 flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "text-[12px] font-semibold text-[var(--t3)]";
 const BANNER_BASE_CLASS =
   "mb-3.5 rounded-[var(--r-rh-md)] px-3 py-2.5 text-[13px]";
 const BANNER_ERROR_CLASS =
@@ -75,7 +75,7 @@ const BANNER_SUCCESS_CLASS =
 const FORM_CLASS = "flex flex-col gap-3.5";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "text-[12px] font-semibold text-[var(--t3)]";
 // Input + step-button recipes migrated to components/ui primitives (P2).
 const FIELD_ERROR_CLASS = "text-[11px] text-[var(--danger)]";
 const TERMS_CLASS =
@@ -88,7 +88,7 @@ const CHECK_INPUT_CLASS = "size-4 accent-[var(--accent)]";
 const SUMMARY_CLASS =
   "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-3.5 py-3";
 const SUMMARY_EYEBROW_CLASS =
-  "mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-2 block text-[12px] font-semibold text-[var(--t3)]";
 const SUMMARY_LIST_CLASS = "m-0 flex flex-col gap-1";
 const SUMMARY_ROW_CLASS = "flex justify-between gap-2.5 text-xs";
 const SUMMARY_TERM_CLASS = "text-[var(--t3)]";

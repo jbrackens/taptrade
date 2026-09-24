@@ -9,7 +9,7 @@ Contracts are priced in **Points**, 1–99, where the price is the implied proba
 The project was **forked from Taya Na Sportsbook on 2026-04-16** and transformed: the sports-betting domain (sports/fixtures/markets/selections/bets) was replaced with a prediction-market domain (categories/series/events/markets/orders/positions). Shared infrastructure — auth, wallet/ledger, WebSocket hub, CSRF, OpenTelemetry — was preserved.
 
 The app has three surfaces:
-- **Player app** (Next.js 16 App Router) — moment-led discovery with in-place quick trade, market detail, event pages, trade ticket, portfolio
+- **Player app** (Next.js 16 App Router) — discovery (featured market + card grid) with in-place quick trade, market detail, event pages, trade ticket, portfolio
 - **Backoffice** (Next.js 16 App Router + Ant Design v5) — market creation, settlement queue, risk, access control, analytics
 - **Gateway API + Auth service** (Go) — HTTP+WebSocket API backed by PostgreSQL, with Redis for auth sessions, rate limiting and optional WS fan-out
 
@@ -50,10 +50,10 @@ taptrade/
 ├── Makefile                               ← one target: `make cashier-check` (validates the dormant trees)
 ├── CLAUDE.md                              ← this file
 ├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
-└── DESIGN.md                              ← design system (Kilig: ink + white, Kilig pink, blue/orange YES/NO); mirrors the code
+└── DESIGN.md                              ← design system (Kilig palette: ink + white, Kilig pink, blue/orange YES/NO; Inter); mirrors the code
 ```
 
-Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root` and the fonts in `app/layout.tsx`, not in prose. The current system is **Kilig** (adopted 2026-09-24): ink `#111114` and white chrome with ink as the interaction colour (primary buttons, selection, focus), `--kilig #e0126e` pink for identity and liveness only (text on light uses `--kilig-text #c40f60`; never the default button), `--paper #f5f5f7` page ground, YES blue `--dir-yes #1f5fe0` and NO orange `--dir-no #c94a12` for market direction only, Instrument Sans for UI, Big Shoulders (`.type-poster`) for uppercase poster headlines, and Martian Mono for every comparable numeral. Cards are 8px with no resting shadow; controls are 6px. Prices read "44 pts", never "¢". Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `DESIGN.md`, `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section). The old `--brand-*` / `--signal-gold*` / `--on-brand` names are deprecated aliases kept only so unmigrated files render; replace them when you touch a file.
+Design values are canonical in `apps/taptrade-platform/frontend/packages/app/app/globals.css` `:root` and the fonts in `app/layout.tsx`, not in prose. The current system is **Kilig** (adopted 2026-09-24): ink `#111114` and white chrome with ink as the interaction colour (primary buttons, selection, focus), `--kilig #e0126e` pink for identity and liveness only (text on light uses `--kilig-text #c40f60`; never the default button), `--paper #f5f5f7` page ground, YES blue `--dir-yes #1f5fe0` and NO orange `--dir-no #c94a12` for market direction only, and one typeface, Inter (next/font), in sentence case with tabular figures for numbers (`font-mono` is a numeric utility, not a second face; `.type-poster` is the semibold heading class). Every market shows a `MarketThumb` image tile (photo or tinted category icon). Cards are 12px with a whisper of elevation; controls are 8px. Prices read "44 pts", never "¢". Those values are pinned by `app/__tests__/color-system.test.ts`. **Read `DESIGN.md`, `globals.css` and that test before any UI change**; `DESIGN.md` is the narrative mirror and covers the player app only — office runs a separate palette (see the Backoffice section). The old `--brand-*` / `--signal-gold*` / `--on-brand` names are deprecated aliases kept only so unmigrated files render; replace them when you touch a file.
 
 ## GitHub Repo
 
@@ -162,9 +162,9 @@ The app ships 37 pages (plus one API route) under `app/`. The ones that matter:
 
 - Trading surface: `app/predict/page.tsx` (discovery — featured, trending, closingSoon, recent), `app/market/[ticker]/page.tsx` (market detail + trade ticket; its breadcrumb links to the market's event), `app/portfolio/page.tsx` (Positions / Orders / History tabs + accuracy), `app/category/[slug]/page.tsx`, `app/event/[id]/page.tsx` (every market of one event + aggregate exposure, beside `InspectorPanel`)
 - **Quick trade:** every `MarketGrid` hosts one `QuickTradePanel` — a card's YES/NO opens `InspectorPanel` (the real `ConnectedTradeTicket`, side preselected, plus a link to the full market) in a Dialog above 1023px or the vaul Sheet at or below it. Closed markets keep the `/market/<ticker>?side=` deep link.
-- **Retired:** the 2026-08-12 Floor redesign trial (`/floor`, `/book`, `/standing`, `components/floor/`) was removed on 2026-09-23 in favour of the surface above. `next.config.js` redirects those routes to `/predict`, `/portfolio` and `/leaderboards`; `app/__tests__/floor-retirement.test.ts` keeps them gone. The Event page, `InspectorPanel`, `RowMarketV2` and the ⌘K `CommandPalette` survived and now live in `components/prediction/`.
+- **Retired:** the 2026-08-12 Floor redesign trial (`/floor`, `/book`, `/standing`, `components/floor/`) was removed on 2026-09-23 in favour of the surface above. `next.config.js` redirects those routes to `/predict`, `/portfolio` and `/leaderboards`; `app/__tests__/floor-retirement.test.ts` keeps them gone. The Event page, `InspectorPanel`, `RowMarketV2` and the ⌘K `CommandPalette` survived and now live in `components/prediction/`. Discovery pages use `CategoryTabs` (topic strip) — the old left `TerminalCategoryRail` is gone.
 - Other product surfaces: `/` (landing), `/discover`, `/live`, `/series/[slug]`, `/leaderboards` + `/leaderboards/[id]`, `/users/[userId]`, `/activity`, `/rewards`, `/store`, `/profile`, `/account/*`, `/auth/*`
-- Components: `app/components/prediction/` — MarketCard, TradeTicket, ConnectedTradeTicket, CategoryPills, PredictionWorkspace, OrderBook, MarketChart, TopBar, and more
+- Components: `app/components/prediction/` — MarketCard, MarketThumb, FeaturedMarket, CategoryTabs, TradeTicket, ConnectedTradeTicket, PredictionWorkspace, OrderBook, MarketChart, TopBar, and more
 
 ### Redux slices
 

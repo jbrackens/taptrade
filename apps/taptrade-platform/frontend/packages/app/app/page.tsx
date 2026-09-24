@@ -1,18 +1,17 @@
 "use client";
 
 /**
- * Landing — the "arena night" front door (Kilig, DESIGN.md).
+ * Landing — the front door.
  *
- * The recipe: ink-deep ground, poster type (Big Shoulders, uppercase) for
- * the hero and section titles, Instrument Sans body copy, Martian Mono
- * micro-labels, the warm-white button for structural action, and Kilig
- * pink strictly for the LIVE signal and one accent word. Every section
- * sells something the product actually does: the ticker is the REAL
- * discovery feed (honest-data rule — no fabricated markets, no invented
- * deltas), the three steps are the real trade loop (moments → hold-to-place
- * → settlement notifications), the desk chips mirror the gateway's
- * editorial event names, and the welcome band promises exactly what the
- * starter grant pays.
+ * The recipe: ink-deep ground, one typeface (Inter) with a large tight
+ * semibold headline, the warm-white button for structural action, and
+ * Kilig pink strictly for the live signal and one accent mark. Every
+ * section sells something the product actually does: the ticker is the
+ * REAL discovery feed (honest-data rule — no fabricated markets, no
+ * invented deltas), the three steps are the real trade loop (moments →
+ * hold-to-place → settlement notifications), the desk chips mirror the
+ * gateway's editorial event names, and the welcome band promises exactly
+ * what the starter grant pays.
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -46,13 +45,13 @@ function splitHeroEmphasis(text: string): { lead: string; accent: string } {
 /** Mirrors syntheticEventTitles in discover/promote.go — product desk
  *  names, rendered in English everywhere, exactly as the feed shows them. */
 const DESKS = [
-  "ELECTIONS & GOVERNMENT",
-  "GAMES & CHAMPIONSHIPS",
-  "SCREENS & STAGES",
-  "ESPORTS & ARENAS",
-  "TECH & AI",
-  "ECONOMY & RATES",
-  "THE BIG BOARD",
+  "Elections & Government",
+  "Games & Championships",
+  "Screens & Stages",
+  "Esports & Arenas",
+  "Tech & AI",
+  "Economy & Rates",
+  "The Big Board",
 ];
 
 const STEP_KEYS = [
@@ -181,11 +180,11 @@ const GRANT_MICRO_LEGAL = "No cash · No cashout · 18+";
 const FOOTER_LEGAL = `${brand.name} uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.`;
 
 const MICRO_CLASS =
-  "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-lavender)]";
+  "text-[14px] font-semibold text-[var(--l-t2)]";
 const LIVE_MICRO_CLASS =
-  "font-mono text-[11px] font-semibold uppercase tracking-[0.13em] text-[var(--l-gold)]";
+  "text-[14px] font-semibold text-[var(--l-gold)]";
 const CHIP_CLASS =
-  "rounded-full border border-[var(--l-hairline)] px-4 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em]";
+  "rounded-full border border-[var(--l-hairline)] px-4 py-2 text-[14px] font-medium";
 const PRIMARY_CTA_CLASS =
   "inline-flex items-center rounded-[var(--r-rh-md)] bg-[var(--l-purple)] font-semibold text-[var(--l-on-purple)] no-underline transition-colors duration-150 hover:bg-[var(--l-purple-hover)] active:bg-[var(--l-purple-active)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--l-gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--l-bg)]";
 const GHOST_CTA_CLASS =
@@ -245,7 +244,7 @@ export default function LandingPage() {
           />
           {t("hero.eyebrow")}
         </p>
-        <h1 className="type-poster m-0 mt-6 max-w-[920px] text-[clamp(56px,9vw,128px)] text-[var(--l-t1)]">
+        <h1 className="type-poster m-0 mt-5 max-w-[900px] text-[clamp(44px,6.6vw,88px)] leading-[1.02] tracking-[-0.04em] text-[var(--l-t1)]">
           {heroEmphasis.lead}
           {heroEmphasis.accent && (
             <span className="text-[var(--l-gold)]">{heroEmphasis.accent}</span>
@@ -284,15 +283,15 @@ export default function LandingPage() {
             {ticker.map((m) => (
               <span
                 key={m.id}
-                className="flex shrink-0 items-center gap-2.5 font-mono text-[11px] [font-variant-numeric:tabular-nums]"
+                className="flex shrink-0 items-center gap-2.5 text-[13px] tabular-nums"
               >
-                <span className="uppercase tracking-[0.08em] text-[var(--l-t3)]">
+                <span className="text-[var(--l-t3)]">
                   {m.title.length > TICKER_TITLE_MAX
                     ? `${m.title.slice(0, TICKER_TITLE_MAX).trimEnd()}…`
                     : m.title}
                 </span>
-                <span className="text-[12px] font-semibold text-[var(--l-t1)]">
-                  {m.yesPricePoints} pts
+                <span className="text-[13px] font-semibold text-[var(--l-t1)]">
+                  {m.yesPricePoints}%
                 </span>
               </span>
             ))}
@@ -307,13 +306,13 @@ export default function LandingPage() {
       >
         <Reveal>
           <p className={`m-0 ${MICRO_CLASS}`}>{t("steps.eyebrow")}</p>
-          <div className="mt-9 grid gap-6 md:grid-cols-3">
+          <div className="mt-6 grid gap-5 md:grid-cols-3">
             {STEP_KEYS.map((step) => (
               <div
                 key={step.num}
                 className="rounded-[var(--r-rh-lg)] border border-[var(--l-hairline)] bg-[var(--l-raised)] p-7"
               >
-                <p className="m-0 font-mono text-[12px] font-semibold tracking-[0.11em] text-[var(--l-lavender)]">
+                <p className="m-0 text-[14px] font-semibold tabular-nums text-[var(--l-gold)]">
                   {step.num}
                 </p>
                 <h3 className="mb-0 mt-3.5 text-[20px] font-semibold text-[var(--l-t1)]">
@@ -333,7 +332,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-[1360px] px-6 pb-20 pt-16 md:px-10">
           <Reveal>
             <p className={`m-0 ${MICRO_CLASS}`}>{t("desks.eyebrow")}</p>
-            <p className="type-poster m-0 mt-7 text-[28px] text-[var(--l-t1)] md:text-[38px]">
+            <p className="type-poster m-0 mt-4 text-[26px] text-[var(--l-t1)] md:text-[36px]">
               {t("desks.title")}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -341,7 +340,7 @@ export default function LandingPage() {
                 <span
                   key={desk}
                   className={`${CHIP_CLASS} ${
-                    desk === "THE BIG BOARD"
+                    desk === "The Big Board"
                       ? "text-[var(--l-gold)]"
                       : "text-[var(--l-t3)]"
                   }`}
@@ -357,7 +356,7 @@ export default function LandingPage() {
       {/* Welcome grant */}
       <section className="mx-auto flex max-w-[860px] flex-col items-center px-6 py-24 text-center md:py-28">
         <Reveal className="flex flex-col items-center">
-          <h2 className="type-poster m-0 text-[34px] leading-[0.95] text-[var(--l-t1)] md:text-[48px]">
+          <h2 className="type-poster m-0 text-[32px] leading-[1.1] text-[var(--l-t1)] md:text-[44px]">
             {t("grant.title")}
           </h2>
           <p className="mb-0 mt-6 max-w-[560px] text-[17px] leading-[1.55] text-[var(--l-t2)]">
@@ -369,7 +368,7 @@ export default function LandingPage() {
           >
             {t("grant.cta")}
           </Link>
-          <p className="mb-0 mt-6 font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-[var(--l-t3)]">
+          <p className="mb-0 mt-6 text-[12px] font-medium text-[var(--l-t3)]">
             {GRANT_MICRO_LEGAL}
           </p>
         </Reveal>
@@ -391,7 +390,7 @@ export default function LandingPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-mono text-[10px] font-medium uppercase tracking-[0.13em] text-[var(--l-t3)] no-underline hover:text-[var(--l-t1)]"
+                className="text-[13px] font-medium text-[var(--l-t3)] no-underline hover:text-[var(--l-t1)]"
               >
                 {t(link.labelKey)}
               </Link>

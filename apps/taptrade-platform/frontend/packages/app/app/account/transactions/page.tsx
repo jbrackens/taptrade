@@ -28,7 +28,7 @@ const backClass =
 const filterButtonBase =
   "min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-pill)] border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150";
 const tableHeadCellClass =
-  "px-4 py-3 text-left font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "px-4 py-3 text-left text-[12px] font-semibold text-[var(--t3)]";
 const tableCellClass =
   "border-b border-[var(--border-1)] px-4 py-3 text-[13px] text-[var(--t1)]";
 
@@ -127,160 +127,160 @@ export default function PointsLedgerPage() {
         exportTruncated
           ? `${entries.length} ledger entries exported (most recent ${EXPORT_WINDOW})`
           : `${entries.length} ledger entries exported`,
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      logger.error("PointsLedger", "CSV export failed", message);
-      showError("Export failed", message);
-    } finally {
-      setExporting(false);
-    }
-  };
+ );
+ } catch (err) {
+ const message = err instanceof Error ? err.message : String(err);
+ logger.error("PointsLedger", "CSV export failed", message);
+ showError("Export failed", message);
+ } finally {
+ setExporting(false);
+ }
+ };
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user?.id) return;
-      setLoading(true);
-      try {
-        // One bounded window per user; page changes and date-range filters
-        // are applied client-side below, so they cost no further requests.
-        const result = await getTransactions(user.id, {
-          limit: LEDGER_WINDOW,
-        });
-        setResponse(result);
-        setLoadError(null);
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to load point ledger";
-        logger.error("PointsLedger", "Failed to load point ledger", message);
-        setLoadError(message);
-        setResponse(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user?.id]);
+ useEffect(() => {
+ const load = async () => {
+ if (!user?.id) return;
+ setLoading(true);
+ try {
+ // One bounded window per user; page changes and date-range filters
+ // are applied client-side below, so they cost no further requests.
+ const result = await getTransactions(user.id, {
+ limit: LEDGER_WINDOW,
+ });
+ setResponse(result);
+ setLoadError(null);
+ } catch (err) {
+ const message =
+ err instanceof Error ? err.message : "Failed to load point ledger";
+ logger.error("PointsLedger", "Failed to load point ledger", message);
+ setLoadError(message);
+ setResponse(null);
+ } finally {
+ setLoading(false);
+ }
+ };
+ load();
+ }, [user?.id]);
 
-  const cutoff = cutoffFor(dateRange);
-  const windowEntries = response?.transactions || [];
-  const windowTruncated = windowEntries.length >= LEDGER_WINDOW;
-  const filtered = windowEntries.filter((tx) =>
-    cutoff ? new Date(tx.createdAt).getTime() >= cutoff : true,
-  );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  // Clamp so shrinking the filter while deep in the list can't strand the
-  // pager on an empty page.
-  const currentPage = Math.min(page, totalPages);
-  const transactions = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+ const cutoff = cutoffFor(dateRange);
+ const windowEntries = response?.transactions || [];
+ const windowTruncated = windowEntries.length >= LEDGER_WINDOW;
+ const filtered = windowEntries.filter((tx) =>
+ cutoff ? new Date(tx.createdAt).getTime() >= cutoff : true,
+ );
+ const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+ // Clamp so shrinking the filter while deep in the list can't strand the
+ // pager on an empty page.
+ const currentPage = Math.min(page, totalPages);
+ const transactions = filtered.slice(
+ (currentPage - 1) * PAGE_SIZE,
+ currentPage * PAGE_SIZE,
+ );
 
-  return (
-    <div className={pageClass}>
-      <div className={headerClass}>
-        <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
-            Point ledger
-          </h1>
-          <p className="text-sm text-[var(--t3)]">
-            Every gameplay point movement recorded for review.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="none"
-            className="min-h-11 px-4 text-[13px]"
-            onClick={handleExportCSV}
-            disabled={exporting}
-          >
-            {exporting ? "Exporting…" : "Export CSV"}
-          </Button>
-          <Link href="/account" className={backClass}>
-            Back to account
-          </Link>
-        </div>
-      </div>
+ return (
+ <div className={pageClass}>
+ <div className={headerClass}>
+ <div>
+ <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
+ Point ledger
+ </h1>
+ <p className="text-sm text-[var(--t3)]">
+ Every gameplay point movement recorded for review.
+ </p>
+ </div>
+ <div className="flex items-center gap-2">
+ <Button
+ type="button"
+ variant="secondary"
+ size="none"
+ className="min-h-11 px-4 text-[13px]"
+ onClick={handleExportCSV}
+ disabled={exporting}
+ >
+ {exporting ? "Exporting…" : "Export CSV"}
+ </Button>
+ <Link href="/account" className={backClass}>
+ Back to account
+ </Link>
+ </div>
+ </div>
 
-      <div className="mb-6">
-        <span
-          id="tx-date-range-label"
-          className="mb-2 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]"
-        >
-          Date range
-        </span>
-        {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
-        <div
-          className="flex flex-wrap gap-2"
-          role="group"
-          aria-labelledby="tx-date-range-label"
-        >
-          {(["all", "24h", "week", "month", "3m", "6m", "year"] as const).map(
-            (r) => (
-              <button
-                type="button"
-                key={r}
-                className={filterButtonClass(dateRange === r)}
-                onClick={() => {
-                  setDateRange(r);
-                  setPage(1);
-                }}
-              >
-                {r === "all"
-                  ? "All time"
-                  : r === "24h"
-                    ? "Last 24h"
-                    : r === "week"
-                      ? "Last week"
-                      : r === "month"
-                        ? "Last month"
-                        : r === "3m"
-                          ? "Last 3 months"
-                          : r === "6m"
-                            ? "Last 6 months"
-                            : "Last year"}
-              </button>
-            ),
-          )}
-        </div>
-      </div>
+ <div className="mb-6">
+ <span
+ id="tx-date-range-label"
+ className="mb-2 block text-[12px] font-semibold text-[var(--t3)]"
+ >
+ Date range
+ </span>
+ {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass (fieldset layout quirks) */}
+ <div
+ className="flex flex-wrap gap-2"
+ role="group"
+ aria-labelledby="tx-date-range-label"
+ >
+ {(["all", "24h", "week", "month", "3m", "6m", "year"] as const).map(
+ (r) => (
+ <button
+ type="button"
+ key={r}
+ className={filterButtonClass(dateRange === r)}
+ onClick={() => {
+ setDateRange(r);
+ setPage(1);
+ }}
+ >
+ {r === "all"
+ ? "All time"
+ : r === "24h"
+ ? "Last 24h"
+ : r === "week"
+ ? "Last week"
+ : r === "month"
+ ? "Last month"
+ : r === "3m"
+ ? "Last 3 months"
+ : r === "6m"
+ ? "Last 6 months"
+ : "Last year"}
+ </button>
+ ),
+ )}
+ </div>
+ </div>
 
-      <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
-        {loading ? (
-          <div className="p-10 text-center text-sm text-[var(--t3)]">
-            Loading point ledger…
-          </div>
-        ) : loadError ? (
-          <div className="p-10 text-center text-sm text-[var(--t3)]">
-            Point ledger is temporarily unavailable.
-          </div>
-        ) : transactions.length === 0 ? (
-          <LedgerEmptyState />
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead className="border-b border-[var(--border-1)] bg-[var(--surface-2)]">
-                  <tr>
-                    <th className={tableHeadCellClass}>Date</th>
-                    <th className={tableHeadCellClass}>Movement</th>
-                    <th className={tableHeadCellClass}>Delta</th>
-                    <th className={tableHeadCellClass}>Points after</th>
-                    <th className={tableHeadCellClass}>Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((tx) => {
-                    const positive = isPositivePointMovement(tx);
-                    return (
-                      <tr
-                        key={tx.transactionId}
-                        className="hover:bg-[var(--surface-2)]"
-                      >
-                        <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>
+ <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
+ {loading ? (
+ <div className="p-10 text-center text-sm text-[var(--t3)]">
+ Loading point ledger…
+ </div>
+ ) : loadError ? (
+ <div className="p-10 text-center text-sm text-[var(--t3)]">
+ Point ledger is temporarily unavailable.
+ </div>
+ ) : transactions.length === 0 ? (
+ <LedgerEmptyState />
+ ) : (
+ <>
+ <div className="overflow-x-auto">
+ <table className="w-full border-collapse">
+ <thead className="border-b border-[var(--border-1)] bg-[var(--surface-2)]">
+ <tr>
+ <th className={tableHeadCellClass}>Date</th>
+ <th className={tableHeadCellClass}>Movement</th>
+ <th className={tableHeadCellClass}>Delta</th>
+ <th className={tableHeadCellClass}>Points after</th>
+ <th className={tableHeadCellClass}>Reason</th>
+ </tr>
+ </thead>
+ <tbody>
+ {transactions.map((tx) => {
+ const positive = isPositivePointMovement(tx);
+ return (
+ <tr
+ key={tx.transactionId}
+ className="hover:bg-[var(--surface-2)]"
+ >
+ <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>
                           {new Date(tx.createdAt).toLocaleString()}
                         </td>
                         <td className={tableCellClass}>

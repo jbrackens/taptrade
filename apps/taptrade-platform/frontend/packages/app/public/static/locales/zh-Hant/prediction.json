@@ -81,11 +81,6 @@
   "MARKET_ORDER": "市價",
   "MARKET_PAUSED_EXPLAINER": "該市場狀態為 {{status}}，交易已暫停。",
   "MARKET_RESOLVED_EXPLAINER": "This market resolved {{result}}. Winners received 100 points per share; losers 0 points.",
-  "MARKET_SENTIMENT_HEAVY_BACKING": "強力支持 • {{percentage}}% 認為是",
-  "MARKET_SENTIMENT_LEANING_NO": "偏向否 • {{percentage}}% 認為否",
-  "MARKET_SENTIMENT_LEANING_YES": "偏向是 • {{percentage}}% 認為是",
-  "MARKET_SENTIMENT_SPLIT_ROOM": "意見分歧 • 50/50 持平",
-  "MARKET_SENTIMENT_STRONG_DOUBT": "強烈懷疑 • {{percentage}}% 認為否",
   "MARKET_SETTLED_CLOSED": "該市場已結算，交易已關閉。",
   "MARKET_STATUS": "市場 {{status}}",
   "MARKET_UNAVAILABLE": "市場不可用",
@@ -289,5 +284,10 @@
   "PTS": "積分",
   "SOCIAL_COMMENTS_LABEL": "評論",
   "SOCIAL_FOLLOWERS_LABEL": "追蹤者",
-  "SOCIAL_FOLLOWING_LABEL": "追蹤中"
+  "SOCIAL_FOLLOWING_LABEL": "追蹤中",
+  "VOL_SHORT": "交易量",
+  "PTS_COUNT_one": "{{count}} 積分",
+  "PTS_COUNT_other": "{{count}} 積分",
+  "CLOSES_IN_SHORT": "{{time}} 後截止",
+  "CLOSES_IN_LABEL": "截止倒數"
 }

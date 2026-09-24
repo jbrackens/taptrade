@@ -21,10 +21,10 @@ export default function AppError({
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-5 py-10 text-center">
-      <p className="m-0 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--danger)]">
+      <p className="m-0 text-[12px] font-semibold text-[var(--danger)]">
         Error
       </p>
-      <h2 className="type-poster m-0 mt-3 text-[32px] text-[var(--t1)]">
+      <h2 className="type-poster m-0 mt-3 text-[28px] text-[var(--t1)]">
         Something went wrong
       </h2>
       <p className="mb-6 mt-3 max-w-[400px] text-sm leading-relaxed text-[var(--t2)]">

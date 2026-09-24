@@ -20,54 +20,54 @@ const STATE_CARD_CLASS = `${NEUTRAL_SURFACE_CLASS} mx-auto my-[60px] max-w-[560p
 const HEADER_CLASS = "mb-6 flex flex-wrap items-end justify-between gap-4";
 // The only pink on this page: the live eyebrow label.
 const EYEBROW_CLASS =
-  "mt-0 mb-1.5 inline-flex items-center gap-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--live-text)]";
-const TITLE_CLASS = "type-poster mt-0 mb-2 text-[32px] max-[640px]:text-[28px] text-[var(--t1)]";
+ "mt-0 mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-[var(--live-text)]";
+const TITLE_CLASS = "type-poster mt-0 mb-2 text-[28px] max-[640px]:text-[24px] text-[var(--t1)]";
 const SUB_CLASS = "m-0 max-w-[680px] text-sm leading-[1.5] text-[var(--t2)]";
 const PROVIDER_GRID_CLASS =
-  "mb-6 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1";
+ "mb-6 grid grid-cols-2 gap-3 max-[720px]:grid-cols-1";
 const PROVIDER_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4";
+ "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4";
 const PROVIDER_LABEL_CLASS = "mb-1 text-[13px] font-semibold text-[var(--t1)]";
 const PROVIDER_META_CLASS =
-  "text-[11px] leading-[1.5] text-[var(--t3)] font-mono";
+ "text-[11px] leading-[1.5] text-[var(--t3)] font-mono";
 const EVENT_GRID_CLASS = "grid gap-3";
 // Hover is a border step only — never a shadow or a lift.
 const EVENT_CARD_CLASS =
-  "group rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-0 transition-colors duration-150 hover:border-[var(--border-2)]";
+ "group rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-0 transition-colors duration-150 hover:border-[var(--border-2)]";
 const EVENT_META_CLASS =
-  "flex min-h-10 flex-wrap items-center gap-2 border-b border-[var(--border-1)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+ "flex min-h-10 flex-wrap items-center gap-2 border-b border-[var(--border-1)] px-4 py-2.5 text-[12px] font-semibold text-[var(--t3)]";
 const LIVE_PILL_CLASS =
-  "inline-flex items-center gap-1.5 rounded-[var(--r-rh-sm)] bg-[var(--live-soft)] px-2 py-1 text-[10px] font-bold text-[var(--live-text)]";
+ "inline-flex items-center gap-1.5 rounded-[var(--r-rh-sm)] bg-[var(--live-soft)] px-2 py-1 text-[12px] font-semibold text-[var(--live-text)]";
 const STATE_PILL_CLASS =
-  "inline-flex rounded-[var(--r-rh-sm)] bg-[var(--surface-2)] px-2 py-1 text-[10px] font-bold text-[var(--t2)]";
+ "inline-flex rounded-[var(--r-rh-sm)] bg-[var(--surface-2)] px-2 py-1 text-[12px] font-semibold text-[var(--t2)]";
 const EVENT_BODY_CLASS =
-  "grid grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] gap-5 px-4 py-4 max-[760px]:grid-cols-1 max-[640px]:gap-4 max-[640px]:px-3.5";
+ "grid grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)] gap-5 px-4 py-4 max-[760px]:grid-cols-1 max-[640px]:gap-4 max-[640px]:px-3.5";
 const MATCHUP_CLASS =
-  "m-0 line-clamp-2 text-[17px] font-semibold leading-[1.28] text-[var(--t1)]";
+ "m-0 line-clamp-2 text-[17px] font-semibold leading-[1.28] text-[var(--t1)]";
 const MARKET_STYLE_COPY_CLASS =
-  "mt-1.5 text-[12px] leading-[1.35] text-[var(--t3)]";
+ "mt-1.5 text-[12px] leading-[1.35] text-[var(--t3)]";
 const SIDE_PANEL_CLASS =
-  "grid gap-2 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-2)] p-2.5";
+ "grid gap-2 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-2)] p-2.5";
 const SIDE_ROW_CLASS =
-  "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-[var(--r-rh-md)] bg-[var(--surface-1)] px-3 py-2";
+ "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-[var(--r-rh-md)] bg-[var(--surface-1)] px-3 py-2";
 const SIDE_LABEL_CLASS =
-  "min-w-0 truncate text-[13px] font-semibold text-[var(--t1)]";
+ "min-w-0 truncate text-[13px] font-semibold text-[var(--t1)]";
 const SIDE_SCORE_CLASS =
-  "font-mono text-[14px] font-bold tabular-nums text-[var(--t1)]";
+ "font-mono text-[14px] font-semibold tabular-nums text-[var(--t1)]";
 const DETAIL_ROW_CLASS =
-  "mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
+ "mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--t3)]";
 const FOOTER_CLASS =
-  "border-t border-[var(--border-1)] px-4 py-3 text-[12px] text-[var(--t3)]";
+ "border-t border-[var(--border-1)] px-4 py-3 text-[12px] text-[var(--t3)]";
 
 type LiveState = {
-  events: LiveMarketEvent[];
-  providers: LiveProviderStatus[];
-  generatedAt: string;
+ events: LiveMarketEvent[];
+ providers: LiveProviderStatus[];
+ generatedAt: string;
 };
 
 function statusLabel(provider: LiveProviderStatus): string {
-  if (provider.state === "connected" && provider.lastMessageAt) {
-    return `connected · message ${timeAgo(provider.lastMessageAt)}`;
+ if (provider.state === "connected" && provider.lastMessageAt) {
+ return`connected · message ${timeAgo(provider.lastMessageAt)}`;
   }
   if (provider.state === "connected") return "connected";
   if (provider.state === "not_configured") return "not configured";

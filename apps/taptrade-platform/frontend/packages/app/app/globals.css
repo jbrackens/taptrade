@@ -5,36 +5,30 @@
  * Next.js's App Router directory layout. */
 @import "tailwindcss";
 
-/* ── Tap Trade type system (Kilig, 2026-09-24) ─────────────────────────
- * Three faces, three jobs, all self-hosted by next/font/google in
- * layout.tsx (no runtime third-party font requests):
- *   - Instrument Sans (--font-instrument-sans): UI, body, market
- *     questions. Tailwind `font-sans` and the preflight default.
- *   - Big Shoulders (--font-big-shoulders): poster type. Uppercase page
- *     heroes, lead-moment headlines, section titles, poster tiles. Its
- *     opsz axis selects the Display cut automatically at large sizes.
- *     Use `.type-poster` / Tailwind `font-poster`; never for questions or
- *     body copy, and never for data numerals.
- *   - Martian Mono (--font-martian-mono): EVERY comparable numeral
- *     (prices, points, counts, dates, tickers) with tabular figures.
- *     Tailwind `font-mono` / `.mono`. Width axis: 87.5 default, 112.5
- *     (`.mono-wide`) for hero numbers, 75 (`.mono-tight`) for dense tables.
- * Retired: Switzer (self-hosted woff2) and Geist Mono. */
+/* ── Tap Trade type system (2026-09-24, revised) ──────────────────────
+ * One face: Inter, self-hosted by next/font/google in layout.tsx.
+ * Hierarchy comes from size, weight and colour, never from a second
+ * display face or all-caps. Numbers use Inter's tabular figures
+ * (`font-mono` / `.mono` are kept as the "numeric" utilities so existing
+ * markup lines up digits; they no longer switch to a monospace face).
+ * Retired: Big Shoulders (poster), Martian Mono, Instrument Sans,
+ * Switzer, Geist Mono. */
 
 @theme {
-  --font-sans:
-    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono:
-    var(--font-martian-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-poster:
-    var(--font-big-shoulders), var(--font-instrument-sans), sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-mono: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-poster: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  /* Display headings that are not poster type (market questions, page
-   * titles in sentence case) stay in the UI face; hierarchy comes from
-   * size, weight and tracking. */
-  --font-display: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .type-display {
@@ -42,13 +36,14 @@
   letter-spacing: -0.02em;
 }
 
-/* Poster type: the broadcast voice. Uppercase, tight, heavy. */
+/* Heading voice (the old poster class name, kept so every heading that
+ * used it moves together): semibold, tight, sentence case. */
 .type-poster {
-  font-family: var(--font-poster);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.005em;
-  line-height: 0.9;
+  font-family: var(--font-display);
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
 }
 
 @source "./";
@@ -159,24 +154,35 @@ body {
   --border-1: var(--hairline);
   --border-2: var(--hairline-strong);
 
-  /* Elevation: none at rest. Structure comes from hairlines and space;
-   * hover is a border step, never a shadow or background change. Only
-   * floating layers (sheets, toasts, the mobile trade CTA) cast depth. */
-  --shadow-card: none;
-  --shadow-card-hover: none;
+  /* Elevation: a whisper at rest (cards read as objects on the paper),
+   * a small lift on hover. Floating layers (sheets, toasts, the mobile
+   * trade CTA) use --shadow-pop. */
+  --shadow-card: 0 1px 2px rgba(17, 17, 20, 0.04);
+  --shadow-card-hover:
+    0 1px 2px rgba(17, 17, 20, 0.04), 0 6px 16px -4px rgba(17, 17, 20, 0.08);
   --shadow-pop:
     0 2px 6px rgba(17, 17, 20, 0.06), 0 24px 56px -20px rgba(17, 17, 20, 0.22);
 
-  /* One radius language: 4 · 6 controls · 8 cards · 12 sheets. The three
-   * historical scales now resolve onto it. */
-  --r-rh-sm: 4px;
-  --r-rh-md: 6px;
-  --r-rh-lg: 8px;
-  --r-rh-xl: 12px;
+  /* Radius: 6 tags · 8 controls · 12 cards · 16 sheets. The three
+   * historical scales resolve onto it. */
+  --r-rh-sm: 6px;
+  --r-rh-md: 8px;
+  --r-rh-lg: 12px;
+  --r-rh-xl: 16px;
   --r-sm: 6px;
   --r-md: 8px;
   --r-lg: 12px;
-  --r-xl: 12px;
+  --r-xl: 16px;
+
+  /* Category tints for market icon tiles. Deliberately clear of YES blue
+   * and NO orange so direction colour stays unambiguous. */
+  --cat-politics: #475569;
+  --cat-sports: #15803d;
+  --cat-esports: #7c3aed;
+  --cat-entertainment: #d61f69;
+  --cat-tech: #0f766e;
+  --cat-economics: #a16207;
+  --cat-general: #3c3c44;
   --r-pill: 999px;
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -399,25 +405,22 @@ body {
   outline-offset: 2px;
 }
 
-/* Mono utility for prices/volumes/tabular numbers. Every comparable
-   * numeral is Martian Mono with tabular figures, so "41 pts" and
-   * "59 pts" sit at the same width. The Tailwind `font-mono` utility gets
-   * the same guarantee. Width 87.5 keeps numbers compact in UI; widen for
-   * hero numbers, narrow for dense tables. */
+/* Numeric utilities: tabular figures so "41 pts" and "59 pts" line up.
+ * Same face as the UI (Inter); `.mono-wide` / `.mono-tight` are no-ops
+ * kept for markup compatibility. */
 .mono {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  font-variation-settings: "wdth" 87.5;
 }
 .font-mono {
   font-variant-numeric: tabular-nums;
-  font-variation-settings: "wdth" 87.5;
+  letter-spacing: 0;
 }
 .mono-wide {
-  font-variation-settings: "wdth" 112.5;
+  font-variant-numeric: tabular-nums;
 }
 .mono-tight {
-  font-variation-settings: "wdth" 75;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Landing-page entrance motion (marketing `/` only). Ease-out rise for the
@@ -517,12 +520,11 @@ body {
 .content-page-body h1 {
   margin: 0 0 10px;
   color: var(--t1);
-  font-family: var(--font-poster);
-  font-size: clamp(40px, 6vw, 64px);
-  line-height: 0.92;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.005em;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1.12;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 .content-page-body {
   color: var(--t2);
@@ -622,21 +624,21 @@ body {
   }
 }
 .not-found-code {
-  font-family: var(--font-mono);
-  font-variation-settings: "wdth" 112.5;
-  font-size: 112px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 96px;
+  font-weight: 700;
   color: var(--t1);
   line-height: 1;
   letter-spacing: -0.05em;
   margin-bottom: 8px;
 }
 .not-found-title {
-  font-family: var(--font-poster);
-  font-size: 40px;
-  font-weight: 800;
-  line-height: 0.95;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--t1);
   margin-bottom: 8px;
 }

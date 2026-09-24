@@ -1,12 +1,20 @@
 "use client";
 
+/**
+ * MarketCard — one binary market in the discovery grid.
+ *
+ * Anatomy (the Kalshi / Polymarket card): the market's image tile and
+ * question on top with the YES chance at the right, the two direction
+ * buttons, then one quiet line of volume and close date. Everything is a
+ * single typeface; numbers use tabular figures.
+ */
+
 import Link from "next/link";
+import { BookmarkSimpleIcon as BookmarkSimple } from "@phosphor-icons/react/dist/csr/BookmarkSimple";
 import { useTranslation } from "react-i18next";
 import { formatCompactPoints } from "../../lib/points";
 import { isOpenMarketStatus, marketStatusLabel } from "./market-display";
-import { PosterTile } from "./PosterTile";
-
-export type MarketCardSize = "standard" | "wide";
+import { MarketThumb } from "./MarketThumb";
 
 interface MarketCardProps {
   marketId: string;
@@ -18,18 +26,12 @@ interface MarketCardProps {
   closeAt: string;
   status: string;
   categoryLabel?: string;
+  categorySlug?: string;
   imagePath?: string | null;
   imageUrl?: string | null;
   image_url?: string | null;
   watched?: boolean;
   onToggleWatchlist?: (marketId: string) => void;
-  /** Position in the current discovery result set (one-based). */
-  rank?: number;
-  /**
-   * Kilig mixed grid: "wide" spans two columns and leads with a poster
-   * tile; "standard" is the typographic card.
-   */
-  size?: MarketCardSize;
   /**
    * When set, YES/NO open an in-place trade panel instead of navigating to
    * the market page with `?side=` preselected.
@@ -38,13 +40,13 @@ interface MarketCardProps {
 }
 
 function formatCloseAt(iso: string): string {
-  return new Date(iso)
-    .toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-    .toUpperCase();
+  const date = new Date(iso);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  });
 }
 
 function clampPercentage(value: number): number {
@@ -52,16 +54,15 @@ function clampPercentage(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
-// Soft direction chips: tinted at rest, filled on hover/press. The side
-// colour is the only colour on the card besides the pink trending dot.
 const SIDE_BUTTON_CLASS =
-  "flex min-h-10 cursor-pointer items-center justify-between rounded-[var(--r-rh-md)] border-0 px-3 font-sans text-[13px] font-bold tracking-[0.01em] no-underline transition-[background-color,color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:scale-[0.98] max-[640px]:min-h-11";
+  "flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-3 text-[14px] font-semibold no-underline transition-[background-color,color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:scale-[0.98] max-[640px]:h-11";
 const SIDE_TONE: Record<"yes" | "no", string> = {
   yes: "bg-[var(--yes-soft)] text-[var(--yes-text)] hover:bg-[var(--yes)] hover:text-[var(--on-ink)]",
   no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
 };
 
 export function MarketCard({
+  marketId,
   ticker,
   title,
   yesPricePoints,
@@ -70,11 +71,12 @@ export function MarketCard({
   closeAt,
   status,
   categoryLabel,
+  categorySlug,
   imagePath,
   imageUrl,
   image_url,
-  rank = 1,
-  size = "standard",
+  watched = false,
+  onToggleWatchlist,
   onQuickTrade,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
@@ -83,103 +85,41 @@ export function MarketCard({
   const quickTrade = isOpen ? onQuickTrade : undefined;
   const yesPercentage = clampPercentage(yesPricePoints);
   const noPercentage = clampPercentage(noPricePoints);
-  const rankLabel = String(Math.max(1, Math.round(rank))).padStart(2, "0");
-  const wide = size === "wide";
   const photo = [imagePath, imageUrl, image_url].find(
     (value) => value && value.trim().length > 0,
   );
   const closingLabel = isOpen
     ? `${t("CLOSES", "Closes")} ${formatCloseAt(closeAt)}`
-    : `${t("STATUS", "Status")} ${marketStatusLabel(status, t)}`;
+    : marketStatusLabel(status, t);
 
   return (
     <article
       data-testid="market-card"
-      data-size={size}
-      className={`relative flex h-full flex-col min-[641px]:min-h-[236px] overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] font-sans text-[var(--t1)] transition-[border-color] duration-150 hover:border-[var(--border-2)] focus-within:border-[var(--t3)] ${
-        // Wide: poster beside the content (same row height as its
-        // neighbours); stacked on phones.
-        wide ? "min-[641px]:grid min-[641px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]" : ""
-      }`}
+      className="group relative flex h-full flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--t3)]"
     >
-      {wide && (
-        <PosterTile
-          title={title}
-          categoryLabel={categoryLabel}
-          size="wide"
-          imageUrl={photo}
-          className="min-[641px]:h-full"
-        >
-          {/* The 132px phone tile has no headroom above the poster word,
-              and the card body already names the category. */}
-          <span className="absolute left-3 top-3 inline-flex h-6 items-center rounded-full max-[640px]:hidden border border-[rgb(255_255_255/0.16)] bg-[rgb(255_255_255/0.1)] px-2.5 text-[11.5px] font-semibold text-[var(--poster-ink)]">
-            {categoryLabel ?? t("MARKET", "Market")}
-          </span>
-        </PosterTile>
-      )}
-
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <Link
         href={`/market/${ticker}`}
-        className="flex min-h-0 flex-1 flex-col px-4 pt-4 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)]"
+        className="flex items-start gap-3 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
         aria-label={title}
       >
-        <div className="flex h-5 items-center justify-between gap-3 text-[12px] font-semibold text-[var(--t3)]">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="font-mono text-[11px] text-[var(--t3)]">{rankLabel}</span>
-            <span className="truncate">{categoryLabel ?? t("MARKET", "Market")}</span>
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-1.5 text-[var(--live-text)]">
-            <span
-              className="h-1.5 w-1.5 rounded-full bg-[var(--live)]"
-              aria-hidden="true"
-            />
-            {t("TRENDING", "Trending")}
-          </span>
-        </div>
-
-        <h3
-          className={`m-0 mt-2 overflow-hidden font-semibold leading-[1.28] tracking-[-0.012em] text-[var(--t1)] ${
-            wide ? "text-[19px]" : "min-h-[42px] text-[16px]"
-          }`}
-          style={{
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 2,
-          }}
-        >
+        <MarketThumb categorySlug={categorySlug} imageUrl={photo} size={40} />
+        <h3 className="m-0 line-clamp-3 min-h-[38px] min-w-0 flex-1 text-[14.5px] font-semibold leading-[1.32] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
           {title}
         </h3>
-
-        <div className="mt-auto pt-4">
-          <div className="flex items-baseline gap-2">
-            <span className="mono mono-wide text-[26px] font-semibold leading-none tracking-[-0.04em] text-[var(--t1)]">
-              {yesPercentage}%
-            </span>
-            <span className="text-[12px] text-[var(--t3)]">
-              {t("CHANCE", "chance")}
-            </span>
-          </div>
-          <span
-            className="mt-2.5 flex h-1.5 gap-[2px]"
-            role="img"
-            aria-label={`${yesPercentage}% ${t("YES")}`}
-          >
-            <span
-              className="h-full rounded-[var(--r-pill)] bg-[var(--yes)]"
-              style={{ width: `${yesPercentage}%` }}
-            />
-            <span className="h-full min-w-0 flex-1 rounded-[var(--r-pill)] bg-[var(--no-bar)]" />
+        <span className="flex shrink-0 flex-col items-end pl-1">
+          <span className="text-[20px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[var(--t1)]">
+            {yesPercentage}%
           </span>
-          <p className="m-0 mt-2.5 truncate font-mono text-[11px] text-[var(--t3)]">
-            {closingLabel} · {formatCompactPoints(volumePoints)} {t("ACTIVITY", "activity")}
-          </p>
-        </div>
+          <span className="mt-1 text-[11px] font-medium text-[var(--t3)]">
+            {t("CHANCE", "chance")}
+          </span>
+        </span>
       </Link>
 
-      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-3">
+      <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
         {(["yes", "no"] as const).map((side) => {
           const percentage = side === "yes" ? yesPercentage : noPercentage;
+          const price = side === "yes" ? yesPricePoints : noPricePoints;
           const className = `${SIDE_BUTTON_CLASS} ${SIDE_TONE[side]}`;
           const ariaLabel =
             side === "yes"
@@ -188,7 +128,9 @@ export function MarketCard({
           const content = (
             <>
               <span>{side === "yes" ? t("YES") : t("NO")}</span>
-              <span className="font-mono text-[12.5px] font-semibold">{percentage}</span>
+              <span className="text-[13px] font-medium tabular-nums opacity-80">
+                {t("PTS_COUNT", { count: price, defaultValue: `${price} pts` })}
+              </span>
             </>
           );
           return quickTrade ? (
@@ -214,6 +156,40 @@ export function MarketCard({
           );
         })}
       </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3 text-[12px] text-[var(--t3)]">
+        <span className="truncate tabular-nums">
+          {formatCompactPoints(volumePoints)} {t("VOL_SHORT", "vol")}
+        </span>
+        <span className="flex min-w-0 items-center gap-1">
+          <span className="truncate text-right">
+            {categoryLabel ? `${categoryLabel} · ` : ""}
+            {closingLabel}
+          </span>
+          {/* Save to watchlist — shown wherever the host wires watchlist
+              state (the catalog view). */}
+          {onToggleWatchlist && (
+            <button
+              type="button"
+              aria-pressed={watched}
+              aria-label={
+                watched
+                  ? t("REMOVE_FROM_WATCHLIST", "Remove from watchlist")
+                  : t("ADD_TO_WATCHLIST", "Add to watchlist")
+              }
+              onClick={() => onToggleWatchlist(marketId)}
+              className={`-my-1.5 -mr-1.5 grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[var(--r-rh-md)] border-0 bg-transparent transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-11 max-[640px]:w-11 ${
+                watched ? "text-[var(--t1)]" : "text-[var(--t3)] hover:text-[var(--t1)]"
+              }`}
+            >
+              <BookmarkSimple
+                size={16}
+                weight={watched ? "fill" : "regular"}
+                aria-hidden="true"
+              />
+            </button>
+          )}
+        </span>
       </div>
     </article>
   );

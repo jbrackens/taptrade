@@ -53,11 +53,11 @@ const MONO =
 // (px-[18px] py-4) and layout stay per-usage below.
 const STAT_TILE_LAYOUT =
   "relative flex min-w-0 flex-col gap-1 px-[18px] py-4 text-[var(--t1)] no-underline font-sans";
-// Micro-label: mono, uppercase, tracked wide (DESIGN.md §4 eyebrow spec).
+// Label: small sentence-case (DESIGN.md §4).
 const STAT_LABEL =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-// Hero figure: mono-wide (112.5 width axis) — every comparable numeral in
-// the summary strip is Martian Mono, and this is the page's headline data.
+  "text-[12px] font-semibold text-[var(--t3)]";
+// Hero figure: tabular figures so every comparable numeral in the summary
+// strip lines up; this is the page's headline data.
 const STAT_VALUE = cx(
   MONO,
   "mono-wide truncate text-[22px] font-semibold tracking-normal text-[var(--t1)]",
@@ -245,7 +245,7 @@ export default function PortfolioPage() {
     <div className="mx-auto max-w-[1280px] pb-[60px]">
       <header className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="type-poster m-0 mb-1 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+          <h1 className="type-poster m-0 mb-1 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
             {t("title", "Portfolio")}
           </h1>
           <p className="m-0 text-[13px] text-[var(--t3)]">
@@ -911,60 +911,60 @@ function MarketCell({
   const title = link ? (
     <Link
       href={`/market/${market.ticker}`}
-      className="truncate text-[14px] font-medium leading-[1.35] text-[var(--t1)] no-underline hover:underline font-sans"
-    >
-      {displayMarket.title}
-    </Link>
-  ) : (
-    <span className="truncate text-[13px] font-semibold text-[var(--t1)] font-sans">
-      {displayMarket.title}
-    </span>
-  );
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-      {title}
-      <span
-        className={cx(
-          MONO,
-          "text-[10px] uppercase tracking-normal text-[var(--t3)]",
-        )}
-      >
-        {displayMarket.ticker}
-      </span>
-    </div>
-  );
+ className="truncate text-[14px] font-medium leading-[1.35] text-[var(--t1)] no-underline hover:underline font-sans"
+ >
+ {displayMarket.title}
+ </Link>
+ ) : (
+ <span className="truncate text-[13px] font-semibold text-[var(--t1)] font-sans">
+ {displayMarket.title}
+ </span>
+ );
+ return (
+ <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+ {title}
+ <span
+ className={cx(
+ MONO,
+ "text-[10px] tracking-normal text-[var(--t3)]",
+ )}
+ >
+ {displayMarket.ticker}
+ </span>
+ </div>
+ );
 }
 
 function ThreeUp({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <div className="text-[10px] font-medium text-[var(--t3)]">{label}</div>
-      <div className={cx(MONO, "mt-0.5 truncate text-[13px] font-medium text-[var(--t2)]")}>
-        {value}
-      </div>
-    </div>
-  );
+ return (
+ <div className="min-w-0">
+ <div className="text-[10px] font-medium text-[var(--t3)]">{label}</div>
+ <div className={cx(MONO, "mt-0.5 truncate text-[13px] font-medium text-[var(--t2)]")}>
+ {value}
+ </div>
+ </div>
+ );
 }
 
 function SideChip({ side }: { side: "yes" | "no" }) {
-  const { t } = useTranslation("portfolio");
-  return (
-    <span
-      className={cx(
-        "inline-block rounded-[var(--r-sm)] px-2 py-[3px] text-[10px] font-bold tracking-normal",
-        side === "yes"
-          ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
-          : "bg-[var(--no-soft)] text-[var(--no-text)]",
-      )}
-    >
-      {side === "yes" ? t("side.yes", "YES") : t("side.no", "NO")}
-    </span>
-  );
+ const { t } = useTranslation("portfolio");
+ return (
+ <span
+ className={cx(
+ "inline-block rounded-[var(--r-sm)] px-2 py-[3px] text-[12px] font-semibold tracking-normal",
+ side === "yes"
+ ? "bg-[var(--yes-soft)] text-[var(--yes-text)]"
+ : "bg-[var(--no-soft)] text-[var(--no-text)]",
+ )}
+ >
+ {side === "yes" ? t("side.yes", "YES") : t("side.no", "NO")}
+ </span>
+ );
 }
 
 /**
  * Map raw failure_reason enum values from the gateway into short
- * user-readable phrases. Mirrors the Go-side `Failure*` constants in
+ * user-readable phrases. Mirrors the Go-side`Failure*` constants in
  * internal/prediction/types.go. Unknown reasons fall through as-is so
  * future additions don't render blank.
  */

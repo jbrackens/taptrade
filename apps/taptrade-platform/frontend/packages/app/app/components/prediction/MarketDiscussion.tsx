@@ -28,167 +28,167 @@ const COMMENT_CLASS =
   "border-t border-[var(--border-1)] pt-3 first:border-t-0 first:pt-0";
 const REPLY_CLASS = `${COMMENT_CLASS} ml-5 border-l border-l-[var(--border-1)] pl-4`;
 const META_CLASS =
-  "mb-1 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.06em] text-[var(--t3)]";
+ "mb-1 flex flex-wrap items-center gap-2 text-[12px] text-[var(--t3)]";
 const BODY_CLASS =
-  "m-0 whitespace-pre-wrap text-sm leading-[1.55] text-[var(--t1)]";
+ "m-0 whitespace-pre-wrap text-sm leading-[1.55] text-[var(--t1)]";
 const ACTIONS_CLASS = "mt-2 flex flex-wrap items-center gap-2";
 const EMPTY_CLASS = "py-6 text-center text-sm text-[var(--t3)]";
 
 interface MarketDiscussionProps {
-  marketId: string;
-  isAuthenticated: boolean;
-  authLoading: boolean;
-  /**
-   * Step 11: whether the viewer currently holds a position on this
-   * market — gates the disclose checkbox (the gateway re-checks; a
-   * checked box with nothing held posts chipless).
-   */
-  canDisclosePosition?: boolean;
+ marketId: string;
+ isAuthenticated: boolean;
+ authLoading: boolean;
+ /**
+ * Step 11: whether the viewer currently holds a position on this
+ * market — gates the disclose checkbox (the gateway re-checks; a
+ * checked box with nothing held posts chipless).
+ */
+ canDisclosePosition?: boolean;
 }
 
 export default function MarketDiscussion({
-  marketId,
-  isAuthenticated,
-  authLoading,
-  canDisclosePosition = false,
+ marketId,
+ isAuthenticated,
+ authLoading,
+ canDisclosePosition = false,
 }: MarketDiscussionProps) {
-  const { t } = useTranslation("prediction");
-  const [comments, setComments] = useState<MarketComment[]>([]);
-  const [body, setBody] = useState("");
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  // Opt-in, UNCHECKED by default, and the author decides per comment —
-  // the flag resets after every post rather than persisting.
-  const [disclosePosition, setDisclosePosition] = useState(false);
+ const { t } = useTranslation("prediction");
+ const [comments, setComments] = useState<MarketComment[]>([]);
+ const [body, setBody] = useState("");
+ const [replyTo, setReplyTo] = useState<string | null>(null);
+ const [loading, setLoading] = useState(true);
+ const [saving, setSaving] = useState(false);
+ const [message, setMessage] = useState<string | null>(null);
+ // Opt-in, UNCHECKED by default, and the author decides per comment —
+ // the flag resets after every post rather than persisting.
+ const [disclosePosition, setDisclosePosition] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      setComments(await getMarketComments(marketId, 50));
-      setMessage(null);
-    } catch (err) {
-      logger.warn("MarketDiscussion", "comments fetch failed", err);
-      setMessage(t("DISCUSSION_LOAD_FAILED", "Discussion could not load."));
-    } finally {
-      setLoading(false);
-    }
-  }, [marketId, t]);
+ const load = useCallback(async () => {
+ try {
+ setLoading(true);
+ setComments(await getMarketComments(marketId, 50));
+ setMessage(null);
+ } catch (err) {
+ logger.warn("MarketDiscussion", "comments fetch failed", err);
+ setMessage(t("DISCUSSION_LOAD_FAILED", "Discussion could not load."));
+ } finally {
+ setLoading(false);
+ }
+ }, [marketId, t]);
 
-  useEffect(() => {
-    // The social comments endpoint is session-authenticated — an anonymous
-    // fetch is a guaranteed 401 (console noise on every logged-out market
-    // view). Match the live-prices precedent: signed-out visitors see the
-    // sign-in hint instead of a doomed request.
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      setComments([]);
-      setLoading(false);
-      setMessage(null);
-      return;
-    }
-    void load();
-  }, [load, authLoading, isAuthenticated]);
+ useEffect(() => {
+ // The social comments endpoint is session-authenticated — an anonymous
+ // fetch is a guaranteed 401 (console noise on every logged-out market
+ // view). Match the live-prices precedent: signed-out visitors see the
+ // sign-in hint instead of a doomed request.
+ if (authLoading) return;
+ if (!isAuthenticated) {
+ setComments([]);
+ setLoading(false);
+ setMessage(null);
+ return;
+ }
+ void load();
+ }, [load, authLoading, isAuthenticated]);
 
-  async function submitComment() {
-    if (!isAuthenticated || authLoading || saving) return;
-    const trimmed = body.trim();
-    if (trimmed.length < 2) return;
-    setSaving(true);
-    try {
-      const created = await createMarketComment(
-        marketId,
-        trimmed,
-        replyTo ?? undefined,
-        disclosePosition && canDisclosePosition,
-      );
-      setComments((prev) => [created, ...prev]);
-      setBody("");
-      setReplyTo(null);
-      setDisclosePosition(false);
-      setMessage(t("DISCUSSION_POSTED", "Posted."));
-    } catch (err) {
-      logger.warn("MarketDiscussion", "comment create failed", err);
-      setMessage(t("DISCUSSION_POST_FAILED", "Comment could not be posted."));
-    } finally {
-      setSaving(false);
-    }
-  }
+ async function submitComment() {
+ if (!isAuthenticated || authLoading || saving) return;
+ const trimmed = body.trim();
+ if (trimmed.length < 2) return;
+ setSaving(true);
+ try {
+ const created = await createMarketComment(
+ marketId,
+ trimmed,
+ replyTo ?? undefined,
+ disclosePosition && canDisclosePosition,
+ );
+ setComments((prev) => [created, ...prev]);
+ setBody("");
+ setReplyTo(null);
+ setDisclosePosition(false);
+ setMessage(t("DISCUSSION_POSTED", "Posted."));
+ } catch (err) {
+ logger.warn("MarketDiscussion", "comment create failed", err);
+ setMessage(t("DISCUSSION_POST_FAILED", "Comment could not be posted."));
+ } finally {
+ setSaving(false);
+ }
+ }
 
-  async function updateComment(
-    commentId: string,
-    updater: (id: string) => Promise<MarketComment>,
-  ) {
-    if (!isAuthenticated || authLoading) return;
-    try {
-      const updated = await updater(commentId);
-      setComments((prev) =>
-        prev.map((comment) => (comment.id === updated.id ? updated : comment)),
-      );
-    } catch (err) {
-      logger.warn("MarketDiscussion", "comment update failed", err);
-      setMessage(
-        t("DISCUSSION_UPDATE_FAILED", "Action could not be recorded."),
-      );
-    }
-  }
+ async function updateComment(
+ commentId: string,
+ updater: (id: string) => Promise<MarketComment>,
+ ) {
+ if (!isAuthenticated || authLoading) return;
+ try {
+ const updated = await updater(commentId);
+ setComments((prev) =>
+ prev.map((comment) => (comment.id === updated.id ? updated : comment)),
+ );
+ } catch (err) {
+ logger.warn("MarketDiscussion", "comment update failed", err);
+ setMessage(
+ t("DISCUSSION_UPDATE_FAILED", "Action could not be recorded."),
+ );
+ }
+ }
 
-  async function followUser(userId: string) {
-    if (!isAuthenticated || authLoading) return;
-    try {
-      const profile = await followSocialUser(userId);
-      setMessage(
-        t("DISCUSSION_FOLLOWED", "Following {{user}}.", {
-          user: profile.displayName || profile.userId,
-        }),
-      );
-    } catch (err) {
-      logger.warn("MarketDiscussion", "follow failed", err);
-      setMessage(
-        t("DISCUSSION_FOLLOW_FAILED", "Follow could not be recorded."),
-      );
-    }
-  }
+ async function followUser(userId: string) {
+ if (!isAuthenticated || authLoading) return;
+ try {
+ const profile = await followSocialUser(userId);
+ setMessage(
+ t("DISCUSSION_FOLLOWED", "Following {{user}}.", {
+ user: profile.displayName || profile.userId,
+ }),
+ );
+ } catch (err) {
+ logger.warn("MarketDiscussion", "follow failed", err);
+ setMessage(
+ t("DISCUSSION_FOLLOW_FAILED", "Follow could not be recorded."),
+ );
+ }
+ }
 
-  const composerHint = !isAuthenticated
-    ? t("DISCUSSION_SIGN_IN", "Sign in to join the market discussion.")
-    : replyTo
-      ? t("DISCUSSION_REPLYING", "Replying to a comment.")
-      : t(
-          "DISCUSSION_HINT",
-          "Share resolution sources, reasoning, or market context.",
-        );
+ const composerHint = !isAuthenticated
+ ? t("DISCUSSION_SIGN_IN", "Sign in to join the market discussion.")
+ : replyTo
+ ? t("DISCUSSION_REPLYING", "Replying to a comment.")
+ : t(
+ "DISCUSSION_HINT",
+ "Share resolution sources, reasoning, or market context.",
+ );
 
-  return (
-    <Card as="section" aria-labelledby="market-discussion-title">
-      <header className={HEAD_CLASS}>
-        <h2 id="market-discussion-title" className={TITLE_CLASS}>
-          {t("DISCUSSION_TITLE", "Discussion")}
-        </h2>
-        <div className="flex items-center gap-3">
-          <Link href="/activity" className={HEAD_LINK_CLASS}>
-            {t("DISCUSSION_ACTIVITY", "Activity feed")}
-          </Link>
-          <span className={COUNT_CLASS}>
-            {t("DISCUSSION_COUNT", "{{count}} comments", {
-              count: comments.length,
-            })}
-          </span>
-        </div>
-      </header>
+ return (
+ <Card as="section" aria-labelledby="market-discussion-title">
+ <header className={HEAD_CLASS}>
+ <h2 id="market-discussion-title" className={TITLE_CLASS}>
+ {t("DISCUSSION_TITLE", "Discussion")}
+ </h2>
+ <div className="flex items-center gap-3">
+ <Link href="/activity" className={HEAD_LINK_CLASS}>
+ {t("DISCUSSION_ACTIVITY", "Activity feed")}
+ </Link>
+ <span className={COUNT_CLASS}>
+ {t("DISCUSSION_COUNT", "{{count}} comments", {
+ count: comments.length,
+ })}
+ </span>
+ </div>
+ </header>
 
-      <div className={FORM_CLASS}>
-        <Textarea
-          value={body}
-          maxLength={500}
-          disabled={!isAuthenticated || authLoading || saving}
-          placeholder={composerHint}
-          onChange={(event) => setBody(event.target.value)}
-        />
-        {isAuthenticated && (
-          <label
-            className={`flex min-h-11 w-fit cursor-pointer items-center gap-2.5 text-[13px] ${
+ <div className={FORM_CLASS}>
+ <Textarea
+ value={body}
+ maxLength={500}
+ disabled={!isAuthenticated || authLoading || saving}
+ placeholder={composerHint}
+ onChange={(event) => setBody(event.target.value)}
+ />
+ {isAuthenticated && (
+ <label
+ className={`flex min-h-11 w-fit cursor-pointer items-center gap-2.5 text-[13px] ${
               canDisclosePosition ? "text-[var(--t2)]" : "text-[var(--t3)]"
             }`}
           >
@@ -273,7 +273,7 @@ export default function MarketDiscussion({
                       >
                         {t("POSITION_DISCLOSURE_CHIP", {
                           amount: entry.costPoints.toLocaleString(),
-                          side: entry.side.toUpperCase(),
+                          side: entry.side === "no" ? t("NO") : t("YES"),
                         })}
                       </span>
                     ))}

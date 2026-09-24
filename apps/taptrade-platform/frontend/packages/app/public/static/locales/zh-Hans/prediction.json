@@ -81,11 +81,6 @@
   "MARKET_ORDER": "市价",
   "MARKET_PAUSED_EXPLAINER": "该市场状态为 {{status}}，交易已暂停。",
   "MARKET_RESOLVED_EXPLAINER": "This market resolved {{result}}. Winners received 100 points per share; losers 0 points.",
-  "MARKET_SENTIMENT_HEAVY_BACKING": "强力支持 • {{percentage}}% 认为是",
-  "MARKET_SENTIMENT_LEANING_NO": "偏向否 • {{percentage}}% 认为否",
-  "MARKET_SENTIMENT_LEANING_YES": "偏向是 • {{percentage}}% 认为是",
-  "MARKET_SENTIMENT_SPLIT_ROOM": "意见分歧 • 50/50 持平",
-  "MARKET_SENTIMENT_STRONG_DOUBT": "强烈怀疑 • {{percentage}}% 认为否",
   "MARKET_SETTLED_CLOSED": "该市场已结算，交易已关闭。",
   "MARKET_STATUS": "市场 {{status}}",
   "MARKET_UNAVAILABLE": "市场不可用",
@@ -289,5 +284,10 @@
   "PTS": "积分",
   "SOCIAL_COMMENTS_LABEL": "评论",
   "SOCIAL_FOLLOWERS_LABEL": "关注者",
-  "SOCIAL_FOLLOWING_LABEL": "关注中"
+  "SOCIAL_FOLLOWING_LABEL": "关注中",
+  "VOL_SHORT": "交易量",
+  "PTS_COUNT_one": "{{count}} 积分",
+  "PTS_COUNT_other": "{{count}} 积分",
+  "CLOSES_IN_SHORT": "{{time}} 后截止",
+  "CLOSES_IN_LABEL": "截止倒计时"
 }

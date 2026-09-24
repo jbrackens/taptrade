@@ -27,7 +27,7 @@ function sourceLabel(key: string | undefined): string {
 }
 
 const EYEBROW_CLASS =
-  "font-mono text-[9px] font-semibold uppercase tracking-[0.13em] text-[var(--t3)]";
+  "text-[12px] font-semibold text-[var(--t3)]";
 
 const CARD_CHROME_CLASS =
   "rounded-[8px] border border-[var(--border-1)] bg-[var(--surface-1)] p-4";

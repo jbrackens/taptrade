@@ -36,12 +36,12 @@ const BADGE_CLASS =
 const PANEL_CLASS =
   "absolute right-0 top-[calc(100%_+_6px)] z-[110] w-[320px] rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-1 shadow-[var(--shadow-pop)]";
 const PANEL_HEAD_CLASS =
-  "px-3 py-2 font-mono text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "px-3 py-2 text-[12px] font-semibold text-[var(--t3)]";
 const ROW_CLASS = "rounded-[var(--r-sm)] px-3 py-2 hover:bg-[var(--surface-2)]";
 const ROW_TITLE_CLASS = "text-[13px] font-semibold text-[var(--t1)]";
 const ROW_BODY_CLASS = "mt-0.5 truncate text-[12px] text-[var(--t2)]";
 const ROW_TIME_CLASS =
-  "mt-1 font-mono text-[9px] uppercase tracking-[0.08em] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "mt-1 text-[12px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
 const EMPTY_CLASS = "px-3 py-6 text-center text-[12px] text-[var(--t3)]";
 
 function noticeTime(iso: string): string {

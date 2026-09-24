@@ -113,7 +113,7 @@ export default function SettingsPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
             {t("TITLE", "Settings")}
           </h1>
           <p className="m-0 text-sm text-[var(--t3)]">
@@ -192,7 +192,7 @@ export default function SettingsPage() {
           </select>
         </div>
         <div className="mt-[14px] flex items-baseline gap-[14px] border-t border-[var(--border-1)] pt-[14px]">
-          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="text-[12px] font-semibold text-[var(--t3)]">
             {t("timezone.preview", "Preview")}
           </span>
           <span className="font-mono text-sm font-semibold text-[var(--t1)] tabular-nums">

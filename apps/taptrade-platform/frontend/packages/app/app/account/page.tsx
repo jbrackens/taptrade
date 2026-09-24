@@ -67,7 +67,7 @@ export default function AccountPage() {
   return (
     <div className="mx-auto max-w-[1100px] px-6 pb-[60px] pt-6">
       <header className="mb-6">
-        <h1 className="type-poster m-0 mb-1.5 text-[34px] text-[var(--t1)] max-[640px]:text-[28px]">
+        <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
           {t("hub.title", "Account")}
         </h1>
         <p className="m-0 text-[13px] text-[var(--t3)]">
@@ -91,7 +91,7 @@ export default function AccountPage() {
           </div>
         </div>
         <div className="flex flex-col gap-0.5 text-right">
-          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="text-[12px] font-semibold text-[var(--t3)]">
             {t("hub.availableBalance", "Available points")}
           </span>
           {/* The largest number on the screen is a magnitude — neutral ink,
@@ -106,7 +106,7 @@ export default function AccountPage() {
 
       <PrivacyCard />
 
-      <p className="mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+      <p className="mb-2 text-[12px] font-semibold text-[var(--t3)]">
         {t("hub.manage", "Manage")}
       </p>
       <section className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
@@ -230,7 +230,7 @@ function PrivacyCard() {
       aria-labelledby="acct-privacy-title"
     >
       <div className="mb-[14px]">
-        <span className="mb-0.5 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+        <span className="mb-0.5 block text-[12px] font-semibold text-[var(--t3)]">
           {t("privacy.kicker", "Privacy")}
         </span>
         <h2
@@ -287,7 +287,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
     <section className="mb-5 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-[22px] py-5">
       <header className="mb-[14px] flex items-baseline justify-between gap-[14px]">
         <div>
-          <span className="mb-0.5 block font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
+          <span className="mb-0.5 block text-[12px] font-semibold text-[var(--t3)]">
             {t("portfolio.kicker", "Portfolio")}
           </span>
           <h2 className="m-0 text-base font-bold text-[var(--t1)]">
@@ -328,39 +328,39 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
           sub={
             summary.totalPredictions > 0
               ? `${summary.correctPredictions}/${summary.totalPredictions}`
-              : t("stats.noSettledMarkets", "No settled markets yet")
-          }
-        />
-      </div>
-    </section>
-  );
+ : t("stats.noSettledMarkets", "No settled markets yet")
+ }
+ />
+ </div>
+ </section>
+ );
 }
 
 function Stat({
-  label,
-  value,
-  sub,
-  tone,
+ label,
+ value,
+ sub,
+ tone,
 }: {
-  label: string;
-  value: string;
-  sub?: string;
-  tone?: "yes" | "no";
+ label: string;
+ value: string;
+ sub?: string;
+ tone?: "yes" | "no";
 }) {
-  const toneClass =
-    tone === "yes"
-      ? "text-[var(--yes-text)]"
-      : tone === "no"
-        ? "text-[var(--no-text)]"
-        : "text-[var(--t1)]";
+ const toneClass =
+ tone === "yes"
+ ? "text-[var(--yes-text)]"
+ : tone === "no"
+ ? "text-[var(--no-text)]"
+ : "text-[var(--t1)]";
 
-  return (
-    <div className="flex flex-col gap-0.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3">
-      <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]">
-        {label}
-      </span>
-      <span
-        className={`font-mono text-lg font-medium tabular-nums ${toneClass}`}
+ return (
+ <div className="flex flex-col gap-0.5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] px-[14px] py-3">
+ <span className="font-mono text-[12px] font-semibold text-[var(--t3)]">
+ {label}
+ </span>
+ <span
+ className={`font-mono text-lg font-medium tabular-nums ${toneClass}`}
       >
         {value}
       </span>

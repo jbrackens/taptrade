@@ -81,11 +81,6 @@
   "MARKET_ORDER": "Market",
   "MARKET_PAUSED_EXPLAINER": "Pasar ini {{status}}. Trading dijeda.",
   "MARKET_RESOLVED_EXPLAINER": "This market resolved {{result}}. Winners received 100 points per share; losers 0 points.",
-  "MARKET_SENTIMENT_HEAVY_BACKING": "Dukungan Kuat • {{percentage}}% memilih Ya",
-  "MARKET_SENTIMENT_LEANING_NO": "Condong Tidak • {{percentage}}% memilih Tidak",
-  "MARKET_SENTIMENT_LEANING_YES": "Condong Ya • {{percentage}}% memilih Ya",
-  "MARKET_SENTIMENT_SPLIT_ROOM": "Pendapat Terbagi • 50/50 Imbang",
-  "MARKET_SENTIMENT_STRONG_DOUBT": "Keraguan Kuat • {{percentage}}% memilih Tidak",
   "MARKET_SETTLED_CLOSED": "Pasar ini sudah selesai. Trading ditutup.",
   "MARKET_STATUS": "Pasar {{status}}",
   "MARKET_UNAVAILABLE": "Pasar tidak tersedia",
@@ -289,5 +284,10 @@
   "PTS": "poin",
   "SOCIAL_COMMENTS_LABEL": "komentar",
   "SOCIAL_FOLLOWERS_LABEL": "pengikut",
-  "SOCIAL_FOLLOWING_LABEL": "mengikuti"
+  "SOCIAL_FOLLOWING_LABEL": "mengikuti",
+  "VOL_SHORT": "vol",
+  "PTS_COUNT_one": "{{count}} poin",
+  "PTS_COUNT_other": "{{count}} poin",
+  "CLOSES_IN_SHORT": "Tutup dalam {{time}}",
+  "CLOSES_IN_LABEL": "Tutup dalam"
 }

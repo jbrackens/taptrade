@@ -30,12 +30,11 @@ import { InspectorPanel } from "../../components/prediction/InspectorPanel";
 const api = createPredictionClient();
 
 const EYEBROW_CLASS =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "text-[12px] font-semibold text-[var(--t3)]";
 
 function formatCloseAt(iso: string): string {
   return new Date(iso)
-    .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    .toUpperCase();
+    .toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function EventWorkspacePage() {
@@ -138,7 +137,7 @@ export default function EventWorkspacePage() {
       <main className="min-w-0 px-6 py-5 max-[760px]:px-4">
         <Link
           href="/predict"
-          className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)] no-underline hover:text-[var(--t1)]"
+          className="text-[12px] font-semibold text-[var(--t3)] no-underline hover:text-[var(--t1)]"
         >
           ← {t("BACK_TO_MARKETS")}
         </Link>
@@ -174,12 +173,12 @@ export default function EventWorkspacePage() {
           <>
             <header className="mt-3 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3.5">
               <span className={EYEBROW_CLASS}>
-                {t("FLOOR_EVENT", "Event")} · {event.status.toUpperCase()}
+                {t("FLOOR_EVENT", "Event")} · {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
               </span>
               <h1 className="m-0 mt-1 text-[20px] font-semibold leading-[1.25] tracking-[-0.01em] text-[var(--t1)]">
                 {event.title}
               </h1>
-              <p className="m-0 mt-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
+              <p className="m-0 mt-1.5 text-[12px] font-semibold text-[var(--t3)]">
                 {t("MOMENT_MARKETS_COUNT", { count: markets.length })} ·{" "}
                 {t("CLOSES")} {formatCloseAt(event.closeAt)}
               </p>

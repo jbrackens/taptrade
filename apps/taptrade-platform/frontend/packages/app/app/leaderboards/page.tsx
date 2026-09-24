@@ -30,10 +30,10 @@ const WRAP_CLASS = "mx-auto max-w-[1180px] pb-[60px] max-[720px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 // Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
 const KICKER_CLASS =
-  "mb-1.5 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
-// Poster-type page title (DESIGN.md §4 — page titles are the broadcast voice).
+  "mb-1.5 inline-block text-[12px] font-semibold text-[var(--t3)]";
+// Page title: the sentence-case heading voice (DESIGN.md §4).
 const TITLE_CLASS =
-  "type-poster m-0 text-[40px] text-[var(--t1)] max-[720px]:text-[30px]";
+  "type-poster m-0 text-[28px] text-[var(--t1)] max-[720px]:text-[24px]";
 const CROSS_LINK_CLASS =
   "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const GRID_CLASS =
@@ -48,144 +48,144 @@ const TAB_INACTIVE_CLASS = "border-transparent bg-transparent";
 const TAB_NAME_CLASS =
   "col-start-1 row-start-1 text-sm font-bold text-[var(--t1)]";
 const TAB_SUB_CLASS =
-  "col-start-1 row-start-2 text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
+  "col-start-1 row-start-2 text-[12px] text-[var(--t3)]";
 const TAB_RANK_BASE_CLASS =
   "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums font-mono";
 const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
 const CATEGORY_CLASS = `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
 const CATEGORY_SELECT_CLASS =
-  "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
+ "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
 const DETAIL_HEAD_CLASS =
-  "mb-[18px] flex items-start justify-between gap-[18px] max-[720px]:flex-col max-[720px]:gap-2";
+ "mb-[18px] flex items-start justify-between gap-[18px] max-[720px]:flex-col max-[720px]:gap-2";
 const DETAIL_TITLE_CLASS =
-  "m-0 mb-1.5 text-[22px] font-extrabold text-[var(--t1)]";
+ "m-0 mb-1.5 text-[22px] font-extrabold text-[var(--t1)]";
 const DETAIL_BODY_CLASS =
-  "m-0 max-w-[540px] text-[13px] leading-[1.6] text-[var(--t2)]";
+ "m-0 max-w-[540px] text-[13px] leading-[1.6] text-[var(--t2)]";
 const DETAIL_WINDOW_CLASS =
-  "text-[11px] uppercase tracking-[0.08em] text-[var(--t3)] tabular-nums font-mono";
+ "text-[11px] text-[var(--t3)] tabular-nums font-mono";
 const EMPTY_CLASS = "py-[60px] text-center text-sm text-[var(--t2)]";
 const EMPTY_SUB_CLASS = "mt-1.5 text-xs text-[var(--t3)]";
 const TABLE_CLASS =
-  "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-middle [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-[var(--t3)]";
+ "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-middle [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:text-[12px] [&_th]:font-bold [&_th]:text-[var(--t3)]";
 const TEXT_LEFT_CLASS = "text-left";
 const NUM_CLASS = "text-right";
 const MONO_CLASS =
-  "tabular-nums font-mono";
+ "tabular-nums font-mono";
 const HIDE_SM_CLASS = "max-[720px]:hidden";
 const TRADER_CLASS = "font-medium text-[var(--t1)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";
 const VIEWER_ROW_CLASS =
-  "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
+ "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
 const VIEWER_CELL_CLASS = "p-3 text-center text-[var(--t1)]";
 const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 // State CTA migrated to Button primary lg (same unification as rewards).
 
 export default function LeaderboardsPage() {
-  const { t } = useTranslation("leaderboards");
-  const { user, isLoading: authLoading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const boardQuery = searchParams?.get("board") ?? "";
+ const { t } = useTranslation("leaderboards");
+ const { user, isLoading: authLoading } = useAuth();
+ const router = useRouter();
+ const searchParams = useSearchParams();
+ const boardQuery = searchParams?.get("board") ?? "";
 
-  const [boards, setBoards] = useState<LeaderboardDefinition[]>([]);
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [viewerEntry, setViewerEntry] = useState<LeaderboardEntry | null>(null);
-  const [userStanding, setUserStanding] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+ const [boards, setBoards] = useState<LeaderboardDefinition[]>([]);
+ const [selectedId, setSelectedId] = useState<string>("");
+ const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+ const [viewerEntry, setViewerEntry] = useState<LeaderboardEntry | null>(null);
+ const [userStanding, setUserStanding] = useState<LeaderboardEntry[]>([]);
+ const [loading, setLoading] = useState(true);
+ const [detailLoading, setDetailLoading] = useState(false);
+ const [error, setError] = useState<string | null>(null);
 
-  // Initial: board catalog + user's standing across all boards. Parallel fetch.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initial-load effect: boardQuery/t are deliberately read once — re-running on URL query changes would clobber the user's manual board selection
-  useEffect(() => {
-    let cancelled = false;
+ // Initial: board catalog + user's standing across all boards. Parallel fetch.
+ // biome-ignore lint/correctness/useExhaustiveDependencies: initial-load effect: boardQuery/t are deliberately read once — re-running on URL query changes would clobber the user's manual board selection
+ useEffect(() => {
+ let cancelled = false;
 
-    async function load() {
-      try {
-        setLoading(true);
-        const [boardsResult, standingResult] = await Promise.all([
-          getLeaderboards(),
-          user?.id
-            ? getUserStanding().catch(() => [] as LeaderboardEntry[])
-            : Promise.resolve([] as LeaderboardEntry[]),
-        ]);
-        if (cancelled) return;
-        setBoards(boardsResult);
-        setUserStanding(standingResult);
+ async function load() {
+ try {
+ setLoading(true);
+ const [boardsResult, standingResult] = await Promise.all([
+ getLeaderboards(),
+ user?.id
+ ? getUserStanding().catch(() => [] as LeaderboardEntry[])
+ : Promise.resolve([] as LeaderboardEntry[]),
+ ]);
+ if (cancelled) return;
+ setBoards(boardsResult);
+ setUserStanding(standingResult);
 
-        const initial =
-          boardQuery && boardsResult.some((b) => b.id === boardQuery)
-            ? boardQuery
-            : (standingResult[0]?.boardId ?? boardsResult[0]?.id ?? "");
-        setSelectedId(initial);
-        setError(null);
-      } catch (err) {
-        if (cancelled) return;
-        const message =
-          err instanceof Error
-            ? err.message
-            : t("errors.loadBoards", "Failed to load leaderboards");
-        logger.error("Leaderboards", "board list fetch failed", message);
-        setError(message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+ const initial =
+ boardQuery && boardsResult.some((b) => b.id === boardQuery)
+ ? boardQuery
+ : (standingResult[0]?.boardId ?? boardsResult[0]?.id ?? "");
+ setSelectedId(initial);
+ setError(null);
+ } catch (err) {
+ if (cancelled) return;
+ const message =
+ err instanceof Error
+ ? err.message
+ : t("errors.loadBoards", "Failed to load leaderboards");
+ logger.error("Leaderboards", "board list fetch failed", message);
+ setError(message);
+ } finally {
+ if (!cancelled) setLoading(false);
+ }
+ }
 
-    void load();
-    return () => {
-      cancelled = true;
-    };
-    // We intentionally don't re-run when boardQuery changes — selection is
-    // state-driven after the first render. Change-via-URL only applies on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+ void load();
+ return () => {
+ cancelled = true;
+ };
+ // We intentionally don't re-run when boardQuery changes — selection is
+ // state-driven after the first render. Change-via-URL only applies on mount.
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [user?.id]);
 
-  // Detail fetch: entries for the selected board.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: t is read only in the catch path — depending on it would refetch standings on every language switch
-  useEffect(() => {
-    let cancelled = false;
+ // Detail fetch: entries for the selected board.
+ // biome-ignore lint/correctness/useExhaustiveDependencies: t is read only in the catch path — depending on it would refetch standings on every language switch
+ useEffect(() => {
+ let cancelled = false;
 
-    async function loadDetail() {
-      if (!selectedId) {
-        setEntries([]);
-        setViewerEntry(null);
-        return;
-      }
-      try {
-        setDetailLoading(true);
-        const result = await getLeaderboardEntries(selectedId, ENTRIES_LIMIT);
-        if (cancelled) return;
-        setEntries(result.items ?? []);
-        setViewerEntry(result.viewerEntry ?? null);
-      } catch (err) {
-        if (cancelled) return;
-        const message =
-          err instanceof Error
-            ? err.message
-            : t("errors.loadStandings", "Failed to load standings");
-        logger.error("Leaderboards", "entries fetch failed", message);
-        setError(message);
-      } finally {
-        if (!cancelled) setDetailLoading(false);
-      }
-    }
+ async function loadDetail() {
+ if (!selectedId) {
+ setEntries([]);
+ setViewerEntry(null);
+ return;
+ }
+ try {
+ setDetailLoading(true);
+ const result = await getLeaderboardEntries(selectedId, ENTRIES_LIMIT);
+ if (cancelled) return;
+ setEntries(result.items ?? []);
+ setViewerEntry(result.viewerEntry ?? null);
+ } catch (err) {
+ if (cancelled) return;
+ const message =
+ err instanceof Error
+ ? err.message
+ : t("errors.loadStandings", "Failed to load standings");
+ logger.error("Leaderboards", "entries fetch failed", message);
+ setError(message);
+ } finally {
+ if (!cancelled) setDetailLoading(false);
+ }
+ }
 
-    void loadDetail();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedId]);
+ void loadDetail();
+ return () => {
+ cancelled = true;
+ };
+ }, [selectedId]);
 
-  // Keep the URL in sync with the active board so the tab is shareable.
-  const selectBoard = useCallback(
-    (id: string) => {
-      setSelectedId(id);
-      const params = new URLSearchParams(searchParams?.toString() ?? "");
-      params.set("board", id);
-      router.replace(`/leaderboards?${params.toString()}`, { scroll: false });
+ // Keep the URL in sync with the active board so the tab is shareable.
+ const selectBoard = useCallback(
+ (id: string) => {
+ setSelectedId(id);
+ const params = new URLSearchParams(searchParams?.toString() ?? "");
+ params.set("board", id);
+ router.replace(`/leaderboards?${params.toString()}`, { scroll: false });
     },
     [router, searchParams],
   );

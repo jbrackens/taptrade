@@ -28,7 +28,7 @@ const CARD_SELECTED_CLASS = "border-[var(--accent)] bg-[var(--accent-soft)]";
 // Marketing badge ("Popular") is an identity accent, the same licence as
 // the MarketCard "Trending" dot — not a reward/loyalty amount.
 const BADGE_CLASS =
-  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--live-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--live-text)]";
+  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--live-soft)] px-2 py-0.5 text-[12px] font-semibold text-[var(--live-text)]";
 const NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
 const TOTAL_CLASS =
   "mono-wide text-[24px] font-semibold leading-tight text-[var(--t1)] tabular-nums font-mono";

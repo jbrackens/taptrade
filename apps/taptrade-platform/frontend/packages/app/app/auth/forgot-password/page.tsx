@@ -20,7 +20,7 @@ const BRAND_ROW_CLASS = "mb-8 inline-flex items-center gap-2.5";
 const BRAND_WORDMARK_CLASS =
   "text-[19px] font-bold leading-none tracking-[-0.03em] text-[var(--brand-ink)]";
 const TITLE_CLASS =
-  "type-poster m-0 mb-2 text-[32px] max-[480px]:text-[26px] text-[var(--t1)]";
+  "type-poster m-0 mb-2 text-[26px] max-[480px]:text-[24px] text-[var(--t1)]";
 const SUBTITLE_CLASS = "m-0 text-sm leading-[1.55] text-[var(--t2)]";
 const NOTICE_CLASS =
   "rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-2)] px-3.5 py-3 text-xs leading-[1.55] text-[var(--t2)]";
@@ -29,7 +29,7 @@ const LINK_CLASS =
 const DIVIDER_CLASS =
   "mb-4 mt-[22px] flex items-center gap-3 before:h-px before:flex-1 before:bg-[var(--border-1)] before:content-[''] after:h-px after:flex-1 after:bg-[var(--border-1)] after:content-['']";
 const DIVIDER_TEXT_CLASS =
-  "font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "text-[12px] font-semibold text-[var(--t3)]";
 const LINKS_CLASS = "text-[13px] text-[var(--t2)]";
 const LINK_ROW_CLASS = "mb-2 last:mb-0";
 

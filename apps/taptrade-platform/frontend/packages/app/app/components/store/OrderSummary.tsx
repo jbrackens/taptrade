@@ -24,7 +24,7 @@ const VALUE_CLASS =
 const TOTAL_ROW_CLASS =
   "flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-3";
 const STATUS_CLASS =
-  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--t2)]";
+  "inline-flex items-center rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[12px] font-semibold text-[var(--t2)]";
 
 export interface OrderSummaryData {
   packName: string;

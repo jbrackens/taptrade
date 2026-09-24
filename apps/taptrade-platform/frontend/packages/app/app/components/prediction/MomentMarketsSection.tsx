@@ -1,15 +1,14 @@
 "use client";
 
 /**
- * MomentMarketsSection — the Kilig /predict board.
+ * MomentMarketsSection — the /predict board.
  *
- * Default view (Trending, no search, no closing window): the #1 market
- * becomes the LeadMoment poster, the next two sit beside it under
- * "Happening now", and the rest fill a mixed-size grid (MarketGrid
- * pattern="mixed") — never a uniform wall. Any filter drops the lead and
+ * Default view (Trending, no search, no closing window): a FeaturedMarket
+ * (the most-traded contested market, with its chart) beside a ranked
+ * trending list, then the market grid. Any filter drops the hero and
  * shows the filtered grid only. The controls keep the practical directory
  * model: search, activity/closing/newest sorting, and a closing window.
- * One QuickTradePanel serves the lead, the stack and the grid.
+ * One QuickTradePanel serves the hero and the grid.
  */
 
 import Link from "next/link";
@@ -18,17 +17,18 @@ import { useTranslation } from "react-i18next";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { Button, Input } from "../ui";
-import { LeadMoment } from "./LeadMoment";
+import { FeaturedMarket, pickFeatured } from "./FeaturedMarket";
 import { MarketGrid } from "./MarketGrid";
 import { localizedMarket } from "./market-content";
 import { dedupeMarkets } from "./market-display";
 import { QuickTradePanel, type QuickTradeTarget } from "./QuickTradePanel";
 
 const api = createPredictionClient();
-// 12 per page: on the default view the lead and two "Happening now"
-// markets take three, leaving nine grid cards (full mixed rows).
-const PAGE_SIZE = 12;
-const LEAD_COUNT = 3;
+// 18 per page: on the default view the featured market and five
+// trending rows take six, leaving twelve grid cards (four full rows of
+// three at desktop widths).
+const PAGE_SIZE = 18;
+const TRENDING_LIST_COUNT = 5;
 const GRID_SKELETON_IDS = [
   "one",
   "two",
@@ -36,9 +36,6 @@ const GRID_SKELETON_IDS = [
   "four",
   "five",
   "six",
-  "seven",
-  "eight",
-  "nine",
 ] as const;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
@@ -69,8 +66,10 @@ const TIME_PILLS: readonly {
   { value: "30d", label: "1M" },
 ];
 
+// Segmented controls: a recessed track with the selected segment raised
+// in white, the iOS pattern.
 const FILTER_GROUP_CLASS =
-  "inline-flex shrink-0 gap-1 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] p-[3px] max-[640px]:max-w-full max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 gap-0.5 rounded-[10px] bg-[var(--surface-2)] p-[3px] max-[640px]:max-w-full max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden";
 
 function dateWindowToCloseBefore(window: DateWindow): string | undefined {
   if (window === "all") return undefined;
@@ -79,32 +78,32 @@ function dateWindowToCloseBefore(window: DateWindow): string | undefined {
 }
 
 function filterPillClass(active: boolean): string {
-  return `min-h-9 cursor-pointer whitespace-nowrap rounded-[var(--r-rh-sm)] border-0 px-3 text-[13px] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] ${
+  return `h-8 cursor-pointer whitespace-nowrap rounded-[8px] border-0 px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[640px]:h-9 ${
     active
-      ? "bg-[var(--accent)] text-[var(--ticket-cta-text)]"
-      : "bg-transparent text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)]"
+      ? "bg-[var(--surface-1)] font-semibold text-[var(--t1)] shadow-[0_1px_2px_rgba(17,17,20,0.08),0_0_0_0.5px_rgba(17,17,20,0.06)]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 
 function GridSkeleton() {
   return (
     <div
-      className="grid grid-cols-3 items-stretch gap-4 min-[641px]:auto-rows-fr max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1"
+      className="grid grid-cols-3 items-stretch gap-4 max-[1020px]:grid-cols-2 max-[640px]:grid-cols-1"
       aria-hidden="true"
     >
       {GRID_SKELETON_IDS.map((skeletonId) => (
         <div
           key={skeletonId}
-          className="h-[236px] animate-pulse rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
+          className="h-[168px] animate-pulse rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
         >
-          <div className="flex items-center justify-between">
-            <span className="h-5 w-24 rounded-[var(--r-rh-sm)] bg-[var(--surface-2)]" />
-            <span className="h-3 w-16 rounded-full bg-[var(--surface-2)]" />
+          <div className="flex items-start gap-3">
+            <span className="h-10 w-10 shrink-0 rounded-[8px] bg-[var(--surface-2)]" />
+            <div className="flex-1">
+              <span className="block h-3.5 w-11/12 rounded-full bg-[var(--surface-2)]" />
+              <span className="mt-2 block h-3.5 w-2/3 rounded-full bg-[var(--surface-2)]" />
+            </div>
           </div>
-          <span className="mt-4 block h-4 w-11/12 rounded-full bg-[var(--surface-2)]" />
-          <span className="mt-2 block h-4 w-3/4 rounded-full bg-[var(--surface-2)]" />
-          <span className="mt-8 block h-2 w-full rounded-full bg-[var(--surface-2)]" />
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-2">
             <span className="h-10 rounded-[var(--r-rh-md)] bg-[var(--surface-2)]" />
             <span className="h-10 rounded-[var(--r-rh-md)] bg-[var(--surface-2)]" />
           </div>
@@ -219,34 +218,44 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
   const hasFilters =
     Boolean(query.trim()) || dateWindow !== "all" || sortBy !== "activity";
 
-  const showLead = !hasFilters && markets.length >= LEAD_COUNT;
-  const leadMarkets = showLead
-    ? markets.slice(0, LEAD_COUNT).map((market) => localizedMarket(contentT, market))
+  // The hero needs the featured market plus a full trending list.
+  const showHero = !hasFilters && markets.length > TRENDING_LIST_COUNT;
+  const featured = showHero ? pickFeatured(markets.slice(0, PAGE_SIZE)) : undefined;
+  const trendingList = featured
+    ? markets
+        .slice(0, PAGE_SIZE)
+        .filter((market) => market.id !== featured.id)
+        .slice(0, TRENDING_LIST_COUNT)
     : [];
-  const gridMarkets = showLead ? markets.slice(LEAD_COUNT) : markets;
+  const heroIds = new Set(
+    featured ? [featured.id, ...trendingList.map((market) => market.id)] : [],
+  );
+  const gridMarkets = featured
+    ? markets.filter((market) => !heroIds.has(market.id))
+    : markets;
 
   return (
     <section id="trending-markets" aria-labelledby="moments-market-heading">
-      {showLead && (
+      {featured && (
         <div className="mb-10 max-[640px]:mb-8">
-          <LeadMoment
-            lead={leadMarkets[0]}
-            next={leadMarkets.slice(1)}
+          <FeaturedMarket
+            featured={localizedMarket(contentT, featured)}
+            trending={trendingList.map((market) => localizedMarket(contentT, market))}
             onQuickTrade={(market, side) => setQuickTrade({ market, side })}
           />
         </div>
       )}
 
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <h2
           id="moments-market-heading"
-          className="type-poster m-0 text-[34px] max-[640px]:text-[28px]"
+          className="m-0 text-[20px] font-semibold tracking-[-0.02em] text-[var(--t1)]"
         >
           {heading}
         </h2>
         <Link
           href="/discover"
-          className="shrink-0 pb-1 text-[13px] font-semibold text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+          className="shrink-0 text-[13px] font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
         >
           {t("VIEW_ALL_MOMENTS", "View all moments")} →
         </Link>
@@ -258,7 +267,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
       >
         <Input
           type="search"
-          className="min-h-10 min-w-[280px] flex-1 basis-[320px] max-[640px]:min-w-0 max-[640px]:basis-full"
+          className="h-[38px] min-h-0 min-w-[240px] flex-1 basis-[280px] rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] text-[14px] max-[640px]:h-10 max-[640px]:min-w-0 max-[640px]:basis-full"
           placeholder={t(
             "SEARCH_MARKETS_PLACEHOLDER",
             headerT("SEARCH_MARKETS_PLACEHOLDER"),
@@ -334,8 +343,6 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
           <MarketGrid
             markets={gridMarkets}
             columns={3}
-            pattern="mixed"
-            rankStart={showLead ? LEAD_COUNT + 1 : 1}
             onQuickTrade={setQuickTrade}
           />
         ) : markets.length > 0 ? null : (
@@ -382,8 +389,8 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
         <div className="mt-6 flex justify-center">
           <Button
             variant="secondary"
-            size="lg"
-            className="px-7"
+            size="md"
+            className="px-6"
             onClick={loadMore}
             disabled={loadingMore}
           >

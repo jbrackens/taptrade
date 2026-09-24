@@ -34,7 +34,7 @@ const REF_VALUE_CLASS =
   "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[var(--t2)] [font-variant-numeric:tabular-nums]";
 const ALT_GROUP_CLASS = "mt-4 border-t border-[var(--border-1)] pt-3.5";
 const ALT_TITLE_CLASS =
-  "m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "m-0 mb-2 text-[12px] font-semibold text-[var(--t3)]";
 const ALT_ROW_CLASS = "flex flex-wrap gap-2";
 
 export interface DemoCheckoutProps {

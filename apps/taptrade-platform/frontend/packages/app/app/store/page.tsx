@@ -10,7 +10,7 @@
  * confirm endpoint. Results derive from the SERVER purchase status — the
  * purchase id lives in the URL (?purchase=sp_…), so a mid-flow refresh
  * re-fetches the row and lands on the correct state instead of corrupting
- * the flow. `?return=` carries a validated same-origin market path from
+ * the flow. `?return=`carries a validated same-origin market path from
  * the TradeTicket insufficient-balance entry point.
  *
  * On completion the wallet balance cache is invalidated and the fresh
@@ -30,15 +30,15 @@ import { useAppDispatch } from "../lib/store/hooks";
 import { setCurrentBalance } from "../lib/store/pointBalanceSlice";
 import { getBalance, invalidateBalanceCache } from "../lib/api/wallet-client";
 import {
-  confirmPurchase,
-  createCheckout,
-  getPacks,
-  getPurchase,
-  resolveCheckoutIdempotency,
-  type PendingCheckoutKey,
-  type StoreDemoOutcome,
-  type StorePack,
-  type StorePurchase,
+ confirmPurchase,
+ createCheckout,
+ getPacks,
+ getPurchase,
+ resolveCheckoutIdempotency,
+ type PendingCheckoutKey,
+ type StoreDemoOutcome,
+ type StorePack,
+ type StorePurchase,
 } from "../lib/api/store-client";
 import { formatPointsAmount } from "../lib/points";
 import { storeReturnPath } from "../lib/storeReturnPath";
@@ -46,29 +46,29 @@ import { PackGrid } from "../components/store/PackGrid";
 import { OrderSummary } from "../components/store/OrderSummary";
 import { DemoCheckout } from "../components/store/DemoCheckout";
 import {
-  PurchaseCanceled,
-  PurchaseFailed,
-  PurchasePending,
-  PurchaseSuccess,
+ PurchaseCanceled,
+ PurchaseFailed,
+ PurchasePending,
+ PurchaseSuccess,
 } from "../components/store/PurchaseResult";
 
 const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 // Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
 const KICKER_CLASS =
-  "mb-1.5 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+ "mb-1.5 inline-block text-[12px] font-semibold text-[var(--t3)]";
 // Poster-type page title (DESIGN.md §4 — page titles are the broadcast voice).
 const TITLE_CLASS =
-  "type-poster m-0 text-[34px] text-[var(--t1)] max-[768px]:text-[26px]";
+ "type-poster m-0 text-[28px] text-[var(--t1)] max-[768px]:text-[24px]";
 const CROSS_LINK_CLASS =
-  "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
+ "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] no-underline hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const GRID_CLASS =
-  "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
+ "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
 const SIDE_COL_CLASS = "flex flex-col gap-[18px]";
 const HOW_CARD_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3.5";
+ "rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3.5";
 const HOW_TITLE_CLASS =
-  "m-0 mb-1 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+ "m-0 mb-1 text-[13px] font-semibold text-[var(--t3)]";
 const HOW_BODY_CLASS = "m-0 text-xs leading-[1.55] text-[var(--t2)]";
 const FIRST_PURCHASE_CLASS = "mt-3 text-xs leading-[1.5] text-[var(--t3)]";
 const STATE_CLASS = "flex min-h-[50vh] items-center justify-center px-6";
@@ -77,7 +77,7 @@ const STATE_CARD_SIZING = "w-full max-w-[440px] text-center";
 const STATE_CTA_SIZING = "gap-1.5 px-5 py-3 text-[13px] no-underline";
 const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
 const ERROR_NOTE_CLASS =
-  "mb-3 rounded-[var(--r-rh-sm)] border border-[var(--border-2)] bg-[var(--surface-2)] p-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
+ "mb-3 rounded-[var(--r-rh-sm)] border border-[var(--border-2)] bg-[var(--surface-2)] p-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 
 const DELAYED_POLL_MS = 5_000;
 
@@ -86,17 +86,17 @@ const DELAYED_POLL_MS = 5_000;
 const GENERIC_ERROR = "__store_generic_error__";
 
 function is401(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  const msg = err.message.toLowerCase();
-  return (
-    msg.includes("401") ||
-    msg.includes("unauthorized") ||
-    msg.includes("authentication required")
-  );
+ if (!(err instanceof Error)) return false;
+ const msg = err.message.toLowerCase();
+ return (
+ msg.includes("401") ||
+ msg.includes("unauthorized") ||
+ msg.includes("authentication required")
+ );
 }
 
 function purchaseUrl(purchaseId: string, safeReturn: string | null): string {
-  const suffix = safeReturn ? `&return=${encodeURIComponent(safeReturn)}` : "";
+ const suffix = safeReturn ?`&return=${encodeURIComponent(safeReturn)}` : "";
   return `/store?purchase=${encodeURIComponent(purchaseId)}${suffix}`;
 }
 

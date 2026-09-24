@@ -49,9 +49,9 @@ const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
 const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
 // Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
 const KICKER_CLASS =
-  "mb-1.5 inline-block font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-1.5 inline-block text-[12px] font-semibold text-[var(--t3)]";
 const TITLE_CLASS =
-  "type-poster m-0 text-[34px] text-[var(--t1)] max-[768px]:text-[26px]";
+  "type-poster m-0 text-[28px] text-[var(--t1)] max-[768px]:text-[24px]";
 const CROSS_LINK_CLASS =
   "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
 const LADDER_CLASS =
@@ -80,17 +80,17 @@ const PROGRESS_TRACK_CLASS =
   "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--reward)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--reward)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
 const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
 const BENEFITS_TITLE_CLASS =
-  "m-0 mb-2.5 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+  "m-0 mb-2.5 text-[13px] font-semibold text-[var(--t3)]";
 const BENEFITS_LIST_CLASS = "m-0 flex list-none flex-col gap-2.5 p-0";
 const BENEFIT_CLASS =
   "grid grid-cols-[10px_1fr_auto] items-center gap-2.5 text-sm text-[var(--t1)]";
 const BENEFIT_DOT_BASE_CLASS = "size-2.5 rounded-full";
 const BENEFIT_SOURCE_CLASS =
-  "text-[11px] uppercase tracking-[0.04em] text-[var(--t3)]";
+  "text-[12px] text-[var(--t3)]";
 const CLAIM_WRAP_CLASS =
   "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
 const CLAIM_TITLE_CLASS =
-  "m-0 mb-1 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+  "m-0 mb-1 text-[13px] font-semibold text-[var(--t3)]";
 const CLAIM_BODY_CLASS = "m-0 mb-3 text-sm leading-[1.55] text-[var(--t2)]";
 const CLAIM_STATUS_CLASS = "mt-3 text-xs leading-[1.5] text-[var(--t2)]";
 const PACKS_LIST_CLASS = "mt-3 flex flex-col gap-2";
@@ -115,7 +115,7 @@ const BADGE_EARNED_CLASS = "border-[var(--border-2)] bg-[var(--surface-2)]";
 const BADGE_LOCKED_CLASS =
   "border-[var(--border-1)] bg-[var(--surface-1)] opacity-60";
 const BADGE_STATUS_CLASS =
-  "mt-2 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+  "mt-2 text-[12px] font-semibold text-[var(--t3)]";
 const LIMIT_CLASS =
   "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 text-left";
 const LEDGER_HEAD_CLASS = "mb-3.5 flex items-baseline justify-between";
@@ -138,7 +138,7 @@ const NEG_CLASS = "text-[var(--t2)]";
 const SUBTLE_CLASS = "text-[var(--t3)]";
 const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
 const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
-const PREFIRST_TITLE_CLASS = "type-poster m-0 mb-2.5 text-[26px] text-[var(--t1)]";
+const PREFIRST_TITLE_CLASS = "type-poster m-0 mb-2.5 text-[22px] text-[var(--t1)]";
 const PREFIRST_BODY_CLASS = "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
 // CTA / claim-button / state-card recipes migrated to the Button and Card
 // primitives (primary lg; lift-hover and 13px text unified away).

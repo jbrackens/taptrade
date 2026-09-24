@@ -92,7 +92,7 @@ export default function NotificationsPage() {
     <div className={pageClass}>
       <div className={headerClass}>
         <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[32px] text-[var(--t1)] max-[640px]:text-[26px]">
+          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
             Alerts
           </h1>
           <p className="text-sm text-[var(--t3)]">

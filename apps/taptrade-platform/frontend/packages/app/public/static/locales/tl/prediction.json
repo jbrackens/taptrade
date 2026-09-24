@@ -81,11 +81,6 @@
   "MARKET_ORDER": "Market",
   "MARKET_PAUSED_EXPLAINER": "Ang market na ito ay {{status}}. Naka-pause ang trading.",
   "MARKET_RESOLVED_EXPLAINER": "This market resolved {{result}}. Winners received 100 points per share; losers 0 points.",
-  "MARKET_SENTIMENT_HEAVY_BACKING": "Malakas na Suporta • {{percentage}}% nagsasabing Oo",
-  "MARKET_SENTIMENT_LEANING_NO": "Bahagyang Hindi • {{percentage}}% nagsasabing Hindi",
-  "MARKET_SENTIMENT_LEANING_YES": "Bahagyang Oo • {{percentage}}% nagsasabing Oo",
-  "MARKET_SENTIMENT_SPLIT_ROOM": "Hating Opinyon • 50/50 Tabla",
-  "MARKET_SENTIMENT_STRONG_DOUBT": "Malakas na Pagdududa • {{percentage}}% nagsasabing Hindi",
   "MARKET_SETTLED_CLOSED": "Settled na ang market na ito. Sarado na ang trading.",
   "MARKET_STATUS": "Market {{status}}",
   "MARKET_UNAVAILABLE": "Hindi available ang market",
@@ -291,5 +286,10 @@
   "PTS": "pts",
   "SOCIAL_COMMENTS_LABEL": "komento",
   "SOCIAL_FOLLOWERS_LABEL": "tagasunod",
-  "SOCIAL_FOLLOWING_LABEL": "sinusundan"
+  "SOCIAL_FOLLOWING_LABEL": "sinusundan",
+  "VOL_SHORT": "vol",
+  "PTS_COUNT_one": "{{count}} pt",
+  "PTS_COUNT_other": "{{count}} pts",
+  "CLOSES_IN_SHORT": "Magsasara sa {{time}}",
+  "CLOSES_IN_LABEL": "Magsasara sa"
 }

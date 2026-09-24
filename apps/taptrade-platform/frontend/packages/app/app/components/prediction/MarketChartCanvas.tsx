@@ -32,6 +32,10 @@ export interface MarketChartCanvasProps {
   /** Epoch seconds, same length as values. */
   times: number[];
   ariaLabel: string;
+  /** Plot height in px (default 300). */
+  height?: number;
+  /** Line colour: the side's direction colour, or ink (default). */
+  tone?: "yes" | "no" | "ink";
 }
 
 function cssVar(el: HTMLElement, name: string): string {
@@ -53,6 +57,8 @@ export default function MarketChartCanvas({
   values,
   times,
   ariaLabel,
+  height = 300,
+  tone = "ink",
 }: MarketChartCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -64,8 +70,13 @@ export default function MarketChartCanvas({
       return;
     }
 
-    const accent = cssVar(container, "--accent") || "#111114";
-    const accentLo = cssVar(container, "--accent-lo") || "#111114";
+    const toneVar =
+      tone === "yes" ? "--dir-yes" : tone === "no" ? "--dir-no" : "--accent";
+    const accent = cssVar(container, toneVar) || "#111114";
+    const accentLo =
+      tone === "ink"
+        ? cssVar(container, "--accent-lo") || "#111114"
+        : accent;
     const muted = cssVar(container, "--t4") || "#576066";
     const guide = cssVar(container, "--border-1") || "#dde2e5";
     const surface = cssVar(container, "--surface-1") || "#ffffff";
@@ -78,7 +89,7 @@ export default function MarketChartCanvas({
         textColor: axisText,
         fontSize: 10,
         // Canvas text cannot resolve CSS var() itself, so the numeric
-        // mono stack (--font-mono → Martian Mono via next/font's hashed
+        // numeric stack (--font-mono → Inter via next/font's hashed
         // family) is read off the computed style like the color tokens.
         fontFamily:
           cssVar(container, "--font-mono") ||
@@ -137,7 +148,7 @@ export default function MarketChartCanvas({
     const main = chart.addSeries(AreaSeries, {
       lineColor: accentLo,
       lineWidth: 2,
-      topColor: withAlpha(accent, 0.24),
+      topColor: withAlpha(accent, tone === "ink" ? 0.24 : 0.16),
       bottomColor: withAlpha(accent, 0),
       priceLineVisible: false,
       lastValueVisible: false,
@@ -210,10 +221,10 @@ export default function MarketChartCanvas({
       chartRef.current = null;
       chart.remove();
     };
-  }, [values, times]);
+  }, [values, times, tone]);
 
   return (
-    <div className="relative h-[300px] w-full" aria-label={ariaLabel} role="img">
+    <div className="relative w-full" style={{ height }} aria-label={ariaLabel} role="img">
       <div ref={containerRef} className="absolute inset-0" />
       {readout && (
         <div className="pointer-events-none absolute left-0 top-0 z-10 rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 font-mono text-[11px] font-semibold text-[var(--t1)] tabular-nums">

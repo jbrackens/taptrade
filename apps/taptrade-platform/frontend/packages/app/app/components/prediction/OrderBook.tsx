@@ -36,12 +36,12 @@ const ORDER_BOOK_SUB_CLASS = "font-mono text-[11px] text-[var(--t3)]";
 const ORDER_BOOK_TABLE_CLASS =
   "font-mono relative isolate w-full border-collapse text-[13px] [font-variant-numeric:tabular-nums]";
 const ORDER_BOOK_TH_CLASS =
-  "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--t3)]";
+  "border-b border-[var(--border-1)] px-2.5 py-1.5 text-left text-[12px] font-medium text-[var(--t3)]";
 const ORDER_BOOK_TD_CLASS = "relative px-2.5 py-[7px] text-[var(--t1)]";
 const ORDER_BOOK_DEPTH_ROW_CLASS =
   "relative after:pointer-events-none after:absolute after:top-[3px] after:right-0 after:bottom-[3px] after:z-[-1] after:w-[calc(var(--depth,0)*1%)] after:rounded-[3px] after:content-['']";
 const ORDER_BOOK_SPREAD_CLASS =
-  "font-mono my-1 flex items-center justify-center border-y border-[var(--border-1)] py-2.5 text-[11px] uppercase tracking-[0.08em] text-[var(--t3)]";
+  "my-1 flex items-center justify-center border-y border-[var(--border-1)] py-2.5 text-[12px] text-[var(--t3)]";
 
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   const { t } = useTranslation("prediction");

@@ -8,7 +8,7 @@ import { formatPointsAmount } from "../lib/points";
 const CLAIM_WRAP_CLASS =
   "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
 const CLAIM_TITLE_CLASS =
-  "m-0 mb-1 text-[13px] font-bold uppercase tracking-[0.04em] text-[var(--t3)]";
+  "m-0 mb-1 text-[13px] font-semibold text-[var(--t3)]";
 const CLAIM_BODY_CLASS = "m-0 mb-3 text-sm leading-[1.55] text-[var(--t2)]";
 const PACKS_LIST_CLASS = "mt-3 flex flex-col gap-2";
 const PACK_ROW_CLASS =

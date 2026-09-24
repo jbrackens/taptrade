@@ -100,7 +100,7 @@ const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1600px]:col-span-1";
 const SUBNAV_CLASS =
   "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1600px]:order-first max-[1600px]:static max-[1600px]:border-b max-[1600px]:border-l-0 max-[1600px]:pb-3 max-[1600px]:pl-0";
 const SUBNAV_LABEL_CLASS =
-  "mb-3 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-3 text-[12px] font-semibold text-[var(--t3)]";
 const SUBNAV_LIST_CLASS =
   "flex flex-col items-stretch gap-1 max-[1600px]:flex-row max-[1600px]:overflow-x-auto max-[1600px]:[scrollbar-width:none] max-[1600px]:[-ms-overflow-style:none] max-[1600px]:[-webkit-overflow-scrolling:touch] max-[1600px]:[&::-webkit-scrollbar]:hidden";
 const SUBNAV_BUTTON_BASE_CLASS =

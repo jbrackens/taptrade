@@ -12,21 +12,33 @@ const grid = readFileSync(
   resolve(appRoot, "components/prediction/MarketGrid.tsx"),
   "utf8",
 );
+const thumb = readFileSync(
+  resolve(appRoot, "components/prediction/MarketThumb.tsx"),
+  "utf8",
+);
+const featured = readFileSync(
+  resolve(appRoot, "components/prediction/FeaturedMarket.tsx"),
+  "utf8",
+);
 
 describe("Market Discovery Card", () => {
-  it("keeps the Kilig ranked-market anatomy", () => {
-    // Rows line up on the grid; the one-column phone list hugs content.
-    assert.match(card, /min-\[641px\]:min-h-\[236px\]/);
-    assert.match(card, /font-mono text-\[11px\] text-\[var\(--t3\)\]">\{rankLabel\}/);
-    assert.match(card, /t\("TRENDING", "Trending"\)/);
-    assert.match(card, /bg-\[var\(--live\)\]/);
+  it("keeps the Kilig card anatomy: thumb, clamped question, chance and volume", () => {
+    // The 2026-09-24 redesign dropped the ranked/mixed anatomy for a
+    // uniform card: MarketThumb + a line-clamped question with the YES
+    // chance at the right, then a quiet volume/close-date footer line.
+    assert.match(card, /<MarketThumb categorySlug=\{categorySlug\} imageUrl=\{photo\}/);
+    assert.match(card, /line-clamp-3/);
+    assert.match(card, /\{yesPercentage\}%/);
     assert.match(card, /t\("CHANCE", "chance"\)/);
-    assert.match(card, /bg-\[var\(--yes\)\]/);
-    assert.match(card, /bg-\[var\(--no-bar\)\]/);
     assert.match(card, /formatCompactPoints\(volumePoints\)/);
-    // No resting shadow, no legacy purple/lavender.
-    assert.doesNotMatch(card, /shadow-\[var\(--shadow-card/);
+    assert.match(card, /t\("VOL_SHORT", "vol"\)/);
+    // Cards now carry a whisper of resting shadow with a small lift on
+    // hover (globals.css --shadow-card is no longer `none`).
+    assert.match(card, /shadow-\[var\(--shadow-card\)\]/);
+    assert.match(card, /hover:shadow-\[var\(--shadow-card-hover\)\]/);
+    // No legacy purple/lavender or retired rank/trending anatomy.
     assert.doesNotMatch(card, /brand-lavender|brand-purple/);
+    assert.doesNotMatch(card, /rankLabel|t\("TRENDING"/);
   });
 
   it("renders the two live market sides as soft percentage chips", () => {
@@ -37,10 +49,16 @@ describe("Market Discovery Card", () => {
     assert.doesNotMatch(card, /¢/);
   });
 
-  it("puts a poster tile beside wide cards", () => {
-    assert.match(card, /size\?: MarketCardSize/);
-    assert.match(card, /<PosterTile/);
-    assert.match(card, /min-\[641px\]:grid-cols-\[minmax\(0,0\.9fr\)_minmax\(0,1fr\)\]/);
+  it("shows a market photo with a tinted category-icon fallback, not a poster tile", () => {
+    // TerminalCategoryRail/PosterTile/market-poster.ts were deleted with
+    // the redesign; MarketThumb is the shared replacement everywhere a
+    // market needed art — a real photo when one loads, else a category
+    // icon on a tinted tile, both decorative (aria-hidden).
+    assert.match(card, /<MarketThumb/);
+    assert.doesNotMatch(card, /<PosterTile|size\?: MarketCardSize/);
+    assert.match(thumb, /onError=\{\(\) => setImageFailed\(true\)\}/);
+    assert.match(thumb, /const \{ icon: Icon, tint \} = categoryVisual\(categorySlug\)/);
+    assert.match(thumb, /aria-hidden="true"/);
   });
 
   it("opens quick trade in place for open markets and deep-links otherwise", () => {
@@ -58,9 +76,16 @@ describe("Market Discovery Card", () => {
     assert.match(grid, /\{!onQuickTrade && \(/);
   });
 
-  it("mixes card sizes on the 3-column board", () => {
-    assert.match(grid, /pattern\?: "uniform" \| "mixed"/);
-    assert.match(grid, /slot === 0 \|\| slot === 6 \? "wide" : "standard"/);
+  it("renders a single uniform grid, not a mixed wide/standard board", () => {
+    // The "mixed" pattern (wide lead card at slots 0 and 6) was deleted
+    // with LeadMoment/PosterTile; MarketGrid now renders every market at
+    // the same size, with only a column-count knob.
+    assert.match(grid, /columns\?: 3 \| 4/);
+    assert.match(
+      grid,
+      /3:\s*"grid grid-cols-3 items-stretch gap-4 min-\[641px\]:auto-rows-fr max-\[1020px\]:grid-cols-2 max-\[640px\]:grid-cols-1/,
+    );
+    assert.doesNotMatch(grid, /pattern\?: "uniform" \| "mixed"|"wide" : "standard"/);
   });
 
   it("removes unapproved card media and explanatory content", () => {
@@ -68,9 +93,12 @@ describe("Market Discovery Card", () => {
     assert.doesNotMatch(card, /Why it matters|What this settles|Derived from/);
   });
 
-  it("receives stable one-based ranks from the grid", () => {
-    assert.match(grid, /rankStart\?: number/);
-    assert.match(grid, /rankStart = 1/);
-    assert.match(grid, /rank=\{rankStart \+ index\}/);
+  it("gives the Trending list stable one-based ranks", () => {
+    // MarketGrid itself no longer assigns ranks (the ranked-card anatomy
+    // was deleted); the surviving ranked list is FeaturedMarket's
+    // "Trending" sidebar, numbered from its map index.
+    assert.match(featured, /trending\.map\(\(market, index\) => \{/);
+    assert.match(featured, /\{index \+ 1\}/);
+    assert.doesNotMatch(grid, /rankStart/);
   });
 });

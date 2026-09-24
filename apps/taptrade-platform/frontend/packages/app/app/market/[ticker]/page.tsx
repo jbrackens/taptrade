@@ -39,7 +39,6 @@ import { Sheet } from "../../components/ui/Sheet.lazy";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
-import { TerminalCategoryRail } from "../../components/prediction/TerminalCategoryRail";
 import {
   TradeTicket,
   type TicketSettlement,
@@ -87,40 +86,40 @@ const api = createPredictionClient();
 // shared with the /predict workspace's live subscriptions (motion pass,
 // 2026-08-07) so both surfaces apply market:{id} events identically.
 
+// Two columns: the market (header, chart, rules, discussion) and the
+// sticky trade rail. No topic rail here — the page is about one market.
 const MARKET_WRAP_CLASS =
-  "grid min-h-[calc(100vh-64px)] grid-cols-[200px_minmax(0,1fr)_380px] grid-rows-[auto_1fr] bg-[var(--bg-deep)] text-[var(--t1)] max-[1279px]:grid-cols-[72px_minmax(0,1fr)_340px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
-const MARKET_RAIL_CLASS =
-  "col-start-1 row-start-1 row-span-2 min-w-0 max-[1023px]:hidden";
+  "grid min-h-[calc(100vh-64px)] grid-cols-[minmax(0,1fr)_400px] grid-rows-[auto_1fr] bg-[var(--paper)] text-[var(--t1)] max-[1279px]:grid-cols-[minmax(0,1fr)_360px] max-[1023px]:flex max-[1023px]:min-h-0 max-[1023px]:flex-col";
 const MARKET_HERO_AREA_CLASS =
-  "col-start-2 row-start-1 min-w-0 px-8 pb-0 pt-7 max-[1279px]:px-6 max-[1023px]:order-1 max-[1023px]:px-4 max-[1023px]:pt-5";
+  "col-start-1 row-start-1 mx-auto w-full min-w-0 max-w-[920px] px-8 pb-0 pt-6 max-[1279px]:px-6 max-[1023px]:order-1 max-[1023px]:px-4 max-[1023px]:pt-4";
 const MARKET_CONTENT_CLASS =
-  "col-start-2 row-start-2 flex min-w-0 flex-col gap-5 px-8 pb-10 pt-5 max-[1279px]:px-6 max-[1023px]:order-3 max-[1023px]:px-4 max-[1023px]:pb-8";
+  "col-start-1 row-start-2 mx-auto flex w-full min-w-0 max-w-[920px] flex-col gap-4 px-8 pb-12 pt-4 max-[1279px]:px-6 max-[1023px]:order-3 max-[1023px]:px-4 max-[1023px]:pb-8";
 const MARKET_CRUMB_CLASS =
-  "mb-4 flex min-h-9 flex-wrap items-center gap-2 text-[12px] text-[var(--t3)]";
+  "mb-4 flex min-h-8 flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
 const MARKET_CRUMB_LINK_CLASS =
-  "inline-flex min-h-9 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-semibold text-[var(--t1)] no-underline transition-colors hover:text-[var(--t2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
+  "inline-flex min-h-8 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
 // <=1023px the workspace lives in the vaul Sheet (P3) — the aside is
 // desktop-only and the old in-flow card styles are retired.
 const MARKET_SIDE_CLASS =
-  "col-start-3 row-start-1 row-span-2 min-w-0 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden";
+  "col-start-2 row-start-1 row-span-2 min-w-0 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden";
 const MARKET_TICKET_STICKY_CLASS =
   "terminal-scrollbar sticky top-16 max-h-[calc(100vh-64px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
 const MARKET_TICKET_CONTEXT_CLASS =
   "mb-5 border-b border-[var(--border-1)] pb-5";
 const MARKET_TICKET_EYEBROW_CLASS =
-  "mb-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-1 text-[13px] font-medium text-[var(--t3)]";
 const MARKET_TICKET_TITLE_CLASS =
-  "type-display m-0 text-[20px] font-semibold leading-[1.22] text-[var(--t1)]";
+  "type-display m-0 text-[17px] font-semibold leading-[1.3] text-[var(--t1)]";
 const MARKET_TICKET_QUOTE_CLASS = "mt-5 flex items-end justify-between gap-4";
 const MARKET_TICKET_QUOTE_LABEL_CLASS = "text-xs text-[var(--t3)]";
 const MARKET_TICKET_QUOTE_VALUE_CLASS =
   // Step 3: probability readout is a magnitude — ink, never the accent.
-  "mono mono-wide mt-1 text-[48px] font-semibold leading-none tracking-[-0.05em] text-[var(--t1)]";
+  "mt-1 text-[36px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[var(--t1)]";
 const MARKET_TICKET_BAR_CLASS =
   "mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]";
 const MARKET_TICKET_SOURCE_CLASS =
-  "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-[12px] leading-[1.5] text-[var(--t2)]";
+  "mb-5 text-[12.5px] leading-[1.5] text-[var(--t3)]";
 const MARKET_MOBILE_TRADE_LINK_CLASS =
   "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--ticket-cta-text)] no-underline shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[1023px]:flex min-[900px]:bottom-4";
 const MARKET_DATA_ROW_CLASS =
@@ -136,13 +135,13 @@ const LIQUIDITY_HEAD_CLASS =
 const LIQUIDITY_TITLE_CLASS =
   "text-sm font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const LIQUIDITY_BADGE_CLASS =
-  "font-mono rounded-md border border-[var(--border-1)] bg-[var(--surface-3)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]";
+  "rounded-md border border-[var(--border-1)] bg-[var(--surface-3)] px-2 py-1 text-[12px] font-semibold text-[var(--t3)]";
 const LIQUIDITY_COPY_CLASS = "mb-4 text-[13px] leading-5 text-[var(--t2)]";
 const LIQUIDITY_GRID_CLASS = "grid grid-cols-2 gap-3";
 const LIQUIDITY_METRIC_CLASS =
   "rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] px-3 py-2";
 const LIQUIDITY_METRIC_LABEL_CLASS =
-  "font-mono mb-1 text-[10px] uppercase tracking-[0.12em] text-[var(--t3)]";
+  "mb-1 text-[12px] text-[var(--t3)]";
 const LIQUIDITY_METRIC_VALUE_CLASS =
   "font-mono text-[13px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const AMM_CURVE_CLASS =
@@ -151,7 +150,7 @@ const AMM_CURVE_ROW_CLASS = "mb-3 last:mb-0";
 const AMM_CURVE_HEAD_CLASS =
   "mb-2 flex items-center justify-between gap-3 text-[11px] text-[var(--t3)]";
 const AMM_CURVE_LABEL_CLASS =
-  "font-mono text-[10px] uppercase text-[var(--t3)]";
+  "text-[12px] text-[var(--t3)]";
 const AMM_CURVE_VALUE_CLASS =
   "font-mono text-[11px] font-semibold text-[var(--t1)] [font-variant-numeric:tabular-nums]";
 const AMM_CURVE_TRACK_CLASS =
@@ -173,26 +172,26 @@ const AMM_QUOTE_LABEL_CLASS =
   "min-w-0 text-[12px] font-medium text-[var(--t1)]";
 const AMM_QUOTE_VALUE_CLASS =
   "font-mono text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
+// One card: header, then the chart full width, then the stats row.
 const MARKET_HERO_CLASS =
-  "overflow-hidden rounded-[var(--radius-lg)] border border-[var(--hairline)] bg-[var(--card)]";
-const MARKET_HERO_GRID_CLASS =
-  "grid grid-cols-[minmax(280px,0.82fr)_minmax(420px,1.25fr)] max-[1180px]:grid-cols-1";
-const MARKET_HEAD_PANEL_CLASS = "min-w-0 p-7 max-[720px]:p-5";
+  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
+const MARKET_HERO_GRID_CLASS = "flex flex-col";
+const MARKET_HEAD_PANEL_CLASS = "min-w-0 px-6 pt-6 max-[720px]:px-4 max-[720px]:pt-5";
 const MARKET_CHART_PANEL_CLASS =
-  "min-w-0 border-l border-[var(--border-1)] p-7 max-[1180px]:border-l-0 max-[1180px]:border-t max-[720px]:p-5 [&_svg]:h-[268px] max-[720px]:[&_svg]:h-[220px]";
-// Stats are cells on one hairline grid, not boxes inside the box.
+  "min-w-0 px-6 pb-5 pt-4 max-[720px]:px-4";
+// Stats are cells on one hairline row, not boxes inside the box.
 const MARKET_STATS_CLASS =
   "grid grid-cols-4 border-t border-[var(--border-1)] max-[640px]:grid-cols-2";
 const MARKET_STAT_CLASS =
-  "min-w-0 border-r border-[var(--border-1)] px-5 py-3.5 last:border-r-0 max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-child(-n+2)]:border-b";
+  "min-w-0 border-r border-[var(--border-1)] px-6 py-4 last:border-r-0 max-[720px]:px-4 max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-child(-n+2)]:border-b";
 const MARKET_STAT_LABEL_CLASS =
-  "font-mono mb-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--t3)]";
+  "mb-1 text-[12px] font-medium text-[var(--t3)]";
 const MARKET_STAT_VALUE_CLASS =
-  "font-mono truncate text-[14px] font-semibold text-[var(--ink)] [font-variant-numeric:tabular-nums]";
+  "truncate text-[15px] font-semibold text-[var(--t1)] tabular-nums";
 const MARKET_DETAILS_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-6 max-[720px]:px-5";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 shadow-[var(--shadow-card)] max-[720px]:px-4";
 const MARKET_DETAILS_TITLE_CLASS =
-  "type-poster mb-3 text-[24px] text-[var(--t1)]";
+  "m-0 mb-3 text-[17px] font-semibold tracking-[-0.015em] text-[var(--t1)]";
 const MARKET_DETAILS_COPY_CLASS =
   "mb-2.5 text-sm leading-[1.6] text-[var(--t2)]";
 const MARKET_RULES_CLASS =
@@ -203,9 +202,9 @@ const MARKET_SHARE_ROW_CLASS =
   "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
 const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 shadow-[var(--shadow-card)] max-[720px]:px-4";
 const RELATED_TITLE_CLASS =
-  "type-poster mb-4 text-[24px] text-[var(--t1)]";
+  "m-0 mb-3 text-[17px] font-semibold tracking-[-0.015em] text-[var(--t1)]";
 const RELATED_EMPTY_CLASS = "text-xs text-[var(--t3)]";
 const RELATED_LIST_CLASS = "grid grid-cols-2 gap-3 max-[640px]:grid-cols-1";
 const RELATED_ROW_CLASS =
@@ -213,13 +212,13 @@ const RELATED_ROW_CLASS =
 const RELATED_QUESTION_CLASS =
   "mb-3 text-[14px] font-semibold leading-[1.35] text-[var(--t1)] group-hover:underline";
 const RELATED_LINE_CLASS =
-  "font-mono flex items-center justify-between text-[11px] text-[var(--t3)] [font-variant-numeric:tabular-nums]";
+  "flex items-center justify-between text-[12px] text-[var(--t3)] tabular-nums";
 const RELATED_YES_CLASS = "font-semibold text-[var(--yes-text)]";
 const PAGE_STATE_WRAP_CLASS = "grid min-h-[60vh] place-items-center px-4 py-8";
 const PAGE_STATE_CARD_CLASS =
   "w-[min(100%,440px)] rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-7 text-center text-[var(--t1)]";
 const PAGE_STATE_EYEBROW_BASE_CLASS =
-  "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[11px] font-bold uppercase tracking-[0.12em]";
+  "mb-[14px] inline-flex min-h-7 items-center justify-center rounded-[var(--r-pill)] border px-3 text-[12px] font-semibold";
 const PAGE_STATE_TITLE_CLASS =
   "m-0 text-[22px] font-extrabold tracking-[-0.01em]";
 const PAGE_STATE_COPY_CLASS =
@@ -1237,6 +1236,11 @@ export default function MarketDetailPage() {
             <h2 className={MARKET_TICKET_TITLE_CLASS}>
               {displayMarket?.title}
             </h2>
+            {/* On desktop the market column beside this rail already shows
+                the probability and the rules; the sheet (phones) repeats
+                them because the page behind it is covered. */}
+            {inSheet && (
+              <>
             <div className={MARKET_TICKET_QUOTE_CLASS}>
               <div>
                 <div className={MARKET_TICKET_QUOTE_LABEL_CLASS}>
@@ -1248,12 +1252,12 @@ export default function MarketDetailPage() {
                   {railYes}%
                 </div>
               </div>
-              <div className="font-mono pb-1 text-right text-[11px] leading-5 text-[var(--t3)]">
+              <div className="pb-1 text-right text-[12px] leading-5 tabular-nums text-[var(--t3)]">
                 <div className="font-semibold text-[var(--yes-text)]">
-                  {t("YES")} {railYes} pts
+                  {t("YES")} {t("PTS_COUNT", { count: railYes })}
                 </div>
                 <div>
-                  {t("NO")} {railNo} pts
+                  {t("NO")} {t("PTS_COUNT", { count: railNo })}
                 </div>
               </div>
             </div>
@@ -1263,7 +1267,7 @@ export default function MarketDetailPage() {
               aria-label={t("YES_NO_PRICES", {
                 yes: railYes,
                 no: railNo,
-                defaultValue: `Yes ${railYes} cents, No ${railNo} cents`,
+                defaultValue: `Yes ${railYes} points, No ${railNo} points`,
               })}
             >
               {/* Step 3: probability bars are the pale direction fill —
@@ -1274,10 +1278,13 @@ export default function MarketDetailPage() {
               />
               <span className="h-full flex-1 bg-[var(--no-bar)]" />
             </div>
+              </>
+            )}
           </div>
 
+          {inSheet && (
           <div className={MARKET_TICKET_SOURCE_CLASS}>
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
+            <div className="mb-1 text-[12px] font-medium text-[var(--t3)]">
               {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
             </div>
             <div className="font-semibold text-[var(--t1)]">
@@ -1287,6 +1294,7 @@ export default function MarketDetailPage() {
               <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
             )}
           </div>
+          )}
 
           <TradeTicket
             variant="terminal"
@@ -1325,26 +1333,19 @@ export default function MarketDetailPage() {
 
   return (
     <div className={MARKET_WRAP_CLASS}>
-      <div className={MARKET_RAIL_CLASS}>
-        <TerminalCategoryRail
-          categories={categories}
-          mode="predict"
-          activeCategorySlug={category?.slug.toLowerCase()}
-        />
-      </div>
 
       <div className={MARKET_HERO_AREA_CLASS}>
         <nav className={MARKET_CRUMB_CLASS} aria-label="Breadcrumb">
           <Link href="/predict" className={MARKET_CRUMB_LINK_CLASS}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            {t("BACK_TO_MARKETS")}
+            <ArrowLeft size={15} aria-hidden="true" />
+            {t("NAV_MARKETS_CRUMB", "Markets")}
           </Link>
           {category && (
             <>
               <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
               <Link
                 href={`/category/${category.slug}`}
-                className="font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)]"
+                className="font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)]"
               >
                 {displayCategory}
               </Link>
@@ -1356,16 +1357,12 @@ export default function MarketDetailPage() {
               <Link
                 href={`/event/${event.id}`}
                 title={t("VIEW_EVENT_MARKETS", "All markets in this event")}
-                className="max-w-[320px] truncate font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[640px]:max-w-[200px]"
+                className="max-w-[320px] truncate font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[640px]:max-w-[200px]"
               >
                 {event.title}
               </Link>
             </>
           )}
-          <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
-          <span className="font-mono uppercase tracking-[0.08em]">
-            {market.ticker}
-          </span>
         </nav>
 
         <section className={MARKET_HERO_CLASS}>
@@ -1377,20 +1374,9 @@ export default function MarketDetailPage() {
               />
             </div>
             <div className={MARKET_CHART_PANEL_CLASS}>
-              <div className="mb-3 flex items-end justify-between gap-4">
-                {/* No "live data" subtitle: the chart can be flat, empty or
-                    (demo boxes only) simulated, and says so itself. */}
-                <p className="m-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--t3)]">
-                  {t("PRICE_HISTORY", "Price history")}
-                </p>
-                <span className="font-mono text-[18px] font-semibold text-[var(--t1)]">
-                  {selectedSide === "yes" ? t("YES") : t("NO")}{" "}
-                  {selectedSide === "yes"
-                    ? market.yesPricePoints
-                    : market.noPricePoints}{" "}
-                  {t("PTS", "pts")}
-                </span>
-              </div>
+              {/* No "live data" caption: the chart can be flat, empty or
+                  (demo boxes only) simulated, and says so itself. */}
+              <h2 className="sr-only">{t("PRICE_HISTORY", "Price history")}</h2>
               <MarketChart
                 ticker={market.ticker}
                 side={selectedSide}
@@ -1460,9 +1446,11 @@ export default function MarketDetailPage() {
               : t("TRADE_MARKET", "Trade market")}
           </span>
           {market.status !== "voided" && (
-            <span className="font-mono">
-              {selectedSide.toUpperCase()}{" "}
-              {selectedSide === "yes" ? railYes : railNo} pts
+            <span className="tabular-nums">
+              {selectedSide === "yes" ? t("YES") : t("NO")}{" "}
+              {t("PTS_COUNT", {
+                count: selectedSide === "yes" ? railYes : railNo,
+              })}
             </span>
           )}
         </button>
@@ -1501,24 +1489,24 @@ export default function MarketDetailPage() {
             humanSettlementRule !== displayMarket?.description && (
               <p className={MARKET_DETAILS_COPY_CLASS}>{humanSettlementRule}</p>
             )}
-          <div className="mt-4 grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
-            <div className="rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-4">
-              <div className={MARKET_STAT_LABEL_CLASS}>
+          <dl className="m-0 mt-4 grid grid-cols-2 gap-x-6 border-t border-[var(--border-1)] pt-4 max-[640px]:grid-cols-1 max-[640px]:gap-y-3">
+            <div>
+              <dt className={MARKET_STAT_LABEL_CLASS}>
                 {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
-              </div>
-              <div className="text-sm font-semibold text-[var(--t1)]">
+              </dt>
+              <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
                 {formatSourceLabel(market.settlementSourceKey)}
-              </div>
+              </dd>
             </div>
-            <div className="rounded-md border border-[var(--border-1)] bg-[var(--surface-2)] p-4">
-              <div className={MARKET_STAT_LABEL_CLASS}>
+            <div>
+              <dt className={MARKET_STAT_LABEL_CLASS}>
                 {t("MARKET_STATUS_LABEL", "Market status")}
-              </div>
-              <div className="text-sm font-semibold text-[var(--t1)]">
+              </dt>
+              <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
                 {marketStatusLabel(market.status, t)}
-              </div>
+              </dd>
             </div>
-          </div>
+          </dl>
           <ul className={MARKET_RULES_CLASS}>
             <li className={MARKET_RULE_CLASS}>
               {isOpenMarketStatus(market.status)
