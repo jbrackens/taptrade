@@ -32,6 +32,13 @@ describe("/welcome route", () => {
     assert.match(layout, /openGraph:/);
   });
 
+  it("lets its title replace the root one instead of adding a second <title>", () => {
+    const root = read("layout.tsx");
+    assert.match(root, /export const metadata: Metadata = \{\s*title: brand\.name,/);
+    assert.doesNotMatch(root, /<title>/, "no inline <title> in the root layout");
+    assert.doesNotMatch(root, /<meta\s+name="description"/, "no inline description either");
+  });
+
   it("is where the board's How it works link lands", () => {
     assert.match(sections, /id="how-it-works"/);
     assert.match(read("components/prediction/WelcomeStrip.tsx"), /\/welcome#how-it-works/);

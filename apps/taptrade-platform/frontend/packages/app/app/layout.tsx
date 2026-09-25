@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type React from "react";
 import "./globals.css";
 import { Inter } from "next/font/google";
@@ -16,6 +17,15 @@ const inter = Inter({
   display: "swap",
 });
 
+// Title and description go through Next's metadata API (not inline <head>
+// tags) so a page that sets its own — /welcome's campaign title — replaces
+// them instead of shipping a second title tag that crawlers read first.
+export const metadata: Metadata = {
+  title: brand.name,
+  description:
+    "Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching.",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -27,11 +37,6 @@ export default function RootLayout({
       className={inter.variable}
     >
       <head>
-        <title>{brand.name}</title>
-        <meta
-          name="description"
-          content="Trade Yes or No on politics, basketball, pageants, esports, gaming, and the moments Filipinos are watching."
-        />
         {/* Streamed-Suspense reveal bootstrap: React 19.2 defers the
          * $RC("B:n","S:n") payload swap to requestAnimationFrame, which
          * never fires on hidden pages (background tab, prerender, headless
