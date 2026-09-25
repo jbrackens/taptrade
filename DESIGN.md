@@ -188,6 +188,14 @@ states that no points were taken. Amounts and payouts are in points.
   featured moments; shown only when ≥4 are live) → FeaturedMarket +
   Trending list → section title + search/sort/window → 3-column card grid.
   A topic tab drops the rail; filters drop the hero and show the grid only.
+- `/welcome` (campaign landing for ads, social and "How it works"):
+  full-bleed, its own header and footer. Hero (promise + Start free /
+  Browse markets + points-only line and the live open-market count; a
+  collage of licensed topic photos with a real, live market card over it)
+  → "Pick your moment" photo tiles with live counts (tiles with no open
+  markets hide) → How it works (three steps with mini product visuals) →
+  Trending right now (contested markets by activity) → trust band → dark
+  final CTA → footer with the full points-only legal line.
 - `/market/[ticker]`: market column (max 920px: header + chart + stats card,
   rules, discussion, related) · 400px sticky trade rail; the rail moves to a
   Sheet ≤1023px. Breadcrumb: Markets / category / event.

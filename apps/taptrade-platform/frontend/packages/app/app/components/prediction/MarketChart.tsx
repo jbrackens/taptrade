@@ -56,6 +56,8 @@ interface MarketChartProps {
   noPricePoints?: number;
   /** Plot height in px (default 300). */
   height?: number;
+  /** Show the 1H…ALL range tabs under the plot (default true). */
+  showRanges?: boolean;
 }
 
 const RANGES: TimeRange[] = ["1H", "6H", "1D", "1W", "ALL"];
@@ -106,6 +108,7 @@ export default function MarketChart({
   yesPricePoints,
   noPricePoints,
   height = 300,
+  showRanges = true,
 }: MarketChartProps) {
   const { t } = useTranslation("prediction");
   const [range, setRange] = useState<TimeRange>("1D");
@@ -241,7 +244,7 @@ export default function MarketChart({
       )}
 
       <div
-        className={CHART_SWITCHER_CLASS}
+        className={`${CHART_SWITCHER_CLASS} ${showRanges ? "" : "hidden"}`}
         role="tablist"
         aria-label={t("TIME_RANGE")}
       >

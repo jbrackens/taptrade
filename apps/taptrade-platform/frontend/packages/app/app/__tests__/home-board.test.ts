@@ -58,7 +58,7 @@ describe("WelcomeStrip", () => {
 
   it("offers sign-up and the explainer", () => {
     assert.match(strip, /href="\/auth\/register"/);
-    assert.match(strip, /href="\/about"/);
+    assert.match(strip, /href="\/welcome#how-it-works"/);
   });
 
   it("ships its copy in every locale", () => {
