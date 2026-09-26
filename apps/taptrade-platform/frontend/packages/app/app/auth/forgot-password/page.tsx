@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
       <Card as="div" padding="lg" className="w-full max-w-[440px]">
         <div className={HEAD_CLASS}>
           <div className={BRAND_ROW_CLASS}>
-            <BrandMark size={26} tone="ink" />
+            <BrandMark size={24} tone="ink" />
             <span className={BRAND_WORDMARK_CLASS}>
               {brand.name}
               <span className="text-[var(--brand-period)]" aria-hidden="true">

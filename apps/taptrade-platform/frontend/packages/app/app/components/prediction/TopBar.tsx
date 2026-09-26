@@ -402,7 +402,7 @@ export function TopBar() {
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >
-          <BrandMark size={isTerminalRoute ? 24 : 26} tone="ink" />
+          <BrandMark size={isTerminalRoute ? 22 : 24} tone="ink" />
           <span
             className={
               isTerminalRoute

@@ -31,7 +31,7 @@ export function PredictFooter() {
     <footer className="mt-10 border-t border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-6 text-xs max-[640px]:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <span className="inline-flex items-center gap-2.5 text-[19px] font-semibold leading-none tracking-[-0.025em] text-[var(--t1)]">
-          <BrandMark size={28} tone="ink" />
+          <BrandMark size={26} tone="ink" />
           <span>{brand.name}</span>
         </span>
         <div className="flex flex-wrap gap-x-5 gap-y-2">

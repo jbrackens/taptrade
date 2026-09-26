@@ -120,13 +120,16 @@ together.
   read as objects on the paper; hover lifts to `--shadow-card-hover` with a
   border step. Rows inside a list (settings list, board rows) take a
   `--surface-2` wash instead. `--shadow-pop` is for floating layers only.
-- **Brand mark — "Call it"** (`BrandMark`, `public/brand/`): a round-stroked
-  check (you called it) whose long stroke launches into the pink tap dot.
-  Ink on light, warm white on dark; wordmark = mark + brand name + pink
-  period. The favicon (`app/icon.svg`) is tile-less with a heavier dot and
-  flips to warm white on dark tabs, so it never reads as a ticked checkbox;
-  home-screen icons (`app/icon.png`, `app/apple-icon.png`,
-  `public/brand/taptrade-app-icon.svg`) are an ink tile with a white check.
+- **Brand mark — "First Word"** (`BrandMark`, `public/brand/`): a speech
+  tile with a T knocked out, its bottom-left corner running out to a point —
+  making your call is the brand gesture. One colour: ink on light, warm
+  white on dark. The pink lives only on the wordmark's period, never on the
+  mark (a magenta T is T-Mobile's territory). Wordmark = mark + brand name
+  in Inter 700 + pink period; `BrandMark size` is the mark's height (24px
+  in headers beside 18px type). The favicon (`app/icon.svg`) is the bare
+  mark and flips to warm white on dark tabs; home-screen icons
+  (`app/icon.png`, `app/apple-icon.png`, `public/brand/taptrade-app-icon.svg`)
+  are an ink tile with the mark in white.
 - **Market images** (`MarketThumb`): every market carries a square image —
   its photo when it has one (falling back on load error), otherwise its
   category's icon on a soft tile of the category tint. 40px in cards, 48px

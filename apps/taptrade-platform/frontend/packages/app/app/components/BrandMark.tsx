@@ -1,19 +1,23 @@
 /**
- * Tap Trade brand mark — "Call it" (2026-09-24): a check (you called it)
- * whose long stroke launches into the pink tap dot.
+ * Tap Trade brand mark — "First Word" (2026-09-26): a speech tile with a T
+ * knocked out, its bottom-left corner running out to a point. Making your
+ * call is the brand gesture; the T keeps it ours rather than a chat icon.
  *
- * The artwork lives in public/brand/ as source SVGs (ink, light, brand);
- * app/icon.svg is the tile version for favicons and home-screen icons.
- * Geometry: 14-unit round stroke, 8.5-unit dot, tight 80.36 × 72.10 box.
+ * One colour on purpose: the pink lives on the wordmark's period, never on
+ * the T (a magenta T is T-Mobile's territory).
+ *
+ * The artwork lives in public/brand/ as source SVGs (ink, light);
+ * app/icon.svg is the favicon and public/brand/taptrade-app-icon.svg the
+ * home-screen tile. Geometry: 84 × 86 box, 74-unit tile, 14-unit T strokes.
  */
 
 import Image from "next/image";
 
-type BrandMarkTone = "brand" | "ink" | "light";
+type BrandMarkTone = "ink" | "light";
 
 type BrandMarkProps = {
   className?: string;
-  /** Width in pixels; the height follows the mark's 80.36 × 72.10 box. */
+  /** Height in pixels; the width follows the mark's 84 × 86 box. */
   size?: number;
   tone?: BrandMarkTone;
 };
@@ -22,31 +26,32 @@ type BrandMarkProps = {
 // browser cache under a stable filename, so without a new URL returning
 // visitors keep painting the previous mark (the staircase lingered after
 // the "Call it" deploy for exactly this reason).
-const MARK_VERSION = "call-it-1";
+const MARK_VERSION = "first-word-1";
 
 const MARK_SOURCE: Record<BrandMarkTone, string> = {
-  brand: `/brand/taptrade-mark-brand.svg?v=${MARK_VERSION}`,
   ink: `/brand/taptrade-mark-ink.svg?v=${MARK_VERSION}`,
   light: `/brand/taptrade-mark-light.svg?v=${MARK_VERSION}`,
 };
 
 export default function BrandMark({
   className = "",
-  size = 30,
+  size = 24,
   tone = "ink",
 }: BrandMarkProps) {
-  const height = (size * 72.1) / 80.36;
+  const width = (size * 84) / 86;
 
   return (
     <Image
       aria-hidden="true"
       alt=""
       className={`block shrink-0 object-contain ${className}`}
-      height={height}
+      height={size}
       src={MARK_SOURCE[tone]}
-      style={{ height: "auto" }}
+      // Preflight sets img { height: auto }, which would drop the height
+      // attribute and paint the SVG at its intrinsic 84 × 86.
+      style={{ height: size, width: "auto" }}
       unoptimized
-      width={size}
+      width={width}
     />
   );
 }

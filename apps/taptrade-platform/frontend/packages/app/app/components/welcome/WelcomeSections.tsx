@@ -68,7 +68,7 @@ export function WelcomeHeader() {
     <header className="sticky top-0 z-40 border-b border-[var(--border-1)] bg-[color-mix(in_srgb,var(--surface-1)_90%,transparent)] backdrop-blur-md">
       <div className={`${WRAP} flex h-16 items-center justify-between gap-4`}>
         <Link href="/" className="flex items-center gap-2.5 text-[var(--t1)] no-underline" aria-label="Tap Trade">
-          <BrandMark size={26} tone="ink" />
+          <BrandMark size={24} tone="ink" />
           <span className="text-[18px] font-bold tracking-[-0.03em]">
             Tap Trade<span className="text-[var(--brand-period)]">.</span>
           </span>
@@ -344,7 +344,7 @@ function StepVisualSettle() {
   const { t } = useTranslation("prediction");
   return (
     <div className="flex items-center gap-3 rounded-[12px] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5 shadow-[var(--shadow-card)]">
-      <BrandMark size={34} tone="ink" />
+      <BrandMark size={32} tone="ink" />
       <div>
         <p className="m-0 text-[14px] font-semibold text-[var(--t1)]">
           {t("LANDING_STEP3_EXAMPLE", "You called it")}
@@ -454,7 +454,7 @@ export function FinalCta() {
   return (
     <section className="bg-[var(--ink-deep)] py-24 text-[var(--poster-ink)] max-[640px]:py-16" aria-labelledby="welcome-final">
       <div className={`${WRAP} flex flex-col items-center text-center`}>
-        <BrandMark size={56} tone="light" />
+        <BrandMark size={52} tone="light" />
         <h2 id="welcome-final" className="m-0 mt-6 text-[52px] font-semibold leading-[1.05] tracking-[-0.045em] max-[640px]:text-[36px]">
           {t("LANDING_FINAL_TITLE", "Your first call is on us.")}
         </h2>
@@ -495,7 +495,7 @@ export function WelcomeFooter() {
       <div className={`${WRAP} flex flex-col gap-6`}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <span className="flex items-center gap-2 text-[16px] font-bold tracking-[-0.03em] text-[var(--t1)]">
-            <BrandMark size={22} tone="ink" />
+            <BrandMark size={20} tone="ink" />
             <span>
               Tap Trade<span className="text-[var(--brand-period)]">.</span>
             </span>

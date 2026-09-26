@@ -222,7 +222,7 @@ export default function RegisterPage() {
           className={BRAND_ROW_CLASS}
           aria-label={`${brand.name} home`}
         >
-          <BrandMark size={26} tone="ink" />
+          <BrandMark size={24} tone="ink" />
           <span className={BRAND_WORDMARK_CLASS}>
             {brand.name}
             <span className="text-[var(--brand-period)]" aria-hidden="true">
