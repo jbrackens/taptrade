@@ -247,8 +247,10 @@ describe("points-only safety boundary", () => {
     // strings stay free of crypto/cash-value framing in every locale; the
     // points-only boundary line lives inline in WelcomeStrip as an English
     // constant.
-    const home = read("page.tsx");
-    assert.match(home, /export \{ default \} from "\.\/predict\/page"/);
+    // "/" is the landing page again (2026-09-26); its copy lives in
+    // WelcomeSections and the LANDING_* locale keys (pinned in
+    // welcome-landing.test.ts), the board's strip in HOME_WELCOME_*.
+    const home = read("page.tsx") + read("components/welcome/WelcomeSections.tsx");
     assert.doesNotMatch(home, /crypto/i);
 
     const forbiddenHomepageCopy =

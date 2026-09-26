@@ -108,6 +108,9 @@ module.exports = {
       { source: "/floor", destination: "/predict", permanent: false },
       { source: "/book", destination: "/portfolio", permanent: false },
       { source: "/standing", destination: "/leaderboards", permanent: false },
+      // The landing page moved from /welcome to "/" (2026-09-26); keep
+      // shared campaign links working.
+      { source: "/welcome", destination: "/", permanent: false },
     ];
   },
   async rewrites() {

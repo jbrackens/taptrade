@@ -183,13 +183,14 @@ states that no points were taken. Amounts and payouts are in points.
 ## 8. Layout
 
 - Top bar 64px, sticky, white. Mobile tab bar fixed, white, safe-area padded.
-- `/` (home) and `/predict`: topic tabs, then a 1280px column: welcome
+- `/predict` (the board): topic tabs, then a 1280px column: welcome
   strip (signed-out only) → "This week in the Philippines" rail (curated
   featured moments; shown only when ≥4 are live) → FeaturedMarket +
   Trending list → section title + search/sort/window → 3-column card grid.
   A topic tab drops the rail; filters drop the hero and show the grid only.
-- `/welcome` (campaign landing for ads, social and "How it works"):
-  full-bleed, its own header and footer. Hero (promise + Start free /
+- `/` (landing for new visitors, ads, social and "How it works"; `/welcome`
+  redirects here): full-bleed, its own header and footer; its Markets
+  links go to `/predict`, and the app's TopBar logo returns to `/predict`. Hero (promise + Start free /
   Browse markets + points-only line and the live open-market count; a
   collage of licensed topic photos with a real, live market card over it)
   → "Pick your moment" photo tiles with live counts (tiles with no open

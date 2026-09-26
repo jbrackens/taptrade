@@ -13,15 +13,19 @@ const appRoot = resolve(__dirname, "..");
 const read = (rel: string) => readFileSync(resolve(appRoot, rel), "utf-8");
 const LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 
-describe("home page is the market board", () => {
+describe("landing at /, market board at /predict", () => {
   const page = read("page.tsx");
   const shell = read("components/AppShell.tsx");
   const workspace = read("components/prediction/PredictionWorkspace.tsx");
+  const terminal = read("lib/prediction-terminal.ts");
 
-  it("re-exports the /predict board instead of a marketing page", () => {
-    assert.match(page, /export \{ default \} from "\.\/predict\/page"/);
-    assert.doesNotMatch(page, /hero|ticker|Fraunces|type-poster/i);
-    assert.doesNotMatch(shell, /isLandingRoute/, "no special dark shell for /");
+  it("serves the landing page at / and the board at /predict", () => {
+    // 2026-09-26: the landing moved from /welcome to "/"; the board that
+    // was briefly the home page lives at /predict again.
+    assert.match(page, /import WelcomePage from "\.\/components\/welcome\/WelcomePage";/);
+    assert.match(page, /return <WelcomePage \/>;/);
+    assert.match(shell, /const isMarketingRoute = pathname === "\/";/);
+    assert.doesNotMatch(terminal, /pathname === "\/" \|\|/, "/ is not a board route");
   });
 
   it("mounts the welcome strip and the rail above the board", () => {
@@ -33,7 +37,11 @@ describe("home page is the market board", () => {
     );
   });
 
-  it("retires the page-home namespace with the landing", () => {
+  it("sends the in-app logo to the board, not the landing", () => {
+    assert.match(read("components/prediction/TopBar.tsx"), /href="\/predict"\s*className=\{TOP_BAR_BRAND_CLASS\}/);
+  });
+
+  it("retires the old page-home namespace", () => {
     for (const locale of LOCALES) {
       assert.ok(
         !existsSync(resolve(appRoot, `../public/static/locales/${locale}/page-home.json`)),
@@ -58,7 +66,7 @@ describe("WelcomeStrip", () => {
 
   it("offers sign-up and the explainer", () => {
     assert.match(strip, /href="\/auth\/register"/);
-    assert.match(strip, /href="\/welcome#how-it-works"/);
+    assert.match(strip, /href="\/#how-it-works"/);
   });
 
   it("ships its copy in every locale", () => {

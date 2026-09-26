@@ -231,12 +231,15 @@ test.describe("J1 browse markets", () => {
       allow: [WS_CSP_LOCAL_ARTIFACT],
     });
 
-    // "/" is the market board (the marketing landing was retired
-    // 2026-09-24): it renders market cards straight away.
+    // "/" is the landing page (the board lives at /predict): its hero
+    // carries a live market card and links into the board.
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("market-card").first()).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(
+      page.getByRole("heading", { level: 1, name: /call it before it happens/i }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByRole("link", { name: /browse markets/i }).first(),
+    ).toHaveAttribute("href", /\/predict/);
 
     // domcontentloaded, not load: Firefox starves the load event on the
     // dev server (many parallel compile-time responses hold Gecko's

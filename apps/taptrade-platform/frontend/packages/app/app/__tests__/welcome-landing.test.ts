@@ -1,6 +1,6 @@
 /**
- * /welcome — the campaign landing page (2026-09-24 redesign). "/" is the
- * market board; /welcome tells the story first. These pins keep it honest
+ * The landing page at "/" (2026-09-24 redesign; moved from /welcome on
+ * 2026-09-26, which now redirects). The market board lives at /predict. These pins keep it honest
  * (live data only, sections hide without data), points-only (money-word
  * legal lines inline, locale copy free of cash/gambling vocabulary) and on
  * the licensed photos.
@@ -14,14 +14,14 @@ const appRoot = resolve(__dirname, "..");
 const read = (rel: string) => readFileSync(resolve(appRoot, rel), "utf-8");
 const LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 
-const page = read("welcome/page.tsx");
-const layout = read("welcome/layout.tsx");
+const page = read("components/welcome/WelcomePage.tsx");
+const layout = read("page.tsx");
 const sections = read("components/welcome/WelcomeSections.tsx");
 const shell = read("components/AppShell.tsx");
 
-describe("/welcome route", () => {
-  it("renders full-bleed with its own header and footer", () => {
-    assert.match(shell, /pathname === "\/welcome" \|\| pathname\?\.startsWith\("\/welcome\/"\)/);
+describe("landing route", () => {
+  it("renders full-bleed at / with its own header and footer", () => {
+    assert.match(shell, /const isMarketingRoute = pathname === "\/";/);
     assert.match(shell, /isMarketingRoute \? \(\s*children/);
     assert.match(page, /<WelcomeHeader \/>/);
     assert.match(page, /<WelcomeFooter \/>/);
@@ -41,11 +41,18 @@ describe("/welcome route", () => {
 
   it("is where the board's How it works link lands", () => {
     assert.match(sections, /id="how-it-works"/);
-    assert.match(read("components/prediction/WelcomeStrip.tsx"), /\/welcome#how-it-works/);
+    assert.match(read("components/prediction/WelcomeStrip.tsx"), /href="\/#how-it-works"/);
+  });
+
+  it("keeps old /welcome links working and sends Markets links to the board", () => {
+    const config = readFileSync(resolve(appRoot, "../next.config.js"), "utf-8");
+    assert.match(config, /\{ source: "\/welcome", destination: "\/", permanent: false \}/);
+    assert.equal((sections.match(/href="\/"/g) ?? []).length, 1, "only the landing logo links to /");
+    assert.ok((sections.match(/"\/predict"/g) ?? []).length >= 4, "markets links go to /predict");
   });
 });
 
-describe("/welcome honesty", () => {
+describe("landing honesty", () => {
   it("uses live data: contested hero, contested trending, real counts", () => {
     assert.match(page, /getMarkets\(\{ status: "open", sort: "activity", pageSize: 18 \}\)/);
     assert.match(page, /pickFeatured\(markets\)/);
@@ -66,7 +73,7 @@ describe("/welcome honesty", () => {
   });
 });
 
-describe("/welcome points-only copy", () => {
+describe("landing points-only copy", () => {
   it("keeps money-word legal lines inline, never in locale files", () => {
     assert.match(sections, /export const HERO_FINE_LEGAL = "Points only · no cash, no cash-out · 18\+";/);
     assert.match(sections, /export const FOOTER_LEGAL =/);
@@ -88,7 +95,7 @@ describe("/welcome points-only copy", () => {
   });
 });
 
-describe("/welcome imagery", () => {
+describe("landing imagery", () => {
   it("uses only the licensed, self-hosted topic covers", () => {
     const srcs = [...sections.matchAll(/src="(\/images\/[^"]+)"/g)].map((m) => m[1]);
     assert.ok(srcs.length >= 3);

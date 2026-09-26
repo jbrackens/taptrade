@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * /welcome — the campaign landing page (ads, social, "How it works").
+ * The landing page at "/" (ads, social, "How it works"); the board is
+ * at /predict.
  *
  * Light and photo-led, built from the product's own pieces: the hero's
  * card is a real, live market (tap Yes/No for the real trade panel), the
@@ -73,7 +74,7 @@ export function WelcomeHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Link href="/" className="rounded-[var(--r-rh-md)] px-3 py-2 text-[14px] font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[480px]:hidden">
+          <Link href="/predict" className="rounded-[var(--r-rh-md)] px-3 py-2 text-[14px] font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[480px]:hidden">
             {t("LANDING_NAV_MARKETS", "Markets")}
           </Link>
           <Link href="/auth/login" className="rounded-[var(--r-rh-md)] px-3 py-2 text-[14px] font-medium text-[var(--t1)] no-underline hover:bg-[var(--surface-2)]">
@@ -198,7 +199,7 @@ export function WelcomeHero({
             <Link href="/auth/register" className={PRIMARY_CTA}>
               {t("LANDING_CTA_PRIMARY", "Start free")}
             </Link>
-            <Link href="/" className={SECONDARY_CTA}>
+            <Link href="/predict" className={SECONDARY_CTA}>
               {t("LANDING_CTA_SECONDARY", "Browse markets")}
             </Link>
           </div>
@@ -406,7 +407,7 @@ export function TrendingRow({ markets }: { markets: PredictionMarket[] }) {
               {t("LANDING_TRENDING_SUB", "Real markets, live prices. Tap Yes or No to see how a call works.")}
             </p>
           </div>
-          <Link href="/" className="shrink-0 pb-1 text-[15px] font-semibold text-[var(--t1)] no-underline hover:underline max-[640px]:hidden">
+          <Link href="/predict" className="shrink-0 pb-1 text-[15px] font-semibold text-[var(--t1)] no-underline hover:underline max-[640px]:hidden">
             {t("LANDING_TRENDING_CTA", "See all markets")} →
           </Link>
         </div>
@@ -468,7 +469,7 @@ export function FinalCta() {
             {t("LANDING_CTA_PRIMARY", "Start free")}
           </Link>
           <Link
-            href="/"
+            href="/predict"
             className="inline-flex h-12 items-center rounded-[var(--r-rh-md)] border border-[rgba(255,255,255,0.22)] px-7 text-[15px] font-semibold text-[var(--poster-ink)] no-underline transition-colors duration-150 hover:bg-[rgba(255,255,255,0.08)]"
           >
             {t("LANDING_CTA_SECONDARY", "Browse markets")}
@@ -482,7 +483,7 @@ export function FinalCta() {
 export function WelcomeFooter() {
   const { t } = useTranslation("prediction");
   const links = [
-    { href: "/", label: t("LANDING_FOOTER_MARKETS", "Markets") },
+    { href: "/predict", label: t("LANDING_FOOTER_MARKETS", "Markets") },
     { href: "/leaderboards", label: t("LANDING_FOOTER_LEADERBOARDS", "Leaderboards") },
     { href: "/about", label: t("LANDING_FOOTER_ABOUT", "About") },
     { href: "/terms", label: t("LANDING_FOOTER_TERMS", "Terms") },

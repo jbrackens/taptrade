@@ -377,7 +377,6 @@ export function TopBar() {
       // gray on its own page while every other tab lit up. Accept either
       // form plus the /category/* subroutes that belong under Markets.
       return (
-        pathname === "/" ||
         pathname === "/predict" ||
         pathname.startsWith("/predict/") ||
         pathname.startsWith("/category/") ||
@@ -396,8 +395,10 @@ export function TopBar() {
           isTerminalRoute ? TERMINAL_TOP_BAR_INNER_CLASS : TOP_BAR_INNER_CLASS
         }
       >
+        {/* Inside the app the logo returns to the board; "/" is the
+            landing page for new visitors. */}
         <Link
-          href="/"
+          href="/predict"
           className={TOP_BAR_BRAND_CLASS}
           aria-label={`${brand.name} — home`}
         >

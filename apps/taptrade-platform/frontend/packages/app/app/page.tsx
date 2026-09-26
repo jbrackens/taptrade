@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
+import WelcomePage from "./components/welcome/WelcomePage";
+
 /**
- * Home — the market board (Kalshi / Polymarket model): signed-out
- * visitors get a welcome strip above it, and the curated "This week in
- * the Philippines" photo rail leads it once enough featured moments are
- * live. Same page as /predict; the old dark marketing landing is retired.
+ * Home — the landing page (ads, social, "How it works"). The market board
+ * lives at /predict; /welcome redirects here (next.config.js).
  */
-export { default } from "./predict/page";
+export const metadata: Metadata = {
+  title: "Tap Trade — Call it before it happens",
+  description:
+    "Pick Yes or No on the moments Filipinos are talking about: basketball, esports, pageants, showbiz and more. Free to play with points. 18+.",
+  openGraph: {
+    title: "Tap Trade — Call it before it happens",
+    description:
+      "Pick Yes or No on the moments Filipinos are talking about. Free to play with points. 18+.",
+    images: ["/images/covers/showbiz.jpg"],
+  },
+};
+
+export default function HomePage() {
+  return <WelcomePage />;
+}

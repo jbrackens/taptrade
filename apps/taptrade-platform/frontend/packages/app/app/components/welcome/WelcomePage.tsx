@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * /welcome — campaign landing page. "/" is the market board; this page
- * tells the story first and links into it. All data is live: the hero
+ * WelcomePage — the landing page served at "/" (the market board lives at
+ * /predict). It tells the story first and links into the board. All data is live: the hero
  * card is the most-traded contested open market, the topic tiles carry
  * real open-market counts, and "Trending right now" is the real board.
  * Sections without data hide themselves; nothing is invented.
@@ -15,9 +15,9 @@ import type {
   PredictionMarket,
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { useTranslation } from "react-i18next";
-import { pickFeatured } from "../components/prediction/FeaturedMarket";
-import { localizedMarket } from "../components/prediction/market-content";
-import { QuickTradePanel, type QuickTradeTarget } from "../components/prediction/QuickTradePanel";
+import { pickFeatured } from "../prediction/FeaturedMarket";
+import { localizedMarket } from "../prediction/market-content";
+import { QuickTradePanel, type QuickTradeTarget } from "../prediction/QuickTradePanel";
 import {
   FinalCta,
   HowItWorks,
@@ -28,8 +28,8 @@ import {
   WelcomeFooter,
   WelcomeHeader,
   WelcomeHero,
-} from "../components/welcome/WelcomeSections";
-import { logger } from "../lib/logger";
+} from "./WelcomeSections";
+import { logger } from "../../lib/logger";
 
 const api = createPredictionClient();
 const TRENDING_COUNT = 3;

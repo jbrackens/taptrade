@@ -53,10 +53,9 @@ const TERMINAL_SHELL_MAIN_CLASS =
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith("/auth/");
-  // /welcome is the campaign landing page: full-bleed, with its own
-  // header and footer instead of the app chrome.
-  const isMarketingRoute =
-    pathname === "/welcome" || pathname?.startsWith("/welcome/");
+  // "/" is the landing page: full-bleed, with its own header and footer
+  // instead of the app chrome. The market board lives at /predict.
+  const isMarketingRoute = pathname === "/";
   const isPredictTerminal = isPredictionTerminalRoute(pathname);
 
   // Mirror the route theme onto <html> so PORTALLED UI (dialogs, sheets,
