@@ -50,7 +50,7 @@ function listSourceFiles(rel: string): string[] {
   return out;
 }
 
-// ── Tap Trade safety: user-facing cashier surfaces stay absent ────
+// ── TapTrade safety: user-facing cashier surfaces stay absent ────
 
 describe("points-only safety boundary", () => {
   it("does not ship the user-facing cashier routes", () => {
@@ -760,19 +760,31 @@ describe("MarketCard: Tailwind styling outside Link", () => {
 // ── Bug F: browse-card invariants ─────────────────────────────────
 //
 // The browse card on /predict, /category/* and /series/* is MarketCard
-// (via MarketGrid). The invariants pinned here: probability shown as
-// "N% chance" from the live price, priced side actions with real tap
-// sizes, ?side= deep links for closed markets, no fake sparklines/deltas,
-// and the point-native volume contract.
+// (via MarketGrid). The invariants pinned here: each side's chance on its
+// action from the live price (2026-09-27: the corner no longer repeats it —
+// it shows the player's holding or the time left), real tap sizes, ?side=
+// deep links for closed markets, no fake sparklines/deltas, and the
+// point-native volume contract.
 
 describe("MarketCard composition", () => {
   const cardSource = read("components/prediction/MarketCard.tsx");
 
-  it("shows the YES chance from the live price, never a sentiment sentence", () => {
+  it("shows each side's chance once, from the live price, never a sentiment sentence", () => {
     assert.ok(
-      cardSource.includes("{yesPercentage}%") &&
-        cardSource.includes('t("CHANCE", "chance")'),
-      "cards should show the YES chance as a percentage",
+      cardSource.includes("clampPercentage(yesPricePoints)") &&
+        cardSource.includes("{percentage}%"),
+      "the Yes/No actions carry the chance as a percentage",
+    );
+    assert.ok(
+      !cardSource.includes('t("CHANCE", "chance")') &&
+        !cardSource.includes("{yesPercentage}%"),
+      "the corner must not repeat the Yes chance",
+    );
+    assert.ok(
+      cardSource.includes("timeLeft(closeAt)") &&
+        cardSource.includes('t("TIME_LEFT", "left")') &&
+        cardSource.includes('t("YOU_HOLD_SIDE"'),
+      "the corner shows the player's holding, otherwise the time left",
     );
     assert.ok(
       !cardSource.includes("calculateMarketSentiment") &&
@@ -783,7 +795,7 @@ describe("MarketCard composition", () => {
 
   it("ships the card strings in every prediction locale", () => {
     const locales = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
-    const keys = ["CHANCE", "VOL_SHORT", "PTS_COUNT_one", "PTS_COUNT_other"];
+    const keys = ["TIME_LEFT", "YOU_HOLD_SIDE", "VOL_SHORT", "PTS_COUNT_one", "PTS_COUNT_other"];
 
     for (const locale of locales) {
       const predictionLocale = read(
@@ -804,9 +816,10 @@ describe("MarketCard composition", () => {
       "side actions are 40px on desktop and 44px on phones",
     );
     assert.ok(
-      cardSource.includes('t("PTS_COUNT", { count: price'),
-      "side actions show the side prices in points (never cents)",
+      cardSource.includes("{percentage}%"),
+      "side actions show each side's chance (the points price is the same number)",
     );
+    assert.ok(!/¢|cents?\b/.test(cardSource), "never cents");
   });
 
   it("YES/NO actions deep-link with ?side= so the trade ticket pre-selects", () => {
@@ -1204,7 +1217,7 @@ describe("Static informational pages", () => {
     );
     assert.ok(
       aboutSource.includes('slug="about-us"') &&
-        aboutSource.includes("About Tap Trade"),
+        aboutSource.includes("About TapTrade"),
       "/about should render the About Us fallback content",
     );
   });

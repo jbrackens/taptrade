@@ -124,9 +124,10 @@ together.
   tile with a T knocked out, its bottom-left corner running out to a point —
   making your call is the brand gesture. One colour: ink on light, warm
   white on dark. The pink lives only on the wordmark's period, never on the
-  mark (a magenta T is T-Mobile's territory). Wordmark = mark + brand name
-  in Inter 700 + pink period; `BrandMark size` is the mark's height (24px
-  in headers beside 18px type). The favicon (`app/icon.svg`) is the bare
+  mark (a magenta T is T-Mobile's territory). Wordmark = mark + "TapTrade"
+  (one word — "Tap Trade" is retired) in Inter 700 + pink period;
+  `BrandMark size` is the mark's height (24px in headers beside 18px
+  type). The favicon (`app/icon.svg`) is the bare
   mark and flips to warm white on dark tabs; home-screen icons
   (`app/icon.png`, `app/apple-icon.png`, `public/brand/taptrade-app-icon.svg`)
   are an ink tile with the mark in white.

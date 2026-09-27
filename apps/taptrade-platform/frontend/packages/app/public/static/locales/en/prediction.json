@@ -76,7 +76,7 @@
   "LIVE_RECENT": "Recent",
   "LIVE_REFRESH": "Refresh",
   "LIVE_SCORE_PENDING": "Score pending",
-  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; Tap Trade market prices remain driven by our exchange.",
+  "LIVE_SUBTITLE": "Realtime sports state and market-data ticks from upstream live feeds. These updates inform this page only; TapTrade market prices remain driven by our exchange.",
   "LIVE_TITLE": "In-play moments",
   "LIVE_UPDATED": "Updated {{value}}",
   "LOADING": "Loading...",
@@ -350,7 +350,7 @@
   "LANDING_TRENDING_TITLE": "Trending right now",
   "LANDING_TRENDING_SUB": "Real markets, live prices. Tap Yes or No to see how a call works.",
   "LANDING_TRENDING_CTA": "See all markets",
-  "LANDING_TRUST_LABEL": "Why Tap Trade",
+  "LANDING_TRUST_LABEL": "Why TapTrade",
   "LANDING_TRUST1_TITLE": "Free to play",
   "LANDING_TRUST1_BODY": "Sign up and start with free points. No card needed.",
   "LANDING_TRUST2_TITLE": "Clear rules",
@@ -365,5 +365,7 @@
   "LANDING_FOOTER_ABOUT": "About",
   "LANDING_FOOTER_TERMS": "Terms",
   "LANDING_FOOTER_PRIVACY": "Privacy",
-  "LANDING_FOOTER_RESPONSIBLE": "Responsible play"
+  "LANDING_FOOTER_RESPONSIBLE": "Responsible play",
+  "TIME_LEFT": "left",
+  "YOU_HOLD_SIDE": "you hold {{side}}"
 }

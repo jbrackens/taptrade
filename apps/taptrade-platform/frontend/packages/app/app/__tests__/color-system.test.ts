@@ -29,7 +29,7 @@ const marketHead = readFileSync(
 
 // The Kilig system (adopted 2026-09-24, DESIGN.md): ink and white chrome,
 // Kilig pink for identity and liveness, blue/orange for YES/NO only.
-describe("Tap Trade Kilig color system", () => {
+describe("TapTrade Kilig color system", () => {
   it("pins the approved neutral, identity, and market-semantic primitives", () => {
     const expected = {
       paper: "#f5f5f7",

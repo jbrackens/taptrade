@@ -467,7 +467,7 @@ describe("wallet-client endpoint paths", () => {
     );
   });
 
-  it("names the shared API-client class for Tap Trade and drops the retired compatibility alias", () => {
+  it("names the shared API-client class for TapTrade and drops the retired compatibility alias", () => {
     assert.ok(
       sharedApiClientSource.includes("export class TapTradeApiClient") &&
         sharedApiIndexSource.includes(

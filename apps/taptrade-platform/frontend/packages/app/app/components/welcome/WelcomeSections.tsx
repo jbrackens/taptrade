@@ -35,7 +35,7 @@ import { topicCover } from "../prediction/topic-covers";
 
 export const HERO_FINE_LEGAL = "Points only · no cash, no cash-out · 18+";
 export const FOOTER_LEGAL =
-  "Tap Trade uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.";
+  "TapTrade uses non-redeemable gameplay points. Points cannot be cashed out, withdrawn, transferred, or redeemed for prizes. Prediction markets are speculative; outcomes are not guaranteed. 18+.";
 
 /** Topic tiles, in display order. Tiles with no open markets are hidden. */
 export const WELCOME_TOPICS = [
@@ -67,10 +67,10 @@ export function WelcomeHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--border-1)] bg-[color-mix(in_srgb,var(--surface-1)_90%,transparent)] backdrop-blur-md">
       <div className={`${WRAP} flex h-16 items-center justify-between gap-4`}>
-        <Link href="/" className="flex items-center gap-2.5 text-[var(--t1)] no-underline" aria-label="Tap Trade">
+        <Link href="/" className="flex items-center gap-2.5 text-[var(--t1)] no-underline" aria-label="TapTrade">
           <BrandMark size={24} tone="ink" />
           <span className="text-[18px] font-bold tracking-[-0.03em]">
-            Tap Trade<span className="text-[var(--brand-period)]">.</span>
+            TapTrade<span className="text-[var(--brand-period)]">.</span>
           </span>
         </Link>
         <nav className="flex items-center gap-2">
@@ -153,10 +153,8 @@ function LiveMarketCard({
             }`}
           >
             {side === "yes" ? t("YES") : t("NO")}{" "}
-            <span className="font-medium opacity-85">
-              {t("PTS_COUNT", {
-                count: side === "yes" ? market.yesPricePoints : market.noPricePoints,
-              })}
+            <span className="font-medium tabular-nums opacity-85">
+              {side === "yes" ? yes : 100 - yes}%
             </span>
           </button>
         ))}
@@ -429,7 +427,7 @@ export function TrustBand() {
     { icon: ShieldCheck, title: t("LANDING_TRUST3_TITLE", "Points are play"), body: t("LANDING_TRUST3_BODY", "18+ only. Points are for play and bragging rights, and they stay that way.") },
   ];
   return (
-    <section className="border-y border-[var(--border-1)] bg-[var(--surface-1)] py-14" aria-label={t("LANDING_TRUST_LABEL", "Why Tap Trade")}>
+    <section className="border-y border-[var(--border-1)] bg-[var(--surface-1)] py-14" aria-label={t("LANDING_TRUST_LABEL", "Why TapTrade")}>
       <div className={`${WRAP} grid grid-cols-3 gap-8 max-[900px]:grid-cols-1 max-[900px]:gap-6`}>
         {items.map(({ icon: Icon, title, body }) => (
           <div key={title} className="flex items-start gap-4">
@@ -497,7 +495,7 @@ export function WelcomeFooter() {
           <span className="flex items-center gap-2 text-[16px] font-bold tracking-[-0.03em] text-[var(--t1)]">
             <BrandMark size={20} tone="ink" />
             <span>
-              Tap Trade<span className="text-[var(--brand-period)]">.</span>
+              TapTrade<span className="text-[var(--brand-period)]">.</span>
             </span>
           </span>
           <nav className="flex flex-wrap gap-x-6 gap-y-2" aria-label={t("LANDING_FOOTER_LABEL", "Footer")}>

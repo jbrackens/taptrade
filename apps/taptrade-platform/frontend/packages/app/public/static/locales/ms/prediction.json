@@ -327,7 +327,7 @@
   "LANDING_TRENDING_TITLE": "Sedang tren",
   "LANDING_TRENDING_SUB": "Pasaran sebenar, harga langsung. Ketik Ya atau Tidak untuk melihat cara ramalan berfungsi.",
   "LANDING_TRENDING_CTA": "Lihat semua pasaran",
-  "LANDING_TRUST_LABEL": "Mengapa Tap Trade",
+  "LANDING_TRUST_LABEL": "Mengapa TapTrade",
   "LANDING_TRUST1_TITLE": "Percuma untuk dimain",
   "LANDING_TRUST1_BODY": "Daftar dan mula dengan mata percuma. Tiada kad diperlukan.",
   "LANDING_TRUST2_TITLE": "Peraturan jelas",
@@ -342,5 +342,7 @@
   "LANDING_FOOTER_ABOUT": "Tentang",
   "LANDING_FOOTER_TERMS": "Terma",
   "LANDING_FOOTER_PRIVACY": "Privasi",
-  "LANDING_FOOTER_RESPONSIBLE": "Bermain secara bertanggungjawab"
+  "LANDING_FOOTER_RESPONSIBLE": "Bermain secara bertanggungjawab",
+  "TIME_LEFT": "lagi",
+  "YOU_HOLD_SIDE": "anda pegang {{side}}"
 }

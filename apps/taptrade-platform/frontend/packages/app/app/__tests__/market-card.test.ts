@@ -22,14 +22,15 @@ const featured = readFileSync(
 );
 
 describe("Market Discovery Card", () => {
-  it("keeps the Kilig card anatomy: thumb, clamped question, chance and volume", () => {
+  it("keeps the card anatomy: thumb, clamped question, corner, chance and volume", () => {
     // The 2026-09-24 redesign dropped the ranked/mixed anatomy for a
-    // uniform card: MarketThumb + a line-clamped question with the YES
-    // chance at the right, then a quiet volume/close-date footer line.
+    // uniform card: MarketThumb + a line-clamped question, then a quiet
+    // volume footer line. Since 2026-09-27 the chance lives on the Yes/No
+    // actions and the corner shows the player's holding or the time left.
     assert.match(card, /<MarketThumb categorySlug=\{categorySlug\} imageUrl=\{photo\}/);
     assert.match(card, /line-clamp-3/);
-    assert.match(card, /\{yesPercentage\}%/);
-    assert.match(card, /t\("CHANCE", "chance"\)/);
+    assert.match(card, /\{percentage\}%/);
+    assert.match(card, /t\("TIME_LEFT", "left"\)/);
     assert.match(card, /formatCompactPoints\(volumePoints\)/);
     assert.match(card, /t\("VOL_SHORT", "vol"\)/);
     // Cards now carry a whisper of resting shadow with a small lift on

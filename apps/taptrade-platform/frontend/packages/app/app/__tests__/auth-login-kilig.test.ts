@@ -46,7 +46,7 @@ describe("login card shape (step 7)", () => {
     assert.match(login, /items-center justify-center/);
   });
 
-  it("renders the Tap Trade mark, the wordmark's pink period and a poster title", () => {
+  it("renders the TapTrade mark, the wordmark's pink period and a poster title", () => {
     assert.match(login, /<BrandMark[^>]*tone="ink"/);
     assert.match(login, /text-\[var\(--brand-period\)\]/);
     assert.match(login, /type-poster/);

@@ -92,7 +92,7 @@ const TERMINAL_TOP_BAR_INNER_CLASS =
 const TOP_BAR_BRAND_CLASS =
   "inline-flex min-h-11 shrink-0 items-center gap-[10px] no-underline";
 
-// Tap Trade uses a title-case wordmark beside the approved stepped-route
+// TapTrade uses a title-case wordmark beside the approved stepped-route
 // mark, set in the UI face so white-label brand names stay data-driven.
 // The Kilig period after the name is the brand's one flash of pink here.
 const TOP_BAR_WORDMARK_CLASS =

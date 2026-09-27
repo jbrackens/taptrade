@@ -4,11 +4,12 @@
  * Single source of truth for the white-labelable brand identity. Values
  * resolve from NEXT_PUBLIC_BRAND_* env at BUILD time (Next inlines
  * NEXT_PUBLIC_* into both server and client bundles), defaulting to the current
- * "Tap Trade" brand so an unset env is a no-op. Switching brand = set the env (a
+ * "TapTrade" brand so an unset env is a no-op. Switching brand = set the env (a
  * build-arg in the deploy, the same way NEXT_PUBLIC_WS_URL etc. are baked) and
  * rebuild — no code change. The launch name is SETTLED: the product launches as
- * Tap Trade, and the default below is that decision expressed as config rather
- * than a refactor.
+ * TapTrade — one word, as the wordmark reads (2026-09-27; "Tap Trade" is
+ * retired) — and the default below is that decision expressed as config
+ * rather than a refactor.
  *
  * Scope today: brand NAME, support/legal contact, operator entity — the
  * visible chrome (title, nav/footer wordmark, login, home hero). DOCUMENTED
@@ -19,7 +20,7 @@
  */
 
 export interface Brand {
-  /** Display name / wordmark text, e.g. "Tap Trade". */
+  /** Display name / wordmark text, e.g. "TapTrade". */
   name: string;
   /** Operator legal entity, used in legal and footer copy. */
   legalEntity: string;
@@ -31,7 +32,7 @@ export interface Brand {
 }
 
 export const brand: Brand = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME || "Tap Trade",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME || "TapTrade",
   legalEntity:
     process.env.NEXT_PUBLIC_BRAND_LEGAL_ENTITY || "DORA Research, Inc.",
   supportEmail:

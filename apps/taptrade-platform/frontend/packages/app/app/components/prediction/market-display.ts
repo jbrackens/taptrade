@@ -9,20 +9,29 @@ type Translate = (key: string, options?: Record<string, unknown>) => string;
 // the single Points-display module. This file keeps market status/sorting
 // helpers only.
 
-export function formatTimeLeft(closeAt: string): string {
-  const diff = new Date(closeAt).getTime() - Date.now();
-  if (diff <= 0) return "Closed";
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) {
-    const mins = Math.max(1, Math.floor(diff / (1000 * 60)));
-    return `${mins}m left`;
-  }
-
-  if (hours < 24) return `${hours}h left`;
-
-  const days = Math.floor(hours / 24);
-  return `${days}d left`;
+/**
+ * Time until a market closes, in its one largest unit: "42m", "6h", "3d",
+ * "5mo", "2y". `urgent` marks the last 24 hours. Null once closed or when
+ * the date is unreadable — callers show nothing rather than a guess.
+ */
+export function timeLeft(
+  closeAt: string,
+  now: number = Date.now(),
+): { value: string; urgent: boolean } | null {
+  const diff = new Date(closeAt).getTime() - now;
+  if (!Number.isFinite(diff) || diff <= 0) return null;
+  const urgent = diff < DAY_MS;
+  if (diff < HOUR_MS)
+    return { value: `${Math.max(1, Math.floor(diff / 60_000))}m`, urgent };
+  if (diff < DAY_MS) return { value: `${Math.floor(diff / HOUR_MS)}h`, urgent };
+  const days = Math.floor(diff / DAY_MS);
+  if (days < 60) return { value: `${days}d`, urgent };
+  const months = Math.floor(days / 30);
+  if (months < 24) return { value: `${months}mo`, urgent };
+  return { value: `${Math.floor(days / 365)}y`, urgent };
 }
 
 export function isOpenMarketStatus(status: MarketStatus | string): boolean {

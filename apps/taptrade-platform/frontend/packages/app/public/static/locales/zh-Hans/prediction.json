@@ -327,7 +327,7 @@
   "LANDING_TRENDING_TITLE": "当前热门",
   "LANDING_TRENDING_SUB": "真实市场，实时价格。点选“是”或“否”，看看判断如何运作。",
   "LANDING_TRENDING_CTA": "查看全部市场",
-  "LANDING_TRUST_LABEL": "为什么选择 Tap Trade",
+  "LANDING_TRUST_LABEL": "为什么选择 TapTrade",
   "LANDING_TRUST1_TITLE": "免费参与",
   "LANDING_TRUST1_BODY": "注册即可获得免费积分，无需银行卡。",
   "LANDING_TRUST2_TITLE": "规则清晰",
@@ -342,5 +342,7 @@
   "LANDING_FOOTER_ABOUT": "关于",
   "LANDING_FOOTER_TERMS": "条款",
   "LANDING_FOOTER_PRIVACY": "隐私",
-  "LANDING_FOOTER_RESPONSIBLE": "理性参与"
+  "LANDING_FOOTER_RESPONSIBLE": "理性参与",
+  "TIME_LEFT": "剩余",
+  "YOU_HOLD_SIDE": "你持有 {{side}}"
 }

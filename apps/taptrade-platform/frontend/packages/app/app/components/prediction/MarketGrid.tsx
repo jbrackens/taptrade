@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
+import { useHeldPositions } from "../../lib/query/position-hooks";
 import { MarketCard } from "./MarketCard";
 import { categoryLabel, localizedMarket } from "./market-content";
 import { QuickTradePanel, type QuickTradeTarget } from "./QuickTradePanel";
@@ -38,6 +39,7 @@ export function MarketGrid({
   // links to the full market page.
   const [quickTrade, setQuickTrade] = useState<QuickTradeTarget | null>(null);
   const openQuickTrade = onQuickTrade ?? setQuickTrade;
+  const held = useHeldPositions();
 
   if (!markets || markets.length === 0) return null;
 
@@ -71,6 +73,7 @@ export function MarketGrid({
                 imageUrl={localized.imageUrl}
                 image_url={localized.image_url}
                 watched={watchedMarketIds?.has(localized.id) ?? false}
+                held={held.get(localized.id)}
                 onToggleWatchlist={onToggleWatchlist}
                 onQuickTrade={(side) =>
                   openQuickTrade({ market: localized, side })

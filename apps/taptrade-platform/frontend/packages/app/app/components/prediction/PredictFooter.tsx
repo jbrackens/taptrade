@@ -4,7 +4,7 @@
  * PredictFooter — the Kilig anchor (DESIGN.md §6 chrome).
  *
  * Chrome is ink + white + hairlines: every page ends on a plain white
- * footer under a hairline, the ink Tap Trade lockup, quiet ink links, and
+ * footer under a hairline, the ink TapTrade lockup, quiet ink links, and
  * a small muted legal line. No brand-color slab — Kilig pink stays
  * reserved for identity and liveness, never a footer ground.
  */

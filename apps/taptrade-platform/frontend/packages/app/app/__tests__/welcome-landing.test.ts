@@ -28,7 +28,7 @@ describe("landing route", () => {
   });
 
   it("ships share metadata for ads and social", () => {
-    assert.match(layout, /title: "Tap Trade — Call it before it happens"/);
+    assert.match(layout, /title: "TapTrade — Call it before it happens"/);
     assert.match(layout, /openGraph:/);
   });
 

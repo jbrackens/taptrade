@@ -141,9 +141,7 @@ export function FeaturedMarket({
                 >
                   {side === "yes" ? t("BUY_YES", "Buy Yes") : t("BUY_NO", "Buy No")}
                   <span className="font-medium tabular-nums opacity-85">
-                    {t("PTS_COUNT", {
-                      count: side === "yes" ? featured.yesPricePoints : featured.noPricePoints,
-                    })}
+                    {side === "yes" ? yes : no}%
                   </span>
                 </button>
               ))}

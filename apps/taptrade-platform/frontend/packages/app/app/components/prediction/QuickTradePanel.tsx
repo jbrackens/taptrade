@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import type {
   OrderSide,
@@ -20,6 +21,7 @@ import type {
 } from "@taptrade-ui/api-client/src/prediction-types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "../ui/Dialog";
 import { Sheet } from "../ui/Sheet.lazy";
+import { positionQueryKeys } from "../../lib/query/position-hooks";
 import { InspectorPanel } from "./InspectorPanel";
 
 export interface QuickTradeTarget {
@@ -57,8 +59,13 @@ export function QuickTradePanel({
   const open = target !== null;
   const label = t("QUICK_TRADE", "Quick trade");
   const title = current?.market.title ?? label;
+  const queryClient = useQueryClient();
   const onOpenChange = (next: boolean) => {
-    if (!next) onClose();
+    if (!next) {
+      // A trade here may have opened or closed a position; cards show it.
+      void queryClient.invalidateQueries({ queryKey: positionQueryKeys.all });
+      onClose();
+    }
   };
   const onMarketUpdate = (market: PredictionMarket) => {
     setCurrent((prev) =>

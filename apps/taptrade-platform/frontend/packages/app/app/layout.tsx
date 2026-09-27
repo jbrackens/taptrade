@@ -49,7 +49,7 @@ export default function RootLayout({
         {/* Analytics: intentionally none. The container that used to load here
          * (GTM-PJSSBJG) was inherited from the pre-fork sportsbook codebase and
          * reported every production pageview to a third party's account. It was
-         * removed in the 2026-09 brand migration. Re-add a Tap Trade-owned
+         * removed in the 2026-09 brand migration. Re-add a TapTrade-owned
          * container here when one exists. */}
       </head>
       <body>

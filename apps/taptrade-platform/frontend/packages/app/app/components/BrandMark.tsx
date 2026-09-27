@@ -1,5 +1,5 @@
 /**
- * Tap Trade brand mark — "First Word" (2026-09-26): a speech tile with a T
+ * TapTrade brand mark — "First Word" (2026-09-26): a speech tile with a T
  * knocked out, its bottom-left corner running out to a point. Making your
  * call is the brand gesture; the T keeps it ours rather than a chat icon.
  *

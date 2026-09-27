@@ -329,7 +329,7 @@
   "LANDING_TRENDING_TITLE": "Trending ngayon",
   "LANDING_TRENDING_SUB": "Totoong market, live na presyo. I-tap ang Oo o Hindi para makita kung paano gumagana ang hula.",
   "LANDING_TRENDING_CTA": "Tingnan lahat ng market",
-  "LANDING_TRUST_LABEL": "Bakit Tap Trade",
+  "LANDING_TRUST_LABEL": "Bakit TapTrade",
   "LANDING_TRUST1_TITLE": "Libreng laruin",
   "LANDING_TRUST1_BODY": "Mag-sign up at magsimula sa libreng points. Walang card na kailangan.",
   "LANDING_TRUST2_TITLE": "Malinaw na patakaran",
@@ -344,5 +344,7 @@
   "LANDING_FOOTER_ABOUT": "Tungkol sa amin",
   "LANDING_FOOTER_TERMS": "Mga tuntunin",
   "LANDING_FOOTER_PRIVACY": "Privacy",
-  "LANDING_FOOTER_RESPONSIBLE": "Responsableng paglalaro"
+  "LANDING_FOOTER_RESPONSIBLE": "Responsableng paglalaro",
+  "TIME_LEFT": "natitira",
+  "YOU_HOLD_SIDE": "hawak mo: {{side}}"
 }
