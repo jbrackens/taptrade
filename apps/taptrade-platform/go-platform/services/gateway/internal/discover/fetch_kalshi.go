@@ -107,6 +107,7 @@ func FetchKalshiFrom(limit int, scan KalshiScan) ([]Market, KalshiScan, error) {
 		{status: "open", keep: openBudget, pages: kalshiOpenPagesPerRun, cursor: &next.Open},
 		{status: "settled", keep: settledBudget, pages: kalshiSettledPagesPerRun, cursor: &next.Settled},
 	}
+	var pageErr error
 	for _, pass := range passes {
 		candidates := []Market{}
 		cursor := *pass.cursor
@@ -125,8 +126,12 @@ func FetchKalshiFrom(limit int, scan KalshiScan) ([]Market, KalshiScan, error) {
 				Cursor string        `json:"cursor"`
 			}
 			if err := fetchWithBudget("kalshi", endpoint, &data); err != nil {
-				*pass.cursor = cursor
-				return out, next, fmt.Errorf("kalshi status=%s cursor=%q: %w", pass.status, cursor, err)
+				// A bad page (truncated body, upstream hiccup) must not pin
+				// the scan to itself: this listing restarts from the top
+				// next run, and what this run already gathered still counts.
+				pageErr = fmt.Errorf("kalshi status=%s cursor=%q: %w", pass.status, cursor, err)
+				cursor = ""
+				break
 			}
 			pages++
 			candidates = append(candidates, kalshiEventMarkets(data.Events, pass.status, now)...)
@@ -157,9 +162,12 @@ func FetchKalshiFrom(limit int, scan KalshiScan) ([]Market, KalshiScan, error) {
 	// healthy sync that imported nothing. The cursors still advance so a
 	// single junk slice cannot stall the scan.
 	if len(out) == 0 {
+		if pageErr != nil {
+			return out, next, pageErr
+		}
 		return out, next, fmt.Errorf("kalshi: 0 usable markets after %d page(s) — listing schema or content drifted?", pages)
 	}
-	return out, next, nil
+	return out, next, pageErr
 }
 
 type kalshiEvent struct {

@@ -79,6 +79,8 @@ export interface PredictionMarket {
   eventTitle?: string;
   /** True when the parent is a per-category catch-all, not a real event. */
   eventSynthetic?: boolean;
+  /** Open markets in this market's real event (0 under a catch-all). */
+  eventOpenMarkets?: number;
   categoryId?: string;
   categorySlug?: string;
   categoryName?: string;

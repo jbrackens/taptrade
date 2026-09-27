@@ -132,6 +132,10 @@ type Market struct {
 	// ImageCredit is the attribution an openly licensed cover carries
 	// (migration 060); shown beside the image on the market page.
 	ImageCredit          *string         `json:"imageCredit,omitempty" db:"-"`
+	// EventOpenMarkets counts the open markets in this market's real event
+	// (0 under a catch-all), so the board can show one card per event even
+	// when the ranking lists only one of them.
+	EventOpenMarkets     int             `json:"eventOpenMarkets,omitempty" db:"-"`
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
@@ -192,6 +196,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventTitle           *string         `json:"eventTitle,omitempty"`
 		EventSynthetic       bool            `json:"eventSynthetic,omitempty"`
 		ImageCredit          *string         `json:"imageCredit,omitempty"`
+		EventOpenMarkets     int             `json:"eventOpenMarkets,omitempty"`
 		CategoryID           string          `json:"categoryId,omitempty"`
 		CategorySlug         string          `json:"categorySlug,omitempty"`
 		CategoryName         string          `json:"categoryName,omitempty"`
@@ -243,6 +248,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventTitle:           m.EventTitle,
 		EventSynthetic:       m.EventSynthetic,
 		ImageCredit:          m.ImageCredit,
+		EventOpenMarkets:     m.EventOpenMarkets,
 		CategoryID:           m.CategoryID,
 		CategorySlug:         m.CategorySlug,
 		CategoryName:         m.CategoryName,

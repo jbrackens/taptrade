@@ -12,7 +12,9 @@
  */
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { formatCompactPoints } from "../../lib/points";
 import { categoryLabel } from "./market-content";
@@ -24,8 +26,12 @@ interface EventCardProps {
   eventId: string;
   title: string;
   markets: PredictionMarket[];
+  /** Open markets in the event; when the list carries fewer, rows are fetched. */
+  openMarkets?: number;
   onQuickTrade?: (market: PredictionMarket, side: "yes" | "no") => void;
 }
+
+const api = createPredictionClient();
 
 function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) return 50;
@@ -39,15 +45,28 @@ const CHIP_TONE: Record<"yes" | "no", string> = {
   no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
 };
 
-export function EventCard({ eventId, title, markets, onQuickTrade }: EventCardProps) {
+export function EventCard({ eventId, title, markets: listed, openMarkets = 0, onQuickTrade }: EventCardProps) {
   const { t } = useTranslation("prediction");
   const { t: tc } = useTranslation("market-content");
+  // The ranking keeps an event's siblings apart, so the list often carries
+  // one of its markets: fetch the event's busiest open markets for the rows.
+  const wantRows = Math.min(openMarkets, EVENT_CARD_ROWS);
+  const { data: fetched } = useQuery({
+    queryKey: ["event-card", eventId, wantRows],
+    queryFn: async () => {
+      const res = await api.getMarkets({ eventId, status: "open", sort: "activity", pageSize: EVENT_CARD_ROWS });
+      return res.data;
+    },
+    enabled: listed.length < wantRows,
+    staleTime: 60_000,
+  });
+  const markets = fetched && fetched.length > listed.length ? fetched : listed;
   const lead = markets[0];
   const photo = markets
     .map((m) => m.imagePath || m.imageUrl || m.image_url)
     .find((value) => value && value.trim().length > 0);
   const rows = markets.slice(0, EVENT_CARD_ROWS);
-  const more = markets.length - rows.length;
+  const more = Math.max(openMarkets, markets.length) - rows.length;
   // The event closes with its last market; the corner shows the time left
   // to that, pink in the last 24 hours, like a market card.
   const lastClose = markets.reduce(

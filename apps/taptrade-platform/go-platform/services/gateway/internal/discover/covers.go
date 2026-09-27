@@ -294,7 +294,7 @@ func (c *CoverResolver) commonsImage(ctx context.Context, file string) (CoverLoo
 					DescriptionURL string `json:"descriptionurl"`
 					Mime           string `json:"mime"`
 					ExtMetadata    map[string]struct {
-						Value string `json:"value"`
+						Value json.RawMessage `json:"value"`
 					} `json:"extmetadata"`
 				} `json:"imageinfo"`
 			} `json:"pages"`
@@ -308,7 +308,7 @@ func (c *CoverResolver) commonsImage(ctx context.Context, file string) (CoverLoo
 	}
 	for _, page := range info.Query.Pages {
 		for _, ii := range page.ImageInfo {
-			license := ii.ExtMetadata["LicenseShortName"].Value
+			license := rawString(ii.ExtMetadata["LicenseShortName"].Value)
 			if !licenseAllowsReuse(license) || !strings.HasPrefix(ii.Mime, "image/") || ii.Mime == "image/svg+xml" {
 				continue
 			}
@@ -316,7 +316,7 @@ func (c *CoverResolver) commonsImage(ctx context.Context, file string) (CoverLoo
 			if imageURL == "" {
 				imageURL = ii.URL
 			}
-			artist := stripTags(ii.ExtMetadata["Artist"].Value)
+			artist := stripTags(rawString(ii.ExtMetadata["Artist"].Value))
 			credit := "Wikimedia Commons"
 			if artist != "" {
 				credit = artist + " / Wikimedia Commons"
@@ -567,6 +567,20 @@ func (c *CoverResolver) getJSON(ctx context.Context, endpoint string, out any) e
 		return err
 	}
 	return json.Unmarshal(body, out)
+}
+
+// rawString reads a Commons extmetadata value, which is a string for the
+// fields we use but a number for others in the same map (a strict string
+// field failed the whole lookup on 2026-09-27).
+func rawString(raw json.RawMessage) string {
+	if len(raw) == 0 {
+		return ""
+	}
+	var s string
+	if json.Unmarshal(raw, &s) == nil {
+		return s
+	}
+	return strings.Trim(string(raw), `"`)
 }
 
 var tagPattern = regexp.MustCompile(`<[^>]*>`)

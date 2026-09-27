@@ -71,6 +71,7 @@ export function MarketGrid({
                   eventId={item.eventId}
                   title={item.title}
                   markets={item.markets}
+                  openMarkets={item.openMarkets}
                   onQuickTrade={(market, side) => openQuickTrade({ market, side })}
                 />
               </div>

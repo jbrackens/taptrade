@@ -950,6 +950,7 @@ function normalizePredictionMarket(
     eventId: row.eventId,
     eventTitle: row.eventTitle,
     eventSynthetic: row.eventSynthetic === true ? true : undefined,
+    eventOpenMarkets: typeof row.eventOpenMarkets === "number" ? row.eventOpenMarkets : undefined,
     categoryId: row.categoryId,
     categorySlug: row.categorySlug,
     categoryName: row.categoryName,

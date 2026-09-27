@@ -46,13 +46,23 @@ describe("groupIntoEventCards", () => {
     assert.equal(items[0].kind === "event" && items[0].title, "Chiefs vs. Dolphins");
   });
 
-  it("never groups markets parked in a catch-all event, and never a lone market", () => {
+  it("never groups markets parked in a catch-all event, and never a lone market of a one-market event", () => {
     const items = groupIntoEventCards([
       market("a", "ev-desk", "Will BTC hit 100k?", { eventSynthetic: true, eventTitle: "Crypto & Chains" }),
       market("b", "ev-desk", "Will ETH flip BTC?", { eventSynthetic: true, eventTitle: "Crypto & Chains" }),
-      market("c", "ev-solo", "Will Norway win?", { eventTitle: "Norway vs. Portugal" }),
+      market("c", "ev-solo", "Will Norway win?", { eventTitle: "Norway vs. Portugal", eventOpenMarkets: 1 }),
     ]);
     assert.deepEqual(items.map((i) => i.kind), ["market", "market", "market"]);
+  });
+
+  it("makes an event card from a lone market whose event has more open markets", () => {
+    const items = groupIntoEventCards([
+      market("a", "ev-game", "Spread: Chiefs (-10.5)", { eventTitle: "Chiefs vs. Dolphins", eventOpenMarkets: 4 }),
+    ]);
+    assert.equal(items.length, 1);
+    assert.equal(items[0].kind, "event");
+    assert.equal(items[0].kind === "event" && items[0].openMarkets, 4);
+    assert.match(read("components/prediction/EventCard.tsx"), /enabled: listed\.length < wantRows/);
   });
 
   it("labels markets inside their event without repeating the event title", () => {

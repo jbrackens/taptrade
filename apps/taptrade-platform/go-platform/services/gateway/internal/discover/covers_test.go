@@ -155,7 +155,7 @@ func TestCoverResolver_EntityPhoto(t *testing.T) {
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"query": map[string]any{"pages": map[string]any{"1": map[string]any{"imageinfo": []any{map[string]any{
 			"thumburl": imgSrv.URL + "/640px-photo.jpg", "url": imgSrv.URL + "/photo.jpg", "descriptionurl": "https://commons.wikimedia.org/wiki/File:VPSD_Official_Photo.jpg", "mime": "image/jpeg",
-			"extmetadata": map[string]any{"LicenseShortName": map[string]any{"value": "CC BY 4.0"}, "Artist": map[string]any{"value": `<a href="x">Office of the Vice President</a>`}},
+			"extmetadata": map[string]any{"LicenseShortName": map[string]any{"value": "CC BY 4.0"}, "Artist": map[string]any{"value": `<a href="x">Office of the Vice President</a>`}, "DateTime": map[string]any{"value": 20240101}},
 		}}}}}})
 	}))
 	defer commons.Close()

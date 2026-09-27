@@ -6,12 +6,19 @@ import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-ty
  * into one event card, in the position of the first of them; everything
  * else stays a market card. Markets parked in a per-category catch-all
  * event (`eventSynthetic`) never group — they are unrelated questions.
+ *
+ * The activity ranking deliberately keeps an event's siblings apart, so a
+ * page usually carries one market per event. A lone market whose event has
+ * more open markets (`eventOpenMarkets`) still becomes an event card; the
+ * card loads the rest of its rows itself.
  */
 export type EventGroup = {
   kind: "event";
   eventId: string;
   title: string;
   markets: PredictionMarket[];
+  /** Open markets in the event, when more than this list carries. */
+  openMarkets: number;
 };
 
 export type GridItem = { kind: "market"; market: PredictionMarket } | EventGroup;
@@ -31,7 +38,8 @@ export function groupIntoEventCards(markets: PredictionMarket[]): GridItem[] {
   const items: GridItem[] = [];
   for (const m of markets) {
     const group = m.eventId && !m.eventSynthetic ? byEvent.get(m.eventId) : undefined;
-    if (!group || group.length < 2) {
+    const openMarkets = Math.max(m.eventOpenMarkets ?? 0, group?.length ?? 0);
+    if (!group || (group.length < 2 && openMarkets < 2)) {
       items.push({ kind: "market", market: m });
       continue;
     }
@@ -42,6 +50,7 @@ export function groupIntoEventCards(markets: PredictionMarket[]): GridItem[] {
       eventId: m.eventId,
       title: m.eventTitle?.trim() || group[0].title,
       markets: group,
+      openMarkets,
     });
   }
   return items;

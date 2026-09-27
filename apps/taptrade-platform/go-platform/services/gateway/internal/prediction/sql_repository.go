@@ -1835,7 +1835,9 @@ func marketSelectQuery() string {
 	               m.best_no_bid_points, m.best_no_ask_points, m.last_quote_at,
 	               m.article_source_id, pe.title AS event_title,
 	               COALESCE(pe.is_synthetic, false) AS event_synthetic,
-	               im.image_credit
+	               im.image_credit,
+	               CASE WHEN COALESCE(pe.is_synthetic, false) THEN 0
+	                    ELSE (SELECT count(*) FROM prediction_markets x WHERE x.event_id = m.event_id AND x.status = 'open') END AS event_open_markets
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
 	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
@@ -2012,7 +2014,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
-		&articleSourceID, &eventTitle, &m.EventSynthetic, &imageCredit)
+		&articleSourceID, &eventTitle, &m.EventSynthetic, &imageCredit, &m.EventOpenMarkets)
 	if err != nil {
 		return nil, err
 	}

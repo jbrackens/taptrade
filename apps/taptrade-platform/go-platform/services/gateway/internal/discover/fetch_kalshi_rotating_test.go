@@ -188,3 +188,38 @@ func tickersOf(ms []Market) []string {
 	}
 	return out
 }
+
+// A page that fails to parse (the 2026-09-27 "unexpected end of JSON input"
+// on a deep open page) keeps what the run already gathered, reports the
+// error, and restarts that listing from the top next run instead of
+// retrying the same page forever.
+func TestFetchKalshiFrom_BadPageKeepsPartialAndResetsCursor(t *testing.T) {
+	resetBudget()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		w.WriteHeader(http.StatusOK)
+		switch q.Get("status") + "@" + q.Get("cursor") {
+		case "open@":
+			_ = json.NewEncoder(w).Encode(kalshiPage("ok", 3, 100, "c1"))
+		case "open@c1":
+			_, _ = w.Write([]byte(`{"events": [{"event_ticker": "KXBROKEN"`)) // truncated body
+		default:
+			_ = json.NewEncoder(w).Encode(map[string]any{"events": []any{}, "cursor": ""})
+		}
+	}))
+	defer srv.Close()
+	old := kalshiAPIBase
+	kalshiAPIBase = srv.URL
+	defer func() { kalshiAPIBase = old }()
+
+	ms, next, err := FetchKalshiFrom(10, KalshiScan{})
+	if err == nil || !strings.Contains(err.Error(), "cursor=\"c1\"") {
+		t.Fatalf("the bad page must be reported, got err=%v", err)
+	}
+	if len(ms) != 3 {
+		t.Fatalf("markets gathered before the bad page must be kept, got %d", len(ms))
+	}
+	if next.Open != "" {
+		t.Fatalf("the open listing must restart from the top after a bad page, got cursor %q", next.Open)
+	}
+}
