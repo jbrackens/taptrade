@@ -98,6 +98,8 @@ export function MarketGrid({
                     ? categoryLabel(t, localized.categorySlug)
                     : localized.categoryName || undefined
                 }
+                eventTitle={localized.eventTitle}
+                eventSynthetic={localized.eventSynthetic}
                 imagePath={localized.imagePath}
                 imageUrl={localized.imageUrl}
                 image_url={localized.image_url}

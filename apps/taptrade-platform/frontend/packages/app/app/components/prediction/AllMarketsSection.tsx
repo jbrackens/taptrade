@@ -184,7 +184,7 @@ const SKELETON_SHIMMER_CLASS = "animate-pulse rounded-full bg-[var(--surface-2)]
 
 function MarketCardSkeleton() {
   return (
-    <div className="relative flex h-full min-h-[248px] flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 max-[640px]:min-h-[238px] max-[640px]:p-4">
+    <div className="relative flex h-full min-h-[196px] flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5 max-[640px]:min-h-[206px]">
       <div className="flex items-center gap-2">
         <span className={`h-10 w-10 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
         <span className={`h-2.5 w-20 ${SKELETON_SHIMMER_CLASS}`} />
@@ -192,9 +192,9 @@ function MarketCardSkeleton() {
       <span className={`mt-4 block h-3.5 w-full ${SKELETON_SHIMMER_CLASS}`} />
       <span className={`mt-2 block h-3.5 w-3/4 ${SKELETON_SHIMMER_CLASS}`} />
       <span className={`mt-4 block h-2 w-28 ${SKELETON_SHIMMER_CLASS}`} />
-      <div className="mt-auto grid grid-cols-2 gap-2.5 pt-4">
-        <span className={`h-11 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
-        <span className={`h-11 !rounded-[var(--r-rh-md)] ${SKELETON_SHIMMER_CLASS}`} />
+      <div className="mt-auto grid grid-cols-2 gap-2 pt-3.5">
+        <span className={`h-9 !rounded-[var(--r-rh-md)] max-[640px]:h-11 ${SKELETON_SHIMMER_CLASS}`} />
+        <span className={`h-9 !rounded-[var(--r-rh-md)] max-[640px]:h-11 ${SKELETON_SHIMMER_CLASS}`} />
       </div>
       <span className={`mt-3 block h-2.5 w-2/3 ${SKELETON_SHIMMER_CLASS}`} />
     </div>

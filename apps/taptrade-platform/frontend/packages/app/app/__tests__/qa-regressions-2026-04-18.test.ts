@@ -812,8 +812,8 @@ describe("MarketCard composition", () => {
 
   it("keeps YES/NO actions priced without losing tap size", () => {
     assert.ok(
-      cardSource.includes("h-10") && cardSource.includes("max-[640px]:h-11"),
-      "side actions are 40px on desktop and 44px on phones",
+      cardSource.includes("h-9") && cardSource.includes("max-[640px]:h-11"),
+      "side actions are 36px on desktop and 44px on phones",
     );
     assert.ok(
       cardSource.includes("{percentage}%"),

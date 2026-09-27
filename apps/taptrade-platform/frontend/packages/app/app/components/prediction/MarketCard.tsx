@@ -3,13 +3,14 @@
 /**
  * MarketCard — one binary market in the discovery grid.
  *
- * Anatomy (the Kalshi / Polymarket card): the market's image tile and
- * question on top, the two direction buttons carrying each side's chance
- * (the points price is the same number; the trade panel shows it), then one
- * quiet line of volume and category. The top-right corner never repeats the
- * chance: it shows what the player holds in this market, otherwise the time
- * left (pink in the last 24 hours). Everything is a single typeface;
- * numbers use tabular figures.
+ * Anatomy (the Kalshi / Polymarket card): the market's image tile, a
+ * small-caps eyebrow naming its event (or its category when it has no event
+ * of its own) and the question on top, the two direction buttons carrying
+ * each side's chance (the points price is the same number; the trade panel
+ * shows it), then a hairline and one quiet line of volume. The top-right
+ * corner never repeats the chance: it shows what the player holds in this
+ * market, otherwise the time left (pink in the last 24 hours). Everything is
+ * a single typeface; numbers use tabular figures.
  */
 
 import Link from "next/link";
@@ -31,6 +32,9 @@ interface MarketCardProps {
   status: string;
   categoryLabel?: string;
   categorySlug?: string;
+  /** The parent event's title, when it is a real event rather than a catch-all. */
+  eventTitle?: string;
+  eventSynthetic?: boolean;
   imagePath?: string | null;
   imageUrl?: string | null;
   image_url?: string | null;
@@ -66,7 +70,7 @@ function clampPercentage(value: number): number {
 }
 
 const SIDE_BUTTON_CLASS =
-  "flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-3 text-[14px] font-semibold no-underline transition-[background-color,color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:scale-[0.98] max-[640px]:h-11";
+  "flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-3 text-[14px] font-semibold no-underline transition-[background-color,color,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:scale-[0.98] max-[640px]:h-11";
 const SIDE_TONE: Record<"yes" | "no", string> = {
   yes: "bg-[var(--yes-soft)] text-[var(--yes-text)] hover:bg-[var(--yes)] hover:text-[var(--on-ink)]",
   no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
@@ -83,6 +87,8 @@ export function MarketCard({
   status,
   categoryLabel,
   categorySlug,
+  eventTitle,
+  eventSynthetic = false,
   imagePath,
   imageUrl,
   image_url,
@@ -125,26 +131,35 @@ export function MarketCard({
           tone: left.urgent ? "text-[var(--live-text)]" : "text-[var(--t1)]",
         }
       : null;
+  // The eyebrow names the event this market belongs to ("Chiefs vs.
+  // Dolphins" over "Spread: Chiefs (-10.5)"); a market with no event of its
+  // own shows its category there instead.
+  const eyebrow = eventTitle && !eventSynthetic ? eventTitle.trim() : categoryLabel ?? "";
   // The close date moves up into the corner as time left; the footer keeps
   // it only when the corner is showing something else.
-  const footerMeta = [categoryLabel, held || !left ? closingLabel : null]
-    .filter(Boolean)
-    .join(" · ");
+  const footerMeta = held || !left ? closingLabel : "";
 
   return (
     <article
       data-testid="market-card"
-      className="group relative flex h-full flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--t3)]"
+      className="group relative flex h-full flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5 text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--t3)]"
     >
       <Link
         href={`/market/${ticker}`}
-        className="flex items-start gap-3 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
+        className="flex items-start gap-2.5 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
         aria-label={corner ? `${title} · ${corner.value} ${corner.label}` : title}
       >
         <MarketThumb categorySlug={categorySlug} imageUrl={photo} size={40} />
-        <h3 className="m-0 line-clamp-3 min-h-[38px] min-w-0 flex-1 text-[14.5px] font-semibold leading-[1.32] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
-          {title}
-        </h3>
+        <span className="flex min-w-0 flex-1 flex-col">
+          {eyebrow && (
+            <span className="mb-0.5 truncate text-[10.5px] font-semibold uppercase leading-[1.3] tracking-[0.06em] text-[var(--t3)]">
+              {eyebrow}
+            </span>
+          )}
+          <h3 className="m-0 line-clamp-3 min-w-0 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
+            {title}
+          </h3>
+        </span>
         {corner && (
           <span
             className="flex shrink-0 flex-col items-end pl-1"
@@ -162,7 +177,7 @@ export function MarketCard({
         )}
       </Link>
 
-      <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
+      <div className="mt-auto grid grid-cols-2 gap-2 pt-3.5">
         {(["yes", "no"] as const).map((side) => {
           const percentage = side === "yes" ? yesPercentage : noPercentage;
           const className = `${SIDE_BUTTON_CLASS} ${SIDE_TONE[side]}`;
@@ -202,12 +217,12 @@ export function MarketCard({
         })}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 text-[12px] text-[var(--t3)]">
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-2.5 text-[12px] text-[var(--t3)]">
         <span className="truncate tabular-nums">
           {formatCompactPoints(volumePoints)} {t("VOL_SHORT", "vol")}
         </span>
         <span className="flex min-w-0 items-center gap-1">
-          <span className="truncate text-right">{footerMeta}</span>
+          {footerMeta && <span className="truncate text-right">{footerMeta}</span>}
           {/* Save to watchlist — shown wherever the host wires watchlist
               state (the catalog view). */}
           {onToggleWatchlist && (

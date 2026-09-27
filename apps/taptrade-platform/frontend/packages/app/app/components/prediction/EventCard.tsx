@@ -4,10 +4,11 @@
  * EventCard — one upstream event (a game, a race, a nominee field) with its
  * markets stacked inside, in the discovery grid.
  *
- * Anatomy: the event's image tile, title and closing date on top, then up
- * to three market rows (label, Yes and No chances as tappable chips), and
- * a "+N more" link to the event page. Same chrome and footprint as
- * MarketCard so the two mix in one grid.
+ * Anatomy: the event's image tile, a small-caps category eyebrow, the
+ * title and the time left on top, then up to three hairline-ruled market
+ * rows (label, Yes and No chances as tappable chips), and a footer with
+ * volume and a "+N more" link to the event page. Same chrome and footprint
+ * as MarketCard so the two mix in one grid.
  */
 
 import Link from "next/link";
@@ -32,7 +33,7 @@ function clampPercentage(value: number): number {
 }
 
 const CHIP_CLASS =
-  "inline-flex h-8 min-w-[64px] cursor-pointer items-center justify-center gap-1 rounded-[var(--r-rh-md)] border-0 px-2 text-[13px] font-semibold no-underline transition-[background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-9";
+  "inline-flex h-7 min-w-[64px] cursor-pointer items-center justify-center gap-1 rounded-[var(--r-rh-md)] border-0 px-2 text-[13px] font-semibold no-underline transition-[background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-9";
 const CHIP_TONE: Record<"yes" | "no", string> = {
   yes: "bg-[var(--yes-soft)] text-[var(--yes-text)] hover:bg-[var(--yes)] hover:text-[var(--on-ink)]",
   no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
@@ -62,17 +63,24 @@ export function EventCard({ eventId, title, markets, onQuickTrade }: EventCardPr
   return (
     <article
       data-testid="event-card"
-      className="group relative flex h-full flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--t3)]"
+      className="group relative flex h-full flex-col rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-3.5 text-[var(--t1)] shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--border-2)] hover:shadow-[var(--shadow-card-hover)] focus-within:border-[var(--t3)]"
     >
       <Link
         href={`/event/${eventId}`}
-        className="flex items-start gap-3 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
+        className="flex items-start gap-2.5 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
         aria-label={left ? `${title} · ${left.value} ${t("TIME_LEFT", "left")}` : title}
       >
         <MarketThumb categorySlug={lead.categorySlug} imageUrl={photo} size={40} />
-        <h3 className="m-0 line-clamp-2 min-h-[38px] min-w-0 flex-1 text-[14.5px] font-semibold leading-[1.32] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
-          {title}
-        </h3>
+        <span className="flex min-w-0 flex-1 flex-col">
+          {category && (
+            <span className="mb-0.5 truncate text-[10.5px] font-semibold uppercase leading-[1.3] tracking-[0.06em] text-[var(--t3)]">
+              {category}
+            </span>
+          )}
+          <h3 className="m-0 line-clamp-2 min-w-0 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
+            {title}
+          </h3>
+        </span>
         {left && (
           <span className="flex shrink-0 flex-col items-end pl-1">
             <span
@@ -89,14 +97,14 @@ export function EventCard({ eventId, title, markets, onQuickTrade }: EventCardPr
         )}
       </Link>
 
-      <ul className="m-0 mt-3 flex list-none flex-col gap-1.5 p-0">
+      <ul className="m-0 mt-2.5 flex list-none flex-col divide-y divide-[var(--border-1)] p-0">
         {rows.map((m) => {
           const yes = clampPercentage(m.yesPricePoints);
           const no = clampPercentage(m.noPricePoints);
           const label = marketLabelInEvent(m.title, title, t("EVENT_MATCH_WINNER", "Match winner"));
           const open = isOpenMarketStatus(m.status);
           return (
-            <li key={m.id} className="flex items-center gap-2">
+            <li key={m.id} className="flex items-center gap-2 py-1.5 first:pt-0">
               <Link
                 href={`/market/${m.ticker}`}
                 className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--t1)] no-underline hover:underline"
@@ -140,18 +148,15 @@ export function EventCard({ eventId, title, markets, onQuickTrade }: EventCardPr
         })}
       </ul>
 
-      <div className="mt-auto flex items-center justify-between gap-3 pt-3 text-[12px] text-[var(--t3)]">
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-2.5 text-[12px] text-[var(--t3)]">
         <span className="truncate tabular-nums">
           {formatCompactPoints(volume)} {t("VOL_SHORT", "vol")}
         </span>
-        <span className="flex min-w-0 items-center gap-2">
-          {more > 0 && (
-            <Link href={`/event/${eventId}`} className="shrink-0 font-medium text-[var(--t2)] no-underline hover:underline">
-              {t("EVENT_MORE_MARKETS", { count: more, defaultValue: `+${more} more` })}
-            </Link>
-          )}
-          {category && <span className="truncate text-right">{category}</span>}
-        </span>
+        {more > 0 && (
+          <Link href={`/event/${eventId}`} className="shrink-0 font-medium text-[var(--t2)] no-underline hover:underline">
+            {t("EVENT_MORE_MARKETS", { count: more, defaultValue: `+${more} more` })}
+          </Link>
+        )}
       </div>
     </article>
   );
