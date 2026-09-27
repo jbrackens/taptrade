@@ -216,6 +216,21 @@ services:
       SMM_HALF_SPREAD_CENTS: "3"
       SMM_MAX_POSITION_QTY: "500"
       SMM_TICK_INTERVAL: "30s"
+      # Catalog sync cadence (owner decision 2026-09-27). The worker's
+      # default is hourly; a run is ~6 upstream requests and a few seconds,
+      # and Polymarket's 24h-volume leaders turn over within hours on a game
+      # day, so every 15 minutes keeps today's markets arriving and resolving
+      # while they still matter. The per-run request budget resets each run,
+      # so a shorter interval cannot starve a source (the 2026-07-07 incident).
+      MARKET_SYNC_INTERVAL: "15m"
+      # Thumbnails for imported markets. The sync worker rehosts each
+      # market's upstream image under <root>/images/markets/, and the player
+      # serves that folder as /images/markets/ from the shared market_images
+      # volume (see its `volumes:` below). Without the root the worker logs
+      # "image rehosting disabled" and every hourly import ships without a
+      # thumbnail — the only images came from the optional deploy-time
+      # `[sync-catalog]` step (observed 2026-09-27: 0 of 130 new imports).
+      MARKET_IMAGE_PUBLIC_ROOT: "/srv/player-public"
       # Faucet posture: "real economy rehearsal" (owner decision 2026-07-12,
       # option B). The one-time starter grant covers a few trades (1,000
       # points), the daily claim (50 points/day) keeps free players alive,
@@ -331,6 +346,12 @@ services:
       AI_TRANSLATION_ENDPOINT: "https://openrouter.ai/api/v1"
       AI_TRANSLATION_MODEL: "openai/gpt-4o-mini"
       AI_TRANSLATION_API_KEY: "${OPENROUTER_API_KEY:-}"
+    volumes:
+      # Thumbnail folder shared with the player (MARKET_IMAGE_PUBLIC_ROOT
+      # above): the sync worker writes /images/markets/<id>.<ext> here and
+      # the player serves it. The gateway runs as root; rehosted files are
+      # chmod 0644 so the player's unprivileged user can read them.
+      - market_images:/srv/player-public/images/markets
 
   player:
     image: predict-frontend:app-slim

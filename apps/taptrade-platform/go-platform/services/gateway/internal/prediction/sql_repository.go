@@ -277,11 +277,12 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	// breaking ListMarkets with a 500. Don't reintroduce that fork.
 	q := `SELECT rm.* FROM (` + marketSelectQuery() + where + `) rm`
 	if marketSortNeedsRankingJoins(filter.Sort) {
-		// The pe/pc/v24 joins exist solely to feed the activity-ranking
-		// ORDER BY (featured flag, category slug, 24h traded volume). Cheap
-		// sorts order on rm columns only, so skipping the joins avoids a
-		// per-row aggregate over prediction_trades — this is what keeps the
-		// SMM/reconciler worker sweeps (Sort:"id") off the expensive shape.
+		// The pe/pc/v24/ig joins exist solely to feed the activity-ranking
+		// ORDER BY (featured flag, category slug, 24h traded volume, the
+		// upstream event an import belongs to). Cheap sorts order on rm
+		// columns only, so skipping the joins avoids a per-row aggregate
+		// over prediction_trades — this is what keeps the SMM/reconciler
+		// worker sweeps (Sort:"id") off the expensive shape.
 		q += `
 	      LEFT JOIN prediction_events pe ON pe.id = rm.event_id
 	      LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
@@ -290,7 +291,13 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	          FROM prediction_trades t
 	          WHERE t.market_id = rm.id
 	            AND t.traded_at >= NOW() - INTERVAL '24 hours'
-	      ) v24 ON true`
+	      ) v24 ON true
+	      LEFT JOIN (
+	          SELECT 'IMP-' || upper(substr(external_hash, 1, 8)) AS ticker,
+	                 MIN(NULLIF(event_group, '')) AS event_group
+	          FROM imported_markets
+	          GROUP BY 1
+	      ) ig ON ig.ticker = rm.ticker`
 	}
 	q += marketOrderClause(filter.Sort)
 	q += fmt.Sprintf(` LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
@@ -1870,25 +1877,47 @@ func marketSortNeedsRankingJoins(sort string) bool {
 }
 
 func marketRankingOrderClause() string {
+	score := marketActivityScore()
 	return ` ORDER BY (
-		-- Activity score, in three parts:
-		--   1. how much is going on: 35% 24h traded volume, 20% liquidity,
-		--      15% open interest, 10% lifetime volume, 10% freshness,
-		--      5% closing soon;
-		--   2. scaled by how open the question still is, so a market priced
-		--      at 1 or 99 cannot lead the board however large it is — there
-		--      is nothing left to call;
-		--   3. flat editorial nudges (featured, category) and hygiene
-		--      penalties (wide spread, no image, stale, not open).
-		-- Size terms are log-scaled against the largest value in the result
-		-- set: imported markets carry lifetime volumes in the millions next
-		-- to play-money markets in the hundreds, and a linear share let a
-		-- handful of near-settled imports crowd out the board (2026-09-27).
-		(0.2 + 0.8 * (1 - ABS(COALESCE(rm.yes_price_points, 50) - 50) / 50.0)) * (
-			0.35 * ` + logShare("COALESCE(v24.volume_24h_points, 0)") + ` +
-			0.20 * ` + logShare("rm.liquidity_points") + ` +
-			0.15 * ` + logShare("rm.open_interest_points") + ` +
-			0.10 * ` + logShare("rm.volume_points") + ` +
+		` + score + `
+		-- Diversity (2026-09-27): the second market of the same event — a
+		-- game's spread, total and moneyline; an election's candidates —
+		-- gives up a whole freshness term per sibling ranked ahead of it,
+		-- and every further market of the same category gives up a little
+		-- more, so one busy game or one sport cannot fill the board.
+		- 0.10 * (ROW_NUMBER() OVER (PARTITION BY ` + marketActivityGroup + ` ORDER BY (` + score + `) DESC, rm.id DESC) - 1)
+		- 0.03 * (ROW_NUMBER() OVER (PARTITION BY COALESCE(pc.slug, '') ORDER BY (` + score + `) DESC, rm.id DESC) - 1)
+	) DESC, rm.close_at ASC, rm.id DESC`
+}
+
+// marketActivityGroup is the unit the per-event diversity rule counts:
+// an import's upstream event when it has one, otherwise the import itself
+// (imports share catch-all prediction_events per category, so grouping
+// them by event_id would lump hundreds of unrelated questions together);
+// a native market's own event.
+const marketActivityGroup = `CASE WHEN rm.ticker LIKE 'IMP-%' THEN COALESCE(ig.event_group, rm.id::text) ELSE rm.event_id::text END`
+
+// marketActivityScore is the ranking score, in three parts:
+//  1. how much is going on: 35% 24h traded volume, 20% liquidity, 15% open
+//     interest, 10% lifetime volume, 10% freshness, 5% closing soon;
+//  2. scaled by how open the question still is, so a market priced at 1 or
+//     99 cannot lead the board however large it is — there is nothing left
+//     to call;
+//  3. flat editorial nudges (featured, category) and hygiene penalties (wide
+//     spread, no image, stale, not open).
+//
+// Size terms are log-scaled against the largest open market: imported
+// markets carry lifetime volumes in the millions next to play-money markets
+// in the hundreds, and a linear share let a handful of near-settled imports
+// crowd out the board (2026-09-27). The maxima are scalar subqueries rather
+// than window functions so the diversity windows in the ORDER BY can rank
+// on this expression (window calls cannot nest).
+func marketActivityScore() string {
+	return `(0.2 + 0.8 * (1 - ABS(COALESCE(rm.yes_price_points, 50) - 50) / 50.0)) * (
+			0.35 * ` + logShare("COALESCE(v24.volume_24h_points, 0)", maxVolume24h) + ` +
+			0.20 * ` + logShare("rm.liquidity_points", maxOpenLiquidity) + ` +
+			0.15 * ` + logShare("rm.open_interest_points", maxOpenInterest) + ` +
+			0.10 * ` + logShare("rm.volume_points", maxOpenVolume) + ` +
 			0.10 * GREATEST(
 				0,
 				1 - LEAST(
@@ -1922,17 +1951,35 @@ func marketRankingOrderClause() string {
 			THEN 0.05
 			ELSE 0
 		END -
-		CASE WHEN rm.status <> 'open' THEN 0.20 ELSE 0 END
-	) DESC, rm.close_at ASC, rm.id DESC`
+		CASE WHEN rm.status <> 'open' THEN 0.20 ELSE 0 END`
 }
 
-// logShare is a column's share of the largest value in the result set on a
-// log scale: 0 when every row is zero, 1 for the largest row. Feeds the
-// activity score above.
-func logShare(expr string) string {
+// Normalisers for the log-scaled size terms: the largest value across open
+// markets, evaluated once per query. Volume and liquidity take the larger of
+// the persisted column and the imported overlay marketSelectQuery applies.
+const (
+	maxVolume24h = `(SELECT COALESCE(MAX(s), 0) FROM (
+			SELECT SUM(t.price_points::bigint * t.quantity) AS s
+			FROM prediction_trades t
+			WHERE t.traded_at >= NOW() - INTERVAL '24 hours'
+			GROUP BY t.market_id) x)`
+	maxOpenLiquidity = `(SELECT MAX(x) FROM (
+			SELECT COALESCE(MAX(liquidity_points), 0) FROM prediction_markets WHERE status = 'open'
+			UNION ALL
+			SELECT COALESCE(MAX(ROUND(liquidity)), 0)::bigint FROM imported_markets WHERE missing_since IS NULL) u(x))`
+	maxOpenInterest = `(SELECT COALESCE(MAX(open_interest_points), 0) FROM prediction_markets WHERE status = 'open')`
+	maxOpenVolume   = `(SELECT MAX(x) FROM (
+			SELECT COALESCE(MAX(volume_points), 0) FROM prediction_markets WHERE status = 'open'
+			UNION ALL
+			SELECT COALESCE(MAX(ROUND(volume)), 0)::bigint FROM imported_markets WHERE missing_since IS NULL) u(x))`
+)
+
+// logShare is a value's share of `max` on a log scale: 0 when the value is
+// zero or nothing is open, 1 for the largest open market.
+func logShare(expr, max string) string {
 	return fmt.Sprintf(
-		`COALESCE(LN(1 + GREATEST(%[1]s, 0)::double precision) / NULLIF(LN(1 + (MAX(GREATEST(%[1]s, 0)) OVER ())::double precision), 0), 0)`,
-		expr,
+		`COALESCE(LN(1 + GREATEST(%s, 0)::double precision) / NULLIF(LN(1 + GREATEST(%s, 0)::double precision), 0), 0)`,
+		expr, max,
 	)
 }
 

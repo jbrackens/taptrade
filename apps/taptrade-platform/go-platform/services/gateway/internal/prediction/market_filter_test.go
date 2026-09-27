@@ -84,6 +84,15 @@ func TestMarketOrderClauseSupportsDiscoverySorts(t *testing.T) {
 	if !strings.Contains(clause, "LN(1 + GREATEST(rm.volume_points, 0)") {
 		t.Fatalf("activity sort should log-scale lifetime volume, got %q", clause)
 	}
+	// Diversity: siblings of the same event and further markets of the same
+	// category are demoted by rank within their partition.
+	if !strings.Contains(clause, "ROW_NUMBER() OVER (PARTITION BY CASE WHEN rm.ticker LIKE 'IMP-%'") ||
+		!strings.Contains(clause, "ROW_NUMBER() OVER (PARTITION BY COALESCE(pc.slug, '')") {
+		t.Fatalf("activity sort should demote same-event and same-category siblings, got %q", clause)
+	}
+	if strings.Contains(clause, "OVER ()") {
+		t.Fatalf("activity score must not use window normalisers (they cannot nest under the diversity windows), got %q", clause)
+	}
 }
 
 // The launch-safety gate mirrors the publication gate: public market lists

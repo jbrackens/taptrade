@@ -86,6 +86,13 @@ func (r *ImageRehoster) Rehost(rowID, imageURL string) (string, error) {
 	if err := os.Rename(tmpPath, dest); err != nil {
 		return "", fmt.Errorf("rename: %w", err)
 	}
+	// CreateTemp makes the file 0600. The gateway writes as root into a
+	// volume the player serves as an unprivileged user, so the file must be
+	// world-readable or the thumbnail 404s on the site (the deploy's manual
+	// `chmod -R a+rX` on the volume was papering over exactly this).
+	if err := os.Chmod(dest, 0o644); err != nil {
+		return "", fmt.Errorf("chmod: %w", err)
+	}
 
 	return "/images/markets/" + filename, nil
 }
