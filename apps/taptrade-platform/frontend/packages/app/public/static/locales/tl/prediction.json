@@ -351,5 +351,19 @@
   "EVENT_MORE_MARKETS_one": "+{{count}} pa",
   "EVENT_MORE_MARKETS_other": "+{{count}} pa",
   "PHOTO_CREDIT_SHORT": "Kredito ng larawan",
-  "LANDING_FOOTER_CREDITS": "Mga kredito ng larawan"
+  "LANDING_FOOTER_CREDITS": "Mga kredito ng larawan",
+  "ACTIVITY_TITLE": "Live ngayon",
+  "ACTIVITY_MOVERS": "Gumagalaw ngayong araw",
+  "ACTIVITY_RECENT": "Pinakabagong tawag",
+  "ACTIVITY_JUST_NOW": "ngayon lang",
+  "ACTIVITY_MIN_AGO_one": "{{count}}m ang nakalipas",
+  "ACTIVITY_MIN_AGO_other": "{{count}}m ang nakalipas",
+  "ACTIVITY_HOUR_AGO_one": "{{count}}o ang nakalipas",
+  "ACTIVITY_HOUR_AGO_other": "{{count}}o ang nakalipas",
+  "ACTIVITY_DAY_AGO_one": "{{count}}a ang nakalipas",
+  "ACTIVITY_DAY_AGO_other": "{{count}}a ang nakalipas",
+  "ACTIVITY_UP_BY_one": "tumaas ng {{count}}",
+  "ACTIVITY_UP_BY_other": "tumaas ng {{count}}",
+  "ACTIVITY_DOWN_BY_one": "bumaba ng {{count}}",
+  "ACTIVITY_DOWN_BY_other": "bumaba ng {{count}}"
 }

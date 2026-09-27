@@ -372,5 +372,19 @@
   "EVENT_MORE_MARKETS_one": "+{{count}} more",
   "EVENT_MORE_MARKETS_other": "+{{count}} more",
   "PHOTO_CREDIT_SHORT": "Photo credit",
-  "LANDING_FOOTER_CREDITS": "Photo credits"
+  "LANDING_FOOTER_CREDITS": "Photo credits",
+  "ACTIVITY_TITLE": "Live now",
+  "ACTIVITY_MOVERS": "Moving today",
+  "ACTIVITY_RECENT": "Recent calls",
+  "ACTIVITY_JUST_NOW": "just now",
+  "ACTIVITY_MIN_AGO_one": "{{count}}m ago",
+  "ACTIVITY_MIN_AGO_other": "{{count}}m ago",
+  "ACTIVITY_HOUR_AGO_one": "{{count}}h ago",
+  "ACTIVITY_HOUR_AGO_other": "{{count}}h ago",
+  "ACTIVITY_DAY_AGO_one": "{{count}}d ago",
+  "ACTIVITY_DAY_AGO_other": "{{count}}d ago",
+  "ACTIVITY_UP_BY_one": "up {{count}}",
+  "ACTIVITY_UP_BY_other": "up {{count}}",
+  "ACTIVITY_DOWN_BY_one": "down {{count}}",
+  "ACTIVITY_DOWN_BY_other": "down {{count}}"
 }

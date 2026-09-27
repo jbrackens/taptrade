@@ -349,5 +349,19 @@
   "EVENT_MORE_MARKETS_one": "+{{count}} 個",
   "EVENT_MORE_MARKETS_other": "+{{count}} 個",
   "PHOTO_CREDIT_SHORT": "圖片來源",
-  "LANDING_FOOTER_CREDITS": "圖片來源"
+  "LANDING_FOOTER_CREDITS": "圖片來源",
+  "ACTIVITY_TITLE": "即時動態",
+  "ACTIVITY_MOVERS": "今日變動",
+  "ACTIVITY_RECENT": "最新預測",
+  "ACTIVITY_JUST_NOW": "剛剛",
+  "ACTIVITY_MIN_AGO_one": "{{count}}分鐘前",
+  "ACTIVITY_MIN_AGO_other": "{{count}}分鐘前",
+  "ACTIVITY_HOUR_AGO_one": "{{count}}小時前",
+  "ACTIVITY_HOUR_AGO_other": "{{count}}小時前",
+  "ACTIVITY_DAY_AGO_one": "{{count}}天前",
+  "ACTIVITY_DAY_AGO_other": "{{count}}天前",
+  "ACTIVITY_UP_BY_one": "上漲 {{count}}",
+  "ACTIVITY_UP_BY_other": "上漲 {{count}}",
+  "ACTIVITY_DOWN_BY_one": "下跌 {{count}}",
+  "ACTIVITY_DOWN_BY_other": "下跌 {{count}}"
 }

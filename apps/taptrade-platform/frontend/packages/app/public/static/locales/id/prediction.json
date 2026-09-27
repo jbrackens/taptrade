@@ -349,5 +349,19 @@
   "EVENT_MORE_MARKETS_one": "+{{count}} lagi",
   "EVENT_MORE_MARKETS_other": "+{{count}} lagi",
   "PHOTO_CREDIT_SHORT": "Kredit foto",
-  "LANDING_FOOTER_CREDITS": "Kredit foto"
+  "LANDING_FOOTER_CREDITS": "Kredit foto",
+  "ACTIVITY_TITLE": "Sedang berlangsung",
+  "ACTIVITY_MOVERS": "Bergerak hari ini",
+  "ACTIVITY_RECENT": "Prediksi terbaru",
+  "ACTIVITY_JUST_NOW": "baru saja",
+  "ACTIVITY_MIN_AGO_one": "{{count}}m lalu",
+  "ACTIVITY_MIN_AGO_other": "{{count}}m lalu",
+  "ACTIVITY_HOUR_AGO_one": "{{count}}j lalu",
+  "ACTIVITY_HOUR_AGO_other": "{{count}}j lalu",
+  "ACTIVITY_DAY_AGO_one": "{{count}}h lalu",
+  "ACTIVITY_DAY_AGO_other": "{{count}}h lalu",
+  "ACTIVITY_UP_BY_one": "naik {{count}}",
+  "ACTIVITY_UP_BY_other": "naik {{count}}",
+  "ACTIVITY_DOWN_BY_one": "turun {{count}}",
+  "ACTIVITY_DOWN_BY_other": "turun {{count}}"
 }

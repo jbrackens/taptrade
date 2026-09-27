@@ -1688,6 +1688,50 @@ components:
           items: { type: string }
       required: [service, status, pointMode, legacyMoneyRoutes, launchRouteDomains]
 paths:
+  /api/v1/activity/recent:
+    get:
+      summary: Recent exchange activity for the board
+      description: The latest real fills on open markets and the markets whose traded Yes price moved most over the last 24 hours. Lists are empty when the exchange is quiet. Public; no session needed.
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Recent trades and 24h movers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trades:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tradedAt: { type: string, format: date-time }
+                        side: { type: string, enum: [yes, no] }
+                        pricePoints: { type: integer }
+                        quantity: { type: integer }
+                        isAmmTrade: { type: boolean }
+                        marketId: { type: string }
+                        ticker: { type: string }
+                        title: { type: string }
+                        categorySlug: { type: string }
+                  movers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        marketId: { type: string }
+                        ticker: { type: string }
+                        title: { type: string }
+                        categorySlug: { type: string }
+                        yesFrom: { type: integer }
+                        yesTo: { type: integer }
+                        changePoints: { type: integer }
+                        trades24h: { type: integer }
   /api/v1/attributions:
     get:
       summary: Photo credits for openly licensed market covers

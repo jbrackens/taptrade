@@ -21,6 +21,7 @@ import { FeaturedMarket, pickFeatured } from "./FeaturedMarket";
 import { MarketGrid } from "./MarketGrid";
 import { localizedMarket } from "./market-content";
 import { dedupeMarkets } from "./market-display";
+import { ActivityRail } from "./ActivityRail";
 import { QuickTradePanel, type QuickTradeTarget } from "./QuickTradePanel";
 
 const api = createPredictionClient();
@@ -245,6 +246,8 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
           />
         </div>
       )}
+      {/* Proof of life: real fills and movers, only when there are any. */}
+      {!hasFilters && <ActivityRail />}
 
       <div className="flex items-center justify-between gap-4">
         <h2
