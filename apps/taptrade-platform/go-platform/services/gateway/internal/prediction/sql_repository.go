@@ -1871,41 +1871,36 @@ func marketSortNeedsRankingJoins(sort string) bool {
 
 func marketRankingOrderClause() string {
 	return ` ORDER BY (
-		-- Polymarket/Kalshi-style activity score:
-		-- 35% 24h volume, 20% liquidity/depth proxy, 15% open interest,
-		-- 10% total volume, 10% freshness/trending movement,
-		-- 5% closing-soon relevance, 5% editorial/featured boost.
-		0.35 * COALESCE(
-			COALESCE(v24.volume_24h_points, 0)::double precision /
-			NULLIF(MAX(COALESCE(v24.volume_24h_points, 0)) OVER (), 0),
-			0
+		-- Activity score, in three parts:
+		--   1. how much is going on: 35% 24h traded volume, 20% liquidity,
+		--      15% open interest, 10% lifetime volume, 10% freshness,
+		--      5% closing soon;
+		--   2. scaled by how open the question still is, so a market priced
+		--      at 1 or 99 cannot lead the board however large it is — there
+		--      is nothing left to call;
+		--   3. flat editorial nudges (featured, category) and hygiene
+		--      penalties (wide spread, no image, stale, not open).
+		-- Size terms are log-scaled against the largest value in the result
+		-- set: imported markets carry lifetime volumes in the millions next
+		-- to play-money markets in the hundreds, and a linear share let a
+		-- handful of near-settled imports crowd out the board (2026-09-27).
+		(0.2 + 0.8 * (1 - ABS(COALESCE(rm.yes_price_points, 50) - 50) / 50.0)) * (
+			0.35 * ` + logShare("COALESCE(v24.volume_24h_points, 0)") + ` +
+			0.20 * ` + logShare("rm.liquidity_points") + ` +
+			0.15 * ` + logShare("rm.open_interest_points") + ` +
+			0.10 * ` + logShare("rm.volume_points") + ` +
+			0.10 * GREATEST(
+				0,
+				1 - LEAST(
+					EXTRACT(EPOCH FROM (NOW() - GREATEST(rm.updated_at, COALESCE(rm.last_quote_at, rm.updated_at)))) / 604800.0,
+					1
+				)
+			) +
+			0.05 * CASE
+				WHEN rm.close_at <= NOW() THEN 0
+				ELSE 1 - LEAST(EXTRACT(EPOCH FROM (rm.close_at - NOW())) / 2592000.0, 1)
+			END
 		) +
-		0.20 * COALESCE(
-			rm.liquidity_points::double precision /
-			NULLIF(MAX(rm.liquidity_points) OVER (), 0),
-			0
-		) +
-		0.15 * COALESCE(
-			rm.open_interest_points::double precision /
-			NULLIF(MAX(rm.open_interest_points) OVER (), 0),
-			0
-		) +
-		0.10 * COALESCE(
-			rm.volume_points::double precision /
-			NULLIF(MAX(rm.volume_points) OVER (), 0),
-			0
-		) +
-		0.10 * GREATEST(
-			0,
-			1 - LEAST(
-				EXTRACT(EPOCH FROM (NOW() - GREATEST(rm.updated_at, COALESCE(rm.last_quote_at, rm.updated_at)))) / 604800.0,
-				1
-			)
-		) +
-		0.05 * CASE
-			WHEN rm.close_at <= NOW() THEN 0
-			ELSE 1 - LEAST(EXTRACT(EPOCH FROM (rm.close_at - NOW())) / 2592000.0, 1)
-		END +
 		CASE WHEN COALESCE(pe.featured, false) THEN 0.05 ELSE 0 END +
 		-- Light category preference: entertainment/tech/politics first, then sports.
 		CASE COALESCE(pc.slug, '')
@@ -1929,6 +1924,16 @@ func marketRankingOrderClause() string {
 		END -
 		CASE WHEN rm.status <> 'open' THEN 0.20 ELSE 0 END
 	) DESC, rm.close_at ASC, rm.id DESC`
+}
+
+// logShare is a column's share of the largest value in the result set on a
+// log scale: 0 when every row is zero, 1 for the largest row. Feeds the
+// activity score above.
+func logShare(expr string) string {
+	return fmt.Sprintf(
+		`COALESCE(LN(1 + GREATEST(%[1]s, 0)::double precision) / NULLIF(LN(1 + (MAX(GREATEST(%[1]s, 0)) OVER ())::double precision), 0), 0)`,
+		expr,
+	)
 }
 
 type scannable interface {

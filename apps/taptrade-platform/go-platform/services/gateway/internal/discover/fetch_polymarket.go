@@ -7,119 +7,189 @@ import (
 	"time"
 )
 
-// FetchPolymarket pulls open AND resolved markets from the Gamma API.
-//
-// Resolution detection: when a market's `outcomePrices` collapses to
-// approximately [1, 0] or [0, 1] (threshold ≥ 0.95) AND `closed=true`, we
-// treat it as resolved upstream. Polymarket's UMA-style resolutions
+// polymarketAPIBase is the Gamma API root. Tests point it at an httptest
+// server, the same way fetch_kalshi.go exposes kalshiAPIBase.
+var polymarketAPIBase = "https://gamma-api.polymarket.com"
+
+// polymarketPageSize is the most rows Gamma returns per request. It caps
+// `limit` at 100 silently — ask for 500 and 100 come back — which the old
+// "short page means last page" check read as the end of the listing. That,
+// on top of the unordered default listing, meant every hourly sync re-read
+// the same 100 long-dated markets. Observed on the demo on 2026-09-27: 29
+// open Polymarket imports, 22 priced at the extremes, none newer than
+// August, while the catalog's Manifold side kept moving.
+const polymarketPageSize = 100
+
+// polymarketMinTimeLeft skips open markets that end before the next hourly
+// sync could refresh them (Gamma's 24h-volume leaders include intraday
+// "Up or Down" markets that close within the hour).
+const polymarketMinTimeLeft = time.Hour
+
+// polymarketResolvedThreshold: Polymarket's UMA-style resolutions
 // occasionally leave dust on the loser side, so a strict ==1.0 check would
 // miss real resolutions.
+const polymarketResolvedThreshold = 0.95
+
+// FetchPolymarket pulls the most active markets from the Gamma API: 60% of
+// `limit` from the open set and 40% from the closed set, both ordered by
+// 24-hour volume — the same open/settled split FetchKalshi uses. The closed
+// pass is what lets a market we imported while it was busy resolve with a
+// real result once it settles, instead of being voided as expired.
+//
+// Resolution detection: when a closed market's `outcomePrices` collapses
+// to approximately [1, 0] or [0, 1] we treat it as resolved upstream.
 //
 // Quirks worth flagging (re-derivation from upstream docs gets these wrong):
 //   - `outcomes` and `outcomePrices` ship as JSON-encoded *strings*, not
 //     arrays — they need a second json.Unmarshal.
-//   - We now pull both `active=true` and `active=false` so resolved markets
-//     are included.
+//   - A market row carries no `groupSlug`/`eventSlug`; its event lives at
+//     `events[0].slug`. Reading the wrong keys left every import without an
+//     event group and linked to /market/<slug> instead of the event page.
 func FetchPolymarket(limit int) ([]Market, error) {
-	const page = 500
-	const resolvedThreshold = 0.95
+	if limit <= 0 {
+		return []Market{}, nil
+	}
+	openBudget := (limit * 60) / 100
+	if openBudget == 0 {
+		openBudget = limit
+	}
+	passes := []struct {
+		closed string
+		budget int
+	}{
+		{closed: "false", budget: openBudget},
+		{closed: "true", budget: limit - openBudget},
+	}
 
 	out := []Market{}
-	offset := 0
+	seen := map[string]bool{}
 	pages := 0
-	for len(out) < limit && pages < maxPagePerSource {
-		// Pull both active AND closed markets so resolved upstreams flow
-		// through with their resolution attached. Earlier versions filtered
-		// `closed=false` here, which silently dropped every resolved market
-		// despite the Resolution-parsing code below assuming we'd see them.
-		url := fmt.Sprintf(
-			"https://gamma-api.polymarket.com/markets?limit=%d&offset=%d",
-			page, offset,
-		)
-		var data []map[string]any
-		if err := fetchWithBudget("polymarket", url, &data); err != nil {
-			return out, fmt.Errorf("polymarket page offset=%d: %w", offset, err)
-		}
-		pages++
-		if len(data) == 0 {
-			break
-		}
-		for _, m := range data {
-			outcomes, prices := decodePolymarketOutcomes(m)
-			image := strs(m["image"])
-			if image == "" {
-				image = strs(m["icon"])
+	now := time.Now().UTC()
+	for _, pass := range passes {
+		got := 0
+		for offset := 0; got < pass.budget && pages < maxPagePerSource; offset += polymarketPageSize {
+			url := fmt.Sprintf(
+				"%s/markets?limit=%d&offset=%d&order=volume24hr&ascending=false&closed=%s",
+				polymarketAPIBase, polymarketPageSize, offset, pass.closed,
+			)
+			var data []map[string]any
+			if err := fetchWithBudget("polymarket", url, &data); err != nil {
+				return out, fmt.Errorf("polymarket closed=%s offset=%d: %w", pass.closed, offset, err)
 			}
-			endTime := parseISO(m["endDate"])
-			slug := strs(m["slug"])
-			eventSlug := strs(m["groupSlug"])
-			if eventSlug == "" {
-				eventSlug = strs(m["eventSlug"])
-			}
-			sourceURL := ""
-			if eventSlug != "" {
-				sourceURL = "https://polymarket.com/event/" + eventSlug
-			} else if slug != "" {
-				sourceURL = "https://polymarket.com/market/" + slug
-			}
-			status := "open"
-			if closed, _ := m["closed"].(bool); closed {
-				status = "closed"
-			} else if active, ok := m["active"].(bool); ok && !active {
-				status = "inactive"
-			}
-
-			market := Market{
-				Source:      "polymarket",
-				ExternalID:  strs(m["id"]),
-				Title:       strs(m["question"]),
-				Description: strs(m["description"]),
-				SourceURL:   sourceURL,
-				ImageURL:    image,
-				EndTime:     endTime,
-				UpdatedAt:   firstTime(m["updatedAt"], m["updated_at"], m["lastUpdated"]),
-				Volume:      toFloat(m["volume"]),
-				Volume24h:   firstFloat(m["volume24hr"], m["volume24h"], m["volume24hrClob"]),
-				Liquidity:   toFloat(m["liquidity"]),
-				Outcomes:    outcomes,
-				Prices:      prices,
-				Category:    strs(m["category"]),
-				Status:      status,
-				RulesText:   firstString(m["rules"], m["resolutionSource"], m["description"]),
-				EventGroup:  eventSlug,
-				Tags:        stringSlice(m["tags"]),
-			}
-
-			if market.Resolution == nil && marketExpired(market.EndTime) {
-				market.Status = "expired"
-			}
-
-			// Resolution: Polymarket sets `closed=true` and the winning side's
-			// price collapses to ≥0.95 once UMA settles.
-			if isClosed, _ := m["closed"].(bool); isClosed && len(prices) >= 2 {
-				if outcome := pickWinningOutcome(prices, resolvedThreshold); outcome != "" {
-					resolvedAt := time.Now().UTC()
-					if endTime != nil {
-						resolvedAt = *endTime
-					}
-					market.Resolution = &Resolution{
-						Outcome:    outcome,
-						ResolvedAt: resolvedAt,
-					}
+			pages++
+			for _, raw := range data {
+				if got >= pass.budget {
+					break
 				}
+				m, ok := polymarketMarket(raw, now)
+				if !ok || seen[m.ExternalID] {
+					continue
+				}
+				seen[m.ExternalID] = true
+				out = append(out, m)
+				got++
 			}
-
-			out = append(out, market)
-			if len(out) >= limit {
+			if len(data) < polymarketPageSize {
 				break
 			}
 		}
-		if len(data) < page {
-			break
-		}
-		offset += page
 	}
 	return out, nil
+}
+
+// polymarketMarket maps one Gamma row onto Market. ok is false for rows we
+// never want: no id or question, or an open market ending within
+// polymarketMinTimeLeft.
+func polymarketMarket(m map[string]any, now time.Time) (Market, bool) {
+	id, question := strs(m["id"]), strs(m["question"])
+	if id == "" || question == "" {
+		return Market{}, false
+	}
+	outcomes, prices := decodePolymarketOutcomes(m)
+	image := strs(m["image"])
+	if image == "" {
+		image = strs(m["icon"])
+	}
+	endTime := parseISO(m["endDate"])
+	slug := strs(m["slug"])
+	eventSlug := polymarketEventSlug(m)
+	sourceURL := ""
+	if eventSlug != "" {
+		sourceURL = "https://polymarket.com/event/" + eventSlug
+	} else if slug != "" {
+		sourceURL = "https://polymarket.com/market/" + slug
+	}
+	closed, _ := m["closed"].(bool)
+	status := "open"
+	if closed {
+		status = "closed"
+	} else if active, ok := m["active"].(bool); ok && !active {
+		status = "inactive"
+	}
+
+	market := Market{
+		Source:      "polymarket",
+		ExternalID:  id,
+		Title:       question,
+		Description: strs(m["description"]),
+		SourceURL:   sourceURL,
+		ImageURL:    image,
+		EndTime:     endTime,
+		UpdatedAt:   firstTime(m["updatedAt"], m["updated_at"], m["lastUpdated"]),
+		Volume:      toFloat(m["volume"]),
+		Volume24h:   firstFloat(m["volume24hr"], m["volume24h"], m["volume24hrClob"]),
+		Liquidity:   toFloat(m["liquidity"]),
+		Outcomes:    outcomes,
+		Prices:      prices,
+		Category:    strs(m["category"]),
+		Status:      status,
+		RulesText:   firstString(m["rules"], m["resolutionSource"], m["description"]),
+		EventGroup:  eventSlug,
+		Tags:        stringSlice(m["tags"]),
+	}
+
+	if marketExpired(market.EndTime) {
+		market.Status = "expired"
+	}
+
+	// Resolution: Polymarket sets `closed=true` and the winning side's
+	// price collapses to ≥0.95 once UMA settles.
+	if closed && len(prices) >= 2 {
+		if outcome := pickWinningOutcome(prices, polymarketResolvedThreshold); outcome != "" {
+			resolvedAt := now
+			if endTime != nil {
+				resolvedAt = *endTime
+			}
+			market.Resolution = &Resolution{
+				Outcome:    outcome,
+				ResolvedAt: resolvedAt,
+			}
+		}
+	}
+
+	if market.Status == "open" && endTime != nil && endTime.Before(now.Add(polymarketMinTimeLeft)) {
+		return Market{}, false
+	}
+	return market, true
+}
+
+// polymarketEventSlug finds the event a market belongs to. Gamma nests it
+// under events[]; the flat keys are kept for older payload shapes.
+func polymarketEventSlug(m map[string]any) string {
+	for _, key := range []string{"groupSlug", "eventSlug"} {
+		if s := strs(m[key]); s != "" {
+			return s
+		}
+	}
+	events, _ := m["events"].([]any)
+	for _, e := range events {
+		if em, ok := e.(map[string]any); ok {
+			if s := strs(em["slug"]); s != "" {
+				return s
+			}
+		}
+	}
+	return ""
 }
 
 func decodePolymarketOutcomes(m map[string]any) ([]string, []float64) {

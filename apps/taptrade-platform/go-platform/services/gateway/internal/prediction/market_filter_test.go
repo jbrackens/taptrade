@@ -71,8 +71,18 @@ func TestMarketOrderClauseSupportsDiscoverySorts(t *testing.T) {
 	if clause := marketOrderClause("newest"); !strings.Contains(clause, "rm.created_at DESC") {
 		t.Fatalf("newest sort should order by created_at DESC, got %q", clause)
 	}
-	if clause := marketOrderClause("activity"); !strings.Contains(clause, "volume_24h_points") {
+	clause := marketOrderClause("activity")
+	if !strings.Contains(clause, "volume_24h_points") {
 		t.Fatalf("activity sort should use ranking score, got %q", clause)
+	}
+	// 2026-09-27: near-settled markets scale the whole activity term down
+	// and size terms are log-scaled, so a 1%-priced import with a huge
+	// lifetime volume cannot lead the board.
+	if !strings.Contains(clause, "ABS(COALESCE(rm.yes_price_points, 50) - 50)") {
+		t.Fatalf("activity sort should weight by how open the question is, got %q", clause)
+	}
+	if !strings.Contains(clause, "LN(1 + GREATEST(rm.volume_points, 0)") {
+		t.Fatalf("activity sort should log-scale lifetime volume, got %q", clause)
 	}
 }
 
