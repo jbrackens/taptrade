@@ -343,6 +343,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
           <MarketGrid
             markets={gridMarkets}
             columns={4}
+            groupEvents
             onQuickTrade={setQuickTrade}
           />
         ) : markets.length > 0 ? null : (

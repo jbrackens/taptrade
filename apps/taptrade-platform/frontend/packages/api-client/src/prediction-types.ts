@@ -77,6 +77,8 @@ export interface PredictionMarket {
   eventId: string;
   /** Parent event's editorial title — Moments cluster headers use it. */
   eventTitle?: string;
+  /** True when the parent is a per-category catch-all, not a real event. */
+  eventSynthetic?: boolean;
   categoryId?: string;
   categorySlug?: string;
   categoryName?: string;

@@ -344,5 +344,8 @@
   "LANDING_FOOTER_PRIVACY": "隱私",
   "LANDING_FOOTER_RESPONSIBLE": "理性參與",
   "TIME_LEFT": "剩餘",
-  "YOU_HOLD_SIDE": "你持有 {{side}}"
+  "YOU_HOLD_SIDE": "你持有 {{side}}",
+  "EVENT_MATCH_WINNER": "比賽勝者",
+  "EVENT_MORE_MARKETS_one": "+{{count}} 個",
+  "EVENT_MORE_MARKETS_other": "+{{count}} 個"
 }

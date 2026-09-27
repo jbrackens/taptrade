@@ -655,6 +655,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
                   <MarketGrid
                     markets={visibleMarkets}
                     columns={4}
+                    groupEvents
                     watchedMarketIds={watchedMarketIds}
                     onToggleWatchlist={toggleWatchlist}
                   />
@@ -693,6 +694,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
             <MarketGrid
               markets={visibleMarkets}
               columns={4}
+              groupEvents
               watchedMarketIds={watchedMarketIds}
               onToggleWatchlist={toggleWatchlist}
             />

@@ -949,6 +949,7 @@ function normalizePredictionMarket(
     id: row.id,
     eventId: row.eventId,
     eventTitle: row.eventTitle,
+    eventSynthetic: row.eventSynthetic === true ? true : undefined,
     categoryId: row.categoryId,
     categorySlug: row.categorySlug,
     categoryName: row.categoryName,

@@ -37,6 +37,7 @@ type Market struct {
 	Status      string
 	RulesText   string
 	EventGroup  string
+	EventTitle  string // the upstream event's own title, when the source has one
 	Tags        []string
 	Resolution  *Resolution
 }

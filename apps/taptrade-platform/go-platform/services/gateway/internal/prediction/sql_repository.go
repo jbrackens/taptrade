@@ -1833,7 +1833,8 @@ func marketSelectQuery() string {
 	               m.execution_mode, m.collateral_pool_points, m.settled_payout_pool_points,
 	               m.best_yes_bid_points, m.best_yes_ask_points,
 	               m.best_no_bid_points, m.best_no_ask_points, m.last_quote_at,
-	               m.article_source_id, pe.title AS event_title
+	               m.article_source_id, pe.title AS event_title,
+	               COALESCE(pe.is_synthetic, false) AS event_synthetic
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
 	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
@@ -2010,7 +2011,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
-		&articleSourceID, &eventTitle)
+		&articleSourceID, &eventTitle, &m.EventSynthetic)
 	if err != nil {
 		return nil, err
 	}

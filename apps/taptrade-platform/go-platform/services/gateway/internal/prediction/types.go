@@ -125,6 +125,10 @@ type Market struct {
 	// EventTitle is the parent event's (editorial) title, read-joined for
 	// display surfaces — the Moments feed labels clusters with it.
 	EventTitle           *string         `json:"eventTitle,omitempty" db:"event_title"`
+	// EventSynthetic marks the per-category catch-all events imports are
+	// parked in when the source has no event of its own; the board groups
+	// markets into event cards only under real events.
+	EventSynthetic       bool            `json:"eventSynthetic,omitempty" db:"event_synthetic"`
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
@@ -183,6 +187,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		ID                   string          `json:"id"`
 		EventID              string          `json:"eventId"`
 		EventTitle           *string         `json:"eventTitle,omitempty"`
+		EventSynthetic       bool            `json:"eventSynthetic,omitempty"`
 		CategoryID           string          `json:"categoryId,omitempty"`
 		CategorySlug         string          `json:"categorySlug,omitempty"`
 		CategoryName         string          `json:"categoryName,omitempty"`
@@ -232,6 +237,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		ID:                   m.ID,
 		EventID:              m.EventID,
 		EventTitle:           m.EventTitle,
+		EventSynthetic:       m.EventSynthetic,
 		CategoryID:           m.CategoryID,
 		CategorySlug:         m.CategorySlug,
 		CategoryName:         m.CategoryName,

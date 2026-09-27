@@ -273,6 +273,7 @@ func kalshiEventMarkets(events []kalshiEvent, status string, now time.Time) []Ma
 				Status:      marketStatus,
 				RulesText:   strs(m["rules_primary"]),
 				EventGroup:  eventTicker,
+				EventTitle:  ev.Title,
 				Tags:        compactStrings(category, strs(m["market_type"])),
 			}
 

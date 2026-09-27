@@ -113,6 +113,7 @@ func polymarketMarket(m map[string]any, now time.Time) (Market, bool) {
 	endTime := parseISO(m["endDate"])
 	slug := strs(m["slug"])
 	eventSlug := polymarketEventSlug(m)
+	eventTitle := polymarketEventField(m, "title")
 	sourceURL := ""
 	if eventSlug != "" {
 		sourceURL = "https://polymarket.com/event/" + eventSlug
@@ -145,6 +146,7 @@ func polymarketMarket(m map[string]any, now time.Time) (Market, bool) {
 		Status:      status,
 		RulesText:   firstString(m["rules"], m["resolutionSource"], m["description"]),
 		EventGroup:  eventSlug,
+		EventTitle:  eventTitle,
 		Tags:        stringSlice(m["tags"]),
 	}
 
@@ -181,10 +183,16 @@ func polymarketEventSlug(m map[string]any) string {
 			return s
 		}
 	}
+	return polymarketEventField(m, "slug")
+}
+
+// polymarketEventField reads a string field of the market's first nested
+// event ("slug", "title").
+func polymarketEventField(m map[string]any, field string) string {
 	events, _ := m["events"].([]any)
 	for _, e := range events {
 		if em, ok := e.(map[string]any); ok {
-			if s := strs(em["slug"]); s != "" {
+			if s := strs(em[field]); s != "" {
 				return s
 			}
 		}

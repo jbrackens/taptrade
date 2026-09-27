@@ -344,5 +344,8 @@
   "LANDING_FOOTER_PRIVACY": "Privasi",
   "LANDING_FOOTER_RESPONSIBLE": "Bermain bertanggung jawab",
   "TIME_LEFT": "lagi",
-  "YOU_HOLD_SIDE": "Anda pegang {{side}}"
+  "YOU_HOLD_SIDE": "Anda pegang {{side}}",
+  "EVENT_MATCH_WINNER": "Pemenang laga",
+  "EVENT_MORE_MARKETS_one": "+{{count}} lagi",
+  "EVENT_MORE_MARKETS_other": "+{{count}} lagi"
 }

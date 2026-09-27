@@ -23,6 +23,7 @@ type Row struct {
 	UpstreamUpdatedAt *time.Time
 	RulesText         string
 	EventGroup        string
+	EventTitle        string
 	Tags              []string
 	ImagePath         *string
 	EndTime           *time.Time
@@ -109,6 +110,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 			tags = $14::jsonb,
 			volume_24h = $15,
 			liquidity = $16,
+			event_title = $17,
 			last_seen_at = now(),
 			updated_at = now()
 		WHERE id = $1
@@ -129,6 +131,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		string(tags),
 		row.Volume24h,
 		row.Liquidity,
+		nullableText(row.EventTitle),
 	)
 	if err != nil {
 		return fmt.Errorf("update: %w", err)

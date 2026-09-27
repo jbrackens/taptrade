@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { useHeldPositions } from "../../lib/query/position-hooks";
+import { EventCard } from "./EventCard";
+import { groupIntoEventCards } from "./event-groups";
 import { MarketCard } from "./MarketCard";
 import { categoryLabel, localizedMarket } from "./market-content";
 import { QuickTradePanel, type QuickTradeTarget } from "./QuickTradePanel";
@@ -18,6 +20,11 @@ interface Props {
    * page with a featured market and a grid mounts one panel, not two).
    */
   onQuickTrade?: (target: QuickTradeTarget) => void;
+  /**
+   * Fold markets that share a real event (a game's spread, total and
+   * moneyline; a nominee field) into one event card each.
+   */
+  groupEvents?: boolean;
 }
 
 // Equal-height rows only where there are several columns; the one-column
@@ -33,6 +40,7 @@ export function MarketGrid({
   watchedMarketIds,
   onToggleWatchlist,
   onQuickTrade,
+  groupEvents = false,
 }: Props) {
   const { t } = useTranslation("market-content");
   // A card's YES/NO opens the trade panel in place; the card body still
@@ -43,11 +51,32 @@ export function MarketGrid({
 
   if (!markets || markets.length === 0) return null;
 
+  const localizedMarkets = markets.map((market) => localizedMarket(t, market));
+  const items = groupEvents
+    ? groupIntoEventCards(localizedMarkets)
+    : localizedMarkets.map((market) => ({ kind: "market" as const, market }));
+
   return (
     <>
       <div className={GRID_CLASS_BY_COLUMNS[columns]} data-testid="market-grid">
-        {markets.map((market, index) => {
-          const localized = localizedMarket(t, market);
+        {items.map((item, index) => {
+          if (item.kind === "event") {
+            return (
+              <div
+                key={`event:${item.eventId}`}
+                className="card-in h-full"
+                style={{ animationDelay: `${Math.min(index, 11) * 30}ms` }}
+              >
+                <EventCard
+                  eventId={item.eventId}
+                  title={item.title}
+                  markets={item.markets}
+                  onQuickTrade={(market, side) => openQuickTrade({ market, side })}
+                />
+              </div>
+            );
+          }
+          const localized = item.market;
           return (
             <div
               key={localized.id}

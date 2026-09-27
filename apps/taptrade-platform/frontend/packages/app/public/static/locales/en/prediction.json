@@ -367,5 +367,8 @@
   "LANDING_FOOTER_PRIVACY": "Privacy",
   "LANDING_FOOTER_RESPONSIBLE": "Responsible play",
   "TIME_LEFT": "left",
-  "YOU_HOLD_SIDE": "you hold {{side}}"
+  "YOU_HOLD_SIDE": "you hold {{side}}",
+  "EVENT_MATCH_WINNER": "Match winner",
+  "EVENT_MORE_MARKETS_one": "+{{count}} more",
+  "EVENT_MORE_MARKETS_other": "+{{count}} more"
 }

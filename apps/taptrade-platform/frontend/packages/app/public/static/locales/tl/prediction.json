@@ -346,5 +346,8 @@
   "LANDING_FOOTER_PRIVACY": "Privacy",
   "LANDING_FOOTER_RESPONSIBLE": "Responsableng paglalaro",
   "TIME_LEFT": "natitira",
-  "YOU_HOLD_SIDE": "hawak mo: {{side}}"
+  "YOU_HOLD_SIDE": "hawak mo: {{side}}",
+  "EVENT_MATCH_WINNER": "Mananalo sa laban",
+  "EVENT_MORE_MARKETS_one": "+{{count}} pa",
+  "EVENT_MORE_MARKETS_other": "+{{count}} pa"
 }

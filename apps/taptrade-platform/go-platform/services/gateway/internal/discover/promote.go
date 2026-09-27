@@ -115,16 +115,38 @@ func Promote(
 		}
 
 		category := Classify(m)
-		eventID, ok := eventIDs[category]
+		catchAllID, ok := eventIDs[category]
 		if !ok {
 			slog.Warn("promote: unknown category, skipping", "category", category)
 			res.Failed++
 			continue
 		}
+		// An import that belongs to an upstream event (a game, an election
+		// with several candidates) gets that event as its parent, so the
+		// board can show one card per event; the per-category catch-all is
+		// only for imports with no event of their own.
+		imagePath := imagePathFor(ctx, db, m)
+		eventID := catchAllID
+		if m.EventGroup != "" {
+			if id, err := ensureUpstreamEvent(ctx, db, m, catIDs[category], imagePath); err != nil {
+				slog.Warn("promote: upstream event failed; using catch-all", "event_group", m.EventGroup, "err", err)
+			} else {
+				eventID = id
+			}
+		}
 
 		ticker := generateTicker(m)
 		existing, _ := repo.GetMarketByTicker(ctx, ticker)
 		if existing != nil {
+			// Rows promoted before upstream events existed sit in the
+			// catch-all; move them under their event once it is known.
+			if eventID != catchAllID && existing.EventID == catchAllID {
+				if _, err := db.ExecContext(ctx,
+					`UPDATE prediction_markets SET event_id = $1 WHERE id = $2 AND event_id = $3`,
+					eventID, existing.ID, catchAllID); err != nil {
+					slog.Warn("promote: relink to upstream event failed", "ticker", ticker, "err", err)
+				}
+			}
 			// A previously-promoted row that now fails the guard (either
 			// side of the sync) is retired, not resynced.
 			if IsUnsuitableImport(existing.Title) {
@@ -182,7 +204,7 @@ func Promote(
 		// matches the displayed price. CreateMarket leaves shares at zero
 		// (which prices the market at 50/50) and doesn't accept image_path.
 		yesShares, noShares := initAMMShares(float64(yesC)/100.0, defaultAMMLiquidityParam)
-		if err := writeInitialState(ctx, db, mkt.ID, yesC, noC, yesShares, noShares, imagePathFor(ctx, db, m)); err != nil {
+		if err := writeInitialState(ctx, db, mkt.ID, yesC, noC, yesShares, noShares, imagePath); err != nil {
 			slog.Warn("promote: write initial state failed", "ticker", ticker, "err", err)
 			res.Failed++
 			continue
@@ -505,6 +527,49 @@ func ensureSyntheticEvents(ctx context.Context, db *sql.DB, catIDs map[string]st
 		out[slug] = eventID
 	}
 	return out, nil
+}
+
+// upstreamEventID is the deterministic prediction_events id for an upstream
+// event, so every sync lands the same event on the same row.
+func upstreamEventID(source, eventGroup string) string {
+	return "upstream-event-" + strings.ToLower(strings.TrimSpace(source)) + ":" + strings.ToLower(strings.TrimSpace(eventGroup))
+}
+
+// ensureUpstreamEvent upserts the prediction_events row for an import's
+// upstream event and returns its id. The title comes from the source's own
+// event title, falling back to the market's; the close date is the latest
+// of its markets'; the cover is the first market image that arrives. The
+// metadata carries the event group (a slug or ticker, never a venue name)
+// so back-office tools can tell imported events from editorial ones.
+func ensureUpstreamEvent(ctx context.Context, db *sql.DB, m Market, categoryID, coverPath string) (string, error) {
+	// The market's own title only seeds a brand-new event; on later syncs
+	// only the source's event title may replace what is there.
+	eventTitle := strings.TrimSpace(m.EventTitle)
+	title := eventTitle
+	if title == "" {
+		title = strings.TrimSpace(m.Title)
+	}
+	closeAt := pickCloseAt(m.EndTime)
+	metadata, _ := json.Marshal(map[string]any{"imported": true, "eventGroup": strings.TrimSpace(m.EventGroup)})
+	var id string
+	err := db.QueryRowContext(ctx,
+		`INSERT INTO prediction_events
+		   (id, title, description, category_id, status, open_at, close_at, cover_image_url, metadata, is_synthetic)
+		 VALUES (md5($1)::uuid, $2, '', NULLIF($3, '')::uuid, 'open', now(), $4, NULLIF($5, ''), $6::jsonb, false)
+		 ON CONFLICT (id) DO UPDATE SET
+		   title           = COALESCE(NULLIF($7, ''), prediction_events.title),
+		   close_at        = GREATEST(prediction_events.close_at, EXCLUDED.close_at),
+		   category_id     = COALESCE(prediction_events.category_id, EXCLUDED.category_id),
+		   cover_image_url = COALESCE(prediction_events.cover_image_url, EXCLUDED.cover_image_url),
+		   updated_at      = now()
+		 WHERE prediction_events.metadata ? 'eventGroup'
+		 RETURNING id`,
+		upstreamEventID(m.Source, m.EventGroup), title, categoryID, closeAt, coverPath, string(metadata), eventTitle,
+	).Scan(&id)
+	if err != nil {
+		return "", fmt.Errorf("upsert upstream event %q: %w", m.EventGroup, err)
+	}
+	return id, nil
 }
 
 // imagePathFor pulls the rehosted image path from imported_markets for the
