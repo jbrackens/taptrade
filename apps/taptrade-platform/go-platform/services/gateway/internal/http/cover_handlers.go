@@ -48,11 +48,14 @@ func registerCoverRoutes(mux *stdhttp.ServeMux, db *sql.DB) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"data": items})
 	}))
 
-	// PATCH /api/v1/admin/markets/{id}/image  {"imagePath": "/images/... | https://... | \"\"}
-	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		rest := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
-		id, ok := strings.CutSuffix(rest, "/image")
-		if !ok || id == "" || strings.Contains(id, "/") {
+	// PATCH /api/v1/admin/market-images/{id}  {"imagePath": "/images/... | https://... | \"\"}
+	// Its own prefix: "/api/v1/admin/markets/" belongs to the lifecycle
+	// handler in prediction_handlers.go, and net/http refuses two handlers
+	// on one pattern at boot (the 2026-09-27 stage-4 deploy panicked on
+	// exactly that and took the gateway down until rolled back).
+	mux.Handle("/api/v1/admin/market-images/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/admin/market-images/"), "/")
+		if id == "" || strings.Contains(id, "/") {
 			return httpx.NotFound("route not found")
 		}
 		if err := requireAdminPermission(r, "markets:edit"); err != nil {

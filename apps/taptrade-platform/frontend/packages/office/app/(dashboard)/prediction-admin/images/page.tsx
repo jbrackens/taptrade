@@ -9,7 +9,7 @@
  * that matters, so every auto-chosen cover lands here with one-click
  * Replace or Remove. A hand-set image is never overwritten by the sync.
  *
- * Metadata only: PATCH /api/v1/admin/markets/{id}/image never moves points
+ * Metadata only: PATCH /api/v1/admin/market-images/{id} never moves points
  * or changes market state.
  */
 
@@ -104,7 +104,7 @@ export default function MarketImagesPage() {
     setNotice(null);
     setError(null);
     try {
-      const res = await adminFetch(`/api/v1/admin/markets/${encodeURIComponent(cover.marketId)}/image`, {
+      const res = await adminFetch(`/api/v1/admin/market-images/${encodeURIComponent(cover.marketId)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imagePath }),

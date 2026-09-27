@@ -1688,6 +1688,35 @@ components:
           items: { type: string }
       required: [service, status, pointMode, legacyMoneyRoutes, launchRouteDomains]
 paths:
+  /api/v1/attributions:
+    get:
+      summary: Photo credits for openly licensed market covers
+      description: Lists every market whose cover image came from an openly licensed source (Wikimedia Commons, Openverse), with the credit its licence asks for and a link to the source. Public; no session needed.
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 1000, default: 500 }
+      responses:
+        "200":
+          description: Credited covers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [ticker, title, imagePath, credit]
+                      properties:
+                        ticker: { type: string, example: "IMP-1A2B3C4D" }
+                        title: { type: string }
+                        imagePath: { type: string, example: "/images/markets/2f1c….jpg" }
+                        credit: { type: string, example: "Jane Doe / Wikimedia Commons (CC BY-SA 4.0)" }
+                        license: { type: string, example: "CC BY-SA 4.0" }
+                        sourceUrl: { type: string, format: uri }
   /api/v1/status:
     get:
       summary: Service status (public)
