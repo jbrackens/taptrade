@@ -349,5 +349,7 @@
   "YOU_HOLD_SIDE": "hawak mo: {{side}}",
   "EVENT_MATCH_WINNER": "Mananalo sa laban",
   "EVENT_MORE_MARKETS_one": "+{{count}} pa",
-  "EVENT_MORE_MARKETS_other": "+{{count}} pa"
+  "EVENT_MORE_MARKETS_other": "+{{count}} pa",
+  "PHOTO_CREDIT_SHORT": "Kredito ng larawan",
+  "LANDING_FOOTER_CREDITS": "Mga kredito ng larawan"
 }

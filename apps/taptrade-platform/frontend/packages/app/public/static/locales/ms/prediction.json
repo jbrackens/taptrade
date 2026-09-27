@@ -347,5 +347,7 @@
   "YOU_HOLD_SIDE": "anda pegang {{side}}",
   "EVENT_MATCH_WINNER": "Pemenang perlawanan",
   "EVENT_MORE_MARKETS_one": "+{{count}} lagi",
-  "EVENT_MORE_MARKETS_other": "+{{count}} lagi"
+  "EVENT_MORE_MARKETS_other": "+{{count}} lagi",
+  "PHOTO_CREDIT_SHORT": "Kredit foto",
+  "LANDING_FOOTER_CREDITS": "Kredit foto"
 }

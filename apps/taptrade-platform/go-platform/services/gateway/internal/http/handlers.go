@@ -394,6 +394,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		go reconciler.Run(context.Background())
 
 		startHourlyMarketSyncWorker(walletService.DB(), predSQLRepo, predictionService)
+		registerCoverRoutes(mux, walletService.DB())
 
 		// Synthetic Market Maker (SMM) — provides resting two-sided
 		// liquidity on order_book markets so users can actually trade

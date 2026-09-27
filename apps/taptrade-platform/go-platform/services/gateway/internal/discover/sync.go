@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
 	"strings"
 	"time"
 )
@@ -40,6 +41,7 @@ type SyncResult struct {
 	Updated             int
 	ImagesRehosted      int
 	ImagesFailed        int
+	CoversResolved      int
 	ImagesDroppedShared int
 	MarketImagesAligned int
 	RemovedExpired      int
@@ -69,6 +71,11 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 	// milliseconds with "budget exhausted" and the catalog silently stops
 	// updating (observed on the demo box, 2026-07-07).
 	resetBudget()
+	var covers *CoverResolver
+	if rehoster != nil && !strings.EqualFold(strings.TrimSpace(os.Getenv("MARKET_COVER_RESOLVER")), "false") {
+		covers = NewCoverResolver(rehoster, coverStoreOrNil(repo))
+		covers.ResetBudget()
+	}
 
 	res := SyncResult{}
 	all := make([]Market, 0, 500)
@@ -188,6 +195,19 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 			res.Created++
 		} else {
 			res.Updated++
+		}
+		// No image from the source: find one in an open repository (or draw
+		// a matchup tile), once, and remember the answer.
+		if imagePath == nil && covers != nil {
+			if needs, err := repo.NeedsCover(ctx, ur.ID); err == nil && needs {
+				if meta, ok := covers.Resolve(ctx, ur.ID, m, Classify(m)); ok {
+					if err := repo.SetImage(ctx, ur.ID, meta); err != nil {
+						slog.Warn("discover cover save failed", "row_id", ur.ID, "err", err)
+					} else {
+						res.CoversResolved++
+					}
+				}
+			}
 		}
 	}
 
@@ -326,4 +346,12 @@ func saveKalshiScan(ctx context.Context, repo *Repository, scan KalshiScan) {
 			slog.Warn("discover cursor save failed", "src", "kalshi", "listing", listing, "err", err)
 		}
 	}
+}
+
+// coverStoreOrNil keeps a nil *Repository from becoming a non-nil interface.
+func coverStoreOrNil(repo *Repository) CoverStore {
+	if repo == nil {
+		return nil
+	}
+	return repo
 }

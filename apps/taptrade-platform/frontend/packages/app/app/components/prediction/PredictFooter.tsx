@@ -24,6 +24,7 @@ const LINKS = [
     ? [{ href: "/responsible-gaming", label: "Responsible Gaming" }]
     : []),
   { href: "/contact-us", label: "Contact" },
+  { href: "/attributions", label: "Photo credits" },
 ];
 
 export function PredictFooter() {

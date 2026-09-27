@@ -65,6 +65,12 @@ const navItems: NavItem[] = [
     requiredPermission: "markets:edit",
   },
   {
+    href: "/prediction-admin/images",
+    label: "Market Images",
+    icon: "image",
+    requiredPermission: "markets:edit",
+  },
+  {
     href: "/prediction-admin/settlements",
     label: "Settlements",
     icon: "check-square",

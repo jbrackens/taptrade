@@ -108,6 +108,8 @@ export interface PredictionMarket {
   createdAt: string;
   imagePath?: string;
   imageUrl?: string;
+  /** Attribution for an openly licensed cover (shown on the market page and /attributions). */
+  imageCredit?: string;
   image_url?: string;
 
   // Exchange engine fields (migration 019). Markets created before

@@ -129,6 +129,9 @@ type Market struct {
 	// parked in when the source has no event of its own; the board groups
 	// markets into event cards only under real events.
 	EventSynthetic       bool            `json:"eventSynthetic,omitempty" db:"event_synthetic"`
+	// ImageCredit is the attribution an openly licensed cover carries
+	// (migration 060); shown beside the image on the market page.
+	ImageCredit          *string         `json:"imageCredit,omitempty" db:"-"`
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
@@ -188,6 +191,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventID              string          `json:"eventId"`
 		EventTitle           *string         `json:"eventTitle,omitempty"`
 		EventSynthetic       bool            `json:"eventSynthetic,omitempty"`
+		ImageCredit          *string         `json:"imageCredit,omitempty"`
 		CategoryID           string          `json:"categoryId,omitempty"`
 		CategorySlug         string          `json:"categorySlug,omitempty"`
 		CategoryName         string          `json:"categoryName,omitempty"`
@@ -238,6 +242,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventID:              m.EventID,
 		EventTitle:           m.EventTitle,
 		EventSynthetic:       m.EventSynthetic,
+		ImageCredit:          m.ImageCredit,
 		CategoryID:           m.CategoryID,
 		CategorySlug:         m.CategorySlug,
 		CategoryName:         m.CategoryName,

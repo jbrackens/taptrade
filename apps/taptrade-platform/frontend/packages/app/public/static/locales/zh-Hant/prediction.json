@@ -347,5 +347,7 @@
   "YOU_HOLD_SIDE": "你持有 {{side}}",
   "EVENT_MATCH_WINNER": "比賽勝者",
   "EVENT_MORE_MARKETS_one": "+{{count}} 個",
-  "EVENT_MORE_MARKETS_other": "+{{count}} 個"
+  "EVENT_MORE_MARKETS_other": "+{{count}} 個",
+  "PHOTO_CREDIT_SHORT": "圖片來源",
+  "LANDING_FOOTER_CREDITS": "圖片來源"
 }

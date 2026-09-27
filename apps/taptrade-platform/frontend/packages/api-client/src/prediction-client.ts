@@ -972,6 +972,7 @@ function normalizePredictionMarket(
     closeAt: row.closeAt,
     createdAt: row.createdAt,
     imagePath: row.imagePath,
+    imageCredit: row.imageCredit,
     imageUrl: row.imageUrl,
     image_url: row.image_url,
     executionMode: row.executionMode,

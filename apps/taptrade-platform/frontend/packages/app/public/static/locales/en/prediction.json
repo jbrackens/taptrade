@@ -370,5 +370,7 @@
   "YOU_HOLD_SIDE": "you hold {{side}}",
   "EVENT_MATCH_WINNER": "Match winner",
   "EVENT_MORE_MARKETS_one": "+{{count}} more",
-  "EVENT_MORE_MARKETS_other": "+{{count}} more"
+  "EVENT_MORE_MARKETS_other": "+{{count}} more",
+  "PHOTO_CREDIT_SHORT": "Photo credit",
+  "LANDING_FOOTER_CREDITS": "Photo credits"
 }

@@ -97,7 +97,8 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		UPDATE imported_markets SET
 			title = $2,
 			description = $3,
-			image_path = COALESCE($4, image_path),
+			image_path = CASE WHEN COALESCE(image_origin, '') = 'manual' THEN image_path ELSE COALESCE($4, image_path) END,
+			image_origin = CASE WHEN $4 IS NOT NULL AND COALESCE(image_origin, '') <> 'manual' THEN 'upstream' ELSE image_origin END,
 			end_time = $5,
 			volume = $6,
 			outcomes = $7::jsonb,
@@ -288,9 +289,14 @@ func (r *Repository) ClearImagePaths(ctx context.Context, ids []string) (int, er
 	res, err := r.db.ExecContext(ctx, `
 		UPDATE imported_markets
 		   SET image_path = NULL,
+		       image_credit = NULL,
+		       image_license = NULL,
+		       image_source_url = NULL,
+		       image_origin = NULL,
 		       updated_at = now()
 		 WHERE id = ANY($1::uuid[])
 		   AND image_path IS NOT NULL
+		   AND COALESCE(image_origin, '') <> 'manual'
 	`, pq.Array(ids))
 	if err != nil {
 		return 0, fmt.Errorf("clear image paths: %w", err)
@@ -473,4 +479,175 @@ func (r *Repository) SaveCursor(ctx context.Context, source, listing, cursor str
 		return fmt.Errorf("save %s/%s cursor: %w", source, listing, err)
 	}
 	return nil
+}
+
+// ── Covers (migration 060) ──────────────────────────────────────────────
+
+// NeedsCover reports whether an imported row has no thumbnail and has not
+// been given one by hand.
+func (r *Repository) NeedsCover(ctx context.Context, id string) (bool, error) {
+	var needs bool
+	err := r.db.QueryRowContext(ctx,
+		`SELECT image_path IS NULL AND COALESCE(image_origin, '') <> 'manual' FROM imported_markets WHERE id = $1`,
+		id).Scan(&needs)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	return needs, err
+}
+
+// SetImage records a resolved cover and its credit on an imported row; a
+// manual cover is left alone.
+func (r *Repository) SetImage(ctx context.Context, id string, meta CoverMeta) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE imported_markets
+		   SET image_path = $2,
+		       image_credit = NULLIF($3, ''),
+		       image_license = NULLIF($4, ''),
+		       image_source_url = NULLIF($5, ''),
+		       image_origin = $6,
+		       updated_at = now()
+		 WHERE id = $1
+		   AND COALESCE(image_origin, '') <> 'manual'`,
+		id, meta.Path, meta.Credit, meta.License, meta.SourceURL, meta.Origin)
+	if err != nil {
+		return fmt.Errorf("set image: %w", err)
+	}
+	return nil
+}
+
+func (r *Repository) LoadCoverLookup(ctx context.Context, key string) (*CoverLookup, error) {
+	var l CoverLookup
+	var imageURL, credit, license, sourceURL, origin sql.NullString
+	err := r.db.QueryRowContext(ctx,
+		`SELECT lookup_key, found, image_url, credit, license, source_url, origin, checked_at
+		   FROM cover_lookups WHERE lookup_key = $1`, key,
+	).Scan(&l.Key, &l.Found, &imageURL, &credit, &license, &sourceURL, &origin, &l.CheckedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("load cover lookup: %w", err)
+	}
+	l.ImageURL, l.Credit, l.License, l.SourceURL, l.Origin = imageURL.String, credit.String, license.String, sourceURL.String, origin.String
+	return &l, nil
+}
+
+func (r *Repository) SaveCoverLookup(ctx context.Context, l CoverLookup) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO cover_lookups (lookup_key, found, image_url, credit, license, source_url, origin, checked_at)
+		VALUES ($1, $2, NULLIF($3, ''), NULLIF($4, ''), NULLIF($5, ''), NULLIF($6, ''), NULLIF($7, ''), now())
+		ON CONFLICT (lookup_key) DO UPDATE SET
+		   found = EXCLUDED.found, image_url = EXCLUDED.image_url, credit = EXCLUDED.credit,
+		   license = EXCLUDED.license, source_url = EXCLUDED.source_url, origin = EXCLUDED.origin,
+		   checked_at = now()`,
+		l.Key, l.Found, l.ImageURL, l.Credit, l.License, l.SourceURL, l.Origin)
+	if err != nil {
+		return fmt.Errorf("save cover lookup: %w", err)
+	}
+	return nil
+}
+
+// ResolvedCover is one auto-chosen (or hand-set) thumbnail for back-office
+// review.
+type ResolvedCover struct {
+	MarketID  string    `json:"marketId"`
+	Ticker    string    `json:"ticker"`
+	Title     string    `json:"title"`
+	ImagePath string    `json:"imagePath"`
+	Credit    string    `json:"credit,omitempty"`
+	Origin    string    `json:"origin"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// ListResolvedCovers returns open imports whose thumbnail was resolved by
+// the catalog (or set by hand), newest first.
+func (r *Repository) ListResolvedCovers(ctx context.Context, limit int) ([]ResolvedCover, error) {
+	if limit <= 0 || limit > 500 {
+		limit = 200
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT pm.id, pm.ticker, pm.title, im.image_path, COALESCE(im.image_credit, ''), im.image_origin, im.updated_at
+		  FROM imported_markets im
+		  JOIN prediction_markets pm ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+		 WHERE im.image_origin IN ('entity', 'topic', 'tile', 'manual')
+		   AND pm.status = 'open'
+		 ORDER BY im.updated_at DESC
+		 LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list resolved covers: %w", err)
+	}
+	defer rows.Close()
+	out := []ResolvedCover{}
+	for rows.Next() {
+		var c ResolvedCover
+		var path sql.NullString
+		if err := rows.Scan(&c.MarketID, &c.Ticker, &c.Title, &path, &c.Credit, &c.Origin, &c.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan resolved cover: %w", err)
+		}
+		c.ImagePath = path.String
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// SetManualImage sets (or, with an empty path, removes) a market's thumbnail
+// by hand and marks the imported row manual so no sync overwrites it.
+// Returns false when the market does not exist.
+func (r *Repository) SetManualImage(ctx context.Context, marketID, path string) (bool, error) {
+	var ticker string
+	err := r.db.QueryRowContext(ctx,
+		`UPDATE prediction_markets SET image_path = NULLIF($2, ''), updated_at = now() WHERE id = $1 RETURNING ticker`,
+		marketID, path).Scan(&ticker)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("set manual image: %w", err)
+	}
+	if _, err := r.db.ExecContext(ctx, `
+		UPDATE imported_markets
+		   SET image_path = NULLIF($2, ''), image_credit = NULL, image_license = NULL, image_source_url = NULL,
+		       image_origin = 'manual', updated_at = now()
+		 WHERE 'IMP-' || upper(substr(external_hash, 1, 8)) = $1`, ticker, path); err != nil {
+		return false, fmt.Errorf("mark manual image: %w", err)
+	}
+	return true, nil
+}
+
+// Attribution is one credited cover for the public /attributions page.
+type Attribution struct {
+	Ticker    string `json:"ticker"`
+	Title     string `json:"title"`
+	ImagePath string `json:"imagePath"`
+	Credit    string `json:"credit"`
+	License   string `json:"license,omitempty"`
+	SourceURL string `json:"sourceUrl,omitempty"`
+}
+
+// ListAttributions returns every market whose cover carries a credit.
+func (r *Repository) ListAttributions(ctx context.Context, limit int) ([]Attribution, error) {
+	if limit <= 0 || limit > 1000 {
+		limit = 500
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT pm.ticker, pm.title, im.image_path, im.image_credit, COALESCE(im.image_license, ''), COALESCE(im.image_source_url, '')
+		  FROM imported_markets im
+		  JOIN prediction_markets pm ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+		 WHERE im.image_credit IS NOT NULL AND im.image_path IS NOT NULL
+		 ORDER BY pm.title
+		 LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list attributions: %w", err)
+	}
+	defer rows.Close()
+	out := []Attribution{}
+	for rows.Next() {
+		var a Attribution
+		if err := rows.Scan(&a.Ticker, &a.Title, &a.ImagePath, &a.Credit, &a.License, &a.SourceURL); err != nil {
+			return nil, fmt.Errorf("scan attribution: %w", err)
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
 }

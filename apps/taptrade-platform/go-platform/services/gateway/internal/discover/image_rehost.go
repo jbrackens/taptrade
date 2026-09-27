@@ -24,7 +24,10 @@ import (
 // "imported/" or "polymarket/" would leak the data origin.
 type ImageRehoster struct {
 	PublicRoot string // absolute path to the Next.js public/ directory
-	client     *http.Client
+	// UserAgent identifies the catalog to image hosts; Wikimedia asks for a
+	// descriptive one. Empty falls back to the seeder's.
+	UserAgent string
+	client    *http.Client
 }
 
 // NewImageRehoster returns a rehoster that writes into publicRoot/images/markets/.
@@ -59,7 +62,11 @@ func (r *ImageRehoster) Rehost(rowID, imageURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("build request: %w", err)
 	}
-	req.Header.Set("User-Agent", "demo-pm-seeder/0.1")
+	ua := r.UserAgent
+	if ua == "" {
+		ua = "demo-pm-seeder/0.1"
+	}
+	req.Header.Set("User-Agent", ua)
 
 	resp, err := r.client.Do(req)
 	if err != nil {
@@ -100,6 +107,24 @@ func (r *ImageRehoster) Rehost(rowID, imageURL string) (string, error) {
 		return "", fmt.Errorf("chmod: %w", err)
 	}
 
+	return "/images/markets/" + filename, nil
+}
+
+// WriteLocal stores generated artwork (a matchup tile) under the row's id,
+// returning the web path, with the same permissions as a rehosted file.
+func (r *ImageRehoster) WriteLocal(rowID, ext string, data []byte) (string, error) {
+	if r == nil || rowID == "" || len(data) == 0 {
+		return "", fmt.Errorf("nothing to write")
+	}
+	dir := filepath.Join(r.PublicRoot, "images", "markets")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("mkdir: %w", err)
+	}
+	filename := rowID + ext
+	dest := filepath.Join(dir, filename)
+	if err := os.WriteFile(dest, data, 0o644); err != nil {
+		return "", fmt.Errorf("write: %w", err)
+	}
 	return "/images/markets/" + filename, nil
 }
 

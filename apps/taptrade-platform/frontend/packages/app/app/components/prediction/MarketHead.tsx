@@ -150,12 +150,22 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   return (
     <section className={MARKET_HEAD_CLASS}>
       <div className="flex items-start gap-4">
-        <MarketThumb
-          categorySlug={displayMarket.categorySlug}
-          imageUrl={displayMarket.imagePath || displayMarket.imageUrl || displayMarket.image_url}
-          size={56}
-          className="max-[720px]:hidden"
-        />
+        <span className="flex shrink-0 flex-col items-center gap-1 max-[720px]:hidden">
+          <MarketThumb
+            categorySlug={displayMarket.categorySlug}
+            imageUrl={displayMarket.imagePath || displayMarket.imageUrl || displayMarket.image_url}
+            size={56}
+          />
+          {displayMarket.imageCredit && (
+            <a
+              href="/attributions"
+              className="max-w-[56px] truncate text-[9px] leading-none text-[var(--t3)] no-underline hover:underline"
+              title={displayMarket.imageCredit}
+            >
+              {t("PHOTO_CREDIT_SHORT", "Photo credit")}
+            </a>
+          )}
+        </span>
         <div className="min-w-0 flex-1">
           <p className={MARKET_HEAD_META_CLASS}>
             {isLive && (

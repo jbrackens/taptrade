@@ -1834,12 +1834,13 @@ func marketSelectQuery() string {
 	               m.best_yes_bid_points, m.best_yes_ask_points,
 	               m.best_no_bid_points, m.best_no_ask_points, m.last_quote_at,
 	               m.article_source_id, pe.title AS event_title,
-	               COALESCE(pe.is_synthetic, false) AS event_synthetic
+	               COALESCE(pe.is_synthetic, false) AS event_synthetic,
+	               im.image_credit
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
 	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	        LEFT JOIN LATERAL (
-	            SELECT volume, liquidity, image_path
+	            SELECT volume, liquidity, image_path, image_credit
 	            FROM imported_markets im
 	            WHERE m.ticker LIKE 'IMP-%'
 	              AND upper(substr(im.external_hash, 1, 8)) = upper(substr(m.ticker, 5, 8))
@@ -2000,7 +2001,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	// populated by the post-match refresher; null until first match.
 	var bestYesBid, bestYesAsk, bestNoBid, bestNoAsk sql.NullInt64
 	var lastQuoteAt sql.NullTime
-	var articleSourceID, eventTitle sql.NullString
+	var articleSourceID, eventTitle, imageCredit sql.NullString
 
 	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPricePoints, &m.NoPricePoints, &lastTradePrice,
@@ -2011,9 +2012,12 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
-		&articleSourceID, &eventTitle, &m.EventSynthetic)
+		&articleSourceID, &eventTitle, &m.EventSynthetic, &imageCredit)
 	if err != nil {
 		return nil, err
+	}
+	if imageCredit.Valid && imageCredit.String != "" {
+		m.ImageCredit = &imageCredit.String
 	}
 	if eventTitle.Valid && eventTitle.String != "" {
 		m.EventTitle = &eventTitle.String
