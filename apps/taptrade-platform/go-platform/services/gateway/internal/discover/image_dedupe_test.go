@@ -8,9 +8,9 @@ import (
 )
 
 // sharedCoverImageRowIDs is the decision core of the thumbnail-hygiene sweep:
-// identical image content spanning more than one upstream event group is
-// venue/series branding (e.g. one game cover stamped on dozens of unrelated
-// questions) and every row carrying it must lose the thumbnail.
+// identical image content spanning more than one upstream series is venue
+// branding (one cover stamped on unrelated questions) and every row carrying
+// it must lose the thumbnail; within one series it is that series' art.
 func TestSharedCoverImageRowIDs(t *testing.T) {
 	hashes := map[string]string{
 		"/images/markets/a.jpg": "cover-1",
@@ -27,13 +27,13 @@ func TestSharedCoverImageRowIDs(t *testing.T) {
 	}
 
 	rows := []ImportedImageRow{
-		// cover-1 spans two different event groups → both dropped.
-		{ID: "row-a", ImagePath: "/images/markets/a.jpg", EventGroup: "gta6-btc"},
-		{ID: "row-b", ImagePath: "/images/markets/b.jpg", EventGroup: "gta6-election"},
-		// cover-2 stays within one event group → kept (an event's own cover
-		// on that event's markets is legitimate).
-		{ID: "row-c", ImagePath: "/images/markets/c.jpg", EventGroup: "okc-vs-ind"},
-		{ID: "row-d", ImagePath: "/images/markets/d.jpg", EventGroup: "OKC-vs-IND "},
+		// cover-1 spans two different series → both dropped.
+		{ID: "row-a", ImagePath: "/images/markets/a.jpg", EventGroup: "gta6-release-date"},
+		{ID: "row-b", ImagePath: "/images/markets/b.jpg", EventGroup: "btc-100k-2026"},
+		// cover-2 stays within one series → kept: a league's art on two of
+		// that league's games (or an event's own cover on its markets).
+		{ID: "row-c", ImagePath: "/images/markets/c.jpg", EventGroup: "nfl-kc-mia-2026-09-27"},
+		{ID: "row-d", ImagePath: "/images/markets/d.jpg", EventGroup: "NFL-cin-pit-2026-09-27 "},
 		// cover-3 is unique → kept.
 		{ID: "row-e", ImagePath: "/images/markets/e.jpg", EventGroup: ""},
 		// cover-4 is shared and neither row has an event group → each row is
@@ -100,5 +100,20 @@ func TestHashHostedImageHashesRehostFolderContent(t *testing.T) {
 	var nilRehoster *ImageRehoster
 	if _, ok := nilRehoster.HashHostedImage("/images/markets/one.jpg"); ok {
 		t.Fatalf("nil rehoster must report ok=false")
+	}
+}
+
+func TestCoverSeriesKey(t *testing.T) {
+	cases := map[string]string{
+		"nfl-kc-mia-2026-09-27":  "nfl",
+		"KXNFLGAME-25SEP27KCMIA": "kxnflgame",
+		" ATP-alcaraz-minaur ":   "atp",
+		"single":                 "single",
+		"":                       "",
+	}
+	for in, want := range cases {
+		if got := coverSeriesKey(in); got != want {
+			t.Errorf("coverSeriesKey(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

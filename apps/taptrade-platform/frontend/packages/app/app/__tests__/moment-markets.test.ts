@@ -38,7 +38,7 @@ describe("Predict Moments market directory", () => {
     // 2026-09-24 redesign: 18 per page — the FeaturedMarket hero plus its
     // five-row Trending list take six on the default view, leaving twelve
     // grid cards (four full rows of three at desktop widths).
-    assert.match(moments, /const PAGE_SIZE = 18/);
+    assert.match(moments, /const PAGE_SIZE = 20/);
     assert.match(moments, /const TRENDING_LIST_COUNT = 5/);
     assert.match(
       moments,
@@ -68,14 +68,14 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /<FeaturedMarket/);
     assert.match(moments, /const showHero = !hasFilters && markets\.length > TRENDING_LIST_COUNT/);
     assert.match(moments, /const featured = showHero \? pickFeatured\(markets\.slice\(0, PAGE_SIZE\)\) : undefined/);
-    assert.match(moments, /<MarketGrid[\s\S]*columns=\{3\}/);
+    assert.match(moments, /<MarketGrid[\s\S]*columns=\{4\}/);
     assert.doesNotMatch(moments, /pattern="mixed"|<LeadMoment|<PosterTile/);
     // One quick-trade panel serves the hero and the grid.
     assert.match(moments, /<QuickTradePanel target=\{quickTrade\}/);
     assert.match(moments, /onQuickTrade=\{setQuickTrade\}/);
     assert.match(
       grid,
-      /grid-cols-3[\s\S]*max-\[1020px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
+      /grid-cols-4[\s\S]*max-\[1180px\]:grid-cols-3[\s\S]*max-\[900px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
     );
     assert.doesNotMatch(moments, /<MarketFeed/);
   });

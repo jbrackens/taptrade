@@ -441,3 +441,33 @@ func ptrStr(p *string) string {
 	}
 	return *p
 }
+
+// LoadCursor returns the saved position of a rotating listing scan ("" when
+// none has been saved, i.e. start from the top). See migration 058.
+func (r *Repository) LoadCursor(ctx context.Context, source, listing string) (string, error) {
+	var cursor string
+	err := r.db.QueryRowContext(ctx,
+		`SELECT cursor FROM discover_cursors WHERE source = $1 AND listing = $2`,
+		source, listing).Scan(&cursor)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("load %s/%s cursor: %w", source, listing, err)
+	}
+	return cursor, nil
+}
+
+// SaveCursor records where a rotating listing scan should resume.
+func (r *Repository) SaveCursor(ctx context.Context, source, listing, cursor string) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO discover_cursors (source, listing, cursor, updated_at)
+		VALUES ($1, $2, $3, now())
+		ON CONFLICT (source, listing) DO UPDATE
+		   SET cursor = EXCLUDED.cursor, updated_at = now()`,
+		source, listing, cursor)
+	if err != nil {
+		return fmt.Errorf("save %s/%s cursor: %w", source, listing, err)
+	}
+	return nil
+}

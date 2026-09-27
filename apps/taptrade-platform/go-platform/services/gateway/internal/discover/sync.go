@@ -89,11 +89,16 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		all = append(all, ms...)
 	}
 	if l := limits["kalshi"]; l > 0 {
-		ms, err := FetchKalshi(l)
+		// Kalshi's listings are read as a rotating scan: continue from the
+		// cursors the last run saved, and save where this one stopped, even
+		// when the slice yielded nothing usable.
+		scan := loadKalshiScan(ctx, repo)
+		ms, next, err := FetchKalshiFrom(l, scan)
 		if err != nil {
 			res.FetchErrors = append(res.FetchErrors, err)
 			slog.Warn("discover fetch failed", "src", "kalshi", "err", err)
 		}
+		saveKalshiScan(ctx, repo, next)
 		res.FetchedKalshi = len(ms)
 		all = append(all, ms...)
 	}
@@ -235,11 +240,13 @@ func dropSharedCoverImages(ctx context.Context, repo *Repository, rehoster *Imag
 
 // sharedCoverImageRowIDs is the pure decision core of the shared-cover sweep:
 // group rows by image content hash; a hash spanning more than one upstream
-// event group is generic branding, not art for any single market, so every
-// row carrying it loses the image. Rows sharing one event group keep their
-// cover (an event's own image on that event's markets is legitimate); a row
-// without an event group counts as its own group. Rows whose file can't be
-// hashed are left untouched.
+// series is generic venue branding, not art for any single market, so every
+// row carrying it loses the image. Rows sharing one series keep their cover:
+// an event's own image on that event's markets, or a league's art on that
+// league's games (Polymarket stamps one NFL image on every NFL game and one
+// ATP image on every match — the 2026-09-27 sweep dropped 151 of 150 fresh
+// covers for exactly that). A row without an event group counts as its own
+// series. Rows whose file can't be hashed are left untouched.
 func sharedCoverImageRowIDs(rows []ImportedImageRow, hashOf func(string) (string, bool)) []string {
 	type group struct {
 		ids       []string
@@ -257,7 +264,7 @@ func sharedCoverImageRowIDs(rows []ImportedImageRow, hashOf func(string) (string
 			groups[hash] = g
 		}
 		g.ids = append(g.ids, row.ID)
-		eventKey := strings.ToLower(strings.TrimSpace(row.EventGroup))
+		eventKey := coverSeriesKey(row.EventGroup)
 		if eventKey == "" {
 			eventKey = "row:" + row.ID
 		}
@@ -273,4 +280,49 @@ func sharedCoverImageRowIDs(rows []ImportedImageRow, hashOf func(string) (string
 	return out
 }
 
+// coverSeriesKey reduces an upstream event group to its series: the leading
+// token of a Polymarket event slug ("nfl-kc-mia-2026-09-27" → "nfl") or a
+// Kalshi event ticker ("KXNFLGAME-25SEP27KCMIA" → "kxnflgame").
+func coverSeriesKey(eventGroup string) string {
+	g := strings.ToLower(strings.TrimSpace(eventGroup))
+	if i := strings.IndexAny(g, "-_"); i > 0 {
+		return g[:i]
+	}
+	return g
+}
+
 var timeNowUTC = func() time.Time { return time.Now().UTC() }
+
+const (
+	kalshiCursorSource  = "kalshi"
+	kalshiCursorOpen    = "events:open"
+	kalshiCursorSettled = "events:settled"
+)
+
+func loadKalshiScan(ctx context.Context, repo *Repository) KalshiScan {
+	if repo == nil {
+		return KalshiScan{}
+	}
+	var scan KalshiScan
+	var err error
+	if scan.Open, err = repo.LoadCursor(ctx, kalshiCursorSource, kalshiCursorOpen); err != nil {
+		slog.Warn("discover cursor load failed; starting from the top", "src", "kalshi", "err", err)
+		return KalshiScan{}
+	}
+	if scan.Settled, err = repo.LoadCursor(ctx, kalshiCursorSource, kalshiCursorSettled); err != nil {
+		slog.Warn("discover cursor load failed; starting from the top", "src", "kalshi", "err", err)
+		return KalshiScan{}
+	}
+	return scan
+}
+
+func saveKalshiScan(ctx context.Context, repo *Repository, scan KalshiScan) {
+	if repo == nil {
+		return
+	}
+	for listing, cursor := range map[string]string{kalshiCursorOpen: scan.Open, kalshiCursorSettled: scan.Settled} {
+		if err := repo.SaveCursor(ctx, kalshiCursorSource, listing, cursor); err != nil {
+			slog.Warn("discover cursor save failed", "src", "kalshi", "listing", listing, "err", err)
+		}
+	}
+}

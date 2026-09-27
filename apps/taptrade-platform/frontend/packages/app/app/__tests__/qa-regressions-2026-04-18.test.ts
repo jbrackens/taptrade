@@ -1114,12 +1114,12 @@ describe("Predict discovery controls", () => {
     // (LeadMoment) was deleted in favour of one FeaturedMarket hero beside
     // a ranked Trending list, then a uniform MarketGrid.
     assert.ok(
-      momentMarketsSource.includes("const PAGE_SIZE = 18") &&
+      momentMarketsSource.includes("const PAGE_SIZE = 20") &&
         momentMarketsSource.includes("pageSize: PAGE_SIZE") &&
         momentMarketsSource.includes(
           "dedupeMarkets([...current, ...(response.data || [])])",
         ) &&
-        /<MarketGrid[\s\S]*columns=\{3\}/.test(momentMarketsSource) &&
+        /<MarketGrid[\s\S]*columns=\{4\}/.test(momentMarketsSource) &&
         momentMarketsSource.includes("<FeaturedMarket") &&
         !momentMarketsSource.includes("<LeadMoment") &&
         !momentMarketsSource.includes('pattern="mixed"'),

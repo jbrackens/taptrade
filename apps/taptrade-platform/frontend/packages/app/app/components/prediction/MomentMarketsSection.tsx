@@ -27,7 +27,7 @@ const api = createPredictionClient();
 // 18 per page: on the default view the featured market and five
 // trending rows take six, leaving twelve grid cards (four full rows of
 // three at desktop widths).
-const PAGE_SIZE = 18;
+const PAGE_SIZE = 20;
 const TRENDING_LIST_COUNT = 5;
 const GRID_SKELETON_IDS = [
   "one",
@@ -342,7 +342,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
         ) : gridMarkets.length > 0 ? (
           <MarketGrid
             markets={gridMarkets}
-            columns={3}
+            columns={4}
             onQuickTrade={setQuickTrade}
           />
         ) : markets.length > 0 ? null : (

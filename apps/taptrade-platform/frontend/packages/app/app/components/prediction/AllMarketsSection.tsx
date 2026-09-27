@@ -38,7 +38,7 @@ import type {
 
 const api = createPredictionClient();
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 12;
 const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
@@ -654,7 +654,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
                 {visibleMarkets.length > 0 ? (
                   <MarketGrid
                     markets={visibleMarkets}
-                    columns={3}
+                    columns={4}
                     watchedMarketIds={watchedMarketIds}
                     onToggleWatchlist={toggleWatchlist}
                   />
@@ -692,7 +692,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
           ) : visibleMarkets.length > 0 ? (
             <MarketGrid
               markets={visibleMarkets}
-              columns={3}
+              columns={4}
               watchedMarketIds={watchedMarketIds}
               onToggleWatchlist={toggleWatchlist}
             />

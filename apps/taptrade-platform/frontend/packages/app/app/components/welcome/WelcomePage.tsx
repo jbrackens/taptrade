@@ -32,7 +32,7 @@ import {
 import { logger } from "../../lib/logger";
 
 const api = createPredictionClient();
-const TRENDING_COUNT = 3;
+const TRENDING_COUNT = 4;
 
 export default function WelcomePage() {
   const { t: contentT } = useTranslation("market-content");

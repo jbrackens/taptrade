@@ -36,7 +36,7 @@ taptrade/
 │   │   │   ├── internal/wallet/           ← wallet + ledger (kept from sportsbook, adapted)
 │   │   │   ├── internal/ws/               ← WebSocket hub
 │   │   │   ├── internal/http/             ← HTTP handlers
-│   │   │   ├── migrations/                ← 014 created the prediction schema; 057 is the highest today
+│   │   │   ├── migrations/                ← 014 created the prediction schema; 058 is the highest today
 │   │   │   └── seed-data/seed_prediction.sql
 │   │   ├── services/auth/                 ← Auth service (Go, port 18081)
 │   │   └── modules/platform/              ← Shared Go module `taptrade/platform` (canonical, logging, runtime, transport/httpx)
@@ -107,7 +107,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/`.
 2. **Fix errors at the root, don't work around them.** Zero bug policy.
 3. **Keep the `prediction` Go package decoupled from `wallet`.** It uses the `prediction.WalletAdapter` interface — the concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Don't import `wallet` from `prediction/`.
-4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (057 is the highest today, so the next is 058). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
+4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (058 is the highest today, so the next is 059). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
 
 ## Points-only launch boundary
 

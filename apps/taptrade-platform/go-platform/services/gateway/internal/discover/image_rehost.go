@@ -48,6 +48,12 @@ func (r *ImageRehoster) Rehost(rowID, imageURL string) (string, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", fmt.Errorf("mkdir: %w", err)
 	}
+	// Every sync re-fetches the same busy markets; a cover already on disk
+	// is reused rather than downloaded again (250 covers per run every 15
+	// minutes would otherwise hit the upstream CDN for ~6 GB a day).
+	if existing, err := filepath.Glob(filepath.Join(dir, rowID+".*")); err == nil && len(existing) > 0 {
+		return "/images/markets/" + filepath.Base(existing[0]), nil
+	}
 
 	req, err := http.NewRequest(http.MethodGet, imageURL, nil)
 	if err != nil {

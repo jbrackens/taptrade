@@ -410,7 +410,7 @@ export function TrendingRow({ markets }: { markets: PredictionMarket[] }) {
           </Link>
         </div>
         <div className="mt-8">
-          <MarketGrid markets={markets} columns={3} />
+          <MarketGrid markets={markets} columns={4} />
         </div>
       </div>
     </section>

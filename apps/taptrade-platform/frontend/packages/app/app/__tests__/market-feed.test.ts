@@ -90,24 +90,25 @@ describe("§3-09 commentCount (step 10)", () => {
 });
 
 describe("Markets grid and discovery feed", () => {
-  it("renders Available Markets in a nine-card, responsive grid", () => {
-    assert.match(section, /const PAGE_SIZE = 9/);
+  it("renders Available Markets in a twelve-card, four-column grid", () => {
+    // 2026-09-27: four across (three full rows of four), like Kalshi/Polymarket.
+    assert.match(section, /const PAGE_SIZE = 12/);
     assert.equal(
       (section.match(/pageSize: PAGE_SIZE/g) ?? []).length,
       2,
-      "the initial request and each Load More request should use the nine-card batch size",
+      "the initial request and each Load More request should use the twelve-card batch size",
     );
     assert.match(
       section,
       /setMarkets\(\(prev\) => \[\.\.\.prev, \.\.\.next\]\)/,
       "Load More should append the next batch to the existing grid",
     );
-    assert.match(section, /<MarketGrid[\s\S]*columns=\{3\}/);
-    // The 2026-09-24 redesign moved the 3→2 column breakpoint from 1120px
-    // to 1020px (MarketGrid's GRID_CLASS_BY_COLUMNS).
+    assert.match(section, /<MarketGrid[\s\S]*columns=\{4\}/);
+    // Four columns step down 4 → 3 → 2 → 1 at 1180 / 900 / 640px
+    // (MarketGrid's GRID_CLASS_BY_COLUMNS).
     assert.match(
       grid,
-      /grid-cols-3[\s\S]*max-\[1020px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
+      /grid-cols-4[\s\S]*max-\[1180px\]:grid-cols-3[\s\S]*max-\[900px\]:grid-cols-2[\s\S]*max-\[640px\]:grid-cols-1/,
       "the restored grid should retain its desktop, tablet, and mobile columns",
     );
     assert.ok(
