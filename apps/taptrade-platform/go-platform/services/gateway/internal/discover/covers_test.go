@@ -92,6 +92,11 @@ func TestMatchupTeamsAndTile(t *testing.T) {
 	if got := teamAbbreviation("T1"); got != "T1" {
 		t.Errorf("abbreviation = %q, want T1", got)
 	}
+	for name, want := range map[string]string{"G2 Esports": "G2", "Team Liquid": "LIQ", "FC Barcelona": "BAR", "Esports": "ESP"} {
+		if got := teamAbbreviation(name); got != want {
+			t.Errorf("teamAbbreviation(%q) = %q, want %q", name, got, want)
+		}
+	}
 	svg := string(matchupTileSVG("Chiefs", "Dolphins"))
 	if !strings.Contains(svg, ">CHI<") || !strings.Contains(svg, ">DOL<") || !strings.HasPrefix(svg, "<svg") {
 		t.Errorf("tile svg malformed: %s", svg)

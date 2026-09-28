@@ -43,6 +43,7 @@ type SyncResult struct {
 	ImagesFailed        int
 	CoversResolved      int
 	ImagesDroppedShared int
+	ImagesDroppedWide   int
 	MarketImagesAligned int
 	RemovedExpired      int
 	FetchErrors         []error
@@ -230,6 +231,12 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		} else {
 			res.ImagesDroppedShared = dropped
 		}
+		wide, err := dropWideGraphicCovers(ctx, repo, rehoster)
+		if err != nil {
+			slog.Warn("discover wide-graphic sweep failed", "err", err)
+		} else {
+			res.ImagesDroppedWide = wide
+		}
 	}
 	// Backfill: bare open imports the board shows, whichever run fetched
 	// them — rows the sweep just stripped of venue branding included.
@@ -258,6 +265,40 @@ func dropSharedCoverImages(ctx context.Context, repo *Repository, rehoster *Imag
 	}
 	ids := sharedCoverImageRowIDs(rows, rehoster.HashHostedImage)
 	return repo.ClearImagePaths(ctx, ids)
+}
+
+// dropWideGraphicCovers sets aside source covers that are wide flat
+// graphics — a wordmark or banner the square thumbnail crops to a slice
+// (cover_shape.go). A wide photo crops fine and stays. The rows are marked
+// swept, so later syncs don't re-apply the image and the backfill looks for
+// a cover instead (a flag, a matchup tile, a square mark).
+func dropWideGraphicCovers(ctx context.Context, repo *Repository, rehoster *ImageRehoster) (int, error) {
+	rows, err := repo.ListImageRows(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return repo.ClearImagePaths(ctx, wideGraphicRowIDs(rows, rehoster.WideGraphic))
+}
+
+// wideGraphicRowIDs is the pure decision core of the wide-graphic sweep;
+// rows whose file can't be judged are left alone. The verdict is cached per
+// file, since one source image often backs many rows.
+func wideGraphicRowIDs(rows []ImportedImageRow, wideGraphic func(string) (bool, bool)) []string {
+	verdict := map[string]bool{}
+	var out []string
+	for _, row := range rows {
+		wide, seen := verdict[row.ImagePath]
+		if !seen {
+			var ok bool
+			wide, ok = wideGraphic(row.ImagePath)
+			wide = wide && ok
+			verdict[row.ImagePath] = wide
+		}
+		if wide {
+			out = append(out, row.ID)
+		}
+	}
+	return out
 }
 
 // sharedCoverImageRowIDs is the pure decision core of the shared-cover sweep:

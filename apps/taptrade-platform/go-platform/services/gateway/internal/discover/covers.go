@@ -984,8 +984,23 @@ func matchupTeams(title string) (home, away string, ok bool) {
 // teamAbbreviation is the tile's label: the first three letters of the
 // name's most distinctive word ("Golden State Warriors" → "WAR", "T1" →
 // "T1", "49ers" → "49E").
+// teamGenericWords name what a team is, not which one: "G2 Esports" is G2,
+// not ESP (a Valorant tile read "ESP vs REX", 2026-09-28).
+var teamGenericWords = map[string]bool{
+	"esports": true, "e-sports": true, "gaming": true, "team": true, "club": true,
+	"fc": true, "cf": true, "sc": true, "ac": true, "afc": true, "gg": true,
+}
+
 func teamAbbreviation(name string) string {
-	words := strings.Fields(name)
+	var words []string
+	for _, w := range strings.Fields(name) {
+		if !teamGenericWords[strings.ToLower(strings.Trim(w, ".'&-"))] {
+			words = append(words, w)
+		}
+	}
+	if len(words) == 0 {
+		words = strings.Fields(name)
+	}
 	if len(words) == 0 {
 		return "?"
 	}

@@ -793,6 +793,7 @@ func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc d
 			"removed_expired", res.RemovedExpired,
 			"removed_inactive", promoteRes.Removed,
 			"images_dropped_shared", res.ImagesDroppedShared,
+			"images_dropped_wide", res.ImagesDroppedWide,
 			"market_images_aligned", res.MarketImagesAligned,
 			"skipped", promoteRes.Skipped,
 			"unsuitable", promoteRes.Unsuitable,
