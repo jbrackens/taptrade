@@ -225,11 +225,12 @@ func (r *ImageRehoster) RehostFitted(rowID, imageURL string) (string, error) {
 	return "/images/markets/" + rowID + ".png", nil
 }
 
-// ReplaceFitted downloads a new cover for a row that already has one. It is
-// written under a fresh name (<rowID>-<content hash>.<ext>) rather than over
-// the old file: the CDN and browsers cache /images/markets/* for a day, so
-// the same URL would keep showing the old picture. Callers remove the row's
-// older files once the new path is stored (RemoveCoversExcept).
+// ReplaceFitted downloads a resolver cover under a fresh name
+// (<rowID>-<content hash>.<ext>), padded to a square when very wide, and
+// never reuses a file already on disk: a row's old file may be a swept
+// source image, and the CDN and browsers cache /images/markets/* for a day,
+// so the same URL would keep showing the old picture. Callers remove the
+// row's older files once the new path is stored (RemoveCoversExcept).
 func (r *ImageRehoster) ReplaceFitted(rowID, imageURL string) (string, error) {
 	if r == nil || rowID == "" || imageURL == "" {
 		return "", nil

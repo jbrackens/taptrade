@@ -123,8 +123,6 @@ type CoverResolver struct {
 	// until StartBackfill: fetched rows once spent the whole budget and the
 	// board-first backfill never ran (2026-09-28).
 	reserved int
-	// replace writes covers under a fresh file name (ReplaceChecked).
-	replace bool
 }
 
 // NewCoverResolver builds a resolver that writes covers through the given
@@ -170,18 +168,6 @@ func (c *CoverResolver) Exhausted() bool {
 func (c *CoverResolver) Resolve(ctx context.Context, rowID string, m Market, category string) (CoverMeta, bool) {
 	meta, ok, _ := c.ResolveChecked(ctx, rowID, m, category)
 	return meta, ok
-}
-
-// ReplaceChecked re-resolves a row that already has a resolver cover. A
-// found cover is written under a fresh file name, so the CDN's cached copy
-// of the old one is never served in its place.
-func (c *CoverResolver) ReplaceChecked(ctx context.Context, rowID string, m Market, category string) (CoverMeta, bool, bool) {
-	if c == nil {
-		return CoverMeta{}, false, false
-	}
-	c.replace = true
-	defer func() { c.replace = false }()
-	return c.ResolveChecked(ctx, rowID, m, category)
 }
 
 // ResolveChecked is Resolve plus whether every step ran (see Resolve).
@@ -300,12 +286,14 @@ func (c *CoverResolver) cachedOrLookup(ctx context.Context, rowID, key string, u
 	return meta, ok, ""
 }
 
+// rehostLookup downloads a resolved cover under a fresh, content-named file
+// (ReplaceFitted). A market's existing file is never reused: for a row whose
+// source image was swept it is that image, and reusing it put the sliced
+// Nations League wordmark back under a flag's credit (2026-09-28). A fresh
+// name also keeps the CDN's day-long cache from serving an old picture.
+// Callers remove the row's older files once the new path is stored.
 func (c *CoverResolver) rehostLookup(rowID string, l CoverLookup) (CoverMeta, bool) {
-	rehost := c.rehoster.RehostFitted
-	if c.replace {
-		rehost = c.rehoster.ReplaceFitted
-	}
-	path, err := rehost(rowID, l.ImageURL)
+	path, err := c.rehoster.ReplaceFitted(rowID, l.ImageURL)
 	if err != nil || path == "" {
 		slog.Warn("cover: rehost failed", "key", l.Key, "err", err)
 		return CoverMeta{}, false

@@ -407,6 +407,7 @@ func resolveCover(ctx context.Context, repo *Repository, covers *CoverResolver, 
 			slog.Warn("discover cover save failed", "row_id", id, "err", err)
 			return false
 		}
+		covers.rehoster.RemoveCoversExcept(id, meta.Path)
 		if res != nil {
 			res.CoversResolved++
 		}
@@ -442,7 +443,7 @@ func backfillCovers(ctx context.Context, repo *Repository, covers *CoverResolver
 			}
 			continue
 		}
-		meta, ok, complete := covers.ReplaceChecked(ctx, b.ID, m, b.CategorySlug)
+		meta, ok, complete := covers.ResolveChecked(ctx, b.ID, m, b.CategorySlug)
 		switch {
 		case ok:
 			if err := repo.SetImage(ctx, b.ID, meta); err != nil {

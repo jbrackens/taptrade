@@ -212,10 +212,10 @@ func TestCoverResolver_EntityPhoto(t *testing.T) {
 	if meta.Origin != "entity" || meta.License != "CC BY 4.0" || !strings.Contains(meta.Credit, "Office of the Vice President") || strings.Contains(meta.Credit, "<a") {
 		t.Errorf("meta = %+v", meta)
 	}
-	if meta.Path != "/images/markets/row-1.jpg" {
+	if !strings.HasPrefix(meta.Path, "/images/markets/row-1-") || !strings.HasSuffix(meta.Path, ".jpg") {
 		t.Errorf("path = %q", meta.Path)
 	}
-	if _, err := os.Stat(filepath.Join(root, "images", "markets", "row-1.jpg")); err != nil {
+	if _, err := os.Stat(filepath.Join(root, "images", "markets", filepath.Base(meta.Path))); err != nil {
 		t.Errorf("cover not written: %v", err)
 	}
 	if wikidataHits != 2 || commonsHits != 1 || imageHits != 1 {
@@ -225,7 +225,7 @@ func TestCoverResolver_EntityPhoto(t *testing.T) {
 	// A second market naming the same person: answered from the cache,
 	// only the image is fetched (for the new row).
 	meta2, ok := res.Resolve(context.Background(), "row-2", Market{Title: "Will Sara Duterte visit Davao in May?"}, "politics")
-	if !ok || meta2.Path != "/images/markets/row-2.jpg" {
+	if !ok || !strings.HasPrefix(meta2.Path, "/images/markets/row-2-") {
 		t.Fatalf("second resolve = %+v, %v", meta2, ok)
 	}
 	if wikidataHits != 2 || store.saves != 1 {
@@ -476,7 +476,7 @@ func TestCoverResolver_WikidataSubjects(t *testing.T) {
 	if !ok || !strings.Contains(meta.SourceURL, "Flag of France.svg") {
 		t.Fatalf("France must get its preferred flag: %+v, %v", meta, ok)
 	}
-	if meta.Path != "/images/markets/row-fr.png" {
+	if !strings.HasPrefix(meta.Path, "/images/markets/row-fr-") || !strings.HasSuffix(meta.Path, ".png") {
 		t.Fatalf("the SVG's PNG rendition must be stored as .png, got %q", meta.Path)
 	}
 
@@ -499,7 +499,7 @@ func TestCoverResolver_WikidataSubjects(t *testing.T) {
 	if meta.SourceURL != "https://apps.apple.com/us/app/marcus/id1" || !strings.Contains(meta.License, "trademark of Goldman Sachs") {
 		t.Fatalf("the app icon must link its store page and name its owner: %+v", meta)
 	}
-	f, err := os.Open(filepath.Join(root, "images", "markets", "row-gs.png"))
+	f, err := os.Open(filepath.Join(root, "images", "markets", filepath.Base(meta.Path)))
 	if err != nil {
 		t.Fatalf("icon not written: %v", err)
 	}
@@ -527,14 +527,27 @@ func TestCoverResolver_WikidataSubjects(t *testing.T) {
 		t.Fatalf("with nothing free anywhere, the company's app icon stands in: %+v, %v", meta, ok)
 	}
 
-	// Replacing: a fresh file name, so the CDN's cached copy of the old
-	// cover is never served in its place.
-	meta, ok, complete := res.ReplaceChecked(ctx, "row-fr", Market{Title: "Will France win on 2026-09-28?"}, "sports")
-	if !ok || !complete || !strings.HasPrefix(meta.Path, "/images/markets/row-fr-") || !strings.HasSuffix(meta.Path, ".png") {
-		t.Fatalf("a replaced cover must get a fresh name: %+v, %v, %v", meta, ok, complete)
+	// A row whose swept source image is still on disk under its plain name
+	// gets the resolved picture, never that file (the Nations League games
+	// kept their sliced wordmark under a flag's credit, 2026-09-28).
+	dir := filepath.Join(root, "images", "markets")
+	stale, _ := os.Create(filepath.Join(dir, "row-swept.png"))
+	_ = writeTestPNG(stale, 668, 344)
+	stale.Close()
+	meta, ok, complete := res.ResolveChecked(ctx, "row-swept", Market{Title: "Will France win on 2026-09-28?"}, "sports")
+	if !ok || !complete || meta.Path == "/images/markets/row-swept.png" || !strings.HasPrefix(meta.Path, "/images/markets/row-swept-") {
+		t.Fatalf("a resolved cover must never reuse a stale file: %+v, %v, %v", meta, ok, complete)
 	}
-	res.rehoster.RemoveCoversExcept("row-fr", meta.Path)
-	left, _ := filepath.Glob(filepath.Join(root, "images", "markets", "row-fr*"))
+	f2, err := os.Open(filepath.Join(dir, filepath.Base(meta.Path)))
+	if err != nil {
+		t.Fatalf("resolved cover not written: %v", err)
+	}
+	defer f2.Close()
+	if cfg, err := png.DecodeConfig(f2); err != nil || cfg.Width != 300 || cfg.Height != 200 {
+		t.Fatalf("the file must be the resolved flag (300x200), got %dx%d (%v)", cfg.Width, cfg.Height, err)
+	}
+	res.rehoster.RemoveCoversExcept("row-swept", meta.Path)
+	left, _ := filepath.Glob(filepath.Join(dir, "row-swept*"))
 	if len(left) != 1 || filepath.Base(left[0]) != filepath.Base(meta.Path) {
 		t.Fatalf("only the new cover may remain, got %v", left)
 	}
