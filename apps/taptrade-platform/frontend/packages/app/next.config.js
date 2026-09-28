@@ -111,6 +111,8 @@ module.exports = {
       // The landing page moved from /welcome to "/" (2026-09-26); keep
       // shared campaign links working.
       { source: "/welcome", destination: "/", permanent: false },
+      // /profile was folded into the settings page (2026-09-28).
+      { source: "/profile", destination: "/account/settings", permanent: false },
     ];
   },
   async rewrites() {

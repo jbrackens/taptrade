@@ -53,7 +53,7 @@
     {
       "legacy_path": "pages/account/settings",
       "legacy_route": "/account/settings",
-      "app_equivalent": "app/profile/page.tsx",
+      "app_equivalent": "app/account/settings/page.tsx",
       "status": "REAL",
       "notes": "Profile page wired to getProfile/updateProfile from user-client + compliance-client for limits"
     },
@@ -318,7 +318,7 @@
     },
     {
       "legacy_path": "components/profile",
-      "app_equivalent": "app/profile/page.tsx",
+      "app_equivalent": "app/account/settings/page.tsx",
       "status": "REAL",
       "notes": "Profile wired to getProfile/updateProfile from user-client + compliance limits"
     },

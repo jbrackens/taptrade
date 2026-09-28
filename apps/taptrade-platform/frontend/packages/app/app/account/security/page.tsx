@@ -2,7 +2,6 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Lock } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
@@ -14,16 +13,12 @@ import {
 } from "../../lib/api/auth-client";
 import type { Session } from "../../lib/api/auth-client";
 import { logger } from "../../lib/logger";
+import { SettingsShell } from "../../components/account/SettingsShell";
 
 type Tab = "password" | "twofa" | "sessions";
 
-const pageClass = "mx-auto max-w-[800px] px-4 py-6";
-const headerClass =
-  "mb-6 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
-const backClass =
-  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const cardClass =
-  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6 shadow-[var(--shadow-card)]";
 const descClass = "mb-6 text-[13px] text-[var(--t2)]";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
 
@@ -169,21 +164,7 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className={pageClass}>
-      <div className={headerClass}>
-        <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
-            Security
-          </h1>
-          <p className="text-sm text-[var(--t3)]">
-            Manage your password, authentication, and active sessions
-          </p>
-        </div>
-        <Link href="/account" className={backClass}>
-          ← Back
-        </Link>
-      </div>
-
+    <SettingsShell active="security">
       {/* Tabs */}
       <div className={TAB_TRACK_CLASS} role="tablist" aria-label="Security settings">
         {TABS.map((t) => (
@@ -380,6 +361,6 @@ export default function SecurityPage() {
           </div>
         </div>
       )}
-    </div>
+    </SettingsShell>
   );
 }

@@ -1,28 +1,97 @@
 {
   "TITLE": "Tetapan",
-  "subtitle": "Keutamaan bahasa dan zon masa untuk akaun anda.",
-  "back": "Kembali",
   "flash": {
     "languageUpdated": "Bahasa dikemas kini",
     "timezoneUpdated": "Zon masa dikemas kini"
   },
   "language": {
-    "title": "Bahasa",
-    "description": "Terjemahan digunakan serta-merta di seluruh app dan disimpan untuk sesi akan datang pada peranti ini.",
     "display": "Bahasa paparan"
   },
   "timezone": {
-    "title": "Zon masa",
-    "description": "Digunakan untuk memaparkan masa tutup pasaran dan sejarah dagangan dalam masa tempatan anda. Lalai kepada zon masa pelayar anda",
     "display": "Zon masa paparan",
     "browser": "pelayar",
     "preview": "Pratonton"
   },
-  "footer": {
-    "beforeLinks": "Perlukan tetapan keselamatan, kata laluan atau notifikasi? Cari di",
+  "nav": {
+    "account": "Akaun",
+    "label": "Bahagian tetapan",
+    "profile": "Profil",
     "security": "Keselamatan",
     "alerts": "Amaran",
-    "and": "dan",
-    "account": "Akaun"
+    "ledger": "Lejar mata",
+    "responsible": "Bermain secara bertanggungjawab"
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Butiran, bahasa dan privasi anda."
+  },
+  "security": {
+    "title": "Keselamatan",
+    "subtitle": "Kata laluan, pengesahan dua faktor dan sesi aktif."
+  },
+  "alerts": {
+    "title": "Amaran",
+    "subtitle": "Pilih cara anda menerima berita tentang pasaran dan akaun anda."
+  },
+  "ledger": {
+    "title": "Lejar mata",
+    "subtitle": "Setiap mata yang masuk dan keluar dari akaun anda."
+  },
+  "responsible": {
+    "title": "Bermain secara bertanggungjawab",
+    "subtitle": "Had, tempoh bertenang dan pengecualian diri."
+  },
+  "details": {
+    "title": "Butiran peribadi",
+    "description": "Hanya anda yang melihat ini. Nama awam anda pada papan ialah nama pengguna anda.",
+    "firstName": "Nama pertama",
+    "lastName": "Nama akhir",
+    "email": "E-mel",
+    "emailHint": "Hubungi sokongan untuk menukar e-mel log masuk anda.",
+    "phone": "Telefon",
+    "dateOfBirth": "Tarikh lahir",
+    "optional": "Pilihan",
+    "save": "Simpan perubahan",
+    "saved": "Butiran disimpan",
+    "saveFailed": "Tidak dapat menyimpan butiran anda",
+    "loadFailed": "Tidak dapat memuatkan butiran anda"
+  },
+  "cancel": "Batal",
+  "saving": "Menyimpan…",
+  "region": {
+    "title": "Bahasa dan wilayah",
+    "description": "Disimpan pada peranti ini sebaik sahaja anda mengubahnya."
+  },
+  "privacy": {
+    "title": "Privasi",
+    "label": "Muncul tanpa nama di papan pendahulu",
+    "description": "Papan memaparkan kedudukan anda dan bukan nama pengguna, contohnya “Trader #14”. Statistik anda tetap dikira.",
+    "saveError": "Tidak dapat menyimpan perubahan itu"
+  },
+  "kyc": {
+    "title": "Pengesahan identiti",
+    "description": "Sesetengah pasaran dan had lebih tinggi memerlukan identiti yang disahkan.",
+    "status": "Status",
+    "verified": "Disahkan",
+    "pending": "Dalam semakan",
+    "failed": "Tidak diluluskan",
+    "unverified": "Belum disahkan",
+    "start": "Mula pengesahan",
+    "starting": "Memulakan…",
+    "approved": "Identiti disahkan",
+    "submitted": "Pengesahan dihantar",
+    "startFailed": "Tidak dapat memulakan pengesahan"
+  },
+  "limits": {
+    "title": "Had permainan",
+    "description": "Hadkan mata yang anda guna dan saiz setiap pesanan. Had berkuat kuasa mulai pesanan seterusnya.",
+    "daily": "Harian (mata)",
+    "weekly": "Mingguan (mata)",
+    "monthly": "Bulanan (mata)",
+    "maxOrder": "Pesanan terbesar (mata)",
+    "none": "Tiada had",
+    "save": "Simpan had",
+    "saved": "Had disimpan",
+    "saveFailed": "Tidak dapat menyimpan had anda"
   }
 }

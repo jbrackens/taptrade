@@ -1,20 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Calendar, Gift, Megaphone, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button } from "../../components/ui";
 import { updatePreferences } from "../../lib/api/user-client";
+import { SettingsShell } from "../../components/account/SettingsShell";
 
-const pageClass = "mx-auto max-w-[800px] px-4 py-6";
-const headerClass =
-  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
-const backClass =
-  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const cardClass =
-  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6 shadow-[var(--shadow-card)]";
 const descClass = "mb-6 text-[13px] text-[var(--t2)]";
 const rowClass =
   "flex items-center justify-between gap-4 border-b border-[var(--border-1)] py-4 first:pt-0 last:border-b-0 last:pb-0 max-[640px]:flex-col max-[640px]:items-start max-[640px]:gap-3";
@@ -89,21 +84,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className={pageClass}>
-      <div className={headerClass}>
-        <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
-            Alerts
-          </h1>
-          <p className="text-sm text-[var(--t3)]">
-            Choose how you want to receive updates
-          </p>
-        </div>
-        <Link href="/account" className={backClass}>
-          ← Back
-        </Link>
-      </div>
-
+    <SettingsShell active="alerts">
       {/* Notification Settings Card */}
       <div className={cardClass}>
         <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
@@ -332,7 +313,7 @@ export default function NotificationsPage() {
           />
         </div>
       </div>
-    </div>
+    </SettingsShell>
   );
 }
 

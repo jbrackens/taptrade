@@ -386,5 +386,20 @@
   "ACTIVITY_UP_BY_one": "up {{count}}",
   "ACTIVITY_UP_BY_other": "up {{count}}",
   "ACTIVITY_DOWN_BY_one": "down {{count}}",
-  "ACTIVITY_DOWN_BY_other": "down {{count}}"
+  "ACTIVITY_DOWN_BY_other": "down {{count}}",
+  "SOCIAL_LOADING": "Loading profile…",
+  "SOCIAL_PROFILE_LOAD_FAILED": "Profile could not load.",
+  "SOCIAL_PROFILE_EMPTY": "Profile unavailable.",
+  "SOCIAL_FOLLOW_FAILED": "Follow could not be recorded.",
+  "SOCIAL_FOLLOW_CTA": "Follow",
+  "SOCIAL_FOLLOWING_CTA": "Following",
+  "SOCIAL_ACTIVITY": "Activity",
+  "SOCIAL_NO_ACTIVITY": "No activity yet.",
+  "SOCIAL_LAST_ACTIVE": "Active {{when}}",
+  "SOCIAL_ACTIVITY_FOLLOW": "Followed a player",
+  "SOCIAL_ACTIVITY_TRADE": "Made a call",
+  "SOCIAL_ACTIVITY_SETTLEMENT": "A market they held settled",
+  "SOCIAL_ACTIVITY_REWARD": "Earned reward points",
+  "SOCIAL_ACTIVITY_LEADERBOARD": "Placed on a leaderboard",
+  "SOCIAL_ACTIVITY_COMMENT": "Commented"
 }

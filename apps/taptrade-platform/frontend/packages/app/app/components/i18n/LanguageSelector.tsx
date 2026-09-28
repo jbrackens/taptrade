@@ -16,7 +16,7 @@ type LanguageSelectorProps = {
   source: "header" | "mobile_menu" | "settings";
 };
 
-function getStoredLocale(): SupportedLocale {
+export function getStoredLocale(): SupportedLocale {
   if (typeof window === "undefined") return defaultLocale;
   return normalizeLocale(
     window.localStorage.getItem(localeStorageKey) ||
@@ -24,7 +24,7 @@ function getStoredLocale(): SupportedLocale {
   );
 }
 
-function persistLocale(locale: SupportedLocale) {
+export function persistLocale(locale: SupportedLocale) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(localeStorageKey, locale);
   window.localStorage.setItem(legacyLocaleStorageKey, locale);

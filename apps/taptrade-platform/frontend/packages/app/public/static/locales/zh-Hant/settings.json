@@ -1,28 +1,97 @@
 {
   "TITLE": "設定",
-  "subtitle": "帳戶的語言和時區偏好。",
-  "back": "返回",
   "flash": {
     "languageUpdated": "语言已更新",
     "timezoneUpdated": "时区已更新"
   },
   "language": {
-    "title": "语言",
-    "description": "翻译会立即应用到整个应用，并保存在此设备以供后续会话使用。",
     "display": "显示语言"
   },
   "timezone": {
-    "title": "时区",
-    "description": "用于按你的本地时间显示市场关闭时间和交易历史。默认使用浏览器时区",
     "display": "显示时区",
     "browser": "浏览器",
     "preview": "预览"
   },
-  "footer": {
-    "beforeLinks": "需要安全、密码或通知设置？请前往",
+  "nav": {
+    "account": "帳戶",
+    "label": "設定分區",
+    "profile": "個人資料",
     "security": "安全",
     "alerts": "提醒",
-    "and": "和",
-    "account": "账户"
+    "ledger": "點數明細",
+    "responsible": "理性參與"
+  },
+  "profile": {
+    "title": "個人資料",
+    "subtitle": "你的個人資訊、語言和隱私。"
+  },
+  "security": {
+    "title": "安全",
+    "subtitle": "密碼、雙重驗證和使用中的工作階段。"
+  },
+  "alerts": {
+    "title": "提醒",
+    "subtitle": "選擇接收市場和帳戶通知的方式。"
+  },
+  "ledger": {
+    "title": "點數明細",
+    "subtitle": "帳戶中每一筆點數的進出。"
+  },
+  "responsible": {
+    "title": "理性參與",
+    "subtitle": "限額、冷靜期和自我排除。"
+  },
+  "details": {
+    "title": "個人資訊",
+    "description": "只有你能看到這些資訊。排行榜上顯示的是你的使用者名稱。",
+    "firstName": "名",
+    "lastName": "姓",
+    "email": "電子郵件",
+    "emailHint": "如需變更登入電子郵件，請聯絡客服。",
+    "phone": "手機號碼",
+    "dateOfBirth": "出生日期",
+    "optional": "選填",
+    "save": "儲存變更",
+    "saved": "資訊已儲存",
+    "saveFailed": "無法儲存你的資訊",
+    "loadFailed": "無法載入你的資訊"
+  },
+  "cancel": "取消",
+  "saving": "儲存中…",
+  "region": {
+    "title": "語言和地區",
+    "description": "變更後即儲存在此裝置上。"
+  },
+  "privacy": {
+    "title": "隱私",
+    "label": "在排行榜上匿名顯示",
+    "description": "排行榜會顯示你的名次而不是使用者名稱，例如「Trader #14」。你的數據仍會計入。",
+    "saveError": "無法儲存此變更"
+  },
+  "kyc": {
+    "title": "身分驗證",
+    "description": "部分市場和更高限額需要完成身分驗證。",
+    "status": "狀態",
+    "verified": "已驗證",
+    "pending": "審核中",
+    "failed": "未通過",
+    "unverified": "未驗證",
+    "start": "開始驗證",
+    "starting": "正在開始…",
+    "approved": "身分已驗證",
+    "submitted": "驗證已提交",
+    "startFailed": "無法開始驗證"
+  },
+  "limits": {
+    "title": "參與限額",
+    "description": "設定你使用的點數上限和單筆訂單上限。限額從下一筆訂單開始生效。",
+    "daily": "每日（點）",
+    "weekly": "每週（點）",
+    "monthly": "每月（點）",
+    "maxOrder": "單筆訂單上限（點）",
+    "none": "無限額",
+    "save": "儲存限額",
+    "saved": "限額已儲存",
+    "saveFailed": "無法儲存限額"
   }
 }

@@ -1,28 +1,97 @@
 {
   "TITLE": "Pengaturan",
-  "subtitle": "Preferensi bahasa dan zona waktu untuk akun Anda.",
-  "back": "Kembali",
   "flash": {
     "languageUpdated": "Bahasa diperbarui",
     "timezoneUpdated": "Zona waktu diperbarui"
   },
   "language": {
-    "title": "Bahasa",
-    "description": "Terjemahan berlaku langsung di seluruh aplikasi dan disimpan untuk sesi berikutnya di perangkat ini.",
     "display": "Bahasa tampilan"
   },
   "timezone": {
-    "title": "Zona waktu",
-    "description": "Digunakan untuk menampilkan waktu tutup market dan riwayat trading dalam waktu lokal Anda. Default mengikuti zona waktu browser",
     "display": "Zona waktu tampilan",
     "browser": "browser",
     "preview": "Pratinjau"
   },
-  "footer": {
-    "beforeLinks": "Butuh pengaturan keamanan, kata sandi, atau notifikasi? Temukan di",
+  "nav": {
+    "account": "Akun",
+    "label": "Bagian pengaturan",
+    "profile": "Profil",
     "security": "Keamanan",
     "alerts": "Peringatan",
-    "and": "dan",
-    "account": "Akun"
+    "ledger": "Riwayat poin",
+    "responsible": "Bermain secara bertanggung jawab"
+  },
+  "profile": {
+    "title": "Profil",
+    "subtitle": "Detail, bahasa, dan privasi Anda."
+  },
+  "security": {
+    "title": "Keamanan",
+    "subtitle": "Kata sandi, autentikasi dua faktor, dan sesi aktif."
+  },
+  "alerts": {
+    "title": "Peringatan",
+    "subtitle": "Pilih cara Anda menerima kabar tentang market dan akun Anda."
+  },
+  "ledger": {
+    "title": "Riwayat poin",
+    "subtitle": "Setiap poin yang masuk dan keluar dari akun Anda."
+  },
+  "responsible": {
+    "title": "Bermain secara bertanggung jawab",
+    "subtitle": "Batas, jeda, dan pengecualian diri."
+  },
+  "details": {
+    "title": "Detail pribadi",
+    "description": "Hanya Anda yang melihat ini. Nama publik Anda di papan adalah nama pengguna Anda.",
+    "firstName": "Nama depan",
+    "lastName": "Nama belakang",
+    "email": "Email",
+    "emailHint": "Hubungi dukungan untuk mengganti email login Anda.",
+    "phone": "Telepon",
+    "dateOfBirth": "Tanggal lahir",
+    "optional": "Opsional",
+    "save": "Simpan perubahan",
+    "saved": "Detail disimpan",
+    "saveFailed": "Tidak dapat menyimpan detail Anda",
+    "loadFailed": "Tidak dapat memuat detail Anda"
+  },
+  "cancel": "Batal",
+  "saving": "Menyimpan…",
+  "region": {
+    "title": "Bahasa dan wilayah",
+    "description": "Tersimpan di perangkat ini begitu Anda mengubahnya."
+  },
+  "privacy": {
+    "title": "Privasi",
+    "label": "Tampil anonim di papan peringkat",
+    "description": "Papan menampilkan peringkat Anda, bukan nama pengguna, misalnya “Trader #14”. Statistik Anda tetap dihitung.",
+    "saveError": "Tidak dapat menyimpan perubahan itu"
+  },
+  "kyc": {
+    "title": "Verifikasi identitas",
+    "description": "Beberapa market dan batas lebih tinggi memerlukan identitas terverifikasi.",
+    "status": "Status",
+    "verified": "Terverifikasi",
+    "pending": "Sedang ditinjau",
+    "failed": "Tidak disetujui",
+    "unverified": "Belum terverifikasi",
+    "start": "Mulai verifikasi",
+    "starting": "Memulai…",
+    "approved": "Identitas terverifikasi",
+    "submitted": "Verifikasi dikirim",
+    "startFailed": "Tidak dapat memulai verifikasi"
+  },
+  "limits": {
+    "title": "Batas bermain",
+    "description": "Batasi poin yang Anda gunakan dan ukuran setiap order. Batas berlaku mulai order berikutnya.",
+    "daily": "Harian (poin)",
+    "weekly": "Mingguan (poin)",
+    "monthly": "Bulanan (poin)",
+    "maxOrder": "Order terbesar (poin)",
+    "none": "Tanpa batas",
+    "save": "Simpan batas",
+    "saved": "Batas disimpan",
+    "saveFailed": "Tidak dapat menyimpan batas Anda"
   }
 }

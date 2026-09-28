@@ -8,7 +8,8 @@ const notificationsPath = resolve(
   __dirname,
   "../account/notifications/page.tsx",
 );
-const profilePath = resolve(__dirname, "../profile/page.tsx");
+// /profile was retired into /account/settings (it redirects there).
+const profilePath = resolve(__dirname, "../account/settings/page.tsx");
 
 const userClientSource = readFileSync(userClientPath, "utf-8");
 const notificationsSource = readFileSync(notificationsPath, "utf-8");
@@ -55,8 +56,9 @@ describe("user-client preferences contract", () => {
       "notification preferences should not submit currency",
     );
     assert.ok(
-      profileSource.includes("localStorage.setItem(localeStorageKey") &&
-        profileSource.includes('localStorage.setItem("taptrade_timezone"') &&
+      profileSource.includes("persistLocale(locale)") &&
+        profileSource.includes('TIMEZONE_KEY = "taptrade_timezone"') &&
+        profileSource.includes("localStorage.setItem(TIMEZONE_KEY") &&
         !profileSource.includes("currency"),
       "profile preferences should remain local language/timezone settings without currency",
     );

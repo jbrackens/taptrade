@@ -8,23 +8,12 @@
   "EMAIL_SETTINGS": "Mga setting ng email",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "Account mo",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "Pamahalaan"
+    "settings": "Settings"
   },
   "actions": {
     "profile": {
       "title": "Profile mo",
-      "desc": "I-update ang detalye at setup ng account mo"
-    },
-    "portfolio": {
-      "title": "Portfolio mo",
-      "desc": "Open positions, orders, at settled history"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "desc": "Detalye, wika at privacy mo"
     },
     "security": {
       "title": "Seguridad",
@@ -36,28 +25,91 @@
     },
     "responsible": {
       "title": "Maglaro nang responsable",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "desc": "Mga limit, cool-off, at self-exclusion"
+    },
+    "points": {
+      "title": "Point ledger",
+      "desc": "Starter grants, prediksyon, at rewards"
     }
   },
-  "privacy": {
-    "kicker": "Privacy settings",
-    "title": "Itsura sa public boards",
-    "label": "Lumabas nang anonymous sa leaderboards",
-    "descriptionBeforeRank": "Kapag naka-on, nakatago ang username mo sa public boards at papalitan ng rank mo (hal.",
-    "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Makikita pa rin ang rank at stats mo; handle lang ang nakatago.",
-    "saveError": "Hindi na-save ang pagbabagong iyon"
-  },
-  "portfolio": {
-    "kicker": "Portfolio mo",
-    "title": "Mabilisang tingin sa positions mo",
-    "open": "Buksan ang portfolio"
-  },
   "stats": {
-    "invested": "Naka-invest",
-    "realizedPnl": "Na-realize na resulta ng puntos",
-    "openPositions": "Bukas na posisyon",
+    "realizedPnl": "Resulta ng settlement",
     "accuracy": "Katumpakan",
-    "noSettledMarkets": "Wala pang settled markets"
+    "noSettledMarkets": "Wala pang settled markets",
+    "available": "Available",
+    "positionsValue": "Halaga ng posisyon",
+    "predictions": "Mga prediksyon",
+    "accuracyValue": "{{pct}}% · {{correct}} sa {{total}}"
+  },
+  "profile": {
+    "tabsLabel": "Mga posisyon at aktibidad",
+    "tabs": {
+      "positions": "Mga posisyon",
+      "activity": "Aktibidad"
+    },
+    "view": {
+      "active": "Aktibo",
+      "closed": "Sarado"
+    },
+    "fullPortfolio": "Buong portfolio",
+    "col": {
+      "market": "Market",
+      "avg": "Avg",
+      "now": "Ngayon",
+      "value": "Halaga",
+      "result": "Resulta",
+      "returned": "Naibalik"
+    },
+    "shares_one": "{{count}} share",
+    "shares_other": "{{count}} shares",
+    "empty": {
+      "activeTitle": "Wala pang bukas na posisyon",
+      "activeBody": "Lalabas dito ang mga market na pinilian mo ng panig, kasama ang halaga nito ngayon.",
+      "closedTitle": "Wala pang na-settle",
+      "closedBody": "Kapag na-settle ang market na hawak mo, dito lalabas ang resulta.",
+      "activityTitle": "Wala pang aktibidad",
+      "activityBody": "Lalabas dito ang mga order mo habang nagpe-predict ka."
+    },
+    "browseMarkets": "Tingnan ang mga market",
+    "result": {
+      "won": "Tama",
+      "lost": "Mali",
+      "voided": "Na-void"
+    },
+    "status": {
+      "open": "Bukas",
+      "partial": "Bahagyang na-fill",
+      "cancelled": "Kinansela",
+      "expired": "Nag-expire",
+      "rejected": "Tinanggihan"
+    },
+    "side": {
+      "yes": "Oo",
+      "no": "Hindi"
+    },
+    "activity": {
+      "bought_one": "Bumili ng {{count}} {{side}}",
+      "bought_other": "Bumili ng {{count}} {{side}}",
+      "sold_one": "Nagbenta ng {{count}} {{side}}",
+      "sold_other": "Nagbenta ng {{count}} {{side}}"
+    },
+    "marketUnavailable": "Hindi available ang detalye ng market",
+    "joined": "Sumali noong {{date}}",
+    "edit": "I-edit ang profile"
+  },
+  "chart": {
+    "period": {
+      "1w": "1W",
+      "1m": "1M",
+      "all": "Lahat"
+    },
+    "caption": {
+      "1w": "Nakaraang linggo",
+      "1m": "Nakaraang buwan",
+      "all": "Lahat ng panahon"
+    },
+    "periodLabel": "Panahon",
+    "label": "Resulta ng settlement sa paglipas ng panahon",
+    "empty": "Dito lalabas ang chart ng resulta mo kapag na-settle ang market na hawak mo."
   }
 }

@@ -14,7 +14,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const clientPath = resolve(__dirname, "../lib/api/compliance-client.ts");
-const profilePath = resolve(__dirname, "../profile/page.tsx");
+// The limits form moved from the retired /profile page into Settings.
+const profilePath = resolve(__dirname, "../components/account/PlayLimitsCard.tsx");
 const rgHistoryPath = resolve(__dirname, "../account/rg-history/page.tsx");
 const source = readFileSync(clientPath, "utf-8");
 const profileSource = readFileSync(profilePath, "utf-8");

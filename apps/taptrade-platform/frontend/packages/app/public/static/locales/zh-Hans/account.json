@@ -8,23 +8,12 @@
   "EMAIL_SETTINGS": "Email Settings",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "账户",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "管理"
+    "settings": "设置"
   },
   "actions": {
     "profile": {
       "title": "个人资料",
-      "desc": "更新资料和账户设置"
-    },
-    "portfolio": {
-      "title": "投资组合",
-      "desc": "持仓、订单和已结算历史"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "desc": "个人信息、语言和隐私"
     },
     "security": {
       "title": "安全",
@@ -36,28 +25,91 @@
     },
     "responsible": {
       "title": "理性参与",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "desc": "参与限额、冷静期和自我排除"
+    },
+    "points": {
+      "title": "点数明细",
+      "desc": "新手点数、预测和奖励"
     }
   },
-  "privacy": {
-    "kicker": "隐私",
-    "title": "公开榜单显示",
-    "label": "在排行榜上匿名显示",
-    "descriptionBeforeRank": "开启后，你的用户名会在公开榜单中隐藏，并替换为你的排名（例如",
-    "rankExample": "交易者 #14",
-    "descriptionAfterRank": "）。你的排名和数据仍会显示；只隐藏昵称。",
-    "saveError": "无法保存该更改"
-  },
-  "portfolio": {
-    "kicker": "投资组合",
-    "title": "你的持仓概览",
-    "open": "打开投资组合"
-  },
   "stats": {
-    "invested": "已投入",
-    "realizedPnl": "已实现点数结果",
-    "openPositions": "未平仓持仓",
+    "realizedPnl": "结算结果",
     "accuracy": "准确率",
-    "noSettledMarkets": "还没有已结算市场"
+    "noSettledMarkets": "还没有已结算市场",
+    "available": "可用",
+    "positionsValue": "持仓价值",
+    "predictions": "预测",
+    "accuracyValue": "{{pct}}% · {{total}} 次中 {{correct}} 次"
+  },
+  "profile": {
+    "tabsLabel": "持仓和动态",
+    "tabs": {
+      "positions": "持仓",
+      "activity": "动态"
+    },
+    "view": {
+      "active": "进行中",
+      "closed": "已结束"
+    },
+    "fullPortfolio": "完整投资组合",
+    "col": {
+      "market": "市场",
+      "avg": "均价",
+      "now": "现价",
+      "value": "价值",
+      "result": "结果",
+      "returned": "返还"
+    },
+    "shares_one": "{{count}} 份",
+    "shares_other": "{{count}} 份",
+    "empty": {
+      "activeTitle": "暂无持仓",
+      "activeBody": "你选边的市场会显示在这里，并附上当前价值。",
+      "closedTitle": "还没有已结算的持仓",
+      "closedBody": "你持有的市场结算后，结果会显示在这里。",
+      "activityTitle": "暂无动态",
+      "activityBody": "你下的订单会显示在这里。"
+    },
+    "browseMarkets": "浏览市场",
+    "result": {
+      "won": "猜中",
+      "lost": "未猜中",
+      "voided": "已作废"
+    },
+    "status": {
+      "open": "挂单中",
+      "partial": "部分成交",
+      "cancelled": "已取消",
+      "expired": "已过期",
+      "rejected": "已拒绝"
+    },
+    "side": {
+      "yes": "是",
+      "no": "否"
+    },
+    "activity": {
+      "bought_one": "买入 {{count}} 份{{side}}",
+      "bought_other": "买入 {{count}} 份{{side}}",
+      "sold_one": "卖出 {{count}} 份{{side}}",
+      "sold_other": "卖出 {{count}} 份{{side}}"
+    },
+    "marketUnavailable": "市场详情不可用",
+    "joined": "{{date}} 加入",
+    "edit": "编辑资料"
+  },
+  "chart": {
+    "period": {
+      "1w": "1周",
+      "1m": "1月",
+      "all": "全部"
+    },
+    "caption": {
+      "1w": "过去一周",
+      "1m": "过去一个月",
+      "all": "全部时间"
+    },
+    "periodLabel": "时间段",
+    "label": "结算结果走势",
+    "empty": "你持有的市场结算后，结果会在这里绘制成图。"
   }
 }

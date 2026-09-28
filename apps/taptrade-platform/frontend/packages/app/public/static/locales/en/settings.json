@@ -1,28 +1,97 @@
 {
   "TITLE": "Settings",
-  "subtitle": "Language and timezone preferences for your account.",
-  "back": "Back",
   "flash": {
     "languageUpdated": "Language updated",
     "timezoneUpdated": "Timezone updated"
   },
   "language": {
-    "title": "Language",
-    "description": "Translations apply across the app immediately, and persist for future sessions on this device.",
     "display": "Display language"
   },
   "timezone": {
-    "title": "Timezone",
-    "description": "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
     "display": "Display timezone",
     "browser": "browser",
     "preview": "Preview"
   },
-  "footer": {
-    "beforeLinks": "Need security, password, or notification settings? Find them in",
+  "nav": {
+    "account": "Account",
+    "label": "Settings sections",
+    "profile": "Profile",
     "security": "Security",
     "alerts": "Alerts",
-    "and": "and",
-    "account": "Account"
+    "ledger": "Point ledger",
+    "responsible": "Play responsibly"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Your details, language and privacy."
+  },
+  "security": {
+    "title": "Security",
+    "subtitle": "Password, two-factor authentication and active sessions."
+  },
+  "alerts": {
+    "title": "Alerts",
+    "subtitle": "Choose how you hear about markets and your account."
+  },
+  "ledger": {
+    "title": "Point ledger",
+    "subtitle": "Every point in and out of your account."
+  },
+  "responsible": {
+    "title": "Play responsibly",
+    "subtitle": "Limits, cool-offs and self-exclusion."
+  },
+  "details": {
+    "title": "Personal details",
+    "description": "Only you see these. Your public name on boards is your username.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "emailHint": "Contact support to change the email you sign in with.",
+    "phone": "Phone",
+    "dateOfBirth": "Date of birth",
+    "optional": "Optional",
+    "save": "Save changes",
+    "saved": "Details saved",
+    "saveFailed": "Couldn’t save your details",
+    "loadFailed": "Couldn’t load your details"
+  },
+  "cancel": "Cancel",
+  "saving": "Saving…",
+  "region": {
+    "title": "Language and region",
+    "description": "Saved as you change them, on this device."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "label": "Appear anonymously on leaderboards",
+    "description": "Boards show your rank instead of your username, for example “Trader #14”. Your stats still count.",
+    "saveError": "Couldn’t save that change"
+  },
+  "kyc": {
+    "title": "Identity verification",
+    "description": "Some markets and higher limits need a verified identity.",
+    "status": "Status",
+    "verified": "Verified",
+    "pending": "In review",
+    "failed": "Not approved",
+    "unverified": "Not verified",
+    "start": "Start verification",
+    "starting": "Starting…",
+    "approved": "Identity verified",
+    "submitted": "Verification submitted",
+    "startFailed": "Couldn’t start verification"
+  },
+  "limits": {
+    "title": "Play limits",
+    "description": "Cap the points you use and the size of any one order. Limits apply from your next order.",
+    "daily": "Daily (pts)",
+    "weekly": "Weekly (pts)",
+    "monthly": "Monthly (pts)",
+    "maxOrder": "Largest order (pts)",
+    "none": "No limit",
+    "save": "Save limits",
+    "saved": "Limits saved",
+    "saveFailed": "Couldn’t save your limits"
   }
 }

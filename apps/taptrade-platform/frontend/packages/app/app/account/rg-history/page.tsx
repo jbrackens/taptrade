@@ -9,6 +9,7 @@ import { Button } from "../../components/ui";
 import { getLimitsHistory } from "../../lib/api/compliance-client";
 import type { LimitHistoryItem } from "../../lib/api/compliance-client";
 import { FEATURE_RG } from "../../lib/features";
+import { SettingsShell } from "../../components/account/SettingsShell";
 
 interface GroupedHistory {
   limits: LimitHistoryItem[];
@@ -16,13 +17,8 @@ interface GroupedHistory {
   exclusions: LimitHistoryItem[];
 }
 
-const pageClass = "mx-auto max-w-[1200px] px-4 py-6";
-const headerClass =
-  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
-const backClass =
-  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const sectionClass =
-  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6";
+  "mb-6 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6 shadow-[var(--shadow-card)]";
 const tableHeadCellClass =
   "px-4 py-3 text-left text-[12px] font-semibold text-[var(--t3)]";
 const tableCellClass =
@@ -150,21 +146,7 @@ function RGHistoryPageContent() {
   );
 
   return (
-    <div className={pageClass}>
-      <div className={headerClass}>
-        <div>
-          <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
-            Responsible play history
-          </h1>
-          <p className="text-sm text-[var(--t3)]">
-            Track all your responsible-play limits and actions
-          </p>
-        </div>
-        <Link href="/account" className={backClass}>
-          ← Back
-        </Link>
-      </div>
-
+    <SettingsShell active="responsible" wide>
       {loading ? (
         <div className="p-10 text-center text-sm text-[var(--t3)]">
           Loading history…
@@ -204,6 +186,6 @@ function RGHistoryPageContent() {
             )}
         </>
       )}
-    </div>
+    </SettingsShell>
   );
 }

@@ -8,23 +8,12 @@
   "EMAIL_SETTINGS": "Tetapan E-mel",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "Akaun",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "Urus"
+    "settings": "Tetapan"
   },
   "actions": {
     "profile": {
       "title": "Profil",
-      "desc": "Kemas kini butiran dan persediaan akaun anda"
-    },
-    "portfolio": {
-      "title": "Portfolio",
-      "desc": "Posisi terbuka, pesanan dan sejarah selesai"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "desc": "Butiran, bahasa dan privasi anda"
     },
     "security": {
       "title": "Keselamatan",
@@ -36,28 +25,91 @@
     },
     "responsible": {
       "title": "Bermain secara bertanggungjawab",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "desc": "Had permainan, tempoh bertenang dan pengecualian diri"
+    },
+    "points": {
+      "title": "Lejar mata",
+      "desc": "Geran permulaan, ramalan dan ganjaran"
     }
   },
-  "privacy": {
-    "kicker": "Privasi",
-    "title": "Paparan pada papan awam",
-    "label": "Muncul tanpa nama pada leaderboard",
-    "descriptionBeforeRank": "Apabila dihidupkan, nama pengguna anda disembunyikan pada papan awam dan diganti dengan rank anda (cth.",
-    "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Rank dan statistik masih dipaparkan; hanya handle anda disembunyikan.",
-    "saveError": "Perubahan itu tidak dapat disimpan"
-  },
-  "portfolio": {
-    "kicker": "Portfolio",
-    "title": "Posisi anda sepintas lalu",
-    "open": "Buka portfolio"
-  },
   "stats": {
-    "invested": "Dilaburkan",
-    "realizedPnl": "Hasil mata direalisasi",
-    "openPositions": "Posisi terbuka",
+    "realizedPnl": "Keputusan penyelesaian",
     "accuracy": "Ketepatan",
-    "noSettledMarkets": "Belum ada pasaran selesai"
+    "noSettledMarkets": "Belum ada pasaran selesai",
+    "available": "Tersedia",
+    "positionsValue": "Nilai posisi",
+    "predictions": "Ramalan",
+    "accuracyValue": "{{pct}}% · {{correct}} daripada {{total}}"
+  },
+  "profile": {
+    "tabsLabel": "Posisi dan aktiviti",
+    "tabs": {
+      "positions": "Posisi",
+      "activity": "Aktiviti"
+    },
+    "view": {
+      "active": "Aktif",
+      "closed": "Ditutup"
+    },
+    "fullPortfolio": "Portfolio penuh",
+    "col": {
+      "market": "Pasaran",
+      "avg": "Purata",
+      "now": "Kini",
+      "value": "Nilai",
+      "result": "Keputusan",
+      "returned": "Dipulangkan"
+    },
+    "shares_one": "{{count}} saham",
+    "shares_other": "{{count}} saham",
+    "empty": {
+      "activeTitle": "Tiada posisi terbuka",
+      "activeBody": "Pasaran yang anda pilih pihaknya dipaparkan di sini bersama nilainya hari ini.",
+      "closedTitle": "Belum ada yang selesai",
+      "closedBody": "Apabila pasaran yang anda pegang diselesaikan, keputusannya dipaparkan di sini.",
+      "activityTitle": "Belum ada aktiviti",
+      "activityBody": "Pesanan anda dipaparkan di sini apabila anda membuat ramalan."
+    },
+    "browseMarkets": "Layari pasaran",
+    "result": {
+      "won": "Tepat",
+      "lost": "Tidak tepat",
+      "voided": "Dibatalkan"
+    },
+    "status": {
+      "open": "Terbuka",
+      "partial": "Separa dipenuhi",
+      "cancelled": "Dibatalkan",
+      "expired": "Tamat tempoh",
+      "rejected": "Ditolak"
+    },
+    "side": {
+      "yes": "Ya",
+      "no": "Tidak"
+    },
+    "activity": {
+      "bought_one": "Beli {{count}} {{side}}",
+      "bought_other": "Beli {{count}} {{side}}",
+      "sold_one": "Jual {{count}} {{side}}",
+      "sold_other": "Jual {{count}} {{side}}"
+    },
+    "marketUnavailable": "Butiran pasaran tidak tersedia",
+    "joined": "Menyertai {{date}}",
+    "edit": "Sunting profil"
+  },
+  "chart": {
+    "period": {
+      "1w": "7H",
+      "1m": "30H",
+      "all": "Semua"
+    },
+    "caption": {
+      "1w": "Minggu lalu",
+      "1m": "Bulan lalu",
+      "all": "Sepanjang masa"
+    },
+    "periodLabel": "Tempoh",
+    "label": "Keputusan penyelesaian dari semasa ke semasa",
+    "empty": "Keputusan anda dicartakan di sini sebaik sahaja pasaran yang anda pegang diselesaikan."
   }
 }

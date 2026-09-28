@@ -8,23 +8,12 @@
   "EMAIL_SETTINGS": "Email Settings",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "Account",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "Manage"
+    "settings": "Settings"
   },
   "actions": {
     "profile": {
       "title": "Profile",
-      "desc": "Update your details and account setup"
-    },
-    "portfolio": {
-      "title": "Portfolio",
-      "desc": "Open positions, orders, settled history"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "desc": "Your details, language and privacy"
     },
     "security": {
       "title": "Security",
@@ -36,28 +25,91 @@
     },
     "responsible": {
       "title": "Play responsibly",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "desc": "Play limits, cool-offs, and self-exclusion"
+    },
+    "points": {
+      "title": "Point ledger",
+      "desc": "Starter grants, predictions, and rewards"
     }
   },
-  "privacy": {
-    "kicker": "Privacy",
-    "title": "Appearance on public boards",
-    "label": "Appear anonymously on leaderboards",
-    "descriptionBeforeRank": "When on, your username is hidden on public boards and replaced with your rank (e.g.",
-    "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Your rank and stats still show; only your handle is hidden.",
-    "saveError": "Couldn’t save that change"
-  },
-  "portfolio": {
-    "kicker": "Portfolio",
-    "title": "Your positions at a glance",
-    "open": "Open portfolio"
-  },
   "stats": {
-    "invested": "Invested",
-    "realizedPnl": "Realized point result",
-    "openPositions": "Open positions",
+    "realizedPnl": "Settled result",
     "accuracy": "Accuracy",
-    "noSettledMarkets": "No settled markets yet"
+    "noSettledMarkets": "No settled markets yet",
+    "available": "Available",
+    "positionsValue": "Positions value",
+    "predictions": "Predictions",
+    "accuracyValue": "{{pct}}% · {{correct}} of {{total}}"
+  },
+  "profile": {
+    "tabsLabel": "Positions and activity",
+    "tabs": {
+      "positions": "Positions",
+      "activity": "Activity"
+    },
+    "view": {
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "fullPortfolio": "Full portfolio",
+    "col": {
+      "market": "Market",
+      "avg": "Avg",
+      "now": "Now",
+      "value": "Value",
+      "result": "Result",
+      "returned": "Returned"
+    },
+    "shares_one": "{{count}} share",
+    "shares_other": "{{count}} shares",
+    "empty": {
+      "activeTitle": "No open positions",
+      "activeBody": "Markets you take a side on show up here with their value today.",
+      "closedTitle": "Nothing settled yet",
+      "closedBody": "When a market you hold settles, its result lands here.",
+      "activityTitle": "No activity yet",
+      "activityBody": "Your orders appear here as you make calls."
+    },
+    "browseMarkets": "Browse markets",
+    "result": {
+      "won": "Won",
+      "lost": "Lost",
+      "voided": "Voided"
+    },
+    "status": {
+      "open": "Open",
+      "partial": "Part filled",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "rejected": "Rejected"
+    },
+    "side": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "activity": {
+      "bought_one": "Bought {{count}} {{side}}",
+      "bought_other": "Bought {{count}} {{side}}",
+      "sold_one": "Sold {{count}} {{side}}",
+      "sold_other": "Sold {{count}} {{side}}"
+    },
+    "marketUnavailable": "Market details unavailable",
+    "joined": "Joined {{date}}",
+    "edit": "Edit profile"
+  },
+  "chart": {
+    "period": {
+      "1w": "1W",
+      "1m": "1M",
+      "all": "All"
+    },
+    "caption": {
+      "1w": "Past week",
+      "1m": "Past month",
+      "all": "All time"
+    },
+    "periodLabel": "Period",
+    "label": "Settled result over time",
+    "empty": "Your result charts here once a market you hold settles."
   }
 }

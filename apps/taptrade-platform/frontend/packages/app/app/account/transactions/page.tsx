@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button } from "../../components/ui";
@@ -17,14 +16,10 @@ import {
 } from "../../lib/point-ledger";
 import { formatPoints } from "../../lib/points";
 import { logger } from "../../lib/logger";
+import { SettingsShell } from "../../components/account/SettingsShell";
 
 type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
 
-const pageClass = "mx-auto max-w-[1200px] px-4 py-6";
-const headerClass =
-  "mb-8 flex items-start justify-between max-[640px]:flex-col max-[640px]:gap-4";
-const backClass =
-  "inline-flex min-h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-2.5 text-[13px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:border-[var(--border-2)]";
 const filterButtonBase =
   "min-h-9 max-[640px]:min-h-11 cursor-pointer rounded-[var(--r-pill)] border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150";
 const tableHeadCellClass =
@@ -178,31 +173,18 @@ export default function PointsLedgerPage() {
  );
 
  return (
- <div className={pageClass}>
- <div className={headerClass}>
- <div>
- <h1 className="type-poster m-0 mb-1.5 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
- Point ledger
- </h1>
- <p className="text-sm text-[var(--t3)]">
- Every gameplay point movement recorded for review.
- </p>
- </div>
- <div className="flex items-center gap-2">
+    <SettingsShell active="ledger" wide>
+ <div className="-mt-2 mb-5 flex justify-end">
  <Button
  type="button"
  variant="secondary"
  size="none"
- className="min-h-11 px-4 text-[13px]"
+ className="min-h-10 px-4 text-[13px]"
  onClick={handleExportCSV}
  disabled={exporting}
  >
  {exporting ? "Exporting…" : "Export CSV"}
  </Button>
- <Link href="/account" className={backClass}>
- Back to account
- </Link>
- </div>
  </div>
 
  <div className="mb-6">
@@ -248,7 +230,7 @@ export default function PointsLedgerPage() {
  </div>
  </div>
 
- <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)]">
+ <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]">
  {loading ? (
  <div className="p-10 text-center text-sm text-[var(--t3)]">
  Loading point ledger…
@@ -352,7 +334,7 @@ export default function PointsLedgerPage() {
           </>
         )}
       </div>
-    </div>
+    </SettingsShell>
   );
 }
 

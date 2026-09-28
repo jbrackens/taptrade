@@ -8,23 +8,12 @@
   "EMAIL_SETTINGS": "Pengaturan Email",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "Akun",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "Kelola"
+    "settings": "Pengaturan"
   },
   "actions": {
     "profile": {
       "title": "Profil",
-      "desc": "Perbarui detail dan pengaturan akun Anda"
-    },
-    "portfolio": {
-      "title": "Portofolio",
-      "desc": "Posisi terbuka, order, dan riwayat selesai"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "desc": "Detail, bahasa, dan privasi Anda"
     },
     "security": {
       "title": "Keamanan",
@@ -36,28 +25,91 @@
     },
     "responsible": {
       "title": "Bermain secara bertanggung jawab",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "desc": "Batas bermain, jeda, dan pengecualian diri"
+    },
+    "points": {
+      "title": "Riwayat poin",
+      "desc": "Poin awal, prediksi, dan hadiah"
     }
   },
-  "privacy": {
-    "kicker": "Privasi",
-    "title": "Tampilan di papan publik",
-    "label": "Tampil anonim di leaderboard",
-    "descriptionBeforeRank": "Jika aktif, username Anda disembunyikan di papan publik dan diganti dengan peringkat Anda (mis.",
-    "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Peringkat dan statistik tetap tampil; hanya handle Anda yang disembunyikan.",
-    "saveError": "Perubahan itu tidak dapat disimpan"
-  },
-  "portfolio": {
-    "kicker": "Portofolio",
-    "title": "Ringkasan posisi Anda",
-    "open": "Buka portofolio"
-  },
   "stats": {
-    "invested": "Diinvestasikan",
-    "realizedPnl": "Hasil poin terealisasi",
-    "openPositions": "Posisi terbuka",
+    "realizedPnl": "Hasil penyelesaian",
     "accuracy": "Akurasi",
-    "noSettledMarkets": "Belum ada market selesai"
+    "noSettledMarkets": "Belum ada market selesai",
+    "available": "Tersedia",
+    "positionsValue": "Nilai posisi",
+    "predictions": "Prediksi",
+    "accuracyValue": "{{pct}}% · {{correct}} dari {{total}}"
+  },
+  "profile": {
+    "tabsLabel": "Posisi dan aktivitas",
+    "tabs": {
+      "positions": "Posisi",
+      "activity": "Aktivitas"
+    },
+    "view": {
+      "active": "Aktif",
+      "closed": "Selesai"
+    },
+    "fullPortfolio": "Portofolio lengkap",
+    "col": {
+      "market": "Market",
+      "avg": "Rata-rata",
+      "now": "Sekarang",
+      "value": "Nilai",
+      "result": "Hasil",
+      "returned": "Dikembalikan"
+    },
+    "shares_one": "{{count}} share",
+    "shares_other": "{{count}} share",
+    "empty": {
+      "activeTitle": "Belum ada posisi terbuka",
+      "activeBody": "Market yang Anda pilih sisinya muncul di sini beserta nilainya hari ini.",
+      "closedTitle": "Belum ada yang selesai",
+      "closedBody": "Saat market yang Anda pegang selesai, hasilnya muncul di sini.",
+      "activityTitle": "Belum ada aktivitas",
+      "activityBody": "Order Anda muncul di sini saat Anda membuat prediksi."
+    },
+    "browseMarkets": "Jelajahi market",
+    "result": {
+      "won": "Tepat",
+      "lost": "Meleset",
+      "voided": "Dibatalkan"
+    },
+    "status": {
+      "open": "Terbuka",
+      "partial": "Terisi sebagian",
+      "cancelled": "Dibatalkan",
+      "expired": "Kedaluwarsa",
+      "rejected": "Ditolak"
+    },
+    "side": {
+      "yes": "Ya",
+      "no": "Tidak"
+    },
+    "activity": {
+      "bought_one": "Beli {{count}} {{side}}",
+      "bought_other": "Beli {{count}} {{side}}",
+      "sold_one": "Jual {{count}} {{side}}",
+      "sold_other": "Jual {{count}} {{side}}"
+    },
+    "marketUnavailable": "Detail market tidak tersedia",
+    "joined": "Bergabung {{date}}",
+    "edit": "Edit profil"
+  },
+  "chart": {
+    "period": {
+      "1w": "7H",
+      "1m": "30H",
+      "all": "Semua"
+    },
+    "caption": {
+      "1w": "Seminggu terakhir",
+      "1m": "Sebulan terakhir",
+      "all": "Sepanjang waktu"
+    },
+    "periodLabel": "Periode",
+    "label": "Hasil penyelesaian dari waktu ke waktu",
+    "empty": "Hasil Anda digambarkan di sini setelah market yang Anda pegang selesai."
   }
 }

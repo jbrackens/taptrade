@@ -1388,7 +1388,7 @@ export function TradeTicket({
                 {error}
                 {complianceDenialKind(error) === "kyc" && (
                   <Link
-                    href="/profile"
+                    href="/account/settings#verification"
                     className="mt-1.5 block font-semibold text-[var(--t1)] underline"
                   >
                     {t("COMPLETE_VERIFICATION")}

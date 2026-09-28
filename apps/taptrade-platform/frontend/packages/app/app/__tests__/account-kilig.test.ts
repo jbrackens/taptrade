@@ -1,20 +1,18 @@
 /**
- * Purple/lavender step — /account (Account.dc.html 17a/17b), the last surface.
+ * The account area — the profile (/account), the settings frame and the
+ * public profile — pinned to the board's look (2026-09-28 redesign, after
+ * "the profile page is really ugly … it screams unfinished").
  *
- * Source-level assertions (repo convention — node:test, no DOM harness)
- * pinning the step's contracts:
- *  - points move from accent to ink: the balance and every stat value are
- *    neutral magnitudes; ONLY the settled result keeps a direction colour
- *  - the avatar uses the selected lavender surface with AA purple text
- *  - action cards follow the hover rule (stronger hairline + shadow,
- *    never a background change) and keep their Lucide icons from source
- *  - Profile links to /account/settings (the stale /account/security
- *    double-link was a leftover from the crashed pages-router settings)
- *  - the grid survives five cards as well as six (Play responsibly is
- *    behind FEATURE_RG; auto-fill is count-agnostic)
- *  - the login credential failure is humanized and localized
- *  - the 390 header fix: the tier pill clips/truncates instead of
- *    bleeding, and ultra-narrow widths keep balance-number priority
+ * Source-level assertions (repo convention — node:test, no DOM harness):
+ *  - values are neutral ink; ONLY a settled result carries a direction colour
+ *  - identity is the Kilig gradient avatar (pink = identity, DESIGN.md)
+ *  - cards use the board's recipe (12px radius, hairline, whisper shadow)
+ *    and position/activity rows carry the market's image tile
+ *  - every settings page sits in one SettingsShell; no "← Back" buttons
+ *  - the retired /profile redirects to /account/settings, and nothing on
+ *    the settings page claims a status it doesn't have (no dead 2FA
+ *    switch, no hard-coded "verified" badge)
+ *  - the header chips at 390 and the humanized login failure (step 8)
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -28,72 +26,99 @@ function read(rel: string): string {
 }
 
 const account = read("account/page.tsx");
+const tabs = read("components/account/ProfileTabs.tsx");
+const avatar = read("components/account/ProfileAvatar.tsx");
+const shell = read("components/account/SettingsShell.tsx");
+const settings = read("account/settings/page.tsx");
+const publicProfile = read("users/[userId]/page.tsx");
+const nextConfig = read("../next.config.js");
 const topBar = read("components/prediction/TopBar.tsx");
 const tierPill = read("components/prediction/TierPill.tsx");
 const login = read("auth/login/page.tsx");
 
 const SHIPPED_LOCALES = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
 
-describe("account values are neutral ink (step 8)", () => {
-  it("renders the balance and stat values in ink, never accent", () => {
+describe("profile values are neutral ink", () => {
+  it("never paints a value in the accent", () => {
     assert.ok(!account.includes("text-[var(--accent)]"));
-    assert.match(
-      account,
-      /font-mono text-\[22px\] font-medium tracking-\[-0\.01em\] text-\[var\(--t1\)\]/,
-    );
+    assert.match(account, /function Stat[\s\S]{0,400}text-\[var\(--t1\)\]/);
   });
 
-  it("keeps a direction colour ONLY on the settled result", () => {
-    assert.match(account, /tone=\{pnlUp \? "yes" : "no"\}/);
-    assert.ok(!account.includes('"gain"'), "the gain tone is retired");
+  it("keeps a direction colour only on the settled result", () => {
     const accuracy = account.slice(
       account.indexOf('t("stats.accuracy"'),
-      account.indexOf("</section>", account.indexOf('t("stats.accuracy"')),
+      account.indexOf("</dl>", account.indexOf('t("stats.accuracy"')),
     );
-    assert.ok(
-      !accuracy.includes("tone="),
-      "accuracy is a magnitude — neutral ink",
+    assert.ok(!/--yes-text|--no-text/.test(accuracy), "accuracy is a magnitude");
+    const settled = account.slice(
+      account.indexOf('t("stats.realizedPnl"'),
+      account.indexOf('t("stats.accuracy"'),
     );
+    assert.match(settled, /settledUp \? "text-\[var\(--yes-text\)\]" : "text-\[var\(--no-text\)\]"/);
   });
 
-  it("keeps the lavender avatar with readable purple text", () => {
-    assert.match(
-      account,
-      /border-\[var\(--accent\)\] bg-\[var\(--accent-soft\)\][^"]*text-\[var\(--accent-text\)\]/,
-    );
-    assert.ok(!/rgba\(43,\s*228,\s*128/.test(account));
+  it("draws identity with the Kilig gradient avatar", () => {
+    assert.match(avatar, /var\(--kilig\)/);
+    assert.match(avatar, /text-\[var\(--on-kilig\)\]/);
+    assert.match(account, /<ProfileAvatar name=/);
+    assert.match(publicProfile, /<ProfileAvatar name=/);
   });
 });
 
-describe("account settings list (Kilig)", () => {
-  it("renders the actions as one hairline-divided settings list", () => {
-    // Kilig: an Apple-Settings list (label + description left, chevron
-    // right) inside one white card, not a grid of shadowed cards.
-    assert.match(account, /function SettingsRow/);
-    assert.match(account, /hover:bg-\[var\(--surface-2\)\]/);
-    assert.ok(!account.includes("shadow-[var(--shadow-card"));
-  });
-
-  it("keeps the five Lucide icons read from source", () => {
+describe("profile uses the board's card recipe", () => {
+  it("gives cards the hairline, 12px radius and whisper shadow", () => {
     assert.match(
       account,
-      /import \{ Bell, HeartHandshake, Lock, Settings, TrendingUp \} from "lucide-react"/,
+      /CARD_CLASS =\s*\n?\s*"rounded-\[var\(--r-rh-lg\)\] border border-\[var\(--border-1\)\] bg-\[var\(--surface-1\)\] shadow-\[var\(--shadow-card\)\]"/,
     );
+    assert.match(tabs, /shadow-\[var\(--shadow-card\)\]/);
   });
 
-  it("routes Profile to /account/settings and Security to /account/security", () => {
+  it("shows each position and order with its market's image tile and title", () => {
+    assert.match(tabs, /import \{ MarketThumb \} from "\.\.\/prediction\/MarketThumb"/);
+    assert.match(tabs, /localizedMarket\(t, market\)/);
+    assert.match(publicProfile, /<MarketThumb /);
+    assert.ok(!publicProfile.includes("item.marketId} ·"), "no raw market ids in activity");
+  });
+
+  it("links Profile to /account/settings and Security to /account/security", () => {
     assert.match(account, /href="\/account\/settings"[\s\S]{0,200}actions\.profile\.title/);
     assert.match(account, /href="\/account\/security"[\s\S]{0,200}actions\.security\.title/);
   });
 
   it("keeps Play responsibly flag-gated", () => {
     assert.match(account, /\{FEATURE_RG && \(/);
+    assert.match(shell, /enabled: FEATURE_RG/);
+  });
+});
+
+describe("settings area", () => {
+  it("puts every settings page in one shell, with no back buttons", () => {
+    for (const rel of [
+      "account/settings/page.tsx",
+      "account/security/page.tsx",
+      "account/notifications/page.tsx",
+      "account/transactions/page.tsx",
+    ]) {
+      const source = read(rel);
+      assert.match(source, /<SettingsShell active="/, `${rel} should render inside SettingsShell`);
+      assert.ok(!source.includes("← Back"), `${rel} should not carry its own back button`);
+    }
   });
 
-  it("keeps the privacy save-error in the system danger colour, never market direction", () => {
-    assert.match(account, /var\(--danger\)/);
-    assert.ok(!/rgba\(255,\s*155,\s*107/.test(account));
-    assert.doesNotMatch(account, /brand-(?:dark|lavender|purple)/);
+  it("redirects the retired /profile to /account/settings", () => {
+    assert.match(nextConfig, /source: "\/profile", destination: "\/account\/settings"/);
+  });
+
+  it("claims no status it doesn't have", () => {
+    assert.ok(!settings.includes("Enable 2FA"), "no dead two-factor switch");
+    assert.ok(!settings.includes('status="verified"'), "no hard-coded verified badge");
+    assert.match(settings, /kycBadge\(status\)/);
+  });
+
+  it("keeps save errors in the system danger colour, never market direction", () => {
+    assert.match(settings, /text-\[var\(--danger\)\]/);
+    assert.doesNotMatch(settings, /brand-(?:dark|lavender|purple)/);
   });
 });
 

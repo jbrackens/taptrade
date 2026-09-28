@@ -1,28 +1,97 @@
 {
   "TITLE": "Settings mo",
-  "subtitle": "Mga preference ng wika at time zone para sa account mo.",
-  "back": "Bumalik",
   "flash": {
     "languageUpdated": "Na-update ang wika",
     "timezoneUpdated": "Na-update ang time zone"
   },
   "language": {
-    "title": "Wika",
-    "description": "Agad na nalalapat ang translations sa buong app at nase-save para sa susunod na sessions sa device na ito.",
     "display": "Wika sa display"
   },
   "timezone": {
-    "title": "Time zone",
-    "description": "Ginagamit para ipakita ang market close times at trade history sa lokal mong oras. Default ang timezone ng browser mo",
     "display": "Timezone sa display",
     "browser": "browser setting",
     "preview": "Preview time"
   },
-  "footer": {
-    "beforeLinks": "Kailangan ng security, password, o notification settings? Makikita ang mga iyon sa",
+  "nav": {
+    "account": "Account mo",
+    "label": "Mga seksyon ng settings",
+    "profile": "Profile",
     "security": "Seguridad",
-    "alerts": "Mga alerto",
-    "and": "at",
-    "account": "Account mo"
+    "alerts": "Mga alert",
+    "ledger": "Point ledger",
+    "responsible": "Maglaro nang responsable"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Ang detalye, wika at privacy mo."
+  },
+  "security": {
+    "title": "Seguridad",
+    "subtitle": "Password, two-factor authentication at mga aktibong session."
+  },
+  "alerts": {
+    "title": "Mga alert",
+    "subtitle": "Piliin kung paano ka makakatanggap ng balita tungkol sa markets at account mo."
+  },
+  "ledger": {
+    "title": "Point ledger",
+    "subtitle": "Bawat puntos na pumasok at lumabas sa account mo."
+  },
+  "responsible": {
+    "title": "Maglaro nang responsable",
+    "subtitle": "Mga limit, cool-off at self-exclusion."
+  },
+  "details": {
+    "title": "Personal na detalye",
+    "description": "Ikaw lang ang nakakakita nito. Username mo ang pangalan mo sa boards.",
+    "firstName": "Pangalan",
+    "lastName": "Apelyido",
+    "email": "Email",
+    "emailHint": "Makipag-ugnayan sa support para palitan ang email na ginagamit mo sa pag-sign in.",
+    "phone": "Telepono",
+    "dateOfBirth": "Petsa ng kapanganakan",
+    "optional": "Opsyonal",
+    "save": "I-save ang mga pagbabago",
+    "saved": "Na-save ang detalye",
+    "saveFailed": "Hindi ma-save ang detalye mo",
+    "loadFailed": "Hindi ma-load ang detalye mo"
+  },
+  "cancel": "Kanselahin",
+  "saving": "Sine-save…",
+  "region": {
+    "title": "Wika at rehiyon",
+    "description": "Nase-save agad sa device na ito kapag binago mo."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "label": "Lumabas nang anonymous sa leaderboards",
+    "description": "Rank mo ang ipapakita sa boards imbes na username, halimbawa “Trader #14”. Bilang pa rin ang stats mo.",
+    "saveError": "Hindi ma-save ang pagbabagong iyon"
+  },
+  "kyc": {
+    "title": "Beripikasyon ng pagkakakilanlan",
+    "description": "May ilang market at mas mataas na limit na nangangailangan ng verified na pagkakakilanlan.",
+    "status": "Status",
+    "verified": "Verified",
+    "pending": "Sinusuri",
+    "failed": "Hindi naaprubahan",
+    "unverified": "Hindi pa verified",
+    "start": "Simulan ang beripikasyon",
+    "starting": "Sinisimulan…",
+    "approved": "Na-verify ang pagkakakilanlan",
+    "submitted": "Naisumite ang beripikasyon",
+    "startFailed": "Hindi masimulan ang beripikasyon"
+  },
+  "limits": {
+    "title": "Mga limit sa paglalaro",
+    "description": "Lagyan ng limit ang puntos na ginagamit mo at ang laki ng bawat order. Epektibo ito simula sa susunod mong order.",
+    "daily": "Araw-araw (pts)",
+    "weekly": "Lingguhan (pts)",
+    "monthly": "Buwanan (pts)",
+    "maxOrder": "Pinakamalaking order (pts)",
+    "none": "Walang limit",
+    "save": "I-save ang mga limit",
+    "saved": "Na-save ang mga limit",
+    "saveFailed": "Hindi ma-save ang mga limit mo"
   }
 }

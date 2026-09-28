@@ -8,56 +8,108 @@
   "EMAIL_SETTINGS": "Email Settings",
   "DEPOSIT_LIMITS": "Point-Use Limits",
   "hub": {
-    "title": "帳戶",
-    "subtitle": "Profile, points, security, and notification preferences.",
-    "availableBalance": "Available points",
-    "manage": "管理"
+    "settings": "設定"
   },
   "actions": {
     "profile": {
-      "title": "个人资料",
-      "desc": "更新资料和账户设置"
-    },
-    "portfolio": {
-      "title": "投资组合",
-      "desc": "持仓、订单和已结算历史"
-    },
-    "walletActivity": {
-      "title": "Point ledger",
-      "desc": "Starter grants, predictions, and rewards"
+      "title": "個人資料",
+      "desc": "個人資訊、語言和隱私"
     },
     "security": {
       "title": "安全",
-      "desc": "密码、会话和登录保护"
+      "desc": "密碼、工作階段和登入保護"
     },
     "alerts": {
       "title": "提醒",
-      "desc": "管理市场和账户通知"
+      "desc": "管理市場和帳戶通知"
     },
     "responsible": {
-      "title": "理性参与",
-      "desc": "Point-use limits, cool-offs, and self-exclusion"
+      "title": "理性參與",
+      "desc": "參與限額、冷靜期和自我排除"
+    },
+    "points": {
+      "title": "點數明細",
+      "desc": "新手點數、預測和獎勵"
     }
   },
-  "privacy": {
-    "kicker": "隐私",
-    "title": "公开榜单显示",
-    "label": "在排行榜上匿名显示",
-    "descriptionBeforeRank": "开启后，你的用户名会在公开榜单中隐藏，并替换为你的排名（例如",
-    "rankExample": "交易者 #14",
-    "descriptionAfterRank": "）。你的排名和数据仍会显示；只隐藏昵称。",
-    "saveError": "无法保存该更改"
-  },
-  "portfolio": {
-    "kicker": "投资组合",
-    "title": "你的持仓概览",
-    "open": "打开投资组合"
-  },
   "stats": {
-    "invested": "已投入",
-    "realizedPnl": "已實現點數結果",
-    "openPositions": "未平仓持仓",
-    "accuracy": "准确率",
-    "noSettledMarkets": "还没有已结算市场"
+    "realizedPnl": "結算結果",
+    "accuracy": "準確率",
+    "noSettledMarkets": "還沒有已結算市場",
+    "available": "可用",
+    "positionsValue": "持倉價值",
+    "predictions": "預測",
+    "accuracyValue": "{{pct}}% · {{total}} 次中 {{correct}} 次"
+  },
+  "profile": {
+    "tabsLabel": "持倉和動態",
+    "tabs": {
+      "positions": "持倉",
+      "activity": "動態"
+    },
+    "view": {
+      "active": "進行中",
+      "closed": "已結束"
+    },
+    "fullPortfolio": "完整投資組合",
+    "col": {
+      "market": "市場",
+      "avg": "均價",
+      "now": "現價",
+      "value": "價值",
+      "result": "結果",
+      "returned": "返還"
+    },
+    "shares_one": "{{count}} 份",
+    "shares_other": "{{count}} 份",
+    "empty": {
+      "activeTitle": "暫無持倉",
+      "activeBody": "你選邊的市場會顯示在這裡，並附上當前價值。",
+      "closedTitle": "還沒有已結算的持倉",
+      "closedBody": "你持有的市場結算後，結果會顯示在這裡。",
+      "activityTitle": "暫無動態",
+      "activityBody": "你下的訂單會顯示在這裡。"
+    },
+    "browseMarkets": "瀏覽市場",
+    "result": {
+      "won": "猜中",
+      "lost": "未猜中",
+      "voided": "已作廢"
+    },
+    "status": {
+      "open": "掛單中",
+      "partial": "部分成交",
+      "cancelled": "已取消",
+      "expired": "已過期",
+      "rejected": "已拒絕"
+    },
+    "side": {
+      "yes": "是",
+      "no": "否"
+    },
+    "activity": {
+      "bought_one": "買入 {{count}} 份{{side}}",
+      "bought_other": "買入 {{count}} 份{{side}}",
+      "sold_one": "賣出 {{count}} 份{{side}}",
+      "sold_other": "賣出 {{count}} 份{{side}}"
+    },
+    "marketUnavailable": "市場詳情無法取得",
+    "joined": "{{date}} 加入",
+    "edit": "編輯資料"
+  },
+  "chart": {
+    "period": {
+      "1w": "1週",
+      "1m": "1月",
+      "all": "全部"
+    },
+    "caption": {
+      "1w": "過去一週",
+      "1m": "過去一個月",
+      "all": "全部時間"
+    },
+    "periodLabel": "時間段",
+    "label": "結算結果走勢",
+    "empty": "你持有的市場結算後，結果會在這裡繪製成圖。"
   }
 }

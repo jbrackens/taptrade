@@ -363,5 +363,20 @@
   "ACTIVITY_UP_BY_one": "naik {{count}}",
   "ACTIVITY_UP_BY_other": "naik {{count}}",
   "ACTIVITY_DOWN_BY_one": "turun {{count}}",
-  "ACTIVITY_DOWN_BY_other": "turun {{count}}"
+  "ACTIVITY_DOWN_BY_other": "turun {{count}}",
+  "SOCIAL_LOADING": "Memuat profil…",
+  "SOCIAL_PROFILE_LOAD_FAILED": "Profil tidak dapat dimuat.",
+  "SOCIAL_PROFILE_EMPTY": "Profil tidak tersedia.",
+  "SOCIAL_FOLLOW_FAILED": "Gagal mengikuti.",
+  "SOCIAL_FOLLOW_CTA": "Ikuti",
+  "SOCIAL_FOLLOWING_CTA": "Mengikuti",
+  "SOCIAL_ACTIVITY": "Aktivitas",
+  "SOCIAL_NO_ACTIVITY": "Belum ada aktivitas.",
+  "SOCIAL_LAST_ACTIVE": "Aktif {{when}}",
+  "SOCIAL_ACTIVITY_FOLLOW": "Mengikuti seorang pemain",
+  "SOCIAL_ACTIVITY_TRADE": "Membuat prediksi",
+  "SOCIAL_ACTIVITY_SETTLEMENT": "Market yang mereka pegang telah selesai",
+  "SOCIAL_ACTIVITY_REWARD": "Mendapatkan poin hadiah",
+  "SOCIAL_ACTIVITY_LEADERBOARD": "Masuk papan peringkat",
+  "SOCIAL_ACTIVITY_COMMENT": "Berkomentar"
 }
