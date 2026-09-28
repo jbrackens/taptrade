@@ -1,6 +1,6 @@
 {
   "PAGE_TITLE": "TapTrade Rewards",
-  "PAGE_SUBTITLE": "通过每笔已结算交易赚取积分，提升等级，并在使用过程中解锁更好的权益。",
+  "PAGE_SUBTITLE": "通过每笔已结算交易赚取 XP，提升等级，并在使用过程中解锁更好的权益。",
   "KICKER": "Rewards Center",
   "TIER_BADGE_PREFIX": "Current Tier",
   "STAT_BALANCE": "Points Balance",
@@ -57,18 +57,18 @@
   "kickerShort": "奖励",
   "loyaltyTitle": "忠诚度",
   "viewLeaderboards": "查看排行榜",
-  "pointsShort": "积分",
+  "pointsShort": "XP",
   "errors": {
     "loadRewards": "无法加载奖励"
   },
   "state": {
     "loading": "正在加载奖励…",
-    "signIn": "登录后查看你的等级、积分余额和近期活动。",
+    "signIn": "登录后查看你的等级、XP 和近期活动。",
     "login": "登录",
     "backToPortfolio": "返回投资组合"
   },
   "progress": {
-    "pointsTo": "还差 {{points}} 积分到",
+    "pointsTo": "还差 {{points}} XP 到",
     "topTier": "已达到最高等级，感谢你的交易。",
     "label": "等级进度"
   },
@@ -80,7 +80,7 @@
   },
   "prefirst": {
     "title": "暂无活动",
-    "body": "结算你的第一笔交易即可开始赚取积分并提升等级。",
+    "body": "结算你的第一笔交易即可开始赚取 XP 并提升等级。",
     "browse": "浏览市场"
   },
   "ledger": {
@@ -105,50 +105,50 @@
     "streak_other": "连续 {{count}} 天"
   },
   "dailyClaim": {
-    "body": "每天可领取一次仅用于预测的不可兑换游戏点数。",
+    "body": "每天可领取一次仅用于预测的不可兑换 Clout。",
     "cta": "今日领取",
     "claiming": "领取中",
     "claimed": "今日已领取",
-    "success": "今日领取已记录：{{points}} 点已计入你的点数明细。",
+    "success": "今日领取已记录：{{points}} Clout 已加入你的余额。",
     "error": "无法记录今日领取，请稍后再试。",
     "disabled": "每日领取暂不可用。"
   },
   "rewardLimit": {
     "title": "每日奖励上限",
-    "body": "今天还剩 {{remaining}} / {{limit}} 奖励点数。",
+    "body": "今天还剩 {{remaining}} / {{limit}} 奖励 Clout。",
     "reset": "{{date}} 重置"
   },
   "missions": {
     "title": "任务",
-    "body": "完成游戏任务，赚取不可兑换的奖励点数。",
+    "body": "完成游戏任务，赚取不可兑换的 Clout。",
     "progress": "已完成 {{progress}} / {{target}}",
     "cta": "领取",
     "claiming": "领取中",
     "claimed": "已领取",
     "incomplete": "未完成",
-    "success": "{{points}} 点已计入你的点数明细。",
+    "success": "{{points}} Clout 已加入你的余额。",
     "error": "无法记录任务奖励，请稍后再试。"
   },
   "streaks": {
     "title": "连续记录",
-    "body": "坚持每日领取游戏点数，赚取不可兑换的连续奖励。",
+    "body": "坚持每日领取 Clout，赚取不可兑换的连续奖励。",
     "progress": "{{current}} / {{target}} 天",
     "cta": "领取",
     "claiming": "领取中",
     "claimed": "已领取",
     "incomplete": "未完成",
-    "success": "{{points}} 点已计入你的点数明细。",
+    "success": "{{points}} Clout 已加入你的余额。",
     "error": "无法记录连续奖励，请稍后再试。"
   },
   "pointPacks": {
-    "title": "点数包",
-    "body": "领取仅用于预测的一次性游戏点数包。",
+    "title": "Clout 包",
+    "body": "领取仅用于预测的一次性 Clout 包。",
     "cta": "领取",
     "claiming": "领取中",
     "claimed": "已领取",
     "unavailable": "不可用",
-    "success": "{{points}} 点已计入你的点数明细。",
-    "error": "无法记录点数包，请稍后再试。"
+    "success": "{{points}} Clout 已加入你的余额。",
+    "error": "无法记录 Clout 包，请稍后再试。"
   },
   "badges": {
     "title": "徽章",
@@ -157,9 +157,9 @@
     "locked": "未解锁"
   },
   "activeBonuses": {
-    "title": "进行中的积分玩法加成",
-    "body": "查看推广游戏点数及其玩法进度。",
-    "fallbackName": "积分玩法加成",
+    "title": "进行中的 Clout 加成",
+    "body": "查看推广 Clout 及其进度。",
+    "fallbackName": "Clout 加成",
     "status": "状态：{{status}}",
     "remaining": "点剩余"
   }

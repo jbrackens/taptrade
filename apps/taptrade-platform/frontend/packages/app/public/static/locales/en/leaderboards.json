@@ -28,12 +28,12 @@
       "description": "Traders ranked by prediction accuracy."
     },
     "pnlWeekly": {
-      "name": "Weekly Points",
-      "description": "Predictors ranked by realized point result this week."
+      "name": "Weekly Clout",
+      "description": "Predictors ranked by net Clout from markets settled this week."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Predictors ranked by point efficiency on settled markets."
+      "description": "Predictors ranked by Clout efficiency on settled markets."
     },
     "category": {
       "name": "{{category}} Champions",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Accuracy",
-    "pnl": "Net points",
+    "pnl": "Net Clout",
     "sharpness": "Sharpness",
-    "category": "Net points"
+    "category": "Net Clout"
   },
   "qualification": {
     "accuracy": "Settle enough markets to qualify for accuracy rankings.",

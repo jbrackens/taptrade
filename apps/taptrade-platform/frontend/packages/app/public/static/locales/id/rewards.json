@@ -1,6 +1,6 @@
 {
   "PAGE_TITLE": "TapTrade Rewards",
-  "PAGE_SUBTITLE": "Kumpulkan poin dari setiap trade selesai, naik tier, dan buka manfaat yang lebih baik saat bermain.",
+  "PAGE_SUBTITLE": "Kumpulkan XP dari setiap trade selesai, naik tier, dan buka manfaat yang lebih baik saat bermain.",
   "KICKER": "Pusat Reward",
   "TIER_BADGE_PREFIX": "Tier Saat Ini",
   "STAT_BALANCE": "Saldo Poin",
@@ -57,18 +57,18 @@
   "kickerShort": "Reward",
   "loyaltyTitle": "Loyalitas",
   "viewLeaderboards": "Lihat leaderboard",
-  "pointsShort": "pts",
+  "pointsShort": "XP",
   "errors": {
     "loadRewards": "Gagal memuat reward"
   },
   "state": {
     "loading": "Memuat reward…",
-    "signIn": "Login untuk melihat tier, saldo poin, dan aktivitas terbaru Anda.",
+    "signIn": "Login untuk melihat tier, XP, dan aktivitas terbaru Anda.",
     "login": "Login",
     "backToPortfolio": "Kembali ke portofolio"
   },
   "progress": {
-    "pointsTo": "{{points}} pts ke",
+    "pointsTo": "{{points}} XP ke",
     "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami.",
     "label": "Progres tingkat"
   },
@@ -80,7 +80,7 @@
   },
   "prefirst": {
     "title": "Belum ada aktiviti",
-    "body": "Selesaikan dagangan pertama untuk mula mendapat mata dan naik tier.",
+    "body": "Selesaikan trade pertama Anda untuk mulai mengumpulkan XP dan naik tier.",
     "browse": "Lihat pasaran"
   },
   "ledger": {
@@ -105,50 +105,50 @@
     "streak_other": "{{count}} hari berturut-turut"
   },
   "dailyClaim": {
-    "body": "Klaim poin permainan yang tidak dapat ditukar sekali sehari, khusus untuk prediksi.",
+    "body": "Klaim Clout yang tidak dapat ditukar sekali sehari, khusus untuk prediksi.",
     "cta": "Klaim hari ini",
     "claiming": "Mengklaim",
     "claimed": "Sudah diklaim hari ini",
-    "success": "Klaim hari ini tercatat: {{points}} poin ditambahkan ke riwayat poin Anda.",
+    "success": "Klaim hari ini tercatat: {{points}} Clout ditambahkan ke saldo Anda.",
     "error": "Klaim harian tidak dapat dicatat. Coba lagi sebentar.",
     "disabled": "Klaim harian sedang tidak tersedia."
   },
   "rewardLimit": {
     "title": "Batas hadiah harian",
-    "body": "Sisa {{remaining}} dari {{limit}} poin hadiah untuk hari ini.",
+    "body": "Sisa {{remaining}} dari {{limit}} Clout hadiah untuk hari ini.",
     "reset": "Direset {{date}}"
   },
   "missions": {
     "title": "Misi",
-    "body": "Selesaikan misi permainan untuk mendapatkan poin hadiah yang tidak dapat ditukar.",
+    "body": "Selesaikan misi permainan untuk mendapatkan Clout yang tidak dapat ditukar.",
     "progress": "{{progress}} / {{target}} selesai",
     "cta": "Klaim",
     "claiming": "Mengklaim",
     "claimed": "Sudah diklaim",
     "incomplete": "Belum selesai",
-    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
+    "success": "{{points}} Clout ditambahkan ke saldo Anda.",
     "error": "Hadiah misi tidak dapat dicatat. Coba lagi sebentar."
   },
   "streaks": {
     "title": "Beruntun",
-    "body": "Terus klaim poin permainan harian untuk mendapatkan hadiah beruntun yang tidak dapat ditukar.",
+    "body": "Terus klaim Clout harian untuk mendapatkan hadiah beruntun yang tidak dapat ditukar.",
     "progress": "{{current}} / {{target}} hari",
     "cta": "Klaim",
     "claiming": "Mengklaim",
     "claimed": "Sudah diklaim",
     "incomplete": "Belum selesai",
-    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
+    "success": "{{points}} Clout ditambahkan ke saldo Anda.",
     "error": "Hadiah beruntun tidak dapat dicatat. Coba lagi sebentar."
   },
   "pointPacks": {
-    "title": "Paket poin",
-    "body": "Klaim paket poin permainan sekali pakai, khusus untuk prediksi.",
+    "title": "Paket Clout",
+    "body": "Klaim paket Clout sekali pakai, khusus untuk prediksi.",
     "cta": "Klaim",
     "claiming": "Mengklaim",
     "claimed": "Sudah diklaim",
     "unavailable": "Tidak tersedia",
-    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
-    "error": "Paket poin tidak dapat dicatat. Coba lagi sebentar."
+    "success": "{{points}} Clout ditambahkan ke saldo Anda.",
+    "error": "Paket Clout tidak dapat dicatat. Coba lagi sebentar."
   },
   "badges": {
     "title": "Lencana",
@@ -157,10 +157,10 @@
     "locked": "Terkunci"
   },
   "activeBonuses": {
-    "title": "Bonus main poin yang aktif",
-    "body": "Pantau poin permainan promosi dan progres permainannya.",
-    "fallbackName": "Bonus main poin",
+    "title": "Bonus Clout yang aktif",
+    "body": "Pantau Clout promosi dan progresnya.",
+    "fallbackName": "Bonus Clout",
     "status": "Status: {{status}}",
-    "remaining": "poin tersisa"
+    "remaining": "Clout tersisa"
   }
 }

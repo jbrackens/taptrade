@@ -40,13 +40,13 @@ export function pointLedgerTypeLabel(tx: PointLedgerTransaction): string {
     tx.type.toLowerCase() === "reservation" &&
     fingerprint.includes("prediction order")
   ) {
-    return "Order points locked";
+    return "Order Clout locked";
   }
   if (
     tx.type.toLowerCase() === "release" &&
     fingerprint.includes("prediction order")
   ) {
-    return "Order points unlocked";
+    return "Order Clout unlocked";
   }
   if (
     tx.type.toLowerCase() === "debit" &&
@@ -64,23 +64,23 @@ export function pointLedgerTypeLabel(tx: PointLedgerTransaction): string {
     tx.type.toLowerCase() === "credit" &&
     isPredictionSettlementFingerprint(fingerprint)
   ) {
-    return "Settlement points";
+    return "Settlement Clout";
   }
-  if (fingerprint.includes("starter grant")) return "Starter points";
-  if (fingerprint.includes("daily claim")) return "Daily points";
-  if (fingerprint.includes("point pack grant")) return "Point pack";
+  if (fingerprint.includes("starter grant")) return "Starter Clout";
+  if (fingerprint.includes("daily claim")) return "Daily Clout";
+  if (fingerprint.includes("point pack grant")) return "Clout pack";
   // Point Store credits (reasons: point_pack_purchase / promo_bonus, keys:
   // store_purchase:<id>[:bonus]) — purchased vs bonus stay distinguishable.
-  if (fingerprint.includes("promo bonus")) return "Bonus points";
-  if (fingerprint.includes("point pack purchase")) return "Point pack purchase";
+  if (fingerprint.includes("promo bonus")) return "Bonus Clout";
+  if (fingerprint.includes("point pack purchase")) return "Clout pack purchase";
   if (fingerprint.includes("mission reward")) return "Mission reward";
   if (fingerprint.includes("streak reward")) return "Streak reward";
 
   const normalized = tx.type.toLowerCase().replace(/_/g, " ");
-  if (normalized === "credit") return "Points added";
-  if (normalized === "debit") return "Points used";
-  if (normalized === "reservation") return "Points locked";
-  if (normalized === "release") return "Points unlocked";
+  if (normalized === "credit") return "Clout added";
+  if (normalized === "debit") return "Clout used";
+  if (normalized === "reservation") return "Clout locked";
+  if (normalized === "release") return "Clout unlocked";
   return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -92,12 +92,12 @@ export function pointLedgerDetailLabel(tx: PointLedgerTransaction): string {
   if (fingerprint.includes("prediction fill proceeds")) return "Trade proceeds";
   if (fingerprint.includes("prediction fill")) return "Trade fill";
   if (fingerprint.includes("prediction order")) return "Prediction order";
-  if (fingerprint.includes("starter grant")) return "Starter point grant";
+  if (fingerprint.includes("starter grant")) return "Starter Clout grant";
   if (fingerprint.includes("daily claim")) return "Daily claim";
-  if (fingerprint.includes("point pack grant")) return "Point pack grant";
-  if (fingerprint.includes("promo bonus")) return "Promotional bonus points";
+  if (fingerprint.includes("point pack grant")) return "Clout pack grant";
+  if (fingerprint.includes("promo bonus")) return "Promotional bonus Clout";
   if (fingerprint.includes("point pack purchase")) {
-    return "Point pack purchase";
+    return "Clout pack purchase";
   }
   if (fingerprint.includes("mission reward")) return "Mission reward";
   if (fingerprint.includes("streak reward")) return "Streak reward";

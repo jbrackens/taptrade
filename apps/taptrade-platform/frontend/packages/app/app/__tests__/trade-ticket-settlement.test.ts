@@ -60,16 +60,16 @@ describe("§3-03 quote freeze", () => {
       ticket,
       /const frozenQuote = quotePending \? lastSettledQuoteRef\.current : null/,
     );
-    assert.match(ticket, /<PointsFlow value=\{displaySpend\} suffix=" pts" \/>/);
+    assert.match(ticket, /<PointsFlow value=\{displaySpend\} suffix=" Clout" \/>/);
     assert.match(
       ticket,
-      /<PointsFlow value=\{displayPointsIfCorrect\} suffix=" pts" \/>/,
+      /<PointsFlow value=\{displayPointsIfCorrect\} suffix=" Clout" \/>/,
     );
   });
 
   it("no longer swaps the price to loading text — the figure holds", () => {
     assert.ok(!ticket.includes('previewLoading ? t("LOADING")'));
-    assert.match(ticket, /\{displayPrice\} pts/);
+    assert.match(ticket, /\{displayPrice\} Clout/);
     assert.doesNotMatch(ticket, /¢/);
   });
 
@@ -129,7 +129,7 @@ describe("§3-06 settled payout band (Settlement 12a/12b/12e)", () => {
       "voided hero is the raised neutral, not a direction tint",
     );
     assert.match(band, /voided \? "—"/, "dash where the settle price would be");
-    assert.match(band, /voided \? "0 pts"/, "result stated as 0, never blank");
+    assert.match(band, /voided \? "0 Clout"/, "result stated as 0, never blank");
     assert.match(band, /ROW_RETURNED.*: t\("ROW_PAID"\)/s);
   });
 

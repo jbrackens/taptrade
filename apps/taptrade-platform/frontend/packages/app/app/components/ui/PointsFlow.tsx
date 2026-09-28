@@ -28,14 +28,20 @@ export interface PointsFlowProps {
   /** Rendered inside the flow so it never wraps away from the number. */
   suffix?: string;
   className?: string;
+  /** "1.5M" instead of "1,500,742" — for tight chrome like the header chip. */
+  compact?: boolean;
 }
 
-export function PointsFlow({ value, suffix, className }: PointsFlowProps) {
+export function PointsFlow({ value, suffix, className, compact = false }: PointsFlowProps) {
   return (
     <NumberFlow
       value={Math.round(value)}
       locales="en-US"
-      format={{ useGrouping: true, maximumFractionDigits: 0 }}
+      format={
+        compact
+          ? { notation: "compact", maximumFractionDigits: 1 }
+          : { useGrouping: true, maximumFractionDigits: 0 }
+      }
       suffix={suffix}
       transformTiming={SUBDUED}
       spinTiming={SUBDUED}

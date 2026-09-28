@@ -1,21 +1,21 @@
 {
-  "kicker": "Point Store",
-  "title": "Add Points",
-  "ledgerLink": "View point ledger",
+  "kicker": "Clout Store",
+  "title": "Get Clout",
+  "ledgerLink": "View Clout history",
   "packs": {
-    "heading": "Point packs",
-    "unit": "pts",
-    "base": "{{points}} base points",
-    "bonus": "+{{points}} bonus points",
+    "heading": "Clout packs",
+    "unit": "Clout",
+    "base": "{{points}} base Clout",
+    "bonus": "+{{points}} bonus Clout",
     "priceLabel": "Price",
-    "firstPurchase": "This would be your first point pack purchase."
+    "firstPurchase": "This would be your first Clout pack purchase."
   },
   "summary": {
     "title": "Order summary",
-    "pack": "Point pack",
-    "base": "Base points",
-    "bonus": "Bonus points",
-    "total": "Total points",
+    "pack": "Clout pack",
+    "base": "Base Clout",
+    "bonus": "Bonus Clout",
+    "total": "Total Clout",
     "price": "Price",
     "status": "Status",
     "continue": "Continue to checkout"
@@ -29,7 +29,7 @@
   "checkout": {
     "banner": "Demo checkout — simulated, no real charge",
     "title": "Simulated checkout",
-    "subtitle": "Pick an outcome below to finish this simulated checkout. Points are added only on a completed checkout.",
+    "subtitle": "Pick an outcome below to finish this simulated checkout. Clout is added only on a completed checkout.",
     "orderRef": "Order reference",
     "provider": "Provider",
     "providerDemo": "Demo (simulated)",
@@ -42,42 +42,42 @@
     "processing": "Processing…"
   },
   "result": {
-    "successTitle": "Points added",
-    "successBody": "{{points}} pts were added to your balance.",
-    "successToast": "+{{points}} pts from the {{pack}} pack",
+    "successTitle": "Clout added",
+    "successBody": "{{points}} Clout added to your balance.",
+    "successToast": "+{{points}} Clout from the {{pack}} pack",
     "newBalance": "New balance",
-    "viewLedger": "View point ledger",
+    "viewLedger": "View Clout history",
     "returnToMarket": "Return to market",
     "backToStore": "Back to store",
     "failedTitle": "Checkout did not complete",
-    "failedBody": "{{reason}} No points were added. You can start a new checkout for the same pack.",
+    "failedBody": "{{reason}} No Clout was added. You can start a new checkout for the same pack.",
     "failedReasonFallback": "The simulated checkout did not complete.",
     "retry": "Try again",
     "canceledTitle": "Checkout canceled",
-    "canceledBody": "This simulated checkout was canceled. No points were added.",
+    "canceledBody": "This simulated checkout was canceled. No Clout was added.",
     "backToSummary": "Back to order summary",
     "pendingTitle": "Completion pending",
-    "pendingBody": "The simulated provider reported a delay. Points are added only once the checkout completes — check the status below.",
+    "pendingBody": "The simulated provider reported a delay. Clout is added only once the checkout completes — check the status below.",
     "checkStatus": "Check status",
     "checking": "Checking…"
   },
   "how": {
-    "title": "How points work"
+    "title": "How Clout works"
   },
   "state": {
-    "loading": "Loading the point store…",
+    "loading": "Loading the Clout store…",
     "loadingPurchase": "Checking your order…",
-    "signIn": "Sign in to browse point packs and add points to your balance.",
+    "signIn": "Sign in to browse Clout packs and add Clout to your balance.",
     "login": "Log in",
-    "error": "The point store could not load.",
+    "error": "The Clout store could not load.",
     "purchaseError": "This purchase could not be loaded.",
     "checkoutError": "Checkout could not be started.",
     "confirmError": "The simulated outcome failed.",
     "retry": "Try again"
   },
   "entry": {
-    "addPoints": "Add Points",
-    "needMore": "Need more points?",
-    "visitStore": "Visit the Point Store"
+    "addPoints": "Get Clout",
+    "needMore": "Need more Clout?",
+    "visitStore": "Visit the Clout Store"
   }
 }

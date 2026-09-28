@@ -364,11 +364,11 @@ function LiquiditySnapshot({
   const metrics = [
     {
       label: t("YES_PRICE", "YES price"),
-      value: `${market.yesPricePoints} pts`,
+      value: `${market.yesPricePoints} Clout`,
     },
     {
       label: t("NO_PRICE", "NO price"),
-      value: `${market.noPricePoints} pts`,
+      value: `${market.noPricePoints} Clout`,
     },
     {
       label: t("VISIBLE_LIQUIDITY", "Liquidity"),
@@ -444,7 +444,7 @@ function AMMCurve({
             {t("AMM_PRICE_MARKER", "Price marker")}
           </span>
           <span className={AMM_CURVE_VALUE_CLASS}>
-            {t("YES_PRICE_VALUE", "YES {{price}} pts", {
+            {t("YES_PRICE_VALUE", "YES {{price}} Clout", {
               price: Math.round(yesPrice),
             })}
           </span>
@@ -464,8 +464,8 @@ function AMMCurve({
           />
         </div>
         <div className={AMM_CURVE_AXIS_CLASS}>
-          <span>0 pts</span>
-          <span>100 pts</span>
+          <span>0 Clout</span>
+          <span>100 Clout</span>
         </div>
       </div>
 
@@ -570,7 +570,7 @@ function AMMCurve({
                     {formatCompactPoints(totalCost)}
                   </span>
                   <span className={AMM_QUOTE_VALUE_CLASS}>
-                    {t("AMM_AFTER_IMPACT", "{{avg}} pts avg → {{after}} pts", {
+                    {t("AMM_AFTER_IMPACT", "{{avg}} Clout avg → {{after}} Clout", {
                       avg: avgPrice,
                       after: afterPrice,
                       impact,
@@ -1609,7 +1609,7 @@ export default function MarketDetailPage() {
                     <div className={RELATED_QUESTION_CLASS}>{m.title}</div>
                     <div className={RELATED_LINE_CLASS}>
                       <span className={RELATED_YES_CLASS}>
-                        {t("YES")} {m.yesPricePoints} pts
+                        {t("YES")} {m.yesPricePoints} Clout
                       </span>
                       <span>
                         {t("VOLUME_VALUE", {

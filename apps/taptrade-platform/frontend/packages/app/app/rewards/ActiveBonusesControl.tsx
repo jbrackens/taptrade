@@ -24,12 +24,12 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
   return (
     <section className={CLAIM_WRAP_CLASS}>
       <h2 className={CLAIM_TITLE_CLASS}>
-        {t("activeBonuses.title", "Active point-play bonuses")}
+        {t("activeBonuses.title", "Active Clout bonuses")}
       </h2>
       <p className={CLAIM_BODY_CLASS}>
         {t(
           "activeBonuses.body",
-          "Track promotional gameplay points and their point-play progress.",
+          "Track promotional Clout and its progress.",
         )}
       </p>
       <div className={PACKS_LIST_CLASS}>
@@ -38,7 +38,7 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
             <div className="min-w-0 flex-1">
               <p className={PACK_NAME_CLASS}>
                 {bonus.campaignName ||
-                  t("activeBonuses.fallbackName", "Point-play bonus")}
+                  t("activeBonuses.fallbackName", "Clout bonus")}
               </p>
               <p className={PACK_DESC_CLASS}>
                 {t("activeBonuses.status", "Status: {{status}}", {
@@ -59,7 +59,7 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
                 {formatPointsAmount(bonus.remainingPoints)}
               </div>
               <div className={MISSION_PROGRESS_CLASS}>
-                {t("activeBonuses.remaining", "pts remaining")}
+                {t("activeBonuses.remaining", "Clout remaining")}
               </div>
             </div>
           </div>

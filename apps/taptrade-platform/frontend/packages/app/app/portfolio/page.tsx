@@ -257,7 +257,7 @@ export default function PortfolioPage() {
           className="shrink-0 text-[13px]"
           render={<Link href="/store" data-testid="add-points-portfolio" />}
         >
-          {tStore("entry.addPoints", "Add Points")}
+          {tStore("entry.addPoints", "Get Clout")}
         </Button>
       </header>
 
@@ -325,7 +325,7 @@ function SummaryStrip({
     <section className="mb-6 grid grid-cols-5 gap-[14px] max-lg:grid-cols-3 max-[720px]:grid-cols-2">
       <StatCard
         label={t("summary.invested", "Invested")}
-        value={s ? <PointsFlow value={s.totalValuePoints} suffix=" pts" /> : "—"}
+        value={s ? <PointsFlow value={s.totalValuePoints} suffix=" Clout" /> : "—"}
       />
       {/* Step 4 (11a): Unrealized answers "am I up?" — the question the
           old Open-positions COUNT (redundant with the tab badge) didn't. */}
@@ -339,7 +339,7 @@ function SummaryStrip({
         tone={unrealized !== null ? (unrealUp ? "yes" : "no") : undefined}
       />
       <StatCard
-        label={t("summary.realizedPnl", "Realized point result")}
+        label={t("summary.realizedPnl", "Realized net Clout")}
         value={s ? `${pnlUp ? "+" : "−"}${formatPoints(Math.abs(pnl))}` : "—"}
         tone={s ? (pnlUp ? "yes" : "no") : undefined}
       />
@@ -421,7 +421,7 @@ function formatBoardLabel(
     case "accuracy":
       return t("boards.accuracy", "Accuracy");
     case "pnl_weekly":
-      return t("boards.pnlWeekly", "Weekly point result");
+      return t("boards.pnlWeekly", "Weekly net Clout");
     case "sharpness":
       return t("boards.sharpness", "Sharpness");
     default:
@@ -439,13 +439,13 @@ function formatBoardMetric(
         value: entry.metricValue.toFixed(1),
       });
     case "sharpness":
-      return t("rank.metricSharpness", "{{value}}% point efficiency", {
+      return t("rank.metricSharpness", "{{value}}% Clout efficiency", {
         value: (entry.metricValue * 100).toFixed(2),
       });
     // pnl_weekly is the default metric shape.
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
-      return t("rank.metricPnl", "{{value}} point result", {
+      return t("rank.metricPnl", "{{value}} net Clout", {
         value: `${sign}${formatPoints(Math.abs(entry.metricValue))}`,
       });
     }
@@ -724,7 +724,7 @@ function OrdersTable({
       onCancelled(orderID);
       toast.success(
         t("orders.cancelled", "Order cancelled"),
-        t("orders.released", "Reserved points unlocked on {{ticker}}", {
+        t("orders.released", "Reserved Clout unlocked on {{ticker}}", {
           ticker: marketTicker,
         }),
       );
@@ -848,7 +848,7 @@ function HistoryTable({
             <div className="mt-3.5 flex items-end justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[11px] font-medium text-[var(--t3)]">
-                  {t("table.pnl", "Point result")}
+                  {t("table.pnl", "Net Clout")}
                 </div>
                 <div
                   className={cx(
@@ -879,7 +879,7 @@ function HistoryTable({
               <ThreeUp
                 label={t("history.paid", "Paid")}
                 value={
-                  rawPoints && rawPoints > 0 ? formatPoints(rawPoints) : "0 pts"
+                  rawPoints && rawPoints > 0 ? formatPoints(rawPoints) : "0 Clout"
                 }
               />
             </div>
@@ -969,7 +969,7 @@ function SideChip({ side }: { side: "yes" | "no" }) {
  * future additions don't render blank.
  */
 const FAILURE_REASON_TEXT: Record<string, string> = {
-  price_band_violation: "price out of bounds (1–99 pts)",
+  price_band_violation: "price out of bounds (1–99 Clout)",
   post_only_would_take: "post-only would have crossed the book",
   self_match_rejected: "blocked: would have crossed your own order",
   closed_market: "market is no longer open",

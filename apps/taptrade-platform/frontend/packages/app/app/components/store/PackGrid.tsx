@@ -58,7 +58,7 @@ export function PackGrid({ packs, selectedPackId, onSelect }: PackGridProps) {
     <div
       className={GRID_CLASS}
       role="group"
-      aria-label={t("packs.heading", "Point packs")}
+      aria-label={t("packs.heading", "Clout packs")}
     >
       {packs.map((pack) => {
         const selected = pack.id === selectedPackId;
@@ -81,16 +81,16 @@ export function PackGrid({ packs, selectedPackId, onSelect }: PackGridProps) {
             </span>
             <span className={TOTAL_CLASS}>
               {formatPointsAmount(pack.totalPoints)}
-              <span className={TOTAL_UNIT_CLASS}>{t("packs.unit", "pts")}</span>
+              <span className={TOTAL_UNIT_CLASS}>{t("packs.unit", "Clout")}</span>
             </span>
             <span className={SPLIT_CLASS}>
-              {t("packs.base", "{{points}} base points", {
+              {t("packs.base", "{{points}} base Clout", {
                 points: formatPointsAmount(pack.basePoints),
               })}
             </span>
             {pack.bonusPoints > 0 ? (
               <span className={BONUS_CLASS}>
-                {t("packs.bonus", "+{{points}} bonus points", {
+                {t("packs.bonus", "+{{points}} bonus Clout", {
                   points: formatPointsAmount(pack.bonusPoints),
                 })}
               </span>

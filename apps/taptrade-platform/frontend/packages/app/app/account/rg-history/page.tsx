@@ -9,6 +9,7 @@ import { Button } from "../../components/ui";
 import { getLimitsHistory } from "../../lib/api/compliance-client";
 import type { LimitHistoryItem } from "../../lib/api/compliance-client";
 import { FEATURE_RG } from "../../lib/features";
+import { CURRENCY_NAME } from "../../lib/points";
 import { SettingsShell } from "../../components/account/SettingsShell";
 
 interface GroupedHistory {
@@ -118,7 +119,7 @@ function RGHistoryPageContent() {
                         ? item.oldValue
                           ? "Enabled"
                           : "Disabled"
-                        : `${item.oldValue} pts`
+                        : `${item.oldValue} ${CURRENCY_NAME}`
                       : "—"}
                   </td>
                   <td className={`${tableCellClass} font-mono tabular-nums`}>
@@ -127,7 +128,7 @@ function RGHistoryPageContent() {
                         ? item.newValue
                           ? "Enabled"
                           : "Disabled"
-                        : `${item.newValue} pts`
+                        : `${item.newValue} ${CURRENCY_NAME}`
                       : "—"}
                   </td>
                   <td className={`${tableCellClass} font-mono text-[12.5px] text-[var(--t2)]`}>

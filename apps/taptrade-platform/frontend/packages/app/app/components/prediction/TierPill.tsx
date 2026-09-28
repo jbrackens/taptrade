@@ -127,7 +127,7 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
         ·
       </span>
       <span className={`${TIER_POINTS_CLASS} max-[480px]:hidden`}>
-        {formatPoints(points)} pts
+        {formatPoints(points)} XP
       </span>
       <span
         className={`${TIER_POINTS_CLASS} min-[481px]:hidden max-[419px]:hidden`}

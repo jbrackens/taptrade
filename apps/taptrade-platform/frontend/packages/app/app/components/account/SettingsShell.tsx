@@ -30,7 +30,7 @@ const NAV: {
   { id: "profile", href: "/account/settings", icon: UserRound, key: "nav.profile", fallback: "Profile" },
   { id: "security", href: "/account/security", icon: Lock, key: "nav.security", fallback: "Security" },
   { id: "alerts", href: "/account/notifications", icon: Bell, key: "nav.alerts", fallback: "Alerts" },
-  { id: "ledger", href: "/account/transactions", icon: ReceiptText, key: "nav.ledger", fallback: "Point ledger" },
+  { id: "ledger", href: "/account/transactions", icon: ReceiptText, key: "nav.ledger", fallback: "Clout history" },
   {
     id: "responsible",
     href: "/responsible-gaming",
@@ -46,7 +46,7 @@ const SECTION_COPY: Record<SettingsSection, [string, string, string, string]> = 
   profile: ["profile.title", "Profile", "profile.subtitle", "Your details, language and privacy."],
   security: ["security.title", "Security", "security.subtitle", "Password, two-factor authentication and active sessions."],
   alerts: ["alerts.title", "Alerts", "alerts.subtitle", "Choose how you hear about markets and your account."],
-  ledger: ["ledger.title", "Point ledger", "ledger.subtitle", "Every point in and out of your account."],
+  ledger: ["ledger.title", "Clout history", "ledger.subtitle", "Every bit of Clout in and out of your account."],
   responsible: ["responsible.title", "Play responsibly", "responsible.subtitle", "Limits, cool-offs and self-exclusion."],
 };
 

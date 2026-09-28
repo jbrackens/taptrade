@@ -21,6 +21,8 @@ import { PlusIcon as Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { UserIcon } from "@phosphor-icons/react/dist/csr/User";
 import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
 import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
+import { FlameIcon as Flame } from "@phosphor-icons/react/dist/csr/Flame";
+import { CURRENCY_NAME, formatPointsAmount } from "../../lib/points";
 import { ListIcon as MenuLines } from "@phosphor-icons/react/dist/csr/List";
 import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
@@ -167,8 +169,10 @@ const TOP_BAR_BALANCE_CLASS =
 // Ultra-narrow (<360px): the pill row keeps only what matters — the
 // loyalty pill hides (TierPill max-[359px]:hidden, /rewards stays in the
 // menu) and the BAL label drops so the number itself never crushes.
+// The Clout mark: a flame in Kilig pink (identity), replacing the old
+// "BAL … pts" labels that read as unfinished (2026-09-28).
 const TOP_BAR_BALANCE_LABEL_CLASS =
-  "text-[11px] font-medium text-[var(--t3)] font-sans max-[359px]:hidden";
+  "inline-flex text-[var(--kilig)] max-[359px]:hidden";
 // Compact "Add Points" entry to /store, always adjacent to the balance
 // chip. The top bar is already width-tight at common desktop sizes (search
 // + tier pill + balance), so the label only appears on wide desktops and
@@ -616,10 +620,15 @@ export function TopBar() {
               <Link
                 href="/store"
                 className={TOP_BAR_BALANCE_CLASS}
-                aria-label={t("OPEN_POINT_STORE", "Open the Point Store")}
+                aria-label={
+                  typeof balance === "number"
+                    ? `${formatPointsAmount(balance)} ${CURRENCY_NAME} · ${t("OPEN_POINT_STORE", "Get more Clout")}`
+                    : t("OPEN_POINT_STORE", "Get more Clout")
+                }
+                title={typeof balance === "number" ? `${formatPointsAmount(balance)} ${CURRENCY_NAME}` : undefined}
               >
-                <span className={TOP_BAR_BALANCE_LABEL_CLASS}>
-                  {t("BALANCE_LABEL")}
+                <span className={TOP_BAR_BALANCE_LABEL_CLASS} aria-hidden="true">
+                  <Flame size={16} weight="fill" />
                 </span>
                 <span>
                   {/*
@@ -633,8 +642,10 @@ export function TopBar() {
                   */}
                   {typeof balance === "number" ? (
                     <>
-                      <PointsFlow value={balance} />
-                      <span className="max-[419px]:hidden">&nbsp;pts</span>
+                      {/* Large balances read as 1.5M; the exact figure is
+                          in the chip's label and on Account. */}
+                      <PointsFlow value={balance} compact={balance >= 100_000} />
+                      <span className="sr-only">&nbsp;{CURRENCY_NAME}</span>
                     </>
                   ) : (
                     "—"
@@ -649,13 +660,13 @@ export function TopBar() {
                   <Link
                     href="/store"
                     data-testid="add-points-topbar"
-                    aria-label={t("ADD_POINTS", "Add Points")}
+                    aria-label={t("ADD_POINTS", "Get Clout")}
                   />
                 }
               >
                 <Plus size={14} aria-hidden="true" />
                 <span className="max-[1359px]:hidden">
-                  {t("ADD_POINTS", "Add Points")}
+                  {t("ADD_POINTS", "Get Clout")}
                 </span>
               </Button>
             </>
@@ -728,7 +739,7 @@ export function TopBar() {
                     className={TOP_BAR_MENU_ITEM_CLASS}
                     onClick={() => setUserMenuOpen(false)}
                   >
-                    <Plus size={14} /> {t("ADD_POINTS", "Add Points")}
+                    <Plus size={14} /> {t("ADD_POINTS", "Get Clout")}
                   </Link>
                   <div className={TOP_BAR_MENU_DIVIDER_CLASS} />
                   <button

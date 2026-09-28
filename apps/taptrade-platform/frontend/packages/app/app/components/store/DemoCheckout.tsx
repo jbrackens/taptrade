@@ -64,7 +64,7 @@ export function DemoCheckout({
         <p className={PANEL_SUB_CLASS}>
           {t(
             "checkout.subtitle",
-            "Pick an outcome below to finish this simulated checkout. Points are added only on a completed checkout.",
+            "Pick an outcome below to finish this simulated checkout. Clout is added only on a completed checkout.",
           )}
         </p>
         <div className={REF_ROW_CLASS}>

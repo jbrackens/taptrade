@@ -28,12 +28,12 @@
       "description": "Mga trader na niraranggo ayon sa prediction accuracy."
     },
     "pnlWeekly": {
-      "name": "Lingguhang Puntos",
-      "description": "Mga predictor na niraranggo ayon sa realized point result ngayong linggo."
+      "name": "Lingguhang Clout",
+      "description": "Mga predictor na niraranggo ayon sa net na Clout mula sa mga market na na-settle ngayong linggo."
     },
     "sharpness": {
       "name": "Sharpness score",
-      "description": "Mga predictor na niraranggo ayon sa point efficiency sa settled markets."
+      "description": "Mga predictor na niraranggo ayon sa Clout efficiency sa mga settled market."
     },
     "category": {
       "name": "{{category}} Champions",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Katumpakan",
-    "pnl": "Net points",
+    "pnl": "Net na Clout",
     "sharpness": "Sharpness score",
-    "category": "Net points"
+    "category": "Net na Clout"
   },
   "qualification": {
     "accuracy": "Mag-settle ng sapat na markets para mag-qualify sa accuracy rankings.",

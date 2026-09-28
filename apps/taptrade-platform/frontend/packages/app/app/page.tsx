@@ -8,11 +8,11 @@ import WelcomePage from "./components/welcome/WelcomePage";
 export const metadata: Metadata = {
   title: "TapTrade — Call it before it happens",
   description:
-    "Pick Yes or No on the moments Filipinos are talking about: basketball, esports, pageants, showbiz and more. Free to play with points. 18+.",
+    "Pick Yes or No on the moments Filipinos are talking about: basketball, esports, pageants, showbiz and more. Free to play with Clout. 18+.",
   openGraph: {
     title: "TapTrade — Call it before it happens",
     description:
-      "Pick Yes or No on the moments Filipinos are talking about. Free to play with points. 18+.",
+      "Pick Yes or No on the moments Filipinos are talking about. Free to play with Clout. 18+.",
     images: ["/images/covers/showbiz.jpg"],
   },
 };

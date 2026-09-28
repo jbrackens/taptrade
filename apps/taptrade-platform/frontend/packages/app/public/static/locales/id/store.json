@@ -1,21 +1,21 @@
 {
-  "kicker": "Toko Poin",
-  "title": "Tambah Poin",
-  "ledgerLink": "Lihat riwayat poin",
+  "kicker": "Toko Clout",
+  "title": "Dapatkan Clout",
+  "ledgerLink": "Lihat riwayat Clout",
   "packs": {
-    "heading": "Paket poin",
-    "unit": "pts",
-    "base": "{{points}} poin dasar",
-    "bonus": "+{{points}} poin bonus",
+    "heading": "Paket Clout",
+    "unit": "Clout",
+    "base": "{{points}} Clout dasar",
+    "bonus": "+{{points}} Clout bonus",
     "priceLabel": "Harga",
-    "firstPurchase": "Ini akan menjadi pembelian paket poin pertama Anda."
+    "firstPurchase": "Ini akan menjadi pembelian paket Clout pertama Anda."
   },
   "summary": {
     "title": "Ringkasan pesanan",
-    "pack": "Paket poin",
-    "base": "Poin dasar",
-    "bonus": "Poin bonus",
-    "total": "Total poin",
+    "pack": "Paket Clout",
+    "base": "Clout dasar",
+    "bonus": "Clout bonus",
+    "total": "Total Clout",
     "price": "Harga",
     "status": "Status",
     "continue": "Lanjut ke checkout"
@@ -29,7 +29,7 @@
   "checkout": {
     "banner": "Checkout demo — hanya simulasi, tanpa tagihan sungguhan",
     "title": "Checkout simulasi",
-    "subtitle": "Pilih hasil di bawah untuk menyelesaikan checkout simulasi ini. Poin hanya ditambahkan setelah checkout selesai.",
+    "subtitle": "Pilih hasil di bawah untuk menyelesaikan checkout simulasi ini. Clout hanya ditambahkan setelah checkout selesai.",
     "orderRef": "Referensi pesanan",
     "provider": "Penyedia",
     "providerDemo": "Demo (simulasi)",
@@ -42,42 +42,42 @@
     "processing": "Memproses…"
   },
   "result": {
-    "successTitle": "Poin ditambahkan",
-    "successBody": "{{points}} pts ditambahkan ke saldo Anda.",
-    "successToast": "+{{points}} pts dari paket {{pack}}",
+    "successTitle": "Clout ditambahkan",
+    "successBody": "{{points}} Clout ditambahkan ke saldo Anda.",
+    "successToast": "+{{points}} Clout dari paket {{pack}}",
     "newBalance": "Saldo baru",
-    "viewLedger": "Lihat riwayat poin",
+    "viewLedger": "Lihat riwayat Clout",
     "returnToMarket": "Kembali ke pasar",
     "backToStore": "Kembali ke toko",
     "failedTitle": "Checkout tidak selesai",
-    "failedBody": "{{reason}} Tidak ada poin yang ditambahkan. Anda bisa memulai checkout baru untuk paket yang sama.",
+    "failedBody": "{{reason}} Tidak ada Clout yang ditambahkan. Anda bisa memulai checkout baru untuk paket yang sama.",
     "failedReasonFallback": "Checkout simulasi tidak selesai.",
     "retry": "Coba lagi",
     "canceledTitle": "Checkout dibatalkan",
-    "canceledBody": "Checkout simulasi ini dibatalkan. Tidak ada poin yang ditambahkan.",
+    "canceledBody": "Checkout simulasi ini dibatalkan. Tidak ada Clout yang ditambahkan.",
     "backToSummary": "Kembali ke ringkasan pesanan",
     "pendingTitle": "Menunggu penyelesaian",
-    "pendingBody": "Penyedia simulasi melaporkan penundaan. Poin hanya ditambahkan setelah checkout selesai — periksa status di bawah.",
+    "pendingBody": "Penyedia simulasi melaporkan penundaan. Clout hanya ditambahkan setelah checkout selesai — periksa status di bawah.",
     "checkStatus": "Periksa status",
     "checking": "Memeriksa…"
   },
   "how": {
-    "title": "Cara kerja poin"
+    "title": "Cara kerja Clout"
   },
   "state": {
-    "loading": "Memuat toko poin…",
+    "loading": "Memuat toko Clout…",
     "loadingPurchase": "Memeriksa pesanan Anda…",
-    "signIn": "Masuk untuk melihat paket poin dan menambah poin ke saldo Anda.",
+    "signIn": "Masuk untuk melihat paket Clout dan menambah Clout ke saldo Anda.",
     "login": "Masuk",
-    "error": "Toko poin tidak dapat dimuat.",
+    "error": "Toko Clout tidak dapat dimuat.",
     "purchaseError": "Pesanan ini tidak dapat dimuat.",
     "checkoutError": "Checkout tidak dapat dimulai.",
     "confirmError": "Hasil simulasi gagal.",
     "retry": "Coba lagi"
   },
   "entry": {
-    "addPoints": "Tambah Poin",
-    "needMore": "Butuh lebih banyak poin?",
-    "visitStore": "Kunjungi Toko Poin"
+    "addPoints": "Dapatkan Clout",
+    "needMore": "Butuh lebih banyak Clout?",
+    "visitStore": "Kunjungi Toko Clout"
   }
 }

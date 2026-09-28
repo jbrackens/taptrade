@@ -18,7 +18,7 @@
     "profile": "Profile",
     "security": "Security",
     "alerts": "Alerts",
-    "ledger": "Point ledger",
+    "ledger": "Clout history",
     "responsible": "Play responsibly"
   },
   "profile": {
@@ -34,8 +34,8 @@
     "subtitle": "Choose how you hear about markets and your account."
   },
   "ledger": {
-    "title": "Point ledger",
-    "subtitle": "Every point in and out of your account."
+    "title": "Clout history",
+    "subtitle": "Every bit of Clout in and out of your account."
   },
   "responsible": {
     "title": "Play responsibly",
@@ -84,11 +84,11 @@
   },
   "limits": {
     "title": "Play limits",
-    "description": "Cap the points you use and the size of any one order. Limits apply from your next order.",
-    "daily": "Daily (pts)",
-    "weekly": "Weekly (pts)",
-    "monthly": "Monthly (pts)",
-    "maxOrder": "Largest order (pts)",
+    "description": "Cap the Clout you use and the size of any one order. Limits apply from your next order.",
+    "daily": "Daily (Clout)",
+    "weekly": "Weekly (Clout)",
+    "monthly": "Monthly (Clout)",
+    "maxOrder": "Largest order (Clout)",
     "none": "No limit",
     "save": "Save limits",
     "saved": "Limits saved",

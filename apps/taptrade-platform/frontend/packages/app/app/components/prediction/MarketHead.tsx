@@ -216,12 +216,12 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             ? t("FINAL_PRICES", {
                 yes,
                 no,
-                defaultValue: `Final prices: Yes ${yes} points, No ${no} points`,
+                defaultValue: `Final prices: Yes ${yes} Clout, No ${no} Clout`,
               })
             : t("YES_NO_PRICES", {
                 yes,
                 no,
-                defaultValue: `Yes ${yes} points, No ${no} points`,
+                defaultValue: `Yes ${yes} Clout, No ${no} Clout`,
               })
         }
       >

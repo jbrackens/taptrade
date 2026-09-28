@@ -223,7 +223,7 @@ function activityLabel(item: SocialActivityItem, t: Translate): string {
   if (item.type === "follow") return t("SOCIAL_ACTIVITY_FOLLOW", "Followed a player");
   if (item.type === "trade") return t("SOCIAL_ACTIVITY_TRADE", "Made a call");
   if (item.type === "settlement") return t("SOCIAL_ACTIVITY_SETTLEMENT", "A market they held settled");
-  if (item.type === "reward") return t("SOCIAL_ACTIVITY_REWARD", "Earned reward points");
+  if (item.type === "reward") return t("SOCIAL_ACTIVITY_REWARD", "Earned a reward");
   if (item.type === "leaderboard") return t("SOCIAL_ACTIVITY_LEADERBOARD", "Placed on a leaderboard");
   return t("SOCIAL_ACTIVITY_COMMENT", "Commented");
 }

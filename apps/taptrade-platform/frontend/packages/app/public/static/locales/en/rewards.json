@@ -1,6 +1,6 @@
 {
   "PAGE_TITLE": "TapTrade Rewards",
-  "PAGE_SUBTITLE": "Earn points from every settled trade, climb the tier ladder, and unlock sharper benefits as you play.",
+  "PAGE_SUBTITLE": "Earn XP from every settled trade, climb the tier ladder, and unlock sharper benefits as you play.",
   "KICKER": "Rewards Center",
   "TIER_BADGE_PREFIX": "Current Tier",
   "STAT_BALANCE": "Points Balance",
@@ -57,18 +57,18 @@
   "kickerShort": "Rewards",
   "loyaltyTitle": "Loyalty",
   "viewLeaderboards": "View leaderboards",
-  "pointsShort": "pts",
+  "pointsShort": "XP",
   "errors": {
     "loadRewards": "Failed to load rewards"
   },
   "state": {
     "loading": "Loading rewards…",
-    "signIn": "Sign in to view your tier, points balance, and recent activity.",
+    "signIn": "Sign in to view your tier, XP, and recent activity.",
     "login": "Log in",
     "backToPortfolio": "Back to portfolio"
   },
   "progress": {
-    "pointsTo": "{{points}} pts to",
+    "pointsTo": "{{points}} XP to",
     "topTier": "Top tier reached — thanks for trading with us.",
     "label": "Tier progress"
   },
@@ -80,7 +80,7 @@
   },
   "prefirst": {
     "title": "No activity yet",
-    "body": "Settle your first trade to start earning points and climb the tier ladder.",
+    "body": "Settle your first trade to start earning XP and climb the tier ladder.",
     "browse": "Browse markets"
   },
   "ledger": {
@@ -105,50 +105,50 @@
     "streak_other": "{{count}}-day streak"
   },
   "dailyClaim": {
-    "body": "Claim non-redeemable gameplay points once per day for predictions only.",
+    "body": "Claim non-redeemable Clout once per day, for predictions only.",
     "cta": "Claim today",
     "claiming": "Claiming",
     "claimed": "Claimed today",
-    "success": "Today's claim is recorded: {{points}} pts added to your point ledger.",
+    "success": "Today's claim is recorded: {{points}} Clout added to your balance.",
     "error": "Daily claim could not be recorded. Try again shortly.",
     "disabled": "Daily claim is not available right now."
   },
   "rewardLimit": {
     "title": "Daily reward limit",
-    "body": "{{remaining}} of {{limit}} reward pts remain for today.",
+    "body": "{{remaining}} of {{limit}} reward Clout left for today.",
     "reset": "Resets {{date}}"
   },
   "missions": {
     "title": "Missions",
-    "body": "Complete gameplay missions to earn non-redeemable reward points.",
+    "body": "Complete gameplay missions to earn non-redeemable Clout.",
     "progress": "{{progress}} / {{target}} complete",
     "cta": "Claim",
     "claiming": "Claiming",
     "claimed": "Claimed",
     "incomplete": "Incomplete",
-    "success": "{{points}} pts added to your point ledger.",
+    "success": "{{points}} Clout added to your balance.",
     "error": "Mission reward could not be recorded. Try again shortly."
   },
   "streaks": {
     "title": "Streaks",
-    "body": "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
+    "body": "Keep your daily Clout claims going to earn non-redeemable streak rewards.",
     "progress": "{{current}} / {{target}} days",
     "cta": "Claim",
     "claiming": "Claiming",
     "claimed": "Claimed",
     "incomplete": "Incomplete",
-    "success": "{{points}} pts added to your point ledger.",
+    "success": "{{points}} Clout added to your balance.",
     "error": "Streak reward could not be recorded. Try again shortly."
   },
   "pointPacks": {
-    "title": "Point packs",
-    "body": "Claim configured one-time gameplay point packs for predictions only.",
+    "title": "Clout packs",
+    "body": "Claim one-time Clout packs, for predictions only.",
     "cta": "Claim",
     "claiming": "Claiming",
     "claimed": "Claimed",
     "unavailable": "Unavailable",
-    "success": "{{points}} pts added to your point ledger.",
-    "error": "Point pack could not be recorded. Try again shortly."
+    "success": "{{points}} Clout added to your balance.",
+    "error": "The Clout pack could not be recorded. Try again shortly."
   },
   "badges": {
     "title": "Badges",
@@ -157,10 +157,10 @@
     "locked": "Locked"
   },
   "activeBonuses": {
-    "title": "Active point-play bonuses",
-    "body": "Track promotional gameplay points and their point-play progress.",
-    "fallbackName": "Point-play bonus",
+    "title": "Active Clout bonuses",
+    "body": "Track promotional Clout and its progress.",
+    "fallbackName": "Clout bonus",
     "status": "Status: {{status}}",
-    "remaining": "pts remaining"
+    "remaining": "Clout remaining"
   }
 }

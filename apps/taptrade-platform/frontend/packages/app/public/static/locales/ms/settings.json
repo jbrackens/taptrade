@@ -18,7 +18,7 @@
     "profile": "Profil",
     "security": "Keselamatan",
     "alerts": "Amaran",
-    "ledger": "Lejar mata",
+    "ledger": "Sejarah Clout",
     "responsible": "Bermain secara bertanggungjawab"
   },
   "profile": {
@@ -34,8 +34,8 @@
     "subtitle": "Pilih cara anda menerima berita tentang pasaran dan akaun anda."
   },
   "ledger": {
-    "title": "Lejar mata",
-    "subtitle": "Setiap mata yang masuk dan keluar dari akaun anda."
+    "title": "Sejarah Clout",
+    "subtitle": "Setiap Clout yang masuk dan keluar dari akaun anda."
   },
   "responsible": {
     "title": "Bermain secara bertanggungjawab",
@@ -84,11 +84,11 @@
   },
   "limits": {
     "title": "Had permainan",
-    "description": "Hadkan mata yang anda guna dan saiz setiap pesanan. Had berkuat kuasa mulai pesanan seterusnya.",
-    "daily": "Harian (mata)",
-    "weekly": "Mingguan (mata)",
-    "monthly": "Bulanan (mata)",
-    "maxOrder": "Pesanan terbesar (mata)",
+    "description": "Hadkan Clout yang anda guna dan saiz setiap pesanan. Had berkuat kuasa mulai pesanan seterusnya.",
+    "daily": "Harian (Clout)",
+    "weekly": "Mingguan (Clout)",
+    "monthly": "Bulanan (Clout)",
+    "maxOrder": "Pesanan terbesar (Clout)",
     "none": "Tiada had",
     "save": "Simpan had",
     "saved": "Had disimpan",

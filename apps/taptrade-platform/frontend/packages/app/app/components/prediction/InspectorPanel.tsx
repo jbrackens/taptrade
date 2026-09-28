@@ -96,10 +96,10 @@ export function InspectorPanel({
         </span>
         <span className="flex flex-col items-end gap-0.5 font-mono text-[11px] font-semibold tabular-nums">
           <span className="text-[var(--yes-text)]">
-            {t("YES")} {market.yesPricePoints} pts
+            {t("YES")} {market.yesPricePoints} Clout
           </span>
           <span className="text-[var(--no-text)]">
-            {t("NO")} {market.noPricePoints} pts
+            {t("NO")} {market.noPricePoints} Clout
           </span>
         </span>
       </div>
@@ -122,7 +122,7 @@ export function InspectorPanel({
           </span>
           <span className="font-mono text-[10.5px] font-semibold text-[var(--accent-text)] tabular-nums">
             {position.quantity} {position.side === "yes" ? t("YES") : t("NO")}{" "}
-            @ {position.avgPricePoints} {t("PTS", "pts")}
+            @ {position.avgPricePoints} {t("PTS", "Clout")}
           </span>
         </div>
       )}

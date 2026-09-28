@@ -45,8 +45,10 @@
    tabular figures.
 5. **Honest data or no data.** No invented deltas, sparklines, activity, or
    "LIVE" claims without a live signal. Missing values render "—".
-6. **Points are play value.** Prices read "44 pts", never "44¢". No cash,
-   prize, redemption, peso or dollar vocabulary or imagery anywhere.
+6. **Points are play value, named Clout.** Prices keep the 0–100 scale of a
+   0–$1 event contract and read "44 Clout", never "44¢" or "44 pts"; a correct
+   share settles at 100 Clout. Loyalty progress is XP, a separate thing. No
+   cash, prize, redemption, peso or dollar vocabulary or imagery anywhere.
 
 ## 3. Colour
 
@@ -231,8 +233,10 @@ Raw `--kilig` is a fill (4.30 on paper): pink text on light uses
 
 ## 11. Copy
 
-Prices: "44 pts" (never ¢), through `PTS_COUNT` ("1 pt" / "44 pts") or the
-`PTS` key, never a literal. Probability: "44%" + "chance". Sides read "Yes" /
+Prices: "44 Clout" (never ¢ or "pts"), through `formatPoints` /
+`CURRENCY_NAME` (`app/lib/points.ts`), `PTS_COUNT` or the `PTS` key, never a
+literal. The header balance is a Kilig flame and the figure (compact from
+100K), with the unit in its accessible name. Loyalty figures read "XP". Probability: "44%" + "chance". Sides read "Yes" /
 "No" (localized), never an uppercased enum. Sentence case everywhere. No "bet", "odds", "cash", "win money",
 "prize", "redeem". Counted strings use i18next v4 plural keys
 (`KEY_one` / `KEY_other`); the v3 `KEY_plural` suffix is ignored by the

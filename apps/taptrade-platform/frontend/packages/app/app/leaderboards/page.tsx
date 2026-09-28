@@ -499,7 +499,7 @@ function boardName(
 ): string {
   if (board.id === "accuracy") return t("boards.accuracy.name", "Accuracy");
   if (board.id === "pnl_weekly")
-    return t("boards.pnlWeekly.name", "Weekly Points");
+    return t("boards.pnlWeekly.name", "Weekly Clout");
   if (board.id === "sharpness") return t("boards.sharpness.name", "Sharpness");
   if (board.id.startsWith("category:")) {
     return t("boards.category.name", "{{category}} Champions", {
@@ -532,10 +532,10 @@ function metricLabel(
   t: ReturnType<typeof useTranslation>["t"],
 ): string {
   if (board.id === "accuracy") return t("metrics.accuracy", "Accuracy");
-  if (board.id === "pnl_weekly") return t("metrics.pnl", "Net points");
+  if (board.id === "pnl_weekly") return t("metrics.pnl", "Net Clout");
   if (board.id === "sharpness") return t("metrics.sharpness", "Sharpness");
   if (board.id.startsWith("category:"))
-    return t("metrics.category", "Net points");
+    return t("metrics.category", "Net Clout");
   return board.pointMetricKey || board.metricKey;
 }
 

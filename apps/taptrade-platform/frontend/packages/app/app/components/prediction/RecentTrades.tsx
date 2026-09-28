@@ -159,9 +159,9 @@ export default function RecentTrades({
                     {t("MINT")}
                   </span>
                   <span className={tradePriceClass()}>
-                    <span className={tradePriceClass("yes")}>{yPx} pts</span>
+                    <span className={tradePriceClass("yes")}>{yPx} Clout</span>
                     <span className="mx-1 text-[var(--t3)]">/</span>
-                    <span className={tradePriceClass("no")}>{nPx} pts</span>
+                    <span className={tradePriceClass("no")}>{nPx} Clout</span>
                   </span>
                   <span className={RECENT_TRADES_SIZE_CLASS}>
                     {formatPoints(size)}
@@ -184,7 +184,7 @@ export default function RecentTrades({
                 <span className={tradeSideClass(sideKey)}>
                   {t(trade.side === "yes" ? "YES" : "NO")}
                 </span>
-                <span className={tradePriceClass(sideKey)}>{px} pts</span>
+                <span className={tradePriceClass(sideKey)}>{px} Clout</span>
                 <span className={RECENT_TRADES_SIZE_CLASS}>
                   {formatPoints(size)}
                 </span>

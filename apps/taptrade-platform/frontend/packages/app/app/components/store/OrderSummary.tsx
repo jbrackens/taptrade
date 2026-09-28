@@ -66,12 +66,12 @@ export function OrderSummary({
       <h2 className={TITLE_CLASS}>{t("summary.title", "Order summary")}</h2>
       <div className={ROWS_CLASS}>
         <div className={ROW_CLASS}>
-          <span className={LABEL_CLASS}>{t("summary.pack", "Point pack")}</span>
+          <span className={LABEL_CLASS}>{t("summary.pack", "Clout pack")}</span>
           <span className={VALUE_CLASS}>{order.packName}</span>
         </div>
         <div className={ROW_CLASS}>
           <span className={LABEL_CLASS}>
-            {t("summary.base", "Base points")}
+            {t("summary.base", "Base Clout")}
           </span>
           <span className={VALUE_CLASS}>
             {formatPointsAmount(order.basePoints)}
@@ -80,7 +80,7 @@ export function OrderSummary({
         {order.bonusPoints > 0 ? (
           <div className={ROW_CLASS}>
             <span className={LABEL_CLASS}>
-              {t("summary.bonus", "Bonus points")}
+              {t("summary.bonus", "Bonus Clout")}
             </span>
             <span className={VALUE_CLASS}>
               +{formatPointsAmount(order.bonusPoints)}
@@ -89,10 +89,10 @@ export function OrderSummary({
         ) : null}
         <div className={TOTAL_ROW_CLASS}>
           <span className={LABEL_CLASS}>
-            {t("summary.total", "Total points")}
+            {t("summary.total", "Total Clout")}
           </span>
           <span className={VALUE_CLASS}>
-            <PointsFlow value={order.totalPoints} /> {t("packs.unit", "pts")}
+            <PointsFlow value={order.totalPoints} /> {t("packs.unit", "Clout")}
           </span>
         </div>
         <div className={ROW_CLASS}>

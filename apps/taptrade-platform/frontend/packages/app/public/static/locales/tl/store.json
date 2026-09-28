@@ -1,21 +1,21 @@
 {
-  "kicker": "Point Store",
-  "title": "Magdagdag ng Puntos",
-  "ledgerLink": "Tingnan ang talaan ng puntos",
+  "kicker": "Clout Store",
+  "title": "Kumuha ng Clout",
+  "ledgerLink": "Tingnan ang Clout history",
   "packs": {
-    "heading": "Mga point pack",
-    "unit": "pts",
-    "base": "{{points}} batayang puntos",
-    "bonus": "+{{points}} bonus na puntos",
+    "heading": "Mga Clout pack",
+    "unit": "Clout",
+    "base": "{{points}} batayang Clout",
+    "bonus": "+{{points}} bonus na Clout",
     "priceLabel": "Presyo",
-    "firstPurchase": "Ito ang magiging una mong pagbili ng point pack."
+    "firstPurchase": "Ito ang magiging una mong pagbili ng Clout pack."
   },
   "summary": {
     "title": "Buod ng order",
-    "pack": "Point pack",
-    "base": "Batayang puntos",
-    "bonus": "Bonus na puntos",
-    "total": "Kabuuang puntos",
+    "pack": "Clout pack",
+    "base": "Batayang Clout",
+    "bonus": "Bonus na Clout",
+    "total": "Kabuuang Clout",
     "price": "Presyo",
     "status": "Katayuan",
     "continue": "Magpatuloy sa checkout"
@@ -29,7 +29,7 @@
   "checkout": {
     "banner": "Demo checkout — simulasyon lamang, walang totoong singil",
     "title": "Simulasyong checkout",
-    "subtitle": "Pumili ng resulta sa ibaba para tapusin ang simulasyong checkout. Madaragdag lang ang puntos kapag natapos ang checkout.",
+    "subtitle": "Pumili ng resulta sa ibaba para tapusin ang simulasyong checkout. Madaragdag lang ang Clout kapag natapos ang checkout.",
     "orderRef": "Sanggunian ng order",
     "provider": "Provider",
     "providerDemo": "Demo (simulasyon)",
@@ -42,42 +42,42 @@
     "processing": "Pinoproseso…"
   },
   "result": {
-    "successTitle": "Naidagdag ang puntos",
-    "successBody": "{{points}} pts ang naidagdag sa iyong balanse.",
-    "successToast": "+{{points}} pts mula sa {{pack}} pack",
+    "successTitle": "Naidagdag ang Clout",
+    "successBody": "{{points}} Clout ang naidagdag sa balanse mo.",
+    "successToast": "+{{points}} Clout mula sa {{pack}} pack",
     "newBalance": "Bagong balanse",
-    "viewLedger": "Tingnan ang talaan ng puntos",
+    "viewLedger": "Tingnan ang Clout history",
     "returnToMarket": "Bumalik sa market",
     "backToStore": "Bumalik sa store",
     "failedTitle": "Hindi natapos ang checkout",
-    "failedBody": "{{reason}} Walang puntos na naidagdag. Maaari kang magsimula ng bagong checkout para sa parehong pack.",
+    "failedBody": "{{reason}} Walang Clout na naidagdag. Maaari kang magsimula ng bagong checkout para sa parehong pack.",
     "failedReasonFallback": "Hindi natapos ang simulasyong checkout.",
     "retry": "Subukan muli",
     "canceledTitle": "Kinansela ang checkout",
-    "canceledBody": "Kinansela ang simulasyong checkout. Walang puntos na naidagdag.",
+    "canceledBody": "Kinansela ang simulasyong checkout. Walang Clout na naidagdag.",
     "backToSummary": "Bumalik sa buod ng order",
     "pendingTitle": "Naghihintay matapos",
-    "pendingBody": "Nag-ulat ng pagkaantala ang simulasyong provider. Madaragdag lang ang puntos kapag natapos ang checkout — suriin ang katayuan sa ibaba.",
+    "pendingBody": "Nag-ulat ng pagkaantala ang simulasyong provider. Madaragdag lang ang Clout kapag natapos ang checkout — suriin ang katayuan sa ibaba.",
     "checkStatus": "Suriin ang katayuan",
     "checking": "Sinusuri…"
   },
   "how": {
-    "title": "Paano gumagana ang puntos"
+    "title": "Paano gumagana ang Clout"
   },
   "state": {
-    "loading": "Nilo-load ang point store…",
+    "loading": "Nilo-load ang Clout store…",
     "loadingPurchase": "Sinusuri ang iyong order…",
-    "signIn": "Mag-sign in para makita ang mga point pack at makapagdagdag ng puntos.",
+    "signIn": "Mag-sign in para makita ang mga Clout pack at makapagdagdag ng Clout.",
     "login": "Mag-log in",
-    "error": "Hindi ma-load ang point store.",
+    "error": "Hindi ma-load ang Clout store.",
     "purchaseError": "Hindi ma-load ang order na ito.",
     "checkoutError": "Hindi masimulan ang checkout.",
     "confirmError": "Nabigo ang simulasyong resulta.",
     "retry": "Subukan muli"
   },
   "entry": {
-    "addPoints": "Magdagdag ng Puntos",
-    "needMore": "Kulang ang puntos?",
-    "visitStore": "Puntahan ang Point Store"
+    "addPoints": "Kumuha ng Clout",
+    "needMore": "Kailangan pa ng Clout?",
+    "visitStore": "Pumunta sa Clout Store"
   }
 }

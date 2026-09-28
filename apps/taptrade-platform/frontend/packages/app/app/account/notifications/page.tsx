@@ -250,7 +250,7 @@ export default function NotificationsPage() {
               {
                 key: "account_updates" as const,
                 label: "Account updates",
-                desc: "Point ledger activity, profile changes, and security alerts",
+                desc: "Clout history, profile changes, and security alerts",
               },
               {
                 key: "new_markets" as const,

@@ -18,29 +18,29 @@ import { formatPointDelta } from "../lib/point-ledger";
 // per-page formatters that survived the migration.
 
 describe("formatPoints", () => {
-  it("renders whole Points with thousands separators and the pts suffix", () => {
-    assert.equal(formatPoints(0), "0 pts");
-    assert.equal(formatPoints(98), "98 pts");
-    assert.equal(formatPoints(1250), "1,250 pts");
-    assert.equal(formatPoints(42350), "42,350 pts");
+  it("renders whole Points with thousands separators and the Clout suffix", () => {
+    assert.equal(formatPoints(0), "0 Clout");
+    assert.equal(formatPoints(98), "98 Clout");
+    assert.equal(formatPoints(1250), "1,250 Clout");
+    assert.equal(formatPoints(42350), "42,350 Clout");
     // Live wallet balance observed on the local gateway (u-1) — the TopBar
-    // regression: this used to render "519996.00 pts" via toFixed(2).
-    assert.equal(formatPoints(519996), "519,996 pts");
+    // regression: this used to render "519996.00 Clout" via toFixed(2).
+    assert.equal(formatPoints(519996), "519,996 Clout");
   });
 
   it("never grows decimals on integers", () => {
     assert.doesNotMatch(formatPoints(98), /\./);
     assert.doesNotMatch(formatPoints(1500742), /\./);
-    assert.equal(formatPoints(1500742), "1,500,742 pts");
+    assert.equal(formatPoints(1500742), "1,500,742 Clout");
   });
 
   it("preserves sign for negative point results", () => {
     // Live leaderboard pnl_weekly entry (bob) — whole Points on the wire.
-    assert.equal(formatPoints(-664), "-664 pts");
+    assert.equal(formatPoints(-664), "-664 Clout");
   });
 
   it("renders out-of-contract fractional values honestly at 2dp", () => {
-    assert.equal(formatPoints(6.5), "6.50 pts");
+    assert.equal(formatPoints(6.5), "6.50 Clout");
   });
 });
 
@@ -54,32 +54,32 @@ describe("formatPointsAmount", () => {
 
 describe("formatCompactPoints", () => {
   it("keeps sub-thousand values whole", () => {
-    assert.equal(formatCompactPoints(0), "0 pts");
-    assert.equal(formatCompactPoints(999), "999 pts");
+    assert.equal(formatCompactPoints(0), "0 Clout");
+    assert.equal(formatCompactPoints(999), "999 Clout");
   });
 
   it("buckets thousands and millions with .0 trimmed", () => {
-    assert.equal(formatCompactPoints(1_000), "1K pts");
-    assert.equal(formatCompactPoints(1_234), "1.2K pts");
-    assert.equal(formatCompactPoints(1_000_000), "1M pts");
-    assert.equal(formatCompactPoints(1_200_000), "1.2M pts");
-    assert.equal(formatCompactPoints(3_400_000), "3.4M pts");
+    assert.equal(formatCompactPoints(1_000), "1K Clout");
+    assert.equal(formatCompactPoints(1_234), "1.2K Clout");
+    assert.equal(formatCompactPoints(1_000_000), "1M Clout");
+    assert.equal(formatCompactPoints(1_200_000), "1.2M Clout");
+    assert.equal(formatCompactPoints(3_400_000), "3.4M Clout");
   });
 
   it("clamps negatives to zero (compact stats are gauges, not deltas)", () => {
-    assert.equal(formatCompactPoints(-500), "0 pts");
+    assert.equal(formatCompactPoints(-500), "0 Clout");
   });
 
-  it("renders IMP-402FD0BF's true volume as 158.6M pts (volume 100x regression)", () => {
+  it("renders IMP-402FD0BF's true volume as 158.6M Clout (volume 100x regression)", () => {
     // Real wire value after the gateway fix: GET /api/v1/markets returns
     // volumePoints 158570119 for "Will Egypt win the 2026 FIFA World Cup?"
     // (imported catalog volume 158570118.6712, already whole Points).
-    assert.equal(formatCompactPoints(158_570_119), "158.6M pts");
+    assert.equal(formatCompactPoints(158_570_119), "158.6M Clout");
     // The formatter is faithful to its input — the pre-fix wire value
     // (inflated 100× by the retired `im.volume * 100` overlay in the
-    // gateway's marketSelectQuery) rendered as 15857M pts. The fix lives
+    // gateway's marketSelectQuery) rendered as 15857M Clout. The fix lives
     // in the gateway + migration 052, NOT in a client-side rescale.
-    assert.equal(formatCompactPoints(15_857_011_867), "15857M pts");
+    assert.equal(formatCompactPoints(15_857_011_867), "15857M Clout");
   });
 });
 
@@ -105,11 +105,11 @@ describe("wire guards", () => {
 
 describe("delta formatting", () => {
   it("derives sign from the movement type over the absolute amount", () => {
-    assert.equal(formatPointDelta({ type: "credit", amount: 25 }), "+25 pts");
-    assert.equal(formatPointDelta({ type: "debit", amount: 6 }), "-6 pts");
+    assert.equal(formatPointDelta({ type: "credit", amount: 25 }), "+25 Clout");
+    assert.equal(formatPointDelta({ type: "debit", amount: 6 }), "-6 Clout");
     // Sign comes from the type even if a wire amount arrives negative.
-    assert.equal(formatPointDelta({ type: "debit", amount: -6 }), "-6 pts");
-    assert.equal(formatPointDelta({ type: "credit", amount: -25 }), "+25 pts");
+    assert.equal(formatPointDelta({ type: "debit", amount: -6 }), "-6 Clout");
+    assert.equal(formatPointDelta({ type: "credit", amount: -25 }), "+25 Clout");
   });
 });
 

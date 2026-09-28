@@ -37,7 +37,7 @@ export function WelcomeStrip() {
         <p className="m-0 mt-1 text-[14px] text-[var(--t2)]">
           {t(
             "HOME_WELCOME_BODY",
-            "Pick Yes or No on the moments everyone's talking about. Free to play with points.",
+            "Pick Yes or No on the moments everyone's talking about. Free to play with Clout.",
           )}
         </p>
         <p className="m-0 mt-1 text-[12px] text-[var(--t3)]">

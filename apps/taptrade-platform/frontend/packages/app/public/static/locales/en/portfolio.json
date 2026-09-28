@@ -1,7 +1,7 @@
 {
   "boards": {
     "accuracy": "Accuracy",
-    "pnlWeekly": "Weekly point result",
+    "pnlWeekly": "Weekly net Clout",
     "sharpness": "Sharpness"
   },
   "history": {
@@ -14,7 +14,7 @@
     "cancelFailed": "Cancel failed",
     "cancelled": "Order cancelled",
     "empty": "No open orders.",
-    "released": "Reserved points unlocked on {{ticker}}"
+    "released": "Reserved Clout unlocked on {{ticker}}"
   },
   "positions": {
     "browse": "Browse markets",
@@ -23,8 +23,8 @@
   "rank": {
     "label": "Rank",
     "metricAccuracy": "{{value}}% correct",
-    "metricPnl": "{{value}} point result",
-    "metricSharpness": "{{value}}% point efficiency",
+    "metricPnl": "{{value}} net Clout",
+    "metricSharpness": "{{value}}% Clout efficiency",
     "notRanked": "Not ranked yet",
     "qualify": "Settle more markets to qualify"
   },
@@ -45,7 +45,7 @@
     "invested": "Invested",
     "noSettledPredictions": "No settled predictions yet",
     "openPositions": "Open positions",
-    "realizedPnl": "Realized point result"
+    "realizedPnl": "Realized net Clout"
   },
   "table": {
     "available": "Available",
@@ -55,8 +55,8 @@
     "exit": "Exit",
     "market": "Market",
     "placed": "Placed",
-    "pnl": "Point result",
-    "points": "Points",
+    "pnl": "Net Clout",
+    "points": "Clout",
     "qty": "Qty",
     "settled": "Settled",
     "side": "Side",

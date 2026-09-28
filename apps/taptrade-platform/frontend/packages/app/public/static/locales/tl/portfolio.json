@@ -1,20 +1,20 @@
 {
   "boards": {
     "accuracy": "Katumpakan",
-    "pnlWeekly": "Lingguhang resulta ng puntos",
+    "pnlWeekly": "Lingguhang net na Clout",
     "sharpness": "Sharpness score"
   },
   "history": {
-    "earnedPoints": "Kumita ng {{points}} points",
+    "earnedPoints": "Kumita ng {{points}} Clout",
     "empty": "Lalabas dito ang settled positions pagkatapos ma-resolve ang markets.",
-    "pointsShort": "+{{points}} pts"
+    "pointsShort": "+{{Clout}} Clout"
   },
   "orders": {
     "cancel": "Kanselahin",
     "cancelFailed": "Hindi nakansela",
     "cancelled": "Nakansela ang order",
     "empty": "Walang open orders.",
-    "released": "Na-unlock ang naka-lock na points sa {{ticker}}"
+    "released": "Na-unlock ang naka-lock na Clout sa {{ticker}}"
   },
   "positions": {
     "browse": "Mag-browse ng markets",
@@ -23,8 +23,8 @@
   "rank": {
     "label": "Ranggo",
     "metricAccuracy": "{{value}}% tama",
-    "metricPnl": "{{value}} resulta ng puntos",
-    "metricSharpness": "{{value}}% point efficiency",
+    "metricPnl": "{{value}} net na Clout",
+    "metricSharpness": "{{value}}% Clout efficiency",
     "notRanked": "Wala pang rank",
     "qualify": "Mag-settle ng mas maraming markets para mag-qualify"
   },
@@ -45,7 +45,7 @@
     "invested": "Naka-invest",
     "noSettledPredictions": "Wala pang settled predictions",
     "openPositions": "Bukas na posisyon",
-    "realizedPnl": "Na-realize na resulta ng puntos"
+    "realizedPnl": "Na-realize na net na Clout"
   },
   "table": {
     "available": "Available pa",
@@ -55,8 +55,8 @@
     "exit": "Labas",
     "market": "Merkado",
     "placed": "Nailagay",
-    "pnl": "Resulta ng puntos",
-    "points": "Puntos",
+    "pnl": "Net na Clout",
+    "points": "Clout",
     "qty": "Dami",
     "settled": "Settled na",
     "side": "Panig",

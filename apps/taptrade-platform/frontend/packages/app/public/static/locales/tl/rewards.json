@@ -1,6 +1,6 @@
 {
   "PAGE_TITLE": "TapTrade Rewards mo",
-  "PAGE_SUBTITLE": "Kumita ng points sa bawat settled trade, umakyat sa tier ladder, at mag-unlock ng mas matitinding benefits habang naglalaro.",
+  "PAGE_SUBTITLE": "Kumita ng XP sa bawat settled trade, umakyat sa tier ladder, at mag-unlock ng mas matitinding benefits habang naglalaro.",
   "KICKER": "Rewards Center",
   "TIER_BADGE_PREFIX": "Kasalukuyang Tier",
   "STAT_BALANCE": "Balanse ng puntos",
@@ -57,18 +57,18 @@
   "kickerShort": "Rewards mo",
   "loyaltyTitle": "Loyalty level",
   "viewLeaderboards": "Tingnan ang leaderboards",
-  "pointsShort": "pts",
+  "pointsShort": "XP",
   "errors": {
     "loadRewards": "Hindi na-load ang rewards"
   },
   "state": {
     "loading": "Nilo-load ang rewards…",
-    "signIn": "Mag-sign in para makita ang tier, points balance, at recent activity mo.",
+    "signIn": "Mag-sign in para makita ang tier, XP, at recent activity mo.",
     "login": "Mag-log in",
     "backToPortfolio": "Bumalik sa portfolio"
   },
   "progress": {
-    "pointsTo": "{{points}} pts papunta sa",
+    "pointsTo": "{{points}} XP papunta sa",
     "topTier": "Naabot ang top tier — salamat sa pag-trade sa amin.",
     "label": "Progreso sa tier"
   },
@@ -80,7 +80,7 @@
   },
   "prefirst": {
     "title": "Wala pang activity",
-    "body": "I-settle ang una mong trade para kumita ng points at umakyat sa tier ladder.",
+    "body": "I-settle ang una mong trade para kumita ng XP at umakyat sa tier ladder.",
     "browse": "Mag-browse ng markets"
   },
   "ledger": {
@@ -105,50 +105,50 @@
     "streak_other": "{{count}} araw na sunod-sunod"
   },
   "dailyClaim": {
-    "body": "Mag-claim ng non-redeemable na gameplay points isang beses kada araw, para sa prediksyon lang.",
+    "body": "Mag-claim ng non-redeemable na Clout isang beses kada araw, para sa prediksyon lang.",
     "cta": "I-claim ngayon",
     "claiming": "Kine-claim",
     "claimed": "Na-claim na ngayon",
-    "success": "Naitala ang claim ngayong araw: {{points}} pts ang naidagdag sa point ledger mo.",
+    "success": "Naitala ang claim ngayong araw: {{points}} Clout ang naidagdag sa balanse mo.",
     "error": "Hindi maitala ang daily claim. Subukan ulit mamaya.",
     "disabled": "Hindi available ang daily claim ngayon."
   },
   "rewardLimit": {
     "title": "Limit ng reward kada araw",
-    "body": "{{remaining}} sa {{limit}} reward pts ang natitira ngayong araw.",
+    "body": "{{remaining}} sa {{limit}} reward Clout ang natitira ngayong araw.",
     "reset": "Magre-reset sa {{date}}"
   },
   "missions": {
     "title": "Mga misyon",
-    "body": "Tapusin ang gameplay missions para makakuha ng non-redeemable na reward points.",
+    "body": "Tapusin ang gameplay missions para makakuha ng non-redeemable na Clout.",
     "progress": "{{progress}} / {{target}} tapos",
     "cta": "I-claim",
     "claiming": "Kine-claim",
     "claimed": "Na-claim na",
     "incomplete": "Hindi pa tapos",
-    "success": "{{points}} pts ang naidagdag sa point ledger mo.",
+    "success": "{{points}} Clout ang naidagdag sa balanse mo.",
     "error": "Hindi maitala ang reward ng misyon. Subukan ulit mamaya."
   },
   "streaks": {
     "title": "Mga streak",
-    "body": "Ituloy ang araw-araw na pag-claim ng gameplay points para makakuha ng non-redeemable na streak rewards.",
+    "body": "Ituloy ang araw-araw na pag-claim ng Clout para makakuha ng non-redeemable na streak rewards.",
     "progress": "{{current}} / {{target}} araw",
     "cta": "I-claim",
     "claiming": "Kine-claim",
     "claimed": "Na-claim na",
     "incomplete": "Hindi pa tapos",
-    "success": "{{points}} pts ang naidagdag sa point ledger mo.",
+    "success": "{{points}} Clout ang naidagdag sa balanse mo.",
     "error": "Hindi maitala ang streak reward. Subukan ulit mamaya."
   },
   "pointPacks": {
-    "title": "Mga point pack",
-    "body": "Mag-claim ng one-time na gameplay point packs, para sa prediksyon lang.",
+    "title": "Mga Clout pack",
+    "body": "Mag-claim ng one-time na Clout packs, para sa prediksyon lang.",
     "cta": "I-claim",
     "claiming": "Kine-claim",
     "claimed": "Na-claim na",
     "unavailable": "Hindi available",
-    "success": "{{points}} pts ang naidagdag sa point ledger mo.",
-    "error": "Hindi maitala ang point pack. Subukan ulit mamaya."
+    "success": "{{points}} Clout ang naidagdag sa balanse mo.",
+    "error": "Hindi maitala ang Clout pack. Subukan ulit mamaya."
   },
   "badges": {
     "title": "Mga badge",
@@ -157,10 +157,10 @@
     "locked": "Naka-lock"
   },
   "activeBonuses": {
-    "title": "Aktibong point-play bonuses",
-    "body": "Subaybayan ang promotional gameplay points at ang progreso nila.",
-    "fallbackName": "Point-play bonus",
+    "title": "Aktibong Clout bonuses",
+    "body": "Subaybayan ang promotional Clout at ang progreso nito.",
+    "fallbackName": "Clout bonus",
     "status": "Status: {{status}}",
-    "remaining": "pts ang natitira"
+    "remaining": "Clout ang natitira"
   }
 }

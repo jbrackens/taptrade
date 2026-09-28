@@ -81,7 +81,7 @@ export function PlayLimitsCard({ userId }: { userId: string }) {
     <SettingsCard
       id="limits"
       title={t("limits.title", "Play limits")}
-      description={t("limits.description", "Cap the points you use and the size of any one order. Limits apply from your next order.")}
+      description={t("limits.description", "Cap the Clout you use and the size of any one order. Limits apply from your next order.")}
       footer={
         <Button type="button" variant="primary" size="sm" onClick={save} disabled={!dirty || saving}>
           {saving ? t("saving", "Saving…") : t("limits.save", "Save limits")}
@@ -89,12 +89,12 @@ export function PlayLimitsCard({ userId }: { userId: string }) {
       }
     >
       <div className="grid grid-cols-3 gap-4 max-[640px]:grid-cols-1">
-        {field("limit-daily", t("limits.daily", "Daily (pts)"), daily, setDaily)}
-        {field("limit-weekly", t("limits.weekly", "Weekly (pts)"), weekly, setWeekly)}
-        {field("limit-monthly", t("limits.monthly", "Monthly (pts)"), monthly, setMonthly)}
+        {field("limit-daily", t("limits.daily", "Daily (Clout)"), daily, setDaily)}
+        {field("limit-weekly", t("limits.weekly", "Weekly (Clout)"), weekly, setWeekly)}
+        {field("limit-monthly", t("limits.monthly", "Monthly (Clout)"), monthly, setMonthly)}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-4 max-[640px]:grid-cols-1">
-        {field("limit-max-order", t("limits.maxOrder", "Largest order (pts)"), maxOrder, setMaxOrder)}
+        {field("limit-max-order", t("limits.maxOrder", "Largest order (Clout)"), maxOrder, setMaxOrder)}
       </div>
     </SettingsCard>
   );

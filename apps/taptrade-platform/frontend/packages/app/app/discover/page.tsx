@@ -137,19 +137,19 @@ function RankingMetric({
       label = market.commentCount === 1 ? "comment" : "comments";
       break;
     case "yes":
-      value = `${Math.round(yesShare)} pts`;
+      value = `${Math.round(yesShare)} Clout`;
       label = "YES";
       chip = "yes";
       break;
     case "no":
-      value = `${Math.round(noShare)} pts`;
+      value = `${Math.round(noShare)} Clout`;
       label = "NO";
       chip = "no";
       break;
     case "movement":
       if (movement && movement.direction !== "flat") {
         const up = movement.direction === "up";
-        value = `${up ? "+" : "−"}${Math.abs(movement.deltaPoints)} pts`;
+        value = `${up ? "+" : "−"}${Math.abs(movement.deltaPoints)} Clout`;
         label = "24h YES";
         chip = up ? "yes" : "no";
       } else {

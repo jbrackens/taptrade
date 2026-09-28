@@ -85,7 +85,7 @@ export function CommandPalette({
       id: `m-${m.id}`,
       kind: "market",
       label: m.title,
-      meta: `${m.yesPricePoints} pts · ${m.eventTitle || m.ticker}`,
+      meta: `${m.yesPricePoints} Clout · ${m.eventTitle || m.ticker}`,
       href: `/market/${m.ticker}`,
     }));
     const seen = new Set<string>();

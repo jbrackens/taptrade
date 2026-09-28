@@ -28,12 +28,12 @@
       "description": "Trader diperingkat berdasarkan akurasi prediksi."
     },
     "pnlWeekly": {
-      "name": "Poin Mingguan",
-      "description": "Prediktor diperingkat berdasarkan hasil poin terealisasi minggu ini."
+      "name": "Clout Mingguan",
+      "description": "Prediktor diperingkat berdasarkan Clout bersih dari market yang selesai minggu ini."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Prediktor diperingkat berdasarkan efisiensi poin pada market selesai."
+      "description": "Prediktor diperingkat berdasarkan efisiensi Clout pada market selesai."
     },
     "category": {
       "name": "Juara {{category}}",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Akurasi",
-    "pnl": "Poin bersih",
+    "pnl": "Clout bersih",
     "sharpness": "Sharpness",
-    "category": "Poin bersih"
+    "category": "Clout bersih"
   },
   "qualification": {
     "accuracy": "Selesaikan cukup banyak market untuk masuk peringkat akurasi.",

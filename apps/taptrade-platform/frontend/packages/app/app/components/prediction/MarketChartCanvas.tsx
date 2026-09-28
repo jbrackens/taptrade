@@ -202,7 +202,7 @@ export default function MarketChartCanvas({
       }
       const when = new Date((param.time as number) * 1000);
       setReadout(
-        `${Math.round(point.value)} pts · ${when.toLocaleString("en-US", {
+        `${Math.round(point.value)} Clout · ${when.toLocaleString("en-US", {
           month: "short",
           day: "numeric",
           hour: "2-digit",

@@ -74,10 +74,10 @@ export function PurchaseSuccess({
     <ResultShell
       testid="purchase-success"
       dotClass="bg-[var(--success)]"
-      title={t("result.successTitle", "Points added")}
+      title={t("result.successTitle", "Clout added")}
       body={t(
         "result.successBody",
-        "{{points}} pts were added to your balance.",
+        "{{points}} Clout added to your balance.",
         {
           points: formatPointsAmount(purchase.totalPoints),
         },
@@ -110,7 +110,7 @@ export function PurchaseSuccess({
           {t("result.backToStore", "Back to store")}
         </Button>
         <Link href="/account/transactions" className={QUIET_LINK_CLASS}>
-          {t("result.viewLedger", "View point ledger")} →
+          {t("result.viewLedger", "View Clout history")} →
         </Link>
       </div>
     </ResultShell>
@@ -147,7 +147,7 @@ export function PurchaseFailed({
       title={t("result.failedTitle", "Checkout did not complete")}
       body={t(
         "result.failedBody",
-        "{{reason}} No points were added. You can start a new checkout for the same pack.",
+        "{{reason}} No Clout was added. You can start a new checkout for the same pack.",
         { reason },
       )}
     >
@@ -188,7 +188,7 @@ export function PurchaseCanceled({
       title={t("result.canceledTitle", "Checkout canceled")}
       body={t(
         "result.canceledBody",
-        "This simulated checkout was canceled. No points were added.",
+        "This simulated checkout was canceled. No Clout was added.",
       )}
     >
       <div className={ACTIONS_CLASS}>
@@ -219,7 +219,7 @@ export function PurchasePending({
       title={t("result.pendingTitle", "Completion pending")}
       body={t(
         "result.pendingBody",
-        "The simulated provider reported a delay. Points are added only once the checkout completes — check the status below.",
+        "The simulated provider reported a delay. Clout is added only once the checkout completes — check the status below.",
       )}
     >
       <div className={ACTIONS_CLASS}>

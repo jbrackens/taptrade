@@ -28,12 +28,12 @@
       "description": "按预测准确率排名交易者。"
     },
     "pnlWeekly": {
-      "name": "每周积分",
-      "description": "按本周已实现积分结果排名预测者。"
+      "name": "每周 Clout",
+      "description": "按本周已结算市场的净 Clout 排名预测者。"
     },
     "sharpness": {
       "name": "敏锐度",
-      "description": "按已结算市场的积分效率排名预测者。"
+      "description": "按已结算市场的 Clout 效率排名预测者。"
     },
     "category": {
       "name": "{{category}} 冠军",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "准确率",
-    "pnl": "净积分",
+    "pnl": "净 Clout",
     "sharpness": "敏锐度",
-    "category": "净积分"
+    "category": "净 Clout"
   },
   "qualification": {
     "accuracy": "结算足够市场即可获得准确率排名资格。",

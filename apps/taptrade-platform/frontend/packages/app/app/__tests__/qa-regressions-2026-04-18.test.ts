@@ -339,7 +339,7 @@ describe("rewards daily claim", () => {
     assert.ok(source.includes("getPointPacks"));
     assert.ok(source.includes("claimPointPack"));
     assert.ok(source.includes("PointPacksControl"));
-    assert.ok(source.includes("gameplay point packs for predictions only"));
+    assert.ok(source.includes("one-time Clout packs, for predictions only"));
     assert.ok(
       source.includes("no cashout, withdrawal, crypto, fiat, or prize path"),
     );
@@ -400,7 +400,7 @@ describe("rewards daily claim", () => {
     assert.ok(source.includes("getStreaks"));
     assert.ok(source.includes("claimStreak"));
     assert.ok(source.includes("StreaksControl"));
-    assert.ok(source.includes("Keep daily gameplay-point claims going"));
+    assert.ok(source.includes("Keep your daily Clout claims going"));
     assert.ok(walletClientSource.includes("/api/v1/wallet/streaks"));
     assert.ok(walletClientSource.includes("/api/v1/wallet/streaks/claim"));
     assert.ok(gatewayWalletSource.includes("STREAK_DAILY_3_REWARD_CENTS"));

@@ -190,7 +190,7 @@ export function WelcomeHero({
           <p className="m-0 mt-5 max-w-[540px] text-[19px] leading-[1.5] text-[var(--t2)] max-[640px]:text-[16px]">
             {t(
               "LANDING_SUB",
-              "Pick Yes or No on the moments everyone's talking about: basketball, esports, pageants, showbiz and more. Right calls earn points and bragging rights.",
+              "Pick Yes or No on the moments everyone's talking about: basketball, esports, pageants, showbiz and more. Right calls earn Clout and bragging rights.",
             )}
           </p>
           <div className="mt-8 flex flex-wrap gap-3 max-[480px]:flex-col">
@@ -348,7 +348,7 @@ function StepVisualSettle() {
           {t("LANDING_STEP3_EXAMPLE", "You called it")}
         </p>
         <p className="m-0 text-[13px] tabular-nums text-[var(--yes-text)]">
-          {t("LANDING_STEP3_EXAMPLE_SUB", "Each correct share settles at 100 pts")}
+          {t("LANDING_STEP3_EXAMPLE_SUB", "Each correct share settles at 100 Clout")}
         </p>
       </div>
     </div>
@@ -359,8 +359,8 @@ export function HowItWorks() {
   const { t } = useTranslation("prediction");
   const steps = [
     { n: 1, title: t("LANDING_STEP1_TITLE", "Pick a moment"), body: t("LANDING_STEP1_BODY", "Every market is a Yes-or-No question about something real: a Finals series, a pageant night, a box-office weekend."), visual: <StepVisualPick /> },
-    { n: 2, title: t("LANDING_STEP2_TITLE", "Tap Yes or No"), body: t("LANDING_STEP2_BODY", "Prices run from 1 to 99 points and move with the crowd. 58 points on Yes means the crowd gives it a 58% chance."), visual: <StepVisualTap /> },
-    { n: 3, title: t("LANDING_STEP3_TITLE", "Be right, earn points"), body: t("LANDING_STEP3_BODY", "When the moment happens, every correct share settles at 100 points. Climb the leaderboards and keep your streak going."), visual: <StepVisualSettle /> },
+    { n: 2, title: t("LANDING_STEP2_TITLE", "Tap Yes or No"), body: t("LANDING_STEP2_BODY", "Prices run from 1 to 99 Clout and move with the crowd. 58 Clout on Yes means the crowd gives it a 58% chance."), visual: <StepVisualTap /> },
+    { n: 3, title: t("LANDING_STEP3_TITLE", "Be right, earn Clout"), body: t("LANDING_STEP3_BODY", "When the moment happens, every correct share settles at 100 Clout. Climb the leaderboards and keep your streak going."), visual: <StepVisualSettle /> },
   ];
   return (
     <section id="how-it-works" className="scroll-mt-20 bg-[var(--surface-1)] py-20 max-[640px]:py-12" aria-labelledby="welcome-how">
@@ -422,9 +422,9 @@ export function TrendingRow({ markets }: { markets: PredictionMarket[] }) {
 export function TrustBand() {
   const { t } = useTranslation("prediction");
   const items = [
-    { icon: Sparkle, title: t("LANDING_TRUST1_TITLE", "Free to play"), body: t("LANDING_TRUST1_BODY", "Sign up and start with free points. No card needed.") },
+    { icon: Sparkle, title: t("LANDING_TRUST1_TITLE", "Free to play"), body: t("LANDING_TRUST1_BODY", "Sign up and start with free Clout. No card needed.") },
     { icon: Scales, title: t("LANDING_TRUST2_TITLE", "Clear rules"), body: t("LANDING_TRUST2_BODY", "Every market shows how and where it resolves before you make a call.") },
-    { icon: ShieldCheck, title: t("LANDING_TRUST3_TITLE", "Points are play"), body: t("LANDING_TRUST3_BODY", "18+ only. Points are for play and bragging rights, and they stay that way.") },
+    { icon: ShieldCheck, title: t("LANDING_TRUST3_TITLE", "Clout is play"), body: t("LANDING_TRUST3_BODY", "18+ only. Clout is for play and bragging rights, and it stays that way.") },
   ];
   return (
     <section className="border-y border-[var(--border-1)] bg-[var(--surface-1)] py-14" aria-label={t("LANDING_TRUST_LABEL", "Why TapTrade")}>
@@ -457,7 +457,7 @@ export function FinalCta() {
           {t("LANDING_FINAL_TITLE", "Your first call is on us.")}
         </h2>
         <p className="m-0 mt-4 max-w-[520px] text-[18px] text-[var(--poster-ink-2)]">
-          {t("LANDING_FINAL_BODY", "Sign up in seconds and start with free points.")}
+          {t("LANDING_FINAL_BODY", "Sign up in seconds and start with free Clout.")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link

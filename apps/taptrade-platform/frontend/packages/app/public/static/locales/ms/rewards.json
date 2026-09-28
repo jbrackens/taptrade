@@ -1,6 +1,6 @@
 {
   "PAGE_TITLE": "TapTrade Rewards",
-  "PAGE_SUBTITLE": "Kumpul mata daripada setiap dagangan selesai, naik tier, dan buka manfaat yang lebih baik semasa bermain.",
+  "PAGE_SUBTITLE": "Kumpul XP daripada setiap dagangan selesai, naik tier, dan buka manfaat yang lebih baik semasa bermain.",
   "KICKER": "Pusat Ganjaran",
   "TIER_BADGE_PREFIX": "Tier Semasa",
   "STAT_BALANCE": "Baki Mata",
@@ -57,18 +57,18 @@
   "kickerShort": "Ganjaran",
   "loyaltyTitle": "Loyalti",
   "viewLeaderboards": "Lihat leaderboard",
-  "pointsShort": "pts",
+  "pointsShort": "XP",
   "errors": {
     "loadRewards": "Gagal memuatkan ganjaran"
   },
   "state": {
     "loading": "Memuatkan ganjaran…",
-    "signIn": "Log masuk untuk melihat tier, baki mata dan aktiviti terkini anda.",
+    "signIn": "Log masuk untuk melihat tier, XP dan aktiviti terkini anda.",
     "login": "Log masuk",
     "backToPortfolio": "Kembali ke portfolio"
   },
   "progress": {
-    "pointsTo": "{{points}} pts ke",
+    "pointsTo": "{{points}} XP ke",
     "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami.",
     "label": "Kemajuan tahap"
   },
@@ -80,7 +80,7 @@
   },
   "prefirst": {
     "title": "Belum ada aktiviti",
-    "body": "Selesaikan dagangan pertama untuk mula mendapat mata dan naik tier.",
+    "body": "Selesaikan dagangan pertama untuk mula mendapat XP dan naik tier.",
     "browse": "Lihat pasaran"
   },
   "ledger": {
@@ -105,50 +105,50 @@
     "streak_other": "{{count}} hari berturut-turut"
   },
   "dailyClaim": {
-    "body": "Tuntut mata permainan yang tidak boleh ditebus sekali sehari, untuk ramalan sahaja.",
+    "body": "Tuntut Clout yang tidak boleh ditebus sekali sehari, untuk ramalan sahaja.",
     "cta": "Tuntut hari ini",
     "claiming": "Menuntut",
     "claimed": "Sudah dituntut hari ini",
-    "success": "Tuntutan hari ini direkodkan: {{points}} mata ditambah ke lejar mata anda.",
+    "success": "Tuntutan hari ini direkodkan: {{points}} Clout ditambah ke baki anda.",
     "error": "Tuntutan harian tidak dapat direkodkan. Cuba lagi sebentar nanti.",
     "disabled": "Tuntutan harian tidak tersedia buat masa ini."
   },
   "rewardLimit": {
     "title": "Had ganjaran harian",
-    "body": "{{remaining}} daripada {{limit}} mata ganjaran berbaki untuk hari ini.",
+    "body": "{{remaining}} daripada {{limit}} Clout ganjaran berbaki untuk hari ini.",
     "reset": "Ditetapkan semula {{date}}"
   },
   "missions": {
     "title": "Misi",
-    "body": "Lengkapkan misi permainan untuk memperoleh mata ganjaran yang tidak boleh ditebus.",
+    "body": "Lengkapkan misi permainan untuk memperoleh Clout yang tidak boleh ditebus.",
     "progress": "{{progress}} / {{target}} selesai",
     "cta": "Tuntut",
     "claiming": "Menuntut",
     "claimed": "Sudah dituntut",
     "incomplete": "Belum selesai",
-    "success": "{{points}} mata ditambah ke lejar mata anda.",
+    "success": "{{points}} Clout ditambah ke baki anda.",
     "error": "Ganjaran misi tidak dapat direkodkan. Cuba lagi sebentar nanti."
   },
   "streaks": {
     "title": "Rentetan",
-    "body": "Teruskan tuntutan mata permainan harian untuk memperoleh ganjaran rentetan yang tidak boleh ditebus.",
+    "body": "Teruskan tuntutan Clout harian untuk memperoleh ganjaran rentetan yang tidak boleh ditebus.",
     "progress": "{{current}} / {{target}} hari",
     "cta": "Tuntut",
     "claiming": "Menuntut",
     "claimed": "Sudah dituntut",
     "incomplete": "Belum selesai",
-    "success": "{{points}} mata ditambah ke lejar mata anda.",
+    "success": "{{points}} Clout ditambah ke baki anda.",
     "error": "Ganjaran rentetan tidak dapat direkodkan. Cuba lagi sebentar nanti."
   },
   "pointPacks": {
-    "title": "Pek mata",
-    "body": "Tuntut pek mata permainan sekali sahaja, untuk ramalan sahaja.",
+    "title": "Pek Clout",
+    "body": "Tuntut pek Clout sekali sahaja, untuk ramalan sahaja.",
     "cta": "Tuntut",
     "claiming": "Menuntut",
     "claimed": "Sudah dituntut",
     "unavailable": "Tidak tersedia",
-    "success": "{{points}} mata ditambah ke lejar mata anda.",
-    "error": "Pek mata tidak dapat direkodkan. Cuba lagi sebentar nanti."
+    "success": "{{points}} Clout ditambah ke baki anda.",
+    "error": "Pek Clout tidak dapat direkodkan. Cuba lagi sebentar nanti."
   },
   "badges": {
     "title": "Lencana",
@@ -157,10 +157,10 @@
     "locked": "Dikunci"
   },
   "activeBonuses": {
-    "title": "Bonus main mata yang aktif",
-    "body": "Jejaki mata permainan promosi dan kemajuan mainnya.",
-    "fallbackName": "Bonus main mata",
+    "title": "Bonus Clout yang aktif",
+    "body": "Jejaki Clout promosi dan kemajuannya.",
+    "fallbackName": "Bonus Clout",
     "status": "Status: {{status}}",
-    "remaining": "mata berbaki"
+    "remaining": "Clout berbaki"
   }
 }

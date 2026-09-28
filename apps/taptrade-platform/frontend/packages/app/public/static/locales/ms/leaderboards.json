@@ -28,12 +28,12 @@
       "description": "Trader disenaraikan mengikut ketepatan ramalan."
     },
     "pnlWeekly": {
-      "name": "Mata Mingguan",
-      "description": "Peramal disenaraikan mengikut hasil mata direalisasi minggu ini."
+      "name": "Clout Mingguan",
+      "description": "Peramal disenaraikan mengikut Clout bersih daripada pasaran yang selesai minggu ini."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Peramal disenaraikan mengikut kecekapan mata dalam pasaran selesai."
+      "description": "Peramal disenaraikan mengikut kecekapan Clout dalam pasaran selesai."
     },
     "category": {
       "name": "Juara {{category}}",
@@ -42,9 +42,9 @@
   },
   "metrics": {
     "accuracy": "Ketepatan",
-    "pnl": "Mata bersih",
+    "pnl": "Clout bersih",
     "sharpness": "Sharpness",
-    "category": "Mata bersih"
+    "category": "Clout bersih"
   },
   "qualification": {
     "accuracy": "Selesaikan cukup pasaran untuk layak dalam ranking ketepatan.",

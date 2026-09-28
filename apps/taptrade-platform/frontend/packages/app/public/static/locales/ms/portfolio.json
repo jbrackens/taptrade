@@ -1,20 +1,20 @@
 {
   "boards": {
     "accuracy": "Ketepatan",
-    "pnlWeekly": "Hasil mata mingguan",
+    "pnlWeekly": "Clout bersih mingguan",
     "sharpness": "Sharpness"
   },
   "history": {
     "earnedPoints": "Mendapat {{points}} mata",
     "empty": "Posisi selesai akan muncul di sini selepas pasaran diselesaikan.",
-    "pointsShort": "+{{points}} pts"
+    "pointsShort": "+{{Clout}} Clout"
   },
   "orders": {
     "cancel": "Batal",
     "cancelFailed": "Pembatalan gagal",
     "cancelled": "Pesanan dibatalkan",
     "empty": "Tiada pesanan terbuka.",
-    "released": "Mata yang dikunci dibuka pada {{ticker}}"
+    "released": "Clout yang dikunci dibuka pada {{ticker}}"
   },
   "positions": {
     "browse": "Lihat pasaran",
@@ -23,8 +23,8 @@
   "rank": {
     "label": "Kedudukan",
     "metricAccuracy": "{{value}}% betul",
-    "metricPnl": "{{value}} hasil mata",
-    "metricSharpness": "{{value}}% kecekapan mata",
+    "metricPnl": "{{value}} Clout bersih",
+    "metricSharpness": "{{value}}% kecekapan Clout",
     "notRanked": "Belum disenaraikan",
     "qualify": "Selesaikan lebih banyak pasaran untuk layak"
   },
@@ -45,7 +45,7 @@
     "invested": "Dilaburkan",
     "noSettledPredictions": "Belum ada ramalan selesai",
     "openPositions": "Posisi terbuka",
-    "realizedPnl": "Hasil mata direalisasi"
+    "realizedPnl": "Clout bersih direalisasi"
   },
   "table": {
     "available": "Tersedia",
@@ -55,8 +55,8 @@
     "exit": "Keluar",
     "market": "Pasaran",
     "placed": "Diletakkan",
-    "pnl": "Hasil mata",
-    "points": "Mata",
+    "pnl": "Clout bersih",
+    "points": "Clout",
     "qty": "Qty",
     "settled": "Selesai",
     "side": "Side",

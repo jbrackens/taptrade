@@ -1,21 +1,21 @@
 {
-  "kicker": "Kedai Mata",
-  "title": "Tambah Mata",
-  "ledgerLink": "Lihat lejar mata",
+  "kicker": "Kedai Clout",
+  "title": "Dapatkan Clout",
+  "ledgerLink": "Lihat sejarah Clout",
   "packs": {
-    "heading": "Pek mata",
-    "unit": "pts",
-    "base": "{{points}} mata asas",
-    "bonus": "+{{points}} mata bonus",
+    "heading": "Pek Clout",
+    "unit": "Clout",
+    "base": "{{points}} Clout asas",
+    "bonus": "+{{points}} Clout bonus",
     "priceLabel": "Harga",
-    "firstPurchase": "Ini akan menjadi pembelian pek mata pertama anda."
+    "firstPurchase": "Ini akan menjadi pembelian pek Clout pertama anda."
   },
   "summary": {
     "title": "Ringkasan pesanan",
-    "pack": "Pek mata",
-    "base": "Mata asas",
-    "bonus": "Mata bonus",
-    "total": "Jumlah mata",
+    "pack": "Pek Clout",
+    "base": "Clout asas",
+    "bonus": "Clout bonus",
+    "total": "Jumlah Clout",
     "price": "Harga",
     "status": "Status",
     "continue": "Teruskan ke checkout"
@@ -29,7 +29,7 @@
   "checkout": {
     "banner": "Checkout demo — simulasi sahaja, tiada caj sebenar",
     "title": "Checkout simulasi",
-    "subtitle": "Pilih hasil di bawah untuk melengkapkan checkout simulasi ini. Mata hanya ditambah selepas checkout selesai.",
+    "subtitle": "Pilih hasil di bawah untuk melengkapkan checkout simulasi ini. Clout hanya ditambah selepas checkout selesai.",
     "orderRef": "Rujukan pesanan",
     "provider": "Penyedia",
     "providerDemo": "Demo (simulasi)",
@@ -42,42 +42,42 @@
     "processing": "Memproses…"
   },
   "result": {
-    "successTitle": "Mata ditambah",
-    "successBody": "{{points}} pts telah ditambah ke baki anda.",
-    "successToast": "+{{points}} pts daripada pek {{pack}}",
+    "successTitle": "Clout ditambah",
+    "successBody": "{{points}} Clout telah ditambah ke baki anda.",
+    "successToast": "+{{points}} Clout daripada pek {{pack}}",
     "newBalance": "Baki baharu",
-    "viewLedger": "Lihat lejar mata",
+    "viewLedger": "Lihat sejarah Clout",
     "returnToMarket": "Kembali ke pasaran",
     "backToStore": "Kembali ke kedai",
     "failedTitle": "Checkout tidak selesai",
-    "failedBody": "{{reason}} Tiada mata ditambah. Anda boleh mulakan checkout baharu untuk pek yang sama.",
+    "failedBody": "{{reason}} Tiada Clout ditambah. Anda boleh mulakan checkout baharu untuk pek yang sama.",
     "failedReasonFallback": "Checkout simulasi tidak selesai.",
     "retry": "Cuba lagi",
     "canceledTitle": "Checkout dibatalkan",
-    "canceledBody": "Checkout simulasi ini dibatalkan. Tiada mata ditambah.",
+    "canceledBody": "Checkout simulasi ini dibatalkan. Tiada Clout ditambah.",
     "backToSummary": "Kembali ke ringkasan pesanan",
     "pendingTitle": "Menunggu selesai",
-    "pendingBody": "Penyedia simulasi melaporkan kelewatan. Mata hanya ditambah selepas checkout selesai — semak status di bawah.",
+    "pendingBody": "Penyedia simulasi melaporkan kelewatan. Clout hanya ditambah selepas checkout selesai — semak status di bawah.",
     "checkStatus": "Semak status",
     "checking": "Menyemak…"
   },
   "how": {
-    "title": "Cara mata berfungsi"
+    "title": "Cara Clout berfungsi"
   },
   "state": {
-    "loading": "Memuatkan kedai mata…",
+    "loading": "Memuatkan kedai Clout…",
     "loadingPurchase": "Menyemak pesanan anda…",
-    "signIn": "Log masuk untuk melihat pek mata dan menambah mata ke baki anda.",
+    "signIn": "Log masuk untuk melihat pek Clout dan menambah Clout ke baki anda.",
     "login": "Log masuk",
-    "error": "Kedai mata tidak dapat dimuatkan.",
+    "error": "Kedai Clout tidak dapat dimuatkan.",
     "purchaseError": "Pesanan ini tidak dapat dimuatkan.",
     "checkoutError": "Checkout tidak dapat dimulakan.",
     "confirmError": "Hasil simulasi gagal.",
     "retry": "Cuba lagi"
   },
   "entry": {
-    "addPoints": "Tambah Mata",
-    "needMore": "Perlukan lebih banyak mata?",
-    "visitStore": "Lawati Kedai Mata"
+    "addPoints": "Dapatkan Clout",
+    "needMore": "Perlukan lebih banyak Clout?",
+    "visitStore": "Lawati Kedai Clout"
   }
 }

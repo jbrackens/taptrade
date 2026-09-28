@@ -1,20 +1,20 @@
 {
   "boards": {
     "accuracy": "准确率",
-    "pnlWeekly": "每週點數結果",
+    "pnlWeekly": "每週淨 Clout",
     "sharpness": "敏锐度"
   },
   "history": {
     "earnedPoints": "获得 {{points}} 积分",
     "empty": "市场结算后，已结算持仓会显示在这里。",
-    "pointsShort": "+{{points}} 积分"
+    "pointsShort": "+{{points}}"
   },
   "orders": {
     "cancel": "取消",
     "cancelFailed": "取消失败",
     "cancelled": "订单已取消",
     "empty": "没有开放订单。",
-    "released": "{{ticker}} 的鎖定積分已解鎖"
+    "released": "{{ticker}} 的鎖定 Clout 已解鎖"
   },
   "positions": {
     "browse": "浏览市场",
@@ -23,8 +23,8 @@
   "rank": {
     "label": "排名",
     "metricAccuracy": "{{value}}% 正确",
-    "metricPnl": "{{value}} 點數結果",
-    "metricSharpness": "{{value}}% 點數效率",
+    "metricPnl": "{{value}} 淨 Clout",
+    "metricSharpness": "{{value}}% Clout 效率",
     "notRanked": "尚未排名",
     "qualify": "结算更多市场即可获得排名资格"
   },
@@ -45,7 +45,7 @@
     "invested": "已投入",
     "noSettledPredictions": "还没有已结算预测",
     "openPositions": "未平仓持仓",
-    "realizedPnl": "已實現點數結果"
+    "realizedPnl": "已實現淨 Clout"
   },
   "table": {
     "available": "可用",
@@ -55,8 +55,8 @@
     "exit": "出场",
     "market": "市场",
     "placed": "下单时间",
-    "pnl": "點數結果",
-    "points": "积分",
+    "pnl": "淨 Clout",
+    "points": "Clout",
     "qty": "数量",
     "settled": "已结算",
     "side": "方向",

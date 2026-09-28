@@ -207,7 +207,7 @@ export default function AccountPage() {
           <SettingsLink
             href="/account/transactions"
             icon={ReceiptText}
-            title={t("actions.points.title", "Point ledger")}
+            title={t("actions.points.title", "Clout history")}
             desc={t("actions.points.desc", "Starter grants, predictions, and rewards")}
           />
           <SettingsLink

@@ -233,11 +233,11 @@ export default function PointsLedgerPage() {
  <div className="overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]">
  {loading ? (
  <div className="p-10 text-center text-sm text-[var(--t3)]">
- Loading point ledger…
+ Loading Clout history…
  </div>
  ) : loadError ? (
  <div className="p-10 text-center text-sm text-[var(--t3)]">
- Point ledger is temporarily unavailable.
+ Clout history is temporarily unavailable.
  </div>
  ) : transactions.length === 0 ? (
  <LedgerEmptyState />

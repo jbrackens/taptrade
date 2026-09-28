@@ -18,7 +18,7 @@
     "profile": "Profile",
     "security": "Seguridad",
     "alerts": "Mga alert",
-    "ledger": "Point ledger",
+    "ledger": "Kasaysayan ng Clout",
     "responsible": "Maglaro nang responsable"
   },
   "profile": {
@@ -34,8 +34,8 @@
     "subtitle": "Piliin kung paano ka makakatanggap ng balita tungkol sa markets at account mo."
   },
   "ledger": {
-    "title": "Point ledger",
-    "subtitle": "Bawat puntos na pumasok at lumabas sa account mo."
+    "title": "Kasaysayan ng Clout",
+    "subtitle": "Bawat Clout na pumasok at lumabas sa account mo."
   },
   "responsible": {
     "title": "Maglaro nang responsable",
@@ -84,11 +84,11 @@
   },
   "limits": {
     "title": "Mga limit sa paglalaro",
-    "description": "Lagyan ng limit ang puntos na ginagamit mo at ang laki ng bawat order. Epektibo ito simula sa susunod mong order.",
-    "daily": "Araw-araw (pts)",
-    "weekly": "Lingguhan (pts)",
-    "monthly": "Buwanan (pts)",
-    "maxOrder": "Pinakamalaking order (pts)",
+    "description": "Lagyan ng limit ang Clout na ginagamit mo at ang laki ng bawat order. Epektibo ito simula sa susunod mong order.",
+    "daily": "Araw-araw (Clout)",
+    "weekly": "Lingguhan (Clout)",
+    "monthly": "Buwanan (Clout)",
+    "maxOrder": "Pinakamalaking order (Clout)",
     "none": "Walang limit",
     "save": "I-save ang mga limit",
     "saved": "Na-save ang mga limit",

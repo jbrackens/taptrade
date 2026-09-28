@@ -18,7 +18,7 @@
     "profile": "個人資料",
     "security": "安全",
     "alerts": "提醒",
-    "ledger": "點數明細",
+    "ledger": "Clout 記錄",
     "responsible": "理性參與"
   },
   "profile": {
@@ -34,8 +34,8 @@
     "subtitle": "選擇接收市場和帳戶通知的方式。"
   },
   "ledger": {
-    "title": "點數明細",
-    "subtitle": "帳戶中每一筆點數的進出。"
+    "title": "Clout 記錄",
+    "subtitle": "帳戶中每一筆 Clout 的進出。"
   },
   "responsible": {
     "title": "理性參與",
@@ -84,11 +84,11 @@
   },
   "limits": {
     "title": "參與限額",
-    "description": "設定你使用的點數上限和單筆訂單上限。限額從下一筆訂單開始生效。",
-    "daily": "每日（點）",
-    "weekly": "每週（點）",
-    "monthly": "每月（點）",
-    "maxOrder": "單筆訂單上限（點）",
+    "description": "設定你使用的 Clout 上限和單筆訂單上限。限額從下一筆訂單開始生效。",
+    "daily": "每日（Clout）",
+    "weekly": "每週（Clout）",
+    "monthly": "每月（Clout）",
+    "maxOrder": "單筆訂單上限（Clout）",
     "none": "無限額",
     "save": "儲存限額",
     "saved": "限額已儲存",

@@ -798,7 +798,7 @@ describe("wallet-client endpoint paths", () => {
       "completedPoints={bonus.playCompletedPoints}",
       "progressPct={bonus.playProgressPct}",
       "formatPointsAmount(bonus.remainingPoints)",
-      't("activeBonuses.title", "Active point-play bonuses")',
+      't("activeBonuses.title", "Active Clout bonuses")',
     ]) {
       assert.ok(
         activeBonusesControlSource.includes(token),

@@ -200,7 +200,7 @@ export default function EventWorkspacePage() {
                     className="font-mono text-[10.5px] font-semibold text-[var(--accent-text)] tabular-nums"
                   >
                     {pos.quantity} {pos.side === "yes" ? t("YES") : t("NO")} @{" "}
-                    {pos.avgPricePoints} {t("PTS", "pts")} · {market.ticker}
+                    {pos.avgPricePoints} {t("PTS", "Clout")} · {market.ticker}
                   </span>
                 ))}
               </div>

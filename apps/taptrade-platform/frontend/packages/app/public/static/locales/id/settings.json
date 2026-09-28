@@ -18,7 +18,7 @@
     "profile": "Profil",
     "security": "Keamanan",
     "alerts": "Peringatan",
-    "ledger": "Riwayat poin",
+    "ledger": "Riwayat Clout",
     "responsible": "Bermain secara bertanggung jawab"
   },
   "profile": {
@@ -34,8 +34,8 @@
     "subtitle": "Pilih cara Anda menerima kabar tentang market dan akun Anda."
   },
   "ledger": {
-    "title": "Riwayat poin",
-    "subtitle": "Setiap poin yang masuk dan keluar dari akun Anda."
+    "title": "Riwayat Clout",
+    "subtitle": "Setiap Clout yang masuk dan keluar dari akun Anda."
   },
   "responsible": {
     "title": "Bermain secara bertanggung jawab",
@@ -84,11 +84,11 @@
   },
   "limits": {
     "title": "Batas bermain",
-    "description": "Batasi poin yang Anda gunakan dan ukuran setiap order. Batas berlaku mulai order berikutnya.",
-    "daily": "Harian (poin)",
-    "weekly": "Mingguan (poin)",
-    "monthly": "Bulanan (poin)",
-    "maxOrder": "Order terbesar (poin)",
+    "description": "Batasi Clout yang Anda gunakan dan ukuran setiap order. Batas berlaku mulai order berikutnya.",
+    "daily": "Harian (Clout)",
+    "weekly": "Mingguan (Clout)",
+    "monthly": "Bulanan (Clout)",
+    "maxOrder": "Order terbesar (Clout)",
     "none": "Tanpa batas",
     "save": "Simpan batas",
     "saved": "Batas disimpan",

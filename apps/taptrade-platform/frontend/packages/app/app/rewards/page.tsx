@@ -289,7 +289,7 @@ export default function RewardsPage() {
       setDailyClaimMessage(
         t(
           "dailyClaim.success",
-          "Today's claim is recorded: {{points}} pts added to your point ledger.",
+          "Today's claim is recorded: {{points}} Clout added to your point ledger.",
           {
             points: formatPointsAmount(result.claimPoints ?? 0),
           },
@@ -315,13 +315,13 @@ export default function RewardsPage() {
         setPointPackMessage(
           t(
             "pointPacks.error",
-            "Point pack could not be recorded. Try again shortly.",
+            "The Clout pack could not be recorded. Try again shortly.",
           ),
         );
         return;
       }
       setPointPackMessage(
-        t("pointPacks.success", "{{points}} pts added to your point ledger.", {
+        t("pointPacks.success", "{{points}} Clout added to your point ledger.", {
           points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
@@ -351,7 +351,7 @@ export default function RewardsPage() {
         return;
       }
       setMissionMessage(
-        t("missions.success", "{{points}} pts added to your point ledger.", {
+        t("missions.success", "{{points}} Clout added to your point ledger.", {
           points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
@@ -388,7 +388,7 @@ export default function RewardsPage() {
         return;
       }
       setStreakMessage(
-        t("streaks.success", "{{points}} pts added to your point ledger.", {
+        t("streaks.success", "{{points}} Clout added to your point ledger.", {
           points: formatPointsAmount(result.claimPoints ?? 0),
         }),
       );
@@ -417,7 +417,7 @@ export default function RewardsPage() {
       <PageState
         message={t(
           "state.signIn",
-          "Sign in to view your tier, points balance, and recent activity.",
+          "Sign in to view your tier, XP, and recent activity.",
         )}
         cta={{ href: "/auth/login", label: t("state.login", "Log in") }}
       />
@@ -613,14 +613,14 @@ function TierCard({
       <h2 id="rw-tier-title" className="m-0 mt-4 text-[34px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[var(--t1)] max-[640px]:text-[28px]">
         {formatPointsAmount(standing.pointsBalance)}
         <span className="ml-1.5 text-[14px] font-medium tracking-normal text-[var(--t3)]">
-          {t("pointsShort", "pts")}
+          {t("pointsShort", "XP")}
         </span>
       </h2>
       {standing.nextRankName ? (
         <div className="mt-4">
           <div className="mb-2 flex justify-between text-[13px] text-[var(--t2)]">
             <span>
-              {t("progress.pointsTo", "{{points}} pts to", {
+              {t("progress.pointsTo", "{{points}} XP to", {
                 points: formatPointsAmount(standing.xpToNextRank),
               })}{" "}
               <strong className="font-semibold text-[var(--t1)]">{standing.nextRankName}</strong>
@@ -650,7 +650,7 @@ function StartCard({ tiers }: { tiers: LoyaltyTier[] }) {
       <p className="m-0 mt-1.5 max-w-[440px] text-[14px] leading-[1.55] text-[var(--t2)]">
         {t(
           "prefirst.body",
-          "Settle your first trade to start earning points and climb the tier ladder.",
+          "Settle your first trade to start earning XP and climb the tier ladder.",
         )}
       </p>
       <div className="mt-4">
@@ -669,9 +669,9 @@ function StoreCrossLink() {
   const { t } = useTranslation("store");
   return (
     <p className="m-0 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--t3)]">
-      {t("entry.needMore", "Need more points?")}
+      {t("entry.needMore", "Need more Clout?")}
       <Link href="/store" className={CROSS_LINK_CLASS} data-testid="add-points-rewards">
-        {t("entry.visitStore", "Visit the Point Store")} →
+        {t("entry.visitStore", "Visit the Clout Store")} →
       </Link>
     </p>
   );
@@ -694,7 +694,7 @@ function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
       </div>
       <Progress value={status.remainingPoints} max={status.limitPoints} />
       <p className="m-0 mt-2 text-[13px] text-[var(--t2)]">
-        {t("rewardLimit.body", "{{remaining}} of {{limit}} reward pts remain for today.", {
+        {t("rewardLimit.body", "{{remaining}} of {{limit}} reward Clout remain for today.", {
           remaining: formatPointsAmount(status.remainingPoints),
           limit: formatPointsAmount(status.limitPoints),
         })}
@@ -710,7 +710,7 @@ function DailyClaimControl({ loading, claimed, message, onClaim }: DailyClaimCon
       <p className="m-0 mb-3 text-[13px] leading-[1.55] text-[var(--t3)]">
         {t(
           "dailyClaim.body",
-          "Claim non-redeemable gameplay points once per day for predictions only.",
+          "Claim non-redeemable Clout once per day, for predictions only.",
         )}
       </p>
       <Button variant="primary" size="lg" className="w-full" disabled={loading || claimed} onClick={onClaim}>
@@ -759,10 +759,10 @@ function PointPacksControl({ packs, loadingPackId, message, onClaim }: PointPack
   return (
     <Section
       id="rw-packs"
-      title={t("pointPacks.title", "Point packs")}
+      title={t("pointPacks.title", "Clout packs")}
       description={t(
         "pointPacks.body",
-        "Claim configured one-time gameplay point packs for predictions only.",
+        "Claim one-time Clout packs, for predictions only.",
       )}
     >
       <div className={GRID_CLASS}>
@@ -816,7 +816,7 @@ function MissionsControl({ missions, loadingMissionId, message, onClaim }: Missi
       title={t("missions.title", "Missions")}
       description={t(
         "missions.body",
-        "Complete gameplay missions to earn non-redeemable reward points.",
+        "Complete gameplay missions to earn non-redeemable Clout.",
       )}
     >
       <div className={GRID_CLASS}>
@@ -875,7 +875,7 @@ function StreaksControl({ streaks, loadingStreakId, message, onClaim }: StreaksC
       title={t("streaks.title", "Streaks")}
       description={t(
         "streaks.body",
-        "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
+        "Keep your daily Clout claims going to earn non-redeemable streak rewards.",
       )}
     >
       <div className={GRID_CLASS}>

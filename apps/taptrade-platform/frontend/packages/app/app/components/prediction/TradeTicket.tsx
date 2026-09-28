@@ -215,7 +215,7 @@ function ticketSideTabClass(side: OrderSide, selected: boolean): string {
 // Points are whole units of play value —
 // never fractional in display.
 function formatPointAmount(points: number): string {
-  return `${Math.round(points).toLocaleString()} pts`;
+  return `${Math.round(points).toLocaleString()} Clout`;
 }
 
 type Translate = (key: string, values?: Record<string, unknown>) => string;
@@ -288,7 +288,7 @@ function SettlementBand({
     { label: t("ROW_STAKED"), value: formatPointAmount(s.stakedPoints) },
     {
       label: t("ROW_RESULT"),
-      value: voided ? "0 pts" : `${formatSignedPoints(s.resultPoints)} pts`,
+      value: voided ? "0 Clout" : `${formatSignedPoints(s.resultPoints)} Clout`,
       className: voided ? undefined : resultClass,
     },
   ];
@@ -770,7 +770,7 @@ export function TradeTicket({
         // Limit order rested without crossing — most common outcome on a
         // thin book. (filled=0, status=open.)
         const priceLabel =
-          mode === "limit" ? `${limitPricePoints} pts` : `${price} pts`;
+          mode === "limit" ? `${limitPricePoints} Clout` : `${price} Clout`;
         toast.info(
           t("ORDER_RESTING"),
           t("ORDER_RESTING_BODY", {
@@ -986,7 +986,7 @@ export function TradeTicket({
             >
               <span>{t("BUY_YES")}</span>
               <span className={TICKET_SIDE_PRICE_CLASS}>
-                {market.yesPricePoints} pts
+                {market.yesPricePoints} Clout
               </span>
             </button>
             <button
@@ -998,7 +998,7 @@ export function TradeTicket({
             >
               <span>{t("BUY_NO")}</span>
               <span className={TICKET_SIDE_PRICE_CLASS}>
-                {market.noPricePoints} pts
+                {market.noPricePoints} Clout
               </span>
             </button>
           </div>
@@ -1114,8 +1114,8 @@ export function TradeTicket({
                   ? t("AVAILABLE_SHARES", { quantity: availableShares })
                   : t("BALANCE_AMOUNT", {
                       // Bare grouped number: the locale template appends the
-                      // unit ("Balance {{amount}} pts") — formatPointAmount
-                      // here doubled it ("1,000 pts pts").
+                      // unit ("Balance {{amount}} Clout") — formatPointAmount
+                      // here doubled it ("1,000 Clout Clout").
                       amount:
                         typeof balance === "number"
                           ? Math.round(balance).toLocaleString()
@@ -1131,7 +1131,7 @@ export function TradeTicket({
                   {t("MIN_ONE_SHARE_HINT", {
                     price,
                     defaultValue:
-                      "At {{price}} pts a share, you need at least {{price}} pts.",
+                      "At {{price}} Clout a share, you need at least {{price}} Clout.",
                   })}
                 </p>
               )}
@@ -1144,7 +1144,7 @@ export function TradeTicket({
                  * the frozen figure holds and the pending dot on the
                  * total row carries the in-flight signal. */}
                 <span className={TICKET_ROW_VALUE_CLASS}>
-                  {displayPrice} pts
+                  {displayPrice} Clout
                 </span>
               </div>
               <p className={TICKET_ROW_SUB_CLASS}>
@@ -1161,7 +1161,7 @@ export function TradeTicket({
                 {t(action === "sell" ? "EST_PROCEEDS" : "EST_COST")}
               </span>
               <span className={TICKET_ROW_VALUE_CLASS} aria-busy={quotePending}>
-                <PointsFlow value={displaySpend} suffix=" pts" />
+                <PointsFlow value={displaySpend} suffix=" Clout" />
                 {quotePending && (
                   <span
                     className="ml-1.5 inline-block h-2 w-2 animate-pulse rounded-full border border-[var(--pending-border)] bg-[var(--pending-fill)] align-middle"
@@ -1183,7 +1183,7 @@ export function TradeTicket({
                     : "text-[var(--no-text)]"
                 }`}
               >
-                <PointsFlow value={displayPointsIfCorrect} suffix=" pts" />
+                <PointsFlow value={displayPointsIfCorrect} suffix=" Clout" />
               </span>
             </div>
           </div>
@@ -1233,7 +1233,7 @@ export function TradeTicket({
                 className={TICKET_ADD_POINTS_CLASS}
                 data-testid="add-points-tradeticket"
               >
-                {tStore("entry.addPoints", "Add Points")}
+                {tStore("entry.addPoints", "Get Clout")}
               </Link>
             </>
           ) : marketBuyHasNoLiquidity ? (
@@ -1349,7 +1349,7 @@ export function TradeTicket({
                       : action === "sell"
                         ? // ISSUE-018: sell is share-denominated — the CTA
                           // states the share count and estimated proceeds,
-                          // never "N pts" for a share count.
+                          // never "N Clout" for a share count.
                           t("SELL_SHARES_HOLD_CTA", {
                             count: requestedQuantity,
                             amount: formatPointAmount(

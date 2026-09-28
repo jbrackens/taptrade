@@ -218,8 +218,8 @@ export default function StorePage() {
       }
       if (announce) {
         toast.success(
-          t("result.successTitle", "Points added"),
-          t("result.successToast", "+{{points}} pts from the {{pack}} pack", {
+          t("result.successTitle", "Clout added"),
+          t("result.successToast", "+{{points}} Clout from the {{pack}} pack", {
             points: formatPointsAmount(completed.totalPoints),
             pack: completed.packId,
           }),
@@ -412,7 +412,7 @@ export default function StorePage() {
   if (authLoading || (user?.id && packsLoading && !purchaseParam)) {
     return (
       <div className={STATE_CLASS}>
-        <TapDot label={t("state.loading", "Loading the point store…")} />
+        <TapDot label={t("state.loading", "Loading the Clout store…")} />
       </div>
     );
   }
@@ -424,7 +424,7 @@ export default function StorePage() {
           <p className={STATE_MESSAGE_CLASS}>
             {t(
               "state.signIn",
-              "Sign in to browse point packs and add points to your balance.",
+              "Sign in to browse Clout packs and add Clout to your balance.",
             )}
           </p>
           <Button
@@ -454,7 +454,7 @@ export default function StorePage() {
         <Card as="div" padding="md" className={STATE_CARD_SIZING}>
           <p className={STATE_MESSAGE_CLASS}>
             {packsError === GENERIC_ERROR
-              ? t("state.error", "The point store could not load.")
+              ? t("state.error", "The Clout store could not load.")
               : packsError}
           </p>
           <Button
@@ -476,11 +476,11 @@ export default function StorePage() {
     <div className={WRAP_CLASS}>
       <header className={HEAD_CLASS}>
         <div>
-          <span className={KICKER_CLASS}>{t("kicker", "Point Store")}</span>
-          <h1 className={TITLE_CLASS}>{t("title", "Add Points")}</h1>
+          <span className={KICKER_CLASS}>{t("kicker", "Clout Store")}</span>
+          <h1 className={TITLE_CLASS}>{t("title", "Get Clout")}</h1>
         </div>
         <Link href="/account/transactions" className={CROSS_LINK_CLASS}>
-          {t("ledgerLink", "View point ledger")} →
+          {t("ledgerLink", "View Clout history")} →
         </Link>
       </header>
 
@@ -573,7 +573,7 @@ export default function StorePage() {
               <p className={FIRST_PURCHASE_CLASS}>
                 {t(
                   "packs.firstPurchase",
-                  "This would be your first point pack purchase.",
+                  "This would be your first Clout pack purchase.",
                 )}
               </p>
             ) : null}
@@ -621,13 +621,13 @@ function HowPointsWork() {
   return (
     <aside
       className={HOW_CARD_CLASS}
-      aria-label={t("how.title", "How points work")}
+      aria-label={t("how.title", "How Clout works")}
     >
-      <h3 className={HOW_TITLE_CLASS}>{t("how.title", "How points work")}</h3>
+      <h3 className={HOW_TITLE_CLASS}>{t("how.title", "How Clout works")}</h3>
       <p className={HOW_BODY_CLASS}>
         {t(
           "how.body",
-          "Point packs add non-redeemable gameplay points to your balance for predictions on TapTrade. Points are play credits only — they carry no cash value, and there is no cash-out, transfer, or conversion of any kind.",
+          "Clout packs add non-redeemable Clout to your balance for predictions on TapTrade. Clout is play credit only — it carries no cash value, and there is no cash-out, transfer, or conversion of any kind.",
         )}
       </p>
     </aside>
