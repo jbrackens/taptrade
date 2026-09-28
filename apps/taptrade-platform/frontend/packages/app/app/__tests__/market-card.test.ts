@@ -103,3 +103,12 @@ describe("Market Discovery Card", () => {
     assert.doesNotMatch(grid, /rankStart/);
   });
 });
+
+describe("Featured market's Trending list", () => {
+  it("shows each market's own cover, not only its category tile", () => {
+    // 2026-09-28: the rows passed categorySlug alone, so every row showed a
+    // generic trophy or bank icon even when the market had a cover.
+    const rows = featured.slice(featured.indexOf("trending.map("));
+    assert.match(rows, /<MarketThumb categorySlug=\{market\.categorySlug\} imageUrl=\{rowPhoto\}/);
+  });
+});

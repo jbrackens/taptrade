@@ -176,6 +176,11 @@ export function FeaturedMarket({
         <ol className="m-0 mt-2 list-none p-0">
           {trending.map((market, index) => {
             const pct = clampPercentage(market.yesPricePoints);
+            // The market's own cover, like the featured card and the board's
+            // cards; the category tile only when it has none.
+            const rowPhoto = [market.imagePath, market.imageUrl, market.image_url].find(
+              (value) => value && value.trim().length > 0,
+            );
             return (
               <li key={market.id} className="border-b border-[var(--border-1)] last:border-b-0">
                 <Link
@@ -185,7 +190,7 @@ export function FeaturedMarket({
                   <span className="w-4 shrink-0 text-[13px] font-semibold tabular-nums text-[var(--t3)]">
                     {index + 1}
                   </span>
-                  <MarketThumb categorySlug={market.categorySlug} size={32} />
+                  <MarketThumb categorySlug={market.categorySlug} imageUrl={rowPhoto} size={32} />
                   <span className="line-clamp-2 min-w-0 flex-1 text-[13.5px] font-medium leading-[1.35] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
                     {market.title}
                   </span>
