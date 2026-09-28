@@ -379,26 +379,48 @@ func resolveCover(ctx context.Context, repo *Repository, covers *CoverResolver, 
 	return false
 }
 
-// backfillCovers resolves covers for up to limit bare open imports, stopping
-// when the run's lookup budget is spent. Returns how many it filled.
+// backfillCovers resolves covers for up to limit bare open imports, and
+// re-resolves resolver covers marked for another look, stopping when the
+// run's lookup budget is spent. Returns how many covers it wrote.
 func backfillCovers(ctx context.Context, repo *Repository, covers *CoverResolver, limit int) int {
 	rows, err := repo.ListBareOpenImports(ctx, limit)
 	if err != nil {
 		slog.Warn("discover cover backfill list failed", "err", err)
 		return 0
 	}
-	filled := 0
+	covers.StartBackfill()
+	filled, cleared := 0, 0
 	for _, b := range rows {
 		if ctx.Err() != nil || covers.Exhausted() {
 			break
 		}
 		m := Market{Title: b.Title, EventTitle: b.EventTitle, Description: b.Description}
-		if resolveCover(ctx, repo, covers, b.ID, m, b.CategorySlug, nil) {
+		if !b.HasCover {
+			if resolveCover(ctx, repo, covers, b.ID, m, b.CategorySlug, nil) {
+				filled++
+			}
+			continue
+		}
+		meta, ok, complete := covers.ReplaceChecked(ctx, b.ID, m, b.CategorySlug)
+		switch {
+		case ok:
+			if err := repo.SetImage(ctx, b.ID, meta); err != nil {
+				slog.Warn("discover cover save failed", "row_id", b.ID, "err", err)
+				continue
+			}
+			covers.rehoster.RemoveCoversExcept(b.ID, meta.Path)
 			filled++
+		case complete:
+			if err := repo.ClearResolverCover(ctx, b.ID); err != nil {
+				slog.Warn("discover cover clear failed", "row_id", b.ID, "err", err)
+				continue
+			}
+			covers.rehoster.RemoveCoversExcept(b.ID, "")
+			cleared++
 		}
 	}
-	if filled > 0 {
-		slog.Info("discover cover backfill", "tried", len(rows), "filled", filled)
+	if filled > 0 || cleared > 0 || len(rows) > 0 {
+		slog.Info("discover cover backfill", "listed", len(rows), "filled", filled, "cleared", cleared)
 	}
 	return filled
 }

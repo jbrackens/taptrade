@@ -143,4 +143,53 @@ func TestSQLCoverBackfill(t *testing.T) {
 	if n, _ := repo.ClearImagePaths(ctx, []string{busy}); n != 0 {
 		t.Fatalf("the sweep must not clear a resolver cover, cleared %d", n)
 	}
+
+	// A resolver cover is off the list once set; queued for another look
+	// (migration 063 clears cover_checked_at) it comes back flagged HasCover.
+	inList := func(id string) (BareImport, bool) {
+		list, err := repo.ListBareOpenImports(ctx, 500)
+		if err != nil {
+			t.Fatalf("list: %v", err)
+		}
+		for _, b := range list {
+			if b.ID == id {
+				return b, true
+			}
+		}
+		return BareImport{}, false
+	}
+	if _, ok := inList(busy); ok {
+		t.Fatalf("a fresh resolver cover is not backfill work")
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE imported_markets SET cover_checked_at = NULL WHERE image_origin = 'entity'`); err != nil {
+		t.Fatalf("queue: %v", err)
+	}
+	if b, ok := inList(busy); !ok || !b.HasCover {
+		t.Fatalf("a queued resolver cover must be listed with HasCover: %+v %v", b, ok)
+	}
+	if b, ok := inList(settled); !ok || b.HasCover {
+		t.Fatalf("a bare row is listed without HasCover: %+v %v", b, ok)
+	}
+
+	// Nothing fits under the new rules: the cover goes, the row is checked.
+	if err := repo.ClearResolverCover(ctx, busy); err != nil {
+		t.Fatalf("clear: %v", err)
+	}
+	var credit sql.NullString
+	var originAfter sql.NullString
+	if err := db.QueryRowContext(ctx, `SELECT image_path, image_credit, image_origin FROM imported_markets WHERE id = $1`, busy).Scan(&path, &credit, &originAfter); err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if path.Valid || credit.Valid || originAfter.Valid {
+		t.Fatalf("a cleared resolver cover leaves the row bare: path=%v credit=%v origin=%v", path, credit, originAfter)
+	}
+	if _, ok := inList(busy); ok {
+		t.Fatalf("a cleared row waits out the retry window")
+	}
+	if err := repo.ClearResolverCover(ctx, withImage); err != nil {
+		t.Fatalf("clear swept: %v", err)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT image_origin FROM imported_markets WHERE id = $1`, withImage).Scan(&origin); err != nil || origin != "swept" {
+		t.Fatalf("only resolver covers are cleared, origin=%q err=%v", origin, err)
+	}
 }

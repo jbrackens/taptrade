@@ -101,13 +101,15 @@ func TestMatchupTeamsAndTile(t *testing.T) {
 	}
 }
 
-// offlineWikimedia points Wikidata and Commons at a server that knows no
-// items and no files, so a test never reaches the real network. Tests that
-// fake Wikidata themselves override wikidataAPIBase afterwards.
+// offlineWikimedia points Wikidata, Commons and the App Store at a server
+// that knows no items, files or apps, so a test never reaches the real
+// network. Tests that fake one themselves override its base afterwards.
 func offlineWikimedia(t *testing.T) {
 	t.Helper()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Query().Get("action") {
+		case "":
+			_ = json.NewEncoder(w).Encode(map[string]any{"results": []any{}})
 		case "wbsearchentities":
 			_ = json.NewEncoder(w).Encode(map[string]any{"search": []any{}})
 		case "wbgetentities":
@@ -117,9 +119,9 @@ func offlineWikimedia(t *testing.T) {
 		}
 	}))
 	t.Cleanup(srv.Close)
-	oldWD, oldC := wikidataAPIBase, commonsAPIBase
-	wikidataAPIBase, commonsAPIBase = srv.URL, srv.URL
-	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase = oldWD, oldC })
+	oldWD, oldC, oldAS := wikidataAPIBase, commonsAPIBase, appStoreAPIBase
+	wikidataAPIBase, commonsAPIBase, appStoreAPIBase = srv.URL, srv.URL, srv.URL
+	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase, appStoreAPIBase = oldWD, oldC, oldAS })
 }
 
 // memoryCoverStore stands in for cover_lookups.
@@ -270,7 +272,7 @@ func TestCoverResolver_RefusesAndBudgets(t *testing.T) {
 	if openverseHits != 1 {
 		t.Fatalf("openverse hits = %d, want 1", openverseHits)
 	}
-	if l, ok := store.rows["wd:economics:bitcoin"]; !ok || l.Found {
+	if l, ok := store.rows["wd2:economics:bitcoin"]; !ok || l.Found {
 		t.Errorf("entity miss must be cached as not found: %+v (cached=%v)", l, ok)
 	}
 	if l := store.rows["topic:bitcoin 150k"]; l.Found {
@@ -326,24 +328,39 @@ func TestSubjectCandidates(t *testing.T) {
 	}
 }
 
-// fakeWikimedia serves a small Wikidata and Commons: items by search label,
-// their claims, and Commons image info for any file (SVGs with a PNG
-// rendition behind a query string, as Commons really serves them).
-func fakeWikimedia(t *testing.T, items map[string]map[string]any, search map[string][]map[string]any) {
+// fakeWikimedia serves a small Wikidata, Commons and App Store: items by
+// search label, their claims, Commons image info for any file (SVGs with a
+// PNG rendition behind a query string, as Commons really serves them; a
+// file named "…wordmark…" is 900×200, "…icon…" square, others 300×200), and
+// App Store results by search term.
+func fakeWikimedia(t *testing.T, items map[string]map[string]any, search map[string][]map[string]any, apps map[string][]map[string]any) {
 	t.Helper()
-	img := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.Path, "wordmark") {
-			w.Header().Set("Content-Type", "image/png")
-			_ = writeTestPNG(w, 900, 200)
-			return
+	size := func(name string) (int, int) {
+		switch {
+		case strings.Contains(name, "wordmark"):
+			return 900, 200
+		case strings.Contains(name, "icon"):
+			return 200, 200
 		}
+		return 300, 200
+	}
+	img := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
-		_ = writeTestPNG(w, 300, 200)
+		width, height := size(r.URL.Path)
+		_ = writeTestPNG(w, width, height)
 	}))
 	t.Cleanup(img.Close)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		switch q.Get("action") {
+		case "":
+			results := apps[q.Get("term")]
+			for _, app := range results {
+				if art, ok := app["artworkUrl512"].(string); ok && !strings.HasPrefix(art, "http") {
+					app["artworkUrl512"] = img.URL + "/" + art
+				}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"results": results})
 		case "wbsearchentities":
 			_ = json.NewEncoder(w).Encode(map[string]any{"search": search[q.Get("search")]})
 		case "wbgetentities":
@@ -354,16 +371,18 @@ func fakeWikimedia(t *testing.T, items map[string]map[string]any, search map[str
 			if strings.HasSuffix(file, ".svg") {
 				mime, thumb = "image/svg+xml", img.URL+"/960px-"+file+".png?utm_source=commons"
 			}
+			width, height := size(file)
 			_ = json.NewEncoder(w).Encode(map[string]any{"query": map[string]any{"pages": map[string]any{"1": map[string]any{"imageinfo": []any{map[string]any{
+				"width": width, "height": height,
 				"thumburl": thumb, "url": img.URL + "/" + file, "descriptionurl": "https://commons.wikimedia.org/wiki/File:" + file, "mime": mime,
 				"extmetadata": map[string]any{"LicenseShortName": map[string]any{"value": "Public domain"}},
 			}}}}}})
 		}
 	}))
 	t.Cleanup(srv.Close)
-	oldWD, oldC := wikidataAPIBase, commonsAPIBase
-	wikidataAPIBase, commonsAPIBase = srv.URL, srv.URL
-	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase = oldWD, oldC })
+	oldWD, oldC, oldAS := wikidataAPIBase, commonsAPIBase, appStoreAPIBase
+	wikidataAPIBase, commonsAPIBase, appStoreAPIBase = srv.URL, srv.URL, srv.URL
+	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase, appStoreAPIBase = oldWD, oldC, oldAS })
 }
 
 func claim(value any, rank string) map[string]any {
@@ -378,8 +397,10 @@ func writeTestPNG(w io.Writer, width, height int) error {
 
 // The Wikidata path: a country gets its preferred flag (not a historical
 // banner listed first) from an SVG's PNG rendition; a band cannot
-// illustrate a tech market; a short alias ("INC") never matches; an
-// organisation of an unlisted class still gets its logo, padded to a square.
+// illustrate a tech market; a short alias ("INC") never matches. Companies
+// get a mark that reads at 40px: a small icon before a wide wordmark, never
+// the wordmark itself. A company's own app icon is the last resort: any free
+// image — its photo, or another subject's — wins over it.
 func TestCoverResolver_WikidataSubjects(t *testing.T) {
 	items := map[string]map[string]any{
 		"Q142": {"sitelinks": map[string]any{}, "claims": map[string]any{
@@ -398,18 +419,52 @@ func TestCoverResolver_WikidataSubjects(t *testing.T) {
 			"P31":  []any{claim(map[string]any{"id": "Q730038"}, "normal")}, // investment bank: not listed
 			"P154": []any{claim("Goldman Sachs wordmark.svg", "normal")},
 		}},
+		"Q478214": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31":   []any{claim(map[string]any{"id": "Q4830453"}, "normal")}, // business
+			"P154":  []any{claim("Tesla wordmark.svg", "normal")},
+			"P8972": []any{claim("Tesla T icon.svg", "normal")},
+		}},
+		"Q77": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31":  []any{claim(map[string]any{"id": "Q4830453"}, "normal")},
+			"P154": []any{claim("Acme wordmark.svg", "normal")},
+		}},
+		"Q55": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31":  []any{claim(map[string]any{"id": "Q4830453"}, "normal")},
+			"P154": []any{claim("Initech wordmark.svg", "normal")},
+			"P18":  []any{claim("Initech HQ.jpg", "normal")},
+		}},
+		"Q56": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31":  []any{claim(map[string]any{"id": "Q4830453"}, "normal")},
+			"P154": []any{claim("Globex wordmark.svg", "normal")},
+		}},
 	}
 	search := map[string][]map[string]any{
 		"France":        {{"id": "Q142", "label": "France", "match": map[string]any{"text": "France", "type": "label"}}},
 		"Muse":          {{"id": "Q22151", "label": "Muse", "match": map[string]any{"text": "Muse", "type": "label"}}},
 		"Inc":           {{"id": "Q1", "label": "Indian National Congress", "match": map[string]any{"text": "INC", "type": "alias"}}},
 		"Goldman Sachs": {{"id": "Q193326", "label": "Goldman Sachs", "match": map[string]any{"text": "Goldman Sachs", "type": "label"}}},
+		"Tesla":         {{"id": "Q478214", "label": "Tesla", "match": map[string]any{"text": "Tesla", "type": "label"}}},
+		"Acme":          {{"id": "Q77", "label": "Acme", "match": map[string]any{"text": "Acme", "type": "label"}}},
+		"Initech":       {{"id": "Q55", "label": "Initech", "match": map[string]any{"text": "Initech", "type": "label"}}},
+		"Globex":        {{"id": "Q56", "label": "Globex", "match": map[string]any{"text": "Globex", "type": "label"}}},
 	}
-	fakeWikimedia(t, items, search)
+	apps := map[string][]map[string]any{
+		"Goldman Sachs": {
+			{"trackName": "GS Side", "sellerName": "Goldman Sachs", "userRatingCount": 86, "artworkUrl512": "side-icon.png"},
+			{"trackName": "Openchat", "sellerName": "JARVISY LTD", "userRatingCount": 9000000, "artworkUrl512": "other-icon.png"},
+			{"trackName": "Marcus by Goldman Sachs", "sellerName": "Goldman Sachs", "userRatingCount": 270588,
+				"artworkUrl512": "marcus-icon.png", "trackViewUrl": "https://apps.apple.com/us/app/marcus/id1?uo=4"},
+		},
+		"Acme":    {{"trackName": "Acme Fan App", "sellerName": "Someone Else LLC", "userRatingCount": 50000, "artworkUrl512": "fan-icon.png"}},
+		"Initech": {{"trackName": "Initech", "sellerName": "Initech", "userRatingCount": 50000, "artworkUrl512": "initech-icon.png"}},
+		"Globex":  {{"trackName": "Globex", "sellerName": "Globex Corporation", "userRatingCount": 50000, "artworkUrl512": "globex-icon.png"}},
+	}
+	fakeWikimedia(t, items, search, apps)
 
 	root := t.TempDir()
 	res := NewCoverResolver(NewImageRehoster(root), &memoryCoverStore{})
 	res.ResetBudget()
+	res.StartBackfill()
 	ctx := context.Background()
 
 	meta, ok := res.Resolve(ctx, "row-fr", Market{Title: "Will France win on 2026-09-28?"}, "sports")
@@ -427,17 +482,103 @@ func TestCoverResolver_WikidataSubjects(t *testing.T) {
 		t.Fatalf("a short alias must not match: %+v %v", l, err)
 	}
 
+	meta, ok = res.Resolve(ctx, "row-tsla", Market{Title: "Will Tesla deliver 500k cars this quarter?"}, "tech")
+	if !ok || !strings.Contains(meta.SourceURL, "Tesla T icon.svg") {
+		t.Fatalf("a small icon must win over a wide wordmark: %+v, %v", meta, ok)
+	}
+
 	meta, ok = res.Resolve(ctx, "row-gs", Market{Title: "What will The Goldman Sachs Group, Inc. say during their next earnings call?"}, "economics")
-	if !ok || !strings.Contains(meta.SourceURL, "Goldman Sachs wordmark.svg") {
-		t.Fatalf("an organisation with a logo must get it: %+v, %v", meta, ok)
+	if !ok || !strings.Contains(meta.Credit, "Marcus by Goldman Sachs app icon") {
+		t.Fatalf("a company with only a wordmark must get its flagship app's icon: %+v, %v", meta, ok)
+	}
+	if meta.SourceURL != "https://apps.apple.com/us/app/marcus/id1" || !strings.Contains(meta.License, "trademark of Goldman Sachs") {
+		t.Fatalf("the app icon must link its store page and name its owner: %+v", meta)
 	}
 	f, err := os.Open(filepath.Join(root, "images", "markets", "row-gs.png"))
 	if err != nil {
-		t.Fatalf("logo not written: %v", err)
+		t.Fatalf("icon not written: %v", err)
 	}
 	defer f.Close()
-	cfg, err := png.DecodeConfig(f)
-	if err != nil || cfg.Width != cfg.Height {
-		t.Fatalf("a wide wordmark must be padded to a square, got %dx%d (%v)", cfg.Width, cfg.Height, err)
+	if cfg, err := png.DecodeConfig(f); err != nil || cfg.Width != 200 || cfg.Height != 200 {
+		t.Fatalf("the app icon must be stored as served, got %dx%d (%v)", cfg.Width, cfg.Height, err)
+	}
+
+	if meta, ok := res.Resolve(ctx, "row-acme", Market{Title: "Will Acme beat earnings?"}, "economics"); ok {
+		t.Fatalf("a wordmark alone, or someone else's app, must give no cover: %+v", meta)
+	}
+
+	// The app icon is the last resort: the company's own photo wins, and so
+	// does a free image for another subject of the title.
+	meta, ok = res.Resolve(ctx, "row-initech", Market{Title: "Will Initech beat earnings?"}, "economics")
+	if !ok || !strings.Contains(meta.SourceURL, "Initech HQ.jpg") {
+		t.Fatalf("a free photo must win over the company's app icon: %+v, %v", meta, ok)
+	}
+	meta, ok = res.Resolve(ctx, "row-globex", Market{Title: "Will Globex open an office in France?"}, "economics")
+	if !ok || !strings.Contains(meta.SourceURL, "Flag of France.svg") {
+		t.Fatalf("another subject's free image must win over an app icon: %+v, %v", meta, ok)
+	}
+	meta, ok = res.Resolve(ctx, "row-globex2", Market{Title: "Will Globex beat earnings?"}, "economics")
+	if !ok || !strings.Contains(meta.Credit, "Globex app icon") {
+		t.Fatalf("with nothing free anywhere, the company's app icon stands in: %+v, %v", meta, ok)
+	}
+
+	// Replacing: a fresh file name, so the CDN's cached copy of the old
+	// cover is never served in its place.
+	meta, ok, complete := res.ReplaceChecked(ctx, "row-fr", Market{Title: "Will France win on 2026-09-28?"}, "sports")
+	if !ok || !complete || !strings.HasPrefix(meta.Path, "/images/markets/row-fr-") || !strings.HasSuffix(meta.Path, ".png") {
+		t.Fatalf("a replaced cover must get a fresh name: %+v, %v, %v", meta, ok, complete)
+	}
+	res.rehoster.RemoveCoversExcept("row-fr", meta.Path)
+	left, _ := filepath.Glob(filepath.Join(root, "images", "markets", "row-fr*"))
+	if len(left) != 1 || filepath.Base(left[0]) != filepath.Base(meta.Path) {
+		t.Fatalf("only the new cover may remain, got %v", left)
+	}
+}
+
+func TestNamesDeveloper(t *testing.T) {
+	cases := []struct {
+		developer, name string
+		want            bool
+	}{
+		{"Anthropic PBC", "Anthropic", true},
+		{"OpenAI OpCo, LLC", "OpenAI", true},
+		{"Hangzhou DeepSeek Artificial Intelligence Co., Ltd", "DeepSeek", true},
+		{"Space Exploration Technologies Corp.", "SpaceX", false},
+		{"JARVISY LTD", "OpenAI", false},
+		{"Openchat Inc", "OpenAI", false},
+		{"Goldman Sachs Bank USA", "Goldman Sachs", true},
+		{"Anything", "", false},
+	}
+	for _, c := range cases {
+		if got := namesDeveloper(c.developer, c.name); got != c.want {
+			t.Errorf("namesDeveloper(%q, %q) = %v, want %v", c.developer, c.name, got, c.want)
+		}
+	}
+}
+
+// The fetched rows of a sync may spend only half the entity budget; the
+// board-first backfill gets the rest.
+func TestCoverResolver_ReservesHalfForBackfill(t *testing.T) {
+	offlineWikimedia(t)
+	res := NewCoverResolver(NewImageRehoster(t.TempDir()), &memoryCoverStore{})
+	res.entityBudget = 4
+	res.ResetBudget()
+	ctx := context.Background()
+	names := []string{"Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"}
+	short := false
+	for i, name := range names[:4] {
+		if _, _, complete := res.ResolveChecked(ctx, "row-"+name, Market{Title: "Will " + name + " win?"}, "economics"); !complete {
+			short = true
+			break
+		} else if i == 3 {
+			t.Fatalf("four subjects cannot fit in half of a budget of four")
+		}
+	}
+	if !short || res.entityUsed != 2 {
+		t.Fatalf("fetched rows must stop at half the budget: used=%d short=%v", res.entityUsed, short)
+	}
+	res.StartBackfill()
+	if _, _, complete := res.ResolveChecked(ctx, "row-Echo", Market{Title: "Will Echo win?"}, "economics"); !complete || res.entityUsed != 3 {
+		t.Fatalf("the backfill gets the held-back lookups: used=%d complete=%v", res.entityUsed, complete)
 	}
 }

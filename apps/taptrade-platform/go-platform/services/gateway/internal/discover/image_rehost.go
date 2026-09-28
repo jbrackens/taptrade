@@ -225,6 +225,63 @@ func (r *ImageRehoster) RehostFitted(rowID, imageURL string) (string, error) {
 	return "/images/markets/" + rowID + ".png", nil
 }
 
+// ReplaceFitted downloads a new cover for a row that already has one. It is
+// written under a fresh name (<rowID>-<content hash>.<ext>) rather than over
+// the old file: the CDN and browsers cache /images/markets/* for a day, so
+// the same URL would keep showing the old picture. Callers remove the row's
+// older files once the new path is stored (RemoveCoversExcept).
+func (r *ImageRehoster) ReplaceFitted(rowID, imageURL string) (string, error) {
+	if r == nil || rowID == "" || imageURL == "" {
+		return "", nil
+	}
+	req, err := http.NewRequest(http.MethodGet, imageURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("build request: %w", err)
+	}
+	ua := r.UserAgent
+	if ua == "" {
+		ua = "demo-pm-seeder/0.1"
+	}
+	req.Header.Set("User-Agent", ua)
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("download: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("status %d", resp.StatusCode)
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	if err != nil {
+		return "", fmt.Errorf("read: %w", err)
+	}
+	ext := pickExt(resp.Header.Get("Content-Type"), imageURL)
+	if padded, ok := padToSquare(data); ok {
+		data, ext = padded, ".png"
+	}
+	sum := sha256.Sum256(data)
+	return r.WriteLocal(rowID+"-"+hex.EncodeToString(sum[:4]), ext, data)
+}
+
+// RemoveCoversExcept deletes a row's cover files other than keep (a web
+// path, or "" to delete them all): the plain <rowID>.<ext> and any
+// <rowID>-<hash>.<ext> replacements.
+func (r *ImageRehoster) RemoveCoversExcept(rowID, keep string) {
+	if r == nil || rowID == "" || strings.ContainsAny(rowID, `/\*?[`) {
+		return
+	}
+	dir := filepath.Join(r.PublicRoot, "images", "markets")
+	keepName := filepath.Base(keep)
+	for _, pattern := range []string{rowID + ".*", rowID + "-*"} {
+		matches, _ := filepath.Glob(filepath.Join(dir, pattern))
+		for _, m := range matches {
+			if keep == "" || filepath.Base(m) != keepName {
+				_ = os.Remove(m)
+			}
+		}
+	}
+}
+
 // padToSquare returns a PNG of the image centred on a white square with a
 // 12% margin, when its aspect ratio is outside 0.6–1.7; ok is false for
 // images that already suit a square thumbnail or cannot be decoded.

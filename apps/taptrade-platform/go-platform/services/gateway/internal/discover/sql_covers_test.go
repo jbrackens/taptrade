@@ -119,6 +119,13 @@ func TestSQLCoverStorage(t *testing.T) {
 	if err != nil || l == nil || !l.Found || l.ImageURL != "https://img/x.jpg" || l.License != "CC0" {
 		t.Fatalf("load lookup = %+v, %v", l, err)
 	}
+	// A miss on a company keeps the name for the App Store last resort.
+	if err := repo.SaveCoverLookup(ctx, CoverLookup{Key: "covertest-app:" + suffix, Found: false, Origin: "entity", AppName: "Anthropic"}); err != nil {
+		t.Fatalf("save miss: %v", err)
+	}
+	if l, err := repo.LoadCoverLookup(ctx, "covertest-app:"+suffix); err != nil || l == nil || l.Found || l.AppName != "Anthropic" {
+		t.Fatalf("a miss must keep its app name: %+v, %v", l, err)
+	}
 	if l, err := repo.LoadCoverLookup(ctx, "covertest:missing"); err != nil || l != nil {
 		t.Fatalf("unknown key must load as nil: %+v %v", l, err)
 	}

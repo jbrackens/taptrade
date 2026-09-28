@@ -524,11 +524,11 @@ func (r *Repository) SetImage(ctx context.Context, id string, meta CoverMeta) er
 
 func (r *Repository) LoadCoverLookup(ctx context.Context, key string) (*CoverLookup, error) {
 	var l CoverLookup
-	var imageURL, credit, license, sourceURL, origin sql.NullString
+	var imageURL, credit, license, sourceURL, origin, appName sql.NullString
 	err := r.db.QueryRowContext(ctx,
-		`SELECT lookup_key, found, image_url, credit, license, source_url, origin, checked_at
+		`SELECT lookup_key, found, image_url, credit, license, source_url, origin, app_name, checked_at
 		   FROM cover_lookups WHERE lookup_key = $1`, key,
-	).Scan(&l.Key, &l.Found, &imageURL, &credit, &license, &sourceURL, &origin, &l.CheckedAt)
+	).Scan(&l.Key, &l.Found, &imageURL, &credit, &license, &sourceURL, &origin, &appName, &l.CheckedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -536,18 +536,19 @@ func (r *Repository) LoadCoverLookup(ctx context.Context, key string) (*CoverLoo
 		return nil, fmt.Errorf("load cover lookup: %w", err)
 	}
 	l.ImageURL, l.Credit, l.License, l.SourceURL, l.Origin = imageURL.String, credit.String, license.String, sourceURL.String, origin.String
+	l.AppName = appName.String
 	return &l, nil
 }
 
 func (r *Repository) SaveCoverLookup(ctx context.Context, l CoverLookup) error {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO cover_lookups (lookup_key, found, image_url, credit, license, source_url, origin, checked_at)
-		VALUES ($1, $2, NULLIF($3, ''), NULLIF($4, ''), NULLIF($5, ''), NULLIF($6, ''), NULLIF($7, ''), now())
+		INSERT INTO cover_lookups (lookup_key, found, image_url, credit, license, source_url, origin, app_name, checked_at)
+		VALUES ($1, $2, NULLIF($3, ''), NULLIF($4, ''), NULLIF($5, ''), NULLIF($6, ''), NULLIF($7, ''), NULLIF($8, ''), now())
 		ON CONFLICT (lookup_key) DO UPDATE SET
 		   found = EXCLUDED.found, image_url = EXCLUDED.image_url, credit = EXCLUDED.credit,
 		   license = EXCLUDED.license, source_url = EXCLUDED.source_url, origin = EXCLUDED.origin,
-		   checked_at = now()`,
-		l.Key, l.Found, l.ImageURL, l.Credit, l.License, l.SourceURL, l.Origin)
+		   app_name = EXCLUDED.app_name, checked_at = now()`,
+		l.Key, l.Found, l.ImageURL, l.Credit, l.License, l.SourceURL, l.Origin, l.AppName)
 	if err != nil {
 		return fmt.Errorf("save cover lookup: %w", err)
 	}
@@ -658,6 +659,22 @@ func (r *Repository) ListAttributions(ctx context.Context, limit int) ([]Attribu
 	return out, rows.Err()
 }
 
+// ClearResolverCover removes a resolver cover that no longer passes the
+// resolver's rules (a wide wordmark), leaving the row bare and checked;
+// AlignPromotedMarketImages then clears the market's image too.
+func (r *Repository) ClearResolverCover(ctx context.Context, id string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE imported_markets
+		   SET image_path = NULL, image_credit = NULL, image_license = NULL,
+		       image_source_url = NULL, image_origin = NULL,
+		       cover_checked_at = now(), updated_at = now()
+		 WHERE id = $1 AND image_origin = 'entity'`, id)
+	if err != nil {
+		return fmt.Errorf("clear resolver cover: %w", err)
+	}
+	return nil
+}
+
 // MarkCoverChecked records that the resolver tried a row and found nothing,
 // so the backfill moves on and retries it after coverMissRetryAfter.
 func (r *Repository) MarkCoverChecked(ctx context.Context, id string) error {
@@ -668,33 +685,39 @@ func (r *Repository) MarkCoverChecked(ctx context.Context, id string) error {
 	return nil
 }
 
-// BareImport is an open, promoted import with no thumbnail, as the cover
-// backfill sees it.
+// BareImport is an open, promoted import the cover backfill should work
+// on: one with no thumbnail, or (HasCover) one whose resolver cover is due
+// to be looked up again under the current rules.
 type BareImport struct {
 	ID           string
 	Title        string
 	EventTitle   string
 	Description  string
 	CategorySlug string
+	HasCover     bool
 }
 
 // ListBareOpenImports returns open promoted imports without an image that
-// the resolver has not tried in the last 30 days, the ones the board is
-// likeliest to show first: contested prices, then 24h and lifetime volume.
+// the resolver has not tried in the last 30 days, plus resolver covers
+// marked for another look (cover_checked_at cleared, migration 063), the
+// ones the board is likeliest to show first: contested prices, then 24h
+// and lifetime volume.
 func (r *Repository) ListBareOpenImports(ctx context.Context, limit int) ([]BareImport, error) {
 	if limit <= 0 {
 		return nil, nil
 	}
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT im.id, im.title, COALESCE(im.event_title, ''), COALESCE(im.description, ''), COALESCE(pc.slug, '')
+		SELECT im.id, im.title, COALESCE(im.event_title, ''), COALESCE(im.description, ''), COALESCE(pc.slug, ''),
+		       im.image_path IS NOT NULL
 		  FROM imported_markets im
 		  JOIN prediction_markets pm ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
 		  LEFT JOIN prediction_events pe ON pe.id = pm.event_id
 		  LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 		 WHERE pm.status = 'open'
-		   AND im.image_path IS NULL
 		   AND COALESCE(im.image_origin, '') <> 'manual'
-		   AND (im.cover_checked_at IS NULL OR im.cover_checked_at < now() - interval '30 days')
+		   AND ((im.image_path IS NULL
+		         AND (im.cover_checked_at IS NULL OR im.cover_checked_at < now() - interval '30 days'))
+		        OR (im.image_origin = 'entity' AND im.cover_checked_at IS NULL))
 		 ORDER BY (pm.yes_price_points BETWEEN 5 AND 95) DESC,
 		          COALESCE(im.volume_24h, 0) DESC,
 		          pm.volume_points DESC,
@@ -707,7 +730,7 @@ func (r *Repository) ListBareOpenImports(ctx context.Context, limit int) ([]Bare
 	var out []BareImport
 	for rows.Next() {
 		var b BareImport
-		if err := rows.Scan(&b.ID, &b.Title, &b.EventTitle, &b.Description, &b.CategorySlug); err != nil {
+		if err := rows.Scan(&b.ID, &b.Title, &b.EventTitle, &b.Description, &b.CategorySlug, &b.HasCover); err != nil {
 			return nil, fmt.Errorf("scan bare import: %w", err)
 		}
 		out = append(out, b)

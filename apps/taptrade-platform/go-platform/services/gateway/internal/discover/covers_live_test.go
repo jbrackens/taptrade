@@ -10,7 +10,7 @@ import (
 )
 
 // TestCoverResolver_Live runs the resolver against the real Wikidata,
-// Wikipedia and Commons for a list of market titles and writes what it
+// Commons and App Store for a list of market titles and writes what it
 // picked, for review before shipping a change to the resolver. Opt-in:
 //
 //	COVER_LIVE_TEST=/path/titles.json COVER_LIVE_OUT=/path/out go test ./internal/discover -run Live -v
@@ -40,6 +40,7 @@ func TestCoverResolver_Live(t *testing.T) {
 	res := NewCoverResolver(NewImageRehoster(out), nil)
 	res.entityBudget = 1000
 	res.ResetBudget()
+	res.StartBackfill()
 	type pick struct {
 		Title    string   `json:"title"`
 		Origin   string   `json:"origin"`
