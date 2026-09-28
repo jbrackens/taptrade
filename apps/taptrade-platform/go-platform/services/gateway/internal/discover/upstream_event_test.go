@@ -24,12 +24,21 @@ func TestUpstreamEventIDIsStableAndCaseInsensitive(t *testing.T) {
 
 func TestPolymarketEventTitleComesFromNestedEvent(t *testing.T) {
 	m, ok := polymarketMarket(map[string]any{
-		"id": "1", "question": "Spread: Chiefs (-10.5)", "outcomes": `["Yes","No"]`, "outcomePrices": `["0.45","0.55"]`,
+		"id": "1", "question": "Spread: Chiefs (-10.5)", "groupItemTitle": " Spread -10.5 ", "outcomes": `["Yes","No"]`, "outcomePrices": `["0.45","0.55"]`,
 		"endDate": time.Now().UTC().Add(48 * time.Hour).Format(time.RFC3339),
 		"events":  []any{map[string]any{"slug": "nfl-kc-mia-2026-09-27", "title": "Chiefs vs. Dolphins"}},
 	}, time.Now().UTC())
 	if !ok || m.EventTitle != "Chiefs vs. Dolphins" || m.EventGroup != "nfl-kc-mia-2026-09-27" {
 		t.Fatalf("event title/group misread: ok=%v %+v", ok, m)
+	}
+	if m.OutcomeLabel != "Spread -10.5" {
+		t.Fatalf("groupItemTitle must become the outcome label, got %q", m.OutcomeLabel)
+	}
+	k := kalshiEventMarkets([]kalshiEvent{{EventTicker: "KXPOPE", Title: "Who will the next Pope be?", Markets: []map[string]any{
+		{"ticker": "KXPOPE-A", "status": "active", "title": "Who will the next Pope be?", "yes_sub_title": "Pietro Parolin", "yes_bid_dollars": "0.2", "close_time": time.Now().UTC().Add(72 * time.Hour).Format(time.RFC3339)},
+	}}}, "open", time.Now().UTC())
+	if len(k) != 1 || k[0].OutcomeLabel != "Pietro Parolin" {
+		t.Fatalf("yes_sub_title must become the outcome label, got %+v", k)
 	}
 }
 

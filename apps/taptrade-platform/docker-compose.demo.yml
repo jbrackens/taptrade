@@ -429,6 +429,10 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data                         # persists Let's Encrypt certs across restarts
       - caddy_config:/config
+      # Market thumbnails, served by Caddy directly (see the
+      # @marketImages route in the Caddyfile): the player's Next.js server
+      # only serves public/ files that existed when it started.
+      - market_images:/srv/market-images/images/markets:ro
     depends_on: [player, office, gateway, rocketchat]
     networks: [predict_network]
 

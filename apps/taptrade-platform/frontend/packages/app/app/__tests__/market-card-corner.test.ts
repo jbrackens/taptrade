@@ -59,7 +59,8 @@ describe("market card corner wiring", () => {
     assert.match(card, /const footerMeta = held \|\| !left \? closingLabel : "";/);
     // The category moved up into the eyebrow (2026-09-27 density pass); a
     // real event's title takes its place there.
-    assert.match(card, /const eyebrow = eventTitle && !eventSynthetic \? eventTitle\.trim\(\) : categoryLabel \?\? "";/);
+    assert.match(card, /const eventEyebrow = eventTitle && !eventSynthetic \? eventTitle\.trim\(\) : "";/);
+    assert.match(card, /const eyebrow = eventEyebrow && !repeatsTitle\(eventEyebrow, title\) \? eventEyebrow : categoryLabel \?\? "";/);
   });
 
   it("loads holdings once per grid, only for signed-in players", () => {

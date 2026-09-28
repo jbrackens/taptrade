@@ -136,6 +136,9 @@ type Market struct {
 	// (0 under a catch-all), so the board can show one card per event even
 	// when the ranking lists only one of them.
 	EventOpenMarkets     int             `json:"eventOpenMarkets,omitempty" db:"-"`
+	// OutcomeLabel is the source's short name for this market inside its
+	// event ("Spread -3.5", "Lamine Yamal"), for event-card rows.
+	OutcomeLabel         *string         `json:"outcomeLabel,omitempty" db:"-"`
 	CategoryID           string          `json:"categoryId,omitempty" db:"-"`
 	CategorySlug         string          `json:"categorySlug,omitempty" db:"-"`
 	CategoryName         string          `json:"categoryName,omitempty" db:"-"`
@@ -197,6 +200,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventSynthetic       bool            `json:"eventSynthetic,omitempty"`
 		ImageCredit          *string         `json:"imageCredit,omitempty"`
 		EventOpenMarkets     int             `json:"eventOpenMarkets,omitempty"`
+		OutcomeLabel         *string         `json:"outcomeLabel,omitempty"`
 		CategoryID           string          `json:"categoryId,omitempty"`
 		CategorySlug         string          `json:"categorySlug,omitempty"`
 		CategoryName         string          `json:"categoryName,omitempty"`
@@ -249,6 +253,7 @@ func (m Market) MarshalJSON() ([]byte, error) {
 		EventSynthetic:       m.EventSynthetic,
 		ImageCredit:          m.ImageCredit,
 		EventOpenMarkets:     m.EventOpenMarkets,
+		OutcomeLabel:         m.OutcomeLabel,
 		CategoryID:           m.CategoryID,
 		CategorySlug:         m.CategorySlug,
 		CategoryName:         m.CategoryName,

@@ -1836,13 +1836,14 @@ func marketSelectQuery() string {
 	               m.article_source_id, pe.title AS event_title,
 	               COALESCE(pe.is_synthetic, false) AS event_synthetic,
 	               im.image_credit,
+	               im.outcome_label,
 	               CASE WHEN COALESCE(pe.is_synthetic, false) THEN 0
 	                    ELSE (SELECT count(*) FROM prediction_markets x WHERE x.event_id = m.event_id AND x.status = 'open') END AS event_open_markets
 	        FROM prediction_markets m
 	        LEFT JOIN prediction_events pe ON pe.id = m.event_id
 	        LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
 	        LEFT JOIN LATERAL (
-	            SELECT volume, liquidity, image_path, image_credit
+	            SELECT volume, liquidity, image_path, image_credit, outcome_label
 	            FROM imported_markets im
 	            WHERE m.ticker LIKE 'IMP-%'
 	              AND upper(substr(im.external_hash, 1, 8)) = upper(substr(m.ticker, 5, 8))
@@ -2003,7 +2004,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	// populated by the post-match refresher; null until first match.
 	var bestYesBid, bestYesAsk, bestNoBid, bestNoAsk sql.NullInt64
 	var lastQuoteAt sql.NullTime
-	var articleSourceID, eventTitle, imageCredit sql.NullString
+	var articleSourceID, eventTitle, imageCredit, outcomeLabel sql.NullString
 
 	err := row.Scan(&m.ID, &m.EventID, &categoryID, &categorySlug, &categoryName, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPricePoints, &m.NoPricePoints, &lastTradePrice,
@@ -2014,9 +2015,13 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolPoints, &m.SettledPayoutPoolPoints,
 		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
-		&articleSourceID, &eventTitle, &m.EventSynthetic, &imageCredit, &m.EventOpenMarkets)
+		&articleSourceID, &eventTitle, &m.EventSynthetic, &imageCredit, &outcomeLabel, &m.EventOpenMarkets)
 	if err != nil {
 		return nil, err
+	}
+	if outcomeLabel.Valid && strings.TrimSpace(outcomeLabel.String) != "" {
+		label := strings.TrimSpace(outcomeLabel.String)
+		m.OutcomeLabel = &label
 	}
 	if imageCredit.Valid && imageCredit.String != "" {
 		m.ImageCredit = &imageCredit.String

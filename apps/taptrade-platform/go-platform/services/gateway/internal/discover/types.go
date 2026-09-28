@@ -38,8 +38,11 @@ type Market struct {
 	RulesText   string
 	EventGroup  string
 	EventTitle  string // the upstream event's own title, when the source has one
-	Tags        []string
-	Resolution  *Resolution
+	// OutcomeLabel is the source's short name for this market inside its
+	// event ("Spread -3.5", "Lamine Yamal"); empty when it has none.
+	OutcomeLabel string
+	Tags         []string
+	Resolution   *Resolution
 }
 
 // Resolution represents an upstream market that has resolved YES or NO.

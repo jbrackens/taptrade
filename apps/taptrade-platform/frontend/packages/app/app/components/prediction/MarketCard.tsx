@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { formatCompactPoints } from "../../lib/points";
 import type { HeldPosition } from "../../lib/query/position-hooks";
 import { isOpenMarketStatus, marketStatusLabel, timeLeft } from "./market-display";
+import { repeatsTitle } from "./event-groups";
 import { MarketThumb } from "./MarketThumb";
 
 interface MarketCardProps {
@@ -134,7 +135,11 @@ export function MarketCard({
   // The eyebrow names the event this market belongs to ("Chiefs vs.
   // Dolphins" over "Spread: Chiefs (-10.5)"); a market with no event of its
   // own shows its category there instead.
-  const eyebrow = eventTitle && !eventSynthetic ? eventTitle.trim() : categoryLabel ?? "";
+  const eventEyebrow = eventTitle && !eventSynthetic ? eventTitle.trim() : "";
+  // A market that is its whole event would only repeat its own title up
+  // there ("New York Mets vs. Washington Nationals" twice); it shows its
+  // category instead.
+  const eyebrow = eventEyebrow && !repeatsTitle(eventEyebrow, title) ? eventEyebrow : categoryLabel ?? "";
   // The close date moves up into the corner as time left; the footer keeps
   // it only when the corner is showing something else.
   const footerMeta = held || !left ? closingLabel : "";

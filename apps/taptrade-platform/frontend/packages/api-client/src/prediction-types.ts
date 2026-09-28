@@ -81,6 +81,8 @@ export interface PredictionMarket {
   eventSynthetic?: boolean;
   /** Open markets in this market's real event (0 under a catch-all). */
   eventOpenMarkets?: number;
+  /** The source's short name for this market inside its event ("Spread -3.5", "Lamine Yamal"). */
+  outcomeLabel?: string;
   categoryId?: string;
   categorySlug?: string;
   categoryName?: string;

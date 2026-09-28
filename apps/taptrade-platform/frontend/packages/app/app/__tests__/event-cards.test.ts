@@ -62,7 +62,7 @@ describe("groupIntoEventCards", () => {
     assert.equal(items.length, 1);
     assert.equal(items[0].kind, "event");
     assert.equal(items[0].kind === "event" && items[0].openMarkets, 4);
-    assert.match(read("components/prediction/EventCard.tsx"), /enabled: listed\.length < wantRows/);
+    assert.match(read("components/prediction/EventCard.tsx"), /enabled: listed\.length < Math\.min\(openMarkets, EVENT_ROW_POOL\)/);
   });
 
   it("labels markets inside their event without repeating the event title", () => {
@@ -94,7 +94,7 @@ describe("event cards on the board", () => {
   });
 
   it("shows up to three market rows with Yes/No chances and links to the event", () => {
-    assert.match(card, /markets\.slice\(0, EVENT_CARD_ROWS\)/);
+    assert.match(card, /pickEventRows\(markets, EVENT_CARD_ROWS\)/);
     assert.match(card, /href=\{`\/event\/\$\{eventId\}`\}/);
     assert.match(card, /\{pct\}%/);
     assert.match(card, /aria-haspopup="dialog"/);
@@ -108,5 +108,79 @@ describe("event cards on the board", () => {
       }
     }
     assert.doesNotMatch(card, /\b(cash|bet|odds|wager)\b/i);
+  });
+});
+
+describe("event card fixes (2026-09-28)", () => {
+  it("hides an eyebrow that only repeats the title", async () => {
+    const { repeatsTitle } = await import("../components/prediction/event-groups");
+    assert.equal(repeatsTitle("New York Mets vs. Washington Nationals", "New York Mets vs. Washington Nationals"), true);
+    assert.equal(repeatsTitle("LoL: KT Rolster Challengers vs Galions (BO5)", "LoL: KT Rolster Challengers vs Galions (BO5) - World Star Challengers"), true);
+    assert.equal(repeatsTitle("Los Angeles Mayoral Election", "Will Nithya Raman win the 2026 Los Angeles mayoral election?"), false);
+    assert.equal(repeatsTitle("Balance of Power: 2026 Midterms", "2026 Balance of Power: D Senate, D House"), false);
+    assert.match(read("components/prediction/MarketCard.tsx"), /!repeatsTitle\(eventEyebrow, title\)/);
+  });
+
+  it("labels rows by the source's short label, else by what the questions do not share", async () => {
+    const { eventRowLabels } = await import("../components/prediction/event-groups");
+    assert.deepEqual(
+      eventRowLabels(
+        [
+          { title: "US x Iran ceasefire continues through October 31?" },
+          { title: "US x Iran ceasefire continues through November 30?" },
+        ],
+        "US-Iran ceasefire continues through...?",
+        "Match winner",
+      ),
+      ["October 31?", "November 30?"],
+    );
+    assert.deepEqual(
+      eventRowLabels(
+        [
+          { title: "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?", outcomeLabel: "25 bps increase" },
+          { title: "Will there be no change in Fed interest rates after the October 2026 meeting?", outcomeLabel: "No change" },
+        ],
+        "Fed Decision in October?",
+        "Match winner",
+      ),
+      ["25 bps increase", "No change"],
+    );
+    assert.deepEqual(eventRowLabels([{ title: "Chiefs vs. Dolphins" }], "Chiefs vs. Dolphins", "Match winner"), ["Match winner"]);
+    // A shared "Will" comes off before a name, but not before "there be…".
+    assert.deepEqual(
+      eventRowLabels(
+        [
+          { title: "Will Jack Lowden be announced as the next James Bond?" },
+          { title: "Will Richard Madden be announced as the next James Bond?" },
+        ],
+        "Next James Bond film: Actor cast as James Bond",
+        "Match winner",
+      ),
+      ["Jack Lowden", "Richard Madden"],
+    );
+    assert.deepEqual(
+      eventRowLabels(
+        [
+          { title: "Will the Fed increase interest rates by 25 bps after the October 2026 meeting?" },
+          { title: "Will there be no change in Fed interest rates after the October 2026 meeting?" },
+        ],
+        "Fed Decision in October?",
+        "Match winner",
+      ),
+      ["Will the Fed increase interest rates by 25 bps", "Will there be no change in Fed interest rates"],
+    );
+  });
+
+  it("shows the likeliest lively outcomes, never a near-settled one while others remain", async () => {
+    const { pickEventRows } = await import("../components/prediction/event-groups");
+    const rows = pickEventRows(
+      [{ yesPricePoints: 1 }, { yesPricePoints: 35 }, { yesPricePoints: 65 }, { yesPricePoints: 99 }],
+      3,
+    );
+    assert.deepEqual(rows.map((r) => r.yesPricePoints), [65, 35]);
+    assert.deepEqual(pickEventRows([{ yesPricePoints: 1 }, { yesPricePoints: 99 }], 3).map((r) => r.yesPricePoints), [99, 1]);
+    const card = read("components/prediction/EventCard.tsx");
+    assert.match(card, /pickEventRows\(markets, EVENT_CARD_ROWS\)/);
+    assert.match(card, /pageSize: EVENT_ROW_POOL/);
   });
 });

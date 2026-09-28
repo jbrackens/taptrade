@@ -24,6 +24,7 @@ type Row struct {
 	RulesText         string
 	EventGroup        string
 	EventTitle        string
+	OutcomeLabel      string
 	Tags              []string
 	ImagePath         *string
 	EndTime           *time.Time
@@ -112,6 +113,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 			volume_24h = $15,
 			liquidity = $16,
 			event_title = $17,
+			outcome_label = $18,
 			last_seen_at = now(),
 			updated_at = now()
 		WHERE id = $1
@@ -133,6 +135,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		row.Volume24h,
 		row.Liquidity,
 		nullableText(row.EventTitle),
+		nullableText(row.OutcomeLabel),
 	)
 	if err != nil {
 		return fmt.Errorf("update: %w", err)

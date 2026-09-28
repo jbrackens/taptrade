@@ -98,6 +98,18 @@ demo.99rtp.io {
 			# request on Caddy itself — the original bug, reintroduced.
 		}
 	}
+	# Market thumbnails are runtime state: the gateway's catalog sync writes
+	# them into the shared market_images volume every 15 minutes. Next.js
+	# serves public/ from a file list taken at startup, so any cover written
+	# after the player last started 404'd and every card fell back to its
+	# category icon (2026-09-28: every game logo and entity photo written
+	# since the last deploy). Caddy serves the folder straight off the volume.
+	@marketImages path /images/markets/*
+	handle @marketImages {
+		root * /srv/market-images
+		header Cache-Control "public, max-age=86400"
+		file_server
+	}
 	handle {
 		reverse_proxy predict_player:3000
 	}

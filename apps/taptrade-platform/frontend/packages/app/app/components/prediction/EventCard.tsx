@@ -18,7 +18,7 @@ import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-c
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { formatCompactPoints } from "../../lib/points";
 import { categoryLabel } from "./market-content";
-import { EVENT_CARD_ROWS, marketLabelInEvent } from "./event-groups";
+import { EVENT_CARD_ROWS, eventRowLabels, pickEventRows } from "./event-groups";
 import { isOpenMarketStatus, timeLeft } from "./market-display";
 import { MarketThumb } from "./MarketThumb";
 
@@ -32,6 +32,9 @@ interface EventCardProps {
 }
 
 const api = createPredictionClient();
+
+/** How many of an event's markets to choose its rows from. */
+const EVENT_ROW_POOL = 10;
 
 function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) return 50;
@@ -49,15 +52,15 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
   const { t } = useTranslation("prediction");
   const { t: tc } = useTranslation("market-content");
   // The ranking keeps an event's siblings apart, so the list often carries
-  // one of its markets: fetch the event's busiest open markets for the rows.
-  const wantRows = Math.min(openMarkets, EVENT_CARD_ROWS);
+  // one of its markets: fetch the event's open markets (enough to choose
+  // lively rows from) whenever the list carries fewer than the event has.
   const { data: fetched } = useQuery({
-    queryKey: ["event-card", eventId, wantRows],
+    queryKey: ["event-card", eventId],
     queryFn: async () => {
-      const res = await api.getMarkets({ eventId, status: "open", sort: "activity", pageSize: EVENT_CARD_ROWS });
+      const res = await api.getMarkets({ eventId, status: "open", sort: "activity", pageSize: EVENT_ROW_POOL });
       return res.data;
     },
-    enabled: listed.length < wantRows,
+    enabled: listed.length < Math.min(openMarkets, EVENT_ROW_POOL),
     staleTime: 60_000,
   });
   const markets = fetched && fetched.length > listed.length ? fetched : listed;
@@ -65,7 +68,8 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
   const photo = markets
     .map((m) => m.imagePath || m.imageUrl || m.image_url)
     .find((value) => value && value.trim().length > 0);
-  const rows = markets.slice(0, EVENT_CARD_ROWS);
+  const rows = pickEventRows(markets, EVENT_CARD_ROWS);
+  const labels = eventRowLabels(rows, title, t("EVENT_MATCH_WINNER", "Match winner"));
   const more = Math.max(openMarkets, markets.length) - rows.length;
   // The event closes with its last market; the corner shows the time left
   // to that, pink in the last 24 hours, like a market card.
@@ -117,10 +121,10 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
       </Link>
 
       <ul className="m-0 mt-2.5 flex list-none flex-col divide-y divide-[var(--border-1)] p-0">
-        {rows.map((m) => {
+        {rows.map((m, i) => {
           const yes = clampPercentage(m.yesPricePoints);
           const no = clampPercentage(m.noPricePoints);
-          const label = marketLabelInEvent(m.title, title, t("EVENT_MATCH_WINNER", "Match winner"));
+          const label = labels[i];
           const open = isOpenMarketStatus(m.status);
           return (
             <li key={m.id} className="flex items-center gap-2 py-1.5 first:pt-0">
