@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Award, CheckCircle2, Lock, SlidersHorizontal, Sparkles, TrendingUp, XCircle } from "lucide-react";
+import { MedalIcon as Award } from "@phosphor-icons/react/dist/csr/Medal";
+import { CheckCircleIcon as CheckCircle2 } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { LockSimpleIcon as Lock } from "@phosphor-icons/react/dist/csr/LockSimple";
+import { SlidersHorizontalIcon as SlidersHorizontal } from "@phosphor-icons/react/dist/csr/SlidersHorizontal";
+import { SparkleIcon as Sparkles } from "@phosphor-icons/react/dist/csr/Sparkle";
+import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
+import { XCircleIcon as XCircle } from "@phosphor-icons/react/dist/csr/XCircle";
+import { IconTile } from "../components/account/IconTile";
 import { Button } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -935,14 +942,7 @@ function BadgesControl({ badges }: { badges: Badge[] }) {
             key={badge.id}
             className={`${CARD_CLASS} flex flex-col items-center px-3 py-4 text-center ${badge.earned ? "" : "opacity-60"}`}
           >
-            <span
-              className={`grid h-11 w-11 place-items-center rounded-full ${
-                badge.earned ? "bg-[var(--ink)] text-[var(--on-ink)]" : "bg-[var(--surface-2)] text-[var(--t3)]"
-              }`}
-              aria-hidden="true"
-            >
-              {badge.earned ? <Award size={20} /> : <Lock size={18} />}
-            </span>
+            <IconTile icon={badge.earned ? Award : Lock} tone={badge.earned ? "ink" : "well"} />
             <p className="m-0 mt-2.5 text-[13px] font-semibold text-[var(--t1)]">{badge.name}</p>
             <p className="m-0 mt-0.5 text-[12px] leading-[1.4] text-[var(--t3)]">{badge.description}</p>
             <span className="mt-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
@@ -1063,9 +1063,7 @@ function LedgerCard({ ledger, name }: { ledger: LoyaltyLedgerEntry[]; name: stri
             const Icon = LEDGER_ICON[outcome] ?? Sparkles;
             return (
               <li key={entry.id} className="flex items-center gap-3 px-5 py-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--surface-2)] text-[var(--t2)]" aria-hidden="true">
-                  <Icon size={16} />
-                </span>
+                <IconTile icon={Icon} size={36} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-medium text-[var(--t1)]">{labelForEntry(entry, t)}</span>
                   <span className="block truncate text-[12px] text-[var(--t3)]">

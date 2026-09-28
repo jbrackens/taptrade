@@ -16,7 +16,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Bell, HeartHandshake, Lock, Pencil, ReceiptText, UserRound } from "lucide-react";
+import { BellRingingIcon as Bell } from "@phosphor-icons/react/dist/csr/BellRinging";
+import { HandHeartIcon as HeartHandshake } from "@phosphor-icons/react/dist/csr/HandHeart";
+import { ShieldCheckIcon as Lock } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { PencilSimpleIcon as Pencil } from "@phosphor-icons/react/dist/csr/PencilSimple";
+import { ReceiptIcon as ReceiptText } from "@phosphor-icons/react/dist/csr/Receipt";
+import { UserCircleIcon as UserRound } from "@phosphor-icons/react/dist/csr/UserCircle";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import type {
   PortfolioSummary,
@@ -34,6 +40,7 @@ import { getProfile } from "../lib/api/user-client";
 import type { UserProfile } from "../lib/api/user-client";
 import { FEATURE_RG } from "../lib/features";
 import { formatPoints } from "../lib/points";
+import { IconTile } from "../components/account/IconTile";
 import { ProfileAvatar } from "../components/account/ProfileAvatar";
 import { ProfileTabs } from "../components/account/ProfileTabs";
 import { ResultChart } from "../components/account/ResultChart";
@@ -193,32 +200,32 @@ export default function AccountPage() {
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--border-1)] shadow-[var(--shadow-card)] max-[720px]:grid-cols-1">
           <SettingsLink
             href="/account/settings"
-            icon={<UserRound size={18} />}
+            icon={UserRound}
             title={t("actions.profile.title", "Profile")}
             desc={t("actions.profile.desc", "Your details, language and privacy")}
           />
           <SettingsLink
             href="/account/transactions"
-            icon={<ReceiptText size={18} />}
+            icon={ReceiptText}
             title={t("actions.points.title", "Point ledger")}
             desc={t("actions.points.desc", "Starter grants, predictions, and rewards")}
           />
           <SettingsLink
             href="/account/security"
-            icon={<Lock size={18} />}
+            icon={Lock}
             title={t("actions.security.title", "Security")}
             desc={t("actions.security.desc", "Password, sessions, and sign-in protection")}
           />
           <SettingsLink
             href="/account/notifications"
-            icon={<Bell size={18} />}
+            icon={Bell}
             title={t("actions.alerts.title", "Alerts")}
             desc={t("actions.alerts.desc", "Control market and account notifications")}
           />
           {FEATURE_RG && (
             <SettingsLink
               href="/responsible-gaming"
-              icon={<HeartHandshake size={18} />}
+              icon={HeartHandshake}
               title={t("actions.responsible.title", "Play responsibly")}
               desc={t("actions.responsible.desc", "Play limits, cool-offs, and self-exclusion")}
             />
@@ -275,7 +282,7 @@ function IdentityCard({
           title={t("profile.edit", "Edit profile")}
           className="grid h-9 w-9 shrink-0 place-items-center rounded-[var(--r-rh-md)] border border-[var(--border-1)] text-[var(--t2)] transition-colors duration-150 hover:border-[var(--border-2)] hover:text-[var(--t1)] max-[640px]:h-11 max-[640px]:w-11"
         >
-          <Pencil size={15} aria-hidden="true" />
+          <Pencil size={16} weight="duotone" aria-hidden="true" />
         </Link>
       </div>
 
@@ -407,7 +414,7 @@ function SettingsLink({
   desc,
 }: {
   href: string;
-  icon: React.ReactNode;
+  icon: PhosphorIcon;
   title: string;
   desc: string;
 }) {
@@ -416,9 +423,7 @@ function SettingsLink({
       href={href}
       className="flex min-h-11 items-center gap-3 bg-[var(--surface-1)] px-5 py-4 no-underline transition-colors duration-150 last:odd:col-span-2 hover:bg-[var(--surface-2)] max-[720px]:last:odd:col-span-1"
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--surface-2)] text-[var(--t2)]" aria-hidden="true">
-        {icon}
-      </span>
+      <IconTile icon={icon} />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-semibold text-[var(--t1)]">{title}</span>
         <span className="block truncate text-xs leading-normal text-[var(--t3)]">{desc}</span>

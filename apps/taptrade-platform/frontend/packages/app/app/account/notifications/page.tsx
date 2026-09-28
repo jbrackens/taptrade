@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Gift, Megaphone, ShieldCheck } from "lucide-react";
+import { CalendarBlankIcon as Calendar } from "@phosphor-icons/react/dist/csr/CalendarBlank";
+import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
+import { MegaphoneIcon as Megaphone } from "@phosphor-icons/react/dist/csr/Megaphone";
+import { ShieldCheckIcon as ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { IconTile } from "../../components/account/IconTile";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button } from "../../components/ui";
@@ -292,22 +297,22 @@ export default function NotificationsPage() {
         </h3>
         <div className="flex flex-col">
           <InfoRow
-            icon={<Megaphone size={18} strokeWidth={1.75} />}
+            icon={Megaphone}
             title="Announcements"
             desc="Important updates about your account and our service"
           />
           <InfoRow
-            icon={<Gift size={18} strokeWidth={1.75} />}
+            icon={Gift}
             title="Promotions"
             desc="Point bonus updates and community events"
           />
           <InfoRow
-            icon={<Calendar size={18} strokeWidth={1.75} />}
+            icon={Calendar}
             title="Market Updates"
             desc="Reminders for followed markets and closing windows"
           />
           <InfoRow
-            icon={<ShieldCheck size={18} strokeWidth={1.75} />}
+            icon={ShieldCheck}
             title="Sign-in notifications"
             desc="Alerts when your account is accessed"
           />
@@ -322,15 +327,13 @@ function InfoRow({
   title,
   desc,
 }: {
-  icon: React.ReactNode;
+  icon: PhosphorIcon;
   title: string;
   desc: string;
 }) {
   return (
     <div className="flex items-start gap-3 border-b border-[var(--border-1)] py-3 first:pt-0 last:border-b-0 last:pb-0">
-      <span className="mt-0.5 shrink-0 text-[var(--t2)]" aria-hidden="true">
-        {icon}
-      </span>
+      <IconTile icon={icon} size={36} />
       <div>
         <div className="text-[13px] font-bold text-[var(--t1)]">{title}</div>
         <div className="text-xs leading-snug text-[var(--t3)]">{desc}</div>

@@ -9,7 +9,12 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Bell, ChevronLeft, HeartHandshake, Lock, ReceiptText, UserRound } from "lucide-react";
+import { BellRingingIcon as Bell } from "@phosphor-icons/react/dist/csr/BellRinging";
+import { CaretLeftIcon as ChevronLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
+import { HandHeartIcon as HeartHandshake } from "@phosphor-icons/react/dist/csr/HandHeart";
+import { ShieldCheckIcon as Lock } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { ReceiptIcon as ReceiptText } from "@phosphor-icons/react/dist/csr/Receipt";
+import { UserCircleIcon as UserRound } from "@phosphor-icons/react/dist/csr/UserCircle";
 import { FEATURE_RG } from "../../lib/features";
 
 export type SettingsSection = "profile" | "security" | "alerts" | "ledger" | "responsible";
@@ -67,7 +72,7 @@ export function SettingsShell({
         href="/account"
         className="mb-3 inline-flex min-h-9 items-center gap-1 text-[13px] font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)]"
       >
-        <ChevronLeft size={16} aria-hidden="true" />
+        <ChevronLeft size={14} weight="bold" aria-hidden="true" />
         {t("nav.account", "Account")}
       </Link>
       <h1 className="type-poster m-0 mb-6 text-[28px] text-[var(--t1)] max-[640px]:mb-4 max-[640px]:text-[24px]">
@@ -90,7 +95,7 @@ export function SettingsShell({
                         : "text-[var(--t2)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)] max-[900px]:border-[var(--border-1)] max-[900px]:bg-[var(--surface-1)]"
                     }`}
                   >
-                    <Icon size={16} aria-hidden="true" className="max-[900px]:hidden" />
+                    <Icon size={18} weight="duotone" aria-hidden="true" className="max-[900px]:hidden" />
                     {t(key, fallback)}
                   </Link>
                 </li>

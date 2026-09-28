@@ -142,11 +142,22 @@ describe("header chips at 390 (step 8)", () => {
     );
   });
 
-  it("lists Rewards in the avatar menu right below Account, above Portfolio", () => {
+  it("lists Rewards then Leaderboards in the account menu, between Account and Portfolio", () => {
     const account = topBar.indexOf('href="/account"');
     const rewards = topBar.indexOf('href="/rewards"', account);
+    const leaderboards = topBar.indexOf('href="/leaderboards"', account);
     const portfolio = topBar.indexOf('href="/portfolio"', account);
-    assert.ok(account > 0 && rewards > account && portfolio > rewards, "menu order: Account, Rewards, Portfolio");
+    assert.ok(
+      account > 0 && rewards > account && leaderboards > rewards && portfolio > leaderboards,
+      "menu order: Account, Rewards, Leaderboards, Portfolio",
+    );
+  });
+
+  it("keeps the top links clear of the balance chip", () => {
+    // Rewards and Leaderboards moved into the menu; Home drops below 1000px.
+    const nav = topBar.slice(topBar.indexOf("const NAV_LINKS"), topBar.indexOf("const TERMINAL_NAV_LINKS"));
+    assert.ok(!nav.includes('"/rewards"') && !nav.includes('"/leaderboards"'));
+    assert.match(nav, /href: "\/", labelKey: "NAV_HOME", className: "max-\[1000px\]:hidden"/);
   });
 
   it("makes the account menu trigger read as a menu: three lines beside the avatar", () => {

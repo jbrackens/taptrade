@@ -20,6 +20,7 @@ import { SignOutIcon as LogOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import { PlusIcon as Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { UserIcon } from "@phosphor-icons/react/dist/csr/User";
 import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
+import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
 import { ListIcon as MenuLines } from "@phosphor-icons/react/dist/csr/List";
 import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
@@ -58,14 +59,16 @@ const NAV_LINKS: {
   labelKey: string;
   requiresAuth?: boolean;
   enabled?: boolean;
+  /** Extra classes, e.g. to drop a link before the bar runs out of room. */
+  className?: string;
 }[] = [
-  { href: "/", labelKey: "NAV_HOME" },
+  // Home gives way first: below 1000px the links would otherwise run under
+  // the balance chip. Rewards and Leaderboards live in the account menu.
+  { href: "/", labelKey: "NAV_HOME", className: "max-[1000px]:hidden" },
   { href: "/predict", labelKey: "NAV_MARKETS" },
   { href: "/discover", labelKey: "NAV_TRENDING" },
   { href: "/live", labelKey: "NAV_LIVE", enabled: FEATURE_LIVE_MARKETS },
   { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
-  { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
-  { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
 ];
 
 const TERMINAL_NAV_LINKS: typeof NAV_LINKS = [
@@ -454,7 +457,7 @@ export function TopBar() {
                     key={l.href}
                     href={l.href}
                     aria-current={active ? "page" : undefined}
-                    className={linkClass}
+                    className={l.className ? `${linkClass} ${l.className}` : linkClass}
                   >
                     {t(l.labelKey)}
                   </Link>
@@ -698,6 +701,13 @@ export function TopBar() {
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <Gift size={14} /> {t("NAV_REWARDS")}
+                  </Link>
+                  <Link
+                    href="/leaderboards"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Trophy size={14} /> {t("NAV_LEADERBOARDS")}
                   </Link>
                   <Link
                     href="/portfolio"

@@ -12,7 +12,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Gift, MessageCircle, Trophy, UserPlus } from "lucide-react";
+import { CheckCircleIcon as CheckCircle2 } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
+import { ChatCircleIcon as MessageCircle } from "@phosphor-icons/react/dist/csr/ChatCircle";
+import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
+import { UserPlusIcon as UserPlus } from "@phosphor-icons/react/dist/csr/UserPlus";
+import { IconTile } from "../../components/account/IconTile";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import { useAuth } from "../../hooks/useAuth";
@@ -189,9 +194,7 @@ function ActivityRow({ item, market }: { item: SocialActivityItem; market?: Pred
       {display ? (
         <MarketThumb categorySlug={display.categorySlug} imageUrl={photo} size={40} />
       ) : (
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--surface-2)] text-[var(--t2)]" aria-hidden="true">
-          <Icon size={18} />
-        </span>
+        <IconTile icon={Icon} />
       )}
       <div className="min-w-0 flex-1">
         {display && (
