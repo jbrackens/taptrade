@@ -38,7 +38,9 @@ describe("Predict Moments market directory", () => {
     // 2026-09-24 redesign: 18 per page — the FeaturedMarket hero plus its
     // five-row Trending list take six on the default view, leaving twelve
     // grid cards (four full rows of three at desktop widths).
-    assert.match(moments, /const PAGE_SIZE = 20/);
+    // 2026-09-28: 24 per page, shown in 12-card whole-row blocks.
+    assert.match(moments, /const PAGE_SIZE = 24/);
+    assert.match(moments, /cardLimit=\{rows\.cardLimit\}/);
     assert.match(moments, /const TRENDING_LIST_COUNT = 5/);
     assert.match(
       moments,
@@ -94,6 +96,7 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /setSortBy\("activity"\)/);
     assert.match(moments, /setDateWindow\("all"\)/);
     assert.match(moments, /COULD_NOT_LOAD_MORE_MARKETS/);
-    assert.match(moments, /onClick=\{loadMore\}/);
+    assert.match(moments, /onClick=\{fetchNextPage\}/);
+    assert.match(moments, /onClick=\{rows\.showMore\}/);
   });
 });

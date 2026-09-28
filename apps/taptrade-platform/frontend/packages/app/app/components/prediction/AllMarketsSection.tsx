@@ -15,7 +15,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MarketGrid } from "./MarketGrid";
+import { MARKET_GRID_CLASS, MarketGrid } from "./MarketGrid";
+import { eventCardCount } from "./event-groups";
+import { ROW_UNIT, useWholeRows } from "./whole-rows";
 import { Button, Input } from "../ui";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import {
@@ -38,7 +40,9 @@ import type {
 
 const api = createPredictionClient();
 
-const PAGE_SIZE = 12;
+// Markets per request. Event cards fold several markets, so a page is
+// larger than the 12-card block the grid shows (whole-rows.ts).
+const PAGE_SIZE = 24;
 const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
@@ -296,6 +300,18 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
   ]);
   const hasSecondaryNav = showSubnavCategory && subcategories.length > 0;
 
+  // Whole rows while paging the full list; a subcategory or watchlist view
+  // is a filtered subset of what's loaded and shows all of it.
+  const paged = subcategory === null && !showWatchlistOnly;
+  const cardCount = useMemo(() => eventCardCount(visibleMarkets), [visibleMarkets]);
+  const rows = useWholeRows({
+    cardCount,
+    hasNext: paged && hasNext,
+    busy: loading || loadingMore || Boolean(error),
+    fetchNext: fetchNextPage,
+    resetKey: `${categoryId}|${dateWindow}|${query}|${sortBy}|${reloadNonce}|${subcategory}|${showWatchlistOnly}`,
+  });
+
   // Watchlist is a session-protected endpoint: for anonymous visitors the
   // fetch is guaranteed 401 churn (and used to drag a doomed
   // /auth/refresh attempt behind it via the 401-retry path), so only fetch
@@ -385,7 +401,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
     };
   }, [categoryId, categorySlug, dateWindow, query, showSubnavCategory, sortBy, reloadNonce]);
 
-  function loadMore() {
+  function fetchNextPage() {
     if (loadingMore || !hasNext) return;
     setLoadingMore(true);
     api
@@ -598,12 +614,9 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
       </header>
 
       {loading && markets.length === 0 ? (
-        // Match the loaded grid's nine-card first page to avoid layout shift.
-        <div
-          className="grid grid-cols-3 items-stretch gap-5 min-[641px]:auto-rows-fr max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-4"
-          aria-hidden="true"
-        >
-          {Array.from({ length: PAGE_SIZE }, (_, i) => (
+        // Match the loaded grid's first block to avoid layout shift.
+        <div className={MARKET_GRID_CLASS} aria-hidden="true">
+          {Array.from({ length: ROW_UNIT }, (_, i) => (
             <MarketCardSkeleton key={i} />
           ))}
         </div>
@@ -656,6 +669,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
                     markets={visibleMarkets}
                     columns={4}
                     groupEvents
+                    cardLimit={paged ? rows.cardLimit : undefined}
                     watchedMarketIds={watchedMarketIds}
                     onToggleWatchlist={toggleWatchlist}
                   />
@@ -695,19 +709,20 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
               markets={visibleMarkets}
               columns={4}
               groupEvents
+              cardLimit={paged ? rows.cardLimit : undefined}
               watchedMarketIds={watchedMarketIds}
               onToggleWatchlist={toggleWatchlist}
             />
           ) : (
             emptyState
           )}
-          {hasNext && subcategory === null && (
+          {(paged ? rows.canShowMore : hasNext && subcategory === null) && (
             <div className={LOAD_MORE_CLASS}>
               <Button
                 variant="secondary"
                 size="lg"
                 className="px-7"
-                onClick={loadMore}
+                onClick={paged ? rows.showMore : fetchNextPage}
                 disabled={loadingMore}
               >
                 {loadingMore ? t("LOADING") : t("LOAD_MORE_MARKETS")}

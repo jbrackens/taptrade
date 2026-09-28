@@ -18,7 +18,9 @@ import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-c
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { Button, Input } from "../ui";
 import { FeaturedMarket, pickFeatured } from "./FeaturedMarket";
-import { MarketGrid } from "./MarketGrid";
+import { MARKET_GRID_CLASS, MarketGrid } from "./MarketGrid";
+import { eventCardCount } from "./event-groups";
+import { ROW_UNIT, useWholeRows } from "./whole-rows";
 import { localizedMarket } from "./market-content";
 import { dedupeMarkets } from "./market-display";
 import { ActivityRail } from "./ActivityRail";
@@ -28,16 +30,11 @@ const api = createPredictionClient();
 // 18 per page: on the default view the featured market and five
 // trending rows take six, leaving twelve grid cards (four full rows of
 // three at desktop widths).
-const PAGE_SIZE = 20;
+// Markets per request: the hero takes six and event cards fold several
+// markets, so a page is larger than the 12-card block the grid shows.
+const PAGE_SIZE = 24;
 const TRENDING_LIST_COUNT = 5;
-const GRID_SKELETON_IDS = [
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-] as const;
+const GRID_SKELETON_IDS = Array.from({ length: ROW_UNIT }, (_, i) => `skeleton-${i}`);
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
 type MarketSort = "activity" | "closing_soon" | "newest";
@@ -88,10 +85,7 @@ function filterPillClass(active: boolean): string {
 
 function GridSkeleton() {
   return (
-    <div
-      className="grid grid-cols-3 items-stretch gap-4 max-[1020px]:grid-cols-2 max-[640px]:grid-cols-1"
-      aria-hidden="true"
-    >
+    <div className={MARKET_GRID_CLASS} aria-hidden="true">
       {GRID_SKELETON_IDS.map((skeletonId) => (
         <div
           key={skeletonId}
@@ -179,7 +173,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
     };
   }, [reloadNonce, requestParams]);
 
-  function loadMore() {
+  function fetchNextPage() {
     if (loadingMore || !hasNext) return;
     const requestId = loadMoreRequestRef.current + 1;
     loadMoreRequestRef.current = requestId;
@@ -234,6 +228,14 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
   const gridMarkets = featured
     ? markets.filter((market) => !heroIds.has(market.id))
     : markets;
+  // Whole rows: 12-card blocks, the next page fetched quietly to fill one.
+  const rows = useWholeRows({
+    cardCount: eventCardCount(gridMarkets),
+    hasNext,
+    busy: loading || loadingMore || Boolean(error),
+    fetchNext: fetchNextPage,
+    resetKey: requestParams,
+  });
 
   return (
     <section id="trending-markets" aria-labelledby="moments-market-heading">
@@ -347,6 +349,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
             markets={gridMarkets}
             columns={4}
             groupEvents
+            cardLimit={rows.cardLimit}
             onQuickTrade={setQuickTrade}
           />
         ) : markets.length > 0 ? null : (
@@ -383,19 +386,19 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
               "The next batch could not be loaded. Try again.",
             )}
           </p>
-          <Button variant="secondary" size="sm" onClick={loadMore}>
+          <Button variant="secondary" size="sm" onClick={fetchNextPage}>
             {t("RETRY", "Retry")}
           </Button>
         </div>
       )}
 
-      {hasNext && (
+      {rows.canShowMore && (
         <div className="mt-6 flex justify-center">
           <Button
             variant="secondary"
             size="md"
             className="px-6"
-            onClick={loadMore}
+            onClick={rows.showMore}
             disabled={loadingMore}
           >
             {loadingMore

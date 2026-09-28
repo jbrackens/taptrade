@@ -90,14 +90,19 @@ describe("§3-09 commentCount (step 10)", () => {
 });
 
 describe("Markets grid and discovery feed", () => {
-  it("renders Available Markets in a twelve-card, four-column grid", () => {
-    // 2026-09-27: four across (three full rows of four), like Kalshi/Polymarket.
-    assert.match(section, /const PAGE_SIZE = 12/);
+  it("renders Available Markets in whole rows on a four-column grid", () => {
+    // 2026-09-27: four across, like Kalshi/Polymarket. 2026-09-28: event
+    // cards fold markets, so pages of 24 markets feed 12-card blocks that
+    // fill 4, 3, 2 and 1 columns (whole-rows.ts), never a ragged last row.
+    assert.match(section, /const PAGE_SIZE = 24/);
     assert.equal(
       (section.match(/pageSize: PAGE_SIZE/g) ?? []).length,
       2,
-      "the initial request and each Load More request should use the twelve-card batch size",
+      "the initial request and each further page should use the same batch size",
     );
+    assert.match(section, /useWholeRows\(\{/);
+    assert.match(section, /cardLimit=\{paged \? rows\.cardLimit : undefined\}/);
+    assert.match(section, /onClick=\{paged \? rows\.showMore : fetchNextPage\}/);
     assert.match(
       section,
       /setMarkets\(\(prev\) => \[\.\.\.prev, \.\.\.next\]\)/,
@@ -144,9 +149,10 @@ describe("Markets grid and discovery feed", () => {
     assert.match(card, /onClick=\{\(\) => onToggleWatchlist\(marketId\)\}/);
   });
 
-  it("ships a nine-card skeleton that matches the real grid", () => {
+  it("ships a one-block skeleton on the real grid's classes", () => {
     assert.match(section, /function MarketCardSkeleton/);
-    assert.match(section, /Array\.from\(\{ length: PAGE_SIZE \}/);
+    assert.match(section, /<div className=\{MARKET_GRID_CLASS\} aria-hidden="true">/);
+    assert.match(section, /Array\.from\(\{ length: ROW_UNIT \}/);
   });
 
   it("keeps movement derivation in one shared module", () => {

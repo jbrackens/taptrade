@@ -56,6 +56,11 @@ export function groupIntoEventCards(markets: PredictionMarket[]): GridItem[] {
   return items;
 }
 
+/** How many cards a market list makes on a grid that groups events. */
+export function eventCardCount(markets: PredictionMarket[]): number {
+  return groupIntoEventCards(markets).length;
+}
+
 /**
  * Whether an eyebrow would only repeat the title: the same words, or one a
  * prefix of the other ("New York Mets vs. Washington Nationals" over itself).

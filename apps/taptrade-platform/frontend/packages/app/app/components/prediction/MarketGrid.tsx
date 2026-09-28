@@ -25,6 +25,8 @@ interface Props {
    * moneyline; a nominee field) into one event card each.
    */
   groupEvents?: boolean;
+  /** Show at most this many cards (whole rows — see whole-rows.ts). */
+  cardLimit?: number;
 }
 
 // Equal-height rows only where there are several columns; the one-column
@@ -34,6 +36,9 @@ const GRID_CLASS_BY_COLUMNS: Record<NonNullable<Props["columns"]>, string> = {
   4: "grid grid-cols-4 items-stretch gap-4 min-[641px]:auto-rows-fr max-[1180px]:grid-cols-3 max-[900px]:grid-cols-2 max-[640px]:grid-cols-1 max-[640px]:gap-3",
 };
 
+/** The four-column grid's classes, for skeletons that must match it. */
+export const MARKET_GRID_CLASS = GRID_CLASS_BY_COLUMNS[4];
+
 export function MarketGrid({
   markets,
   columns = 4,
@@ -41,6 +46,7 @@ export function MarketGrid({
   onToggleWatchlist,
   onQuickTrade,
   groupEvents = false,
+  cardLimit,
 }: Props) {
   const { t } = useTranslation("market-content");
   // A card's YES/NO opens the trade panel in place; the card body still
@@ -52,9 +58,10 @@ export function MarketGrid({
   if (!markets || markets.length === 0) return null;
 
   const localizedMarkets = markets.map((market) => localizedMarket(t, market));
-  const items = groupEvents
+  const allItems = groupEvents
     ? groupIntoEventCards(localizedMarkets)
     : localizedMarkets.map((market) => ({ kind: "market" as const, market }));
+  const items = cardLimit === undefined ? allItems : allItems.slice(0, cardLimit);
 
   return (
     <>
