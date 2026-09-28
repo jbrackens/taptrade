@@ -3,6 +3,11 @@ package discover
 import (
 	"context"
 	"encoding/json"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -45,7 +50,7 @@ func TestTopicQuery(t *testing.T) {
 }
 
 func TestLicenseAllowsReuse(t *testing.T) {
-	yes := []string{"CC BY-SA 4.0", "CC BY 2.0", "CC0", "Public domain", "PD-USGov", "cc-by-sa-3.0"}
+	yes := []string{"CC BY-SA 4.0", "CC BY 2.0", "CC0", "Public domain", "PD-USGov", "cc-by-sa-3.0", "MIT", "Apache License 2.0"}
 	no := []string{"CC BY-NC 2.0", "CC BY-ND 4.0", "CC BY-NC-SA 3.0", "", "All rights reserved", "Fair use"}
 	for _, l := range yes {
 		if !licenseAllowsReuse(l) {
@@ -96,6 +101,27 @@ func TestMatchupTeamsAndTile(t *testing.T) {
 	}
 }
 
+// offlineWikimedia points Wikidata and Commons at a server that knows no
+// items and no files, so a test never reaches the real network. Tests that
+// fake Wikidata themselves override wikidataAPIBase afterwards.
+func offlineWikimedia(t *testing.T) {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Query().Get("action") {
+		case "wbsearchentities":
+			_ = json.NewEncoder(w).Encode(map[string]any{"search": []any{}})
+		case "wbgetentities":
+			_ = json.NewEncoder(w).Encode(map[string]any{"entities": map[string]any{}})
+		default:
+			_ = json.NewEncoder(w).Encode(map[string]any{"query": map[string]any{"pages": map[string]any{"-1": map[string]any{"missing": ""}}}})
+		}
+	}))
+	t.Cleanup(srv.Close)
+	oldWD, oldC := wikidataAPIBase, commonsAPIBase
+	wikidataAPIBase, commonsAPIBase = srv.URL, srv.URL
+	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase = oldWD, oldC })
+}
+
 // memoryCoverStore stands in for cover_lookups.
 type memoryCoverStore struct {
 	rows  map[string]CoverLookup
@@ -122,6 +148,7 @@ func (m *memoryCoverStore) SaveCoverLookup(_ context.Context, l CoverLookup) err
 // Wikidata and Commons servers: exact-label match, accepted class, a free
 // licence, rehost, credit — and the cache answering the second time.
 func TestCoverResolver_EntityPhoto(t *testing.T) {
+	offlineWikimedia(t)
 	var wikidataHits, commonsHits, imageHits int
 	imgSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		imageHits++
@@ -141,10 +168,12 @@ func TestCoverResolver_EntityPhoto(t *testing.T) {
 			if r.URL.Query().Get("ids") != "Q2" {
 				t.Errorf("only exact-label candidates may be fetched, got ids=%s", r.URL.Query().Get("ids"))
 			}
-			_ = json.NewEncoder(w).Encode(map[string]any{"entities": map[string]any{"Q2": map[string]any{"claims": map[string]any{
-				"P31": []any{map[string]any{"mainsnak": map[string]any{"datavalue": map[string]any{"value": map[string]any{"id": "Q5"}}}}},
-				"P18": []any{map[string]any{"mainsnak": map[string]any{"datavalue": map[string]any{"value": "VPSD Official Photo.jpg"}}}},
-			}}}})
+			_ = json.NewEncoder(w).Encode(map[string]any{"entities": map[string]any{"Q2": map[string]any{
+				"sitelinks": map[string]any{"enwiki": map[string]any{}, "tlwiki": map[string]any{}, "cebwiki": map[string]any{}},
+				"claims": map[string]any{
+					"P31": []any{map[string]any{"mainsnak": map[string]any{"datavalue": map[string]any{"value": map[string]any{"id": "Q5"}}}}},
+					"P18": []any{map[string]any{"mainsnak": map[string]any{"datavalue": map[string]any{"value": "VPSD Official Photo.jpg"}}}},
+				}}}})
 		}
 	}))
 	defer wd.Close()
@@ -200,6 +229,7 @@ func TestCoverResolver_EntityPhoto(t *testing.T) {
 // Non-free licences, wrong kinds of entity, and the run budget all stop a
 // cover from being used; a miss is cached so the next run skips it.
 func TestCoverResolver_RefusesAndBudgets(t *testing.T) {
+	offlineWikimedia(t)
 	wd := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Query().Get("action") {
 		case "wbsearchentities":
@@ -231,6 +261,7 @@ func TestCoverResolver_RefusesAndBudgets(t *testing.T) {
 	store := &memoryCoverStore{}
 	res := NewCoverResolver(NewImageRehoster(t.TempDir()), store)
 	res.topicBudget = 1
+	res.openverseKey = "test-token" // Openverse is only asked with a key
 	res.ResetBudget()
 
 	if _, ok := res.Resolve(context.Background(), "row-1", Market{Title: "Will Bitcoin hit $150k before 2027?"}, "economics"); ok {
@@ -239,8 +270,8 @@ func TestCoverResolver_RefusesAndBudgets(t *testing.T) {
 	if openverseHits != 1 {
 		t.Fatalf("openverse hits = %d, want 1", openverseHits)
 	}
-	if l := store.rows["entity:bitcoin"]; l.Found {
-		t.Errorf("entity miss must be cached as not found")
+	if l, ok := store.rows["wd:economics:bitcoin"]; !ok || l.Found {
+		t.Errorf("entity miss must be cached as not found: %+v (cached=%v)", l, ok)
 	}
 	if l := store.rows["topic:bitcoin 150k"]; l.Found {
 		t.Errorf("topic miss must be cached as not found: %+v", l)
@@ -258,6 +289,7 @@ func TestCoverResolver_RefusesAndBudgets(t *testing.T) {
 }
 
 func TestCoverResolver_MatchupTileForSports(t *testing.T) {
+	offlineWikimedia(t)
 	root := t.TempDir()
 	res := NewCoverResolver(NewImageRehoster(root), &memoryCoverStore{})
 	res.ResetBudget()
@@ -274,5 +306,138 @@ func TestCoverResolver_MatchupTileForSports(t *testing.T) {
 	res.entityBudget, res.topicBudget = 0, 0
 	if _, ok := res.Resolve(context.Background(), "row-10", Market{Title: "Coke vs. Pepsi: which sells more?"}, "general"); ok {
 		t.Fatalf("no tile outside sports/esports without a repository answer")
+	}
+}
+
+func TestSubjectCandidates(t *testing.T) {
+	cases := map[string][]string{
+		"Will France win on 2026-09-28?":                                               {"France"},
+		"Fed Decision in October?":                                                     {"Federal Reserve System", "Fed Decision", "Fed"},
+		"New Bad Bunny album on Spotify before Valentines Day 2027?":                   {"Bad Bunny", "Bad", "Spotify", "Valentines Day"},
+		"OpenAI ChatGPT Astra publicly available in September 2026?":                   {"OpenAI ChatGPT Astra", "OpenAI ChatGPT", "OpenAI"},
+		"What will The Goldman Sachs Group, Inc. say during their next earnings call?": {"Goldman Sachs", "Goldman"},
+		"Will I do chores for 15 minutes daily until October?":                         nil,
+	}
+	for title, want := range cases {
+		got := subjectCandidates(title)
+		if strings.Join(got, "|") != strings.Join(want, "|") {
+			t.Errorf("subjectCandidates(%q) = %q, want %q", title, got, want)
+		}
+	}
+}
+
+// fakeWikimedia serves a small Wikidata and Commons: items by search label,
+// their claims, and Commons image info for any file (SVGs with a PNG
+// rendition behind a query string, as Commons really serves them).
+func fakeWikimedia(t *testing.T, items map[string]map[string]any, search map[string][]map[string]any) {
+	t.Helper()
+	img := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "wordmark") {
+			w.Header().Set("Content-Type", "image/png")
+			_ = writeTestPNG(w, 900, 200)
+			return
+		}
+		w.Header().Set("Content-Type", "image/png")
+		_ = writeTestPNG(w, 300, 200)
+	}))
+	t.Cleanup(img.Close)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		switch q.Get("action") {
+		case "wbsearchentities":
+			_ = json.NewEncoder(w).Encode(map[string]any{"search": search[q.Get("search")]})
+		case "wbgetentities":
+			_ = json.NewEncoder(w).Encode(map[string]any{"entities": map[string]any{q.Get("ids"): items[q.Get("ids")]}})
+		default:
+			file := strings.TrimPrefix(q.Get("titles"), "File:")
+			mime, thumb := "image/jpeg", img.URL+"/"+file
+			if strings.HasSuffix(file, ".svg") {
+				mime, thumb = "image/svg+xml", img.URL+"/960px-"+file+".png?utm_source=commons"
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"query": map[string]any{"pages": map[string]any{"1": map[string]any{"imageinfo": []any{map[string]any{
+				"thumburl": thumb, "url": img.URL + "/" + file, "descriptionurl": "https://commons.wikimedia.org/wiki/File:" + file, "mime": mime,
+				"extmetadata": map[string]any{"LicenseShortName": map[string]any{"value": "Public domain"}},
+			}}}}}})
+		}
+	}))
+	t.Cleanup(srv.Close)
+	oldWD, oldC := wikidataAPIBase, commonsAPIBase
+	wikidataAPIBase, commonsAPIBase = srv.URL, srv.URL
+	t.Cleanup(func() { wikidataAPIBase, commonsAPIBase = oldWD, oldC })
+}
+
+func claim(value any, rank string) map[string]any {
+	return map[string]any{"rank": rank, "mainsnak": map[string]any{"datavalue": map[string]any{"value": value}}}
+}
+
+func writeTestPNG(w io.Writer, width, height int) error {
+	m := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.Draw(m, m.Bounds(), &image.Uniform{C: color.Black}, image.Point{}, draw.Src)
+	return png.Encode(w, m)
+}
+
+// The Wikidata path: a country gets its preferred flag (not a historical
+// banner listed first) from an SVG's PNG rendition; a band cannot
+// illustrate a tech market; a short alias ("INC") never matches; an
+// organisation of an unlisted class still gets its logo, padded to a square.
+func TestCoverResolver_WikidataSubjects(t *testing.T) {
+	items := map[string]map[string]any{
+		"Q142": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31": []any{claim(map[string]any{"id": "Q3624078"}, "normal")},
+			"P41": []any{claim("Banner of France 1500.svg", "normal"), claim("Flag of France.svg", "preferred")},
+		}},
+		"Q22151": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31": []any{claim(map[string]any{"id": "Q215380"}, "normal")}, // musical group
+			"P18": []any{claim("Muse live.jpg", "normal")},
+		}},
+		"Q1": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31": []any{claim(map[string]any{"id": "Q7278"}, "normal")},
+			"P41": []any{claim("INC flag.svg", "normal")},
+		}},
+		"Q193326": {"sitelinks": map[string]any{}, "claims": map[string]any{
+			"P31":  []any{claim(map[string]any{"id": "Q730038"}, "normal")}, // investment bank: not listed
+			"P154": []any{claim("Goldman Sachs wordmark.svg", "normal")},
+		}},
+	}
+	search := map[string][]map[string]any{
+		"France":        {{"id": "Q142", "label": "France", "match": map[string]any{"text": "France", "type": "label"}}},
+		"Muse":          {{"id": "Q22151", "label": "Muse", "match": map[string]any{"text": "Muse", "type": "label"}}},
+		"Inc":           {{"id": "Q1", "label": "Indian National Congress", "match": map[string]any{"text": "INC", "type": "alias"}}},
+		"Goldman Sachs": {{"id": "Q193326", "label": "Goldman Sachs", "match": map[string]any{"text": "Goldman Sachs", "type": "label"}}},
+	}
+	fakeWikimedia(t, items, search)
+
+	root := t.TempDir()
+	res := NewCoverResolver(NewImageRehoster(root), &memoryCoverStore{})
+	res.ResetBudget()
+	ctx := context.Background()
+
+	meta, ok := res.Resolve(ctx, "row-fr", Market{Title: "Will France win on 2026-09-28?"}, "sports")
+	if !ok || !strings.Contains(meta.SourceURL, "Flag of France.svg") {
+		t.Fatalf("France must get its preferred flag: %+v, %v", meta, ok)
+	}
+	if meta.Path != "/images/markets/row-fr.png" {
+		t.Fatalf("the SVG's PNG rendition must be stored as .png, got %q", meta.Path)
+	}
+
+	if _, ok := res.Resolve(ctx, "row-muse", Market{Title: "Will Muse rank #1 in App Store?"}, "tech"); ok {
+		t.Fatalf("a band must not illustrate a tech market named after it")
+	}
+	if l, err := res.lookupWikidata(ctx, "Inc", "economics"); err != nil || l.Found {
+		t.Fatalf("a short alias must not match: %+v %v", l, err)
+	}
+
+	meta, ok = res.Resolve(ctx, "row-gs", Market{Title: "What will The Goldman Sachs Group, Inc. say during their next earnings call?"}, "economics")
+	if !ok || !strings.Contains(meta.SourceURL, "Goldman Sachs wordmark.svg") {
+		t.Fatalf("an organisation with a logo must get it: %+v, %v", meta, ok)
+	}
+	f, err := os.Open(filepath.Join(root, "images", "markets", "row-gs.png"))
+	if err != nil {
+		t.Fatalf("logo not written: %v", err)
+	}
+	defer f.Close()
+	cfg, err := png.DecodeConfig(f)
+	if err != nil || cfg.Width != cfg.Height {
+		t.Fatalf("a wide wordmark must be padded to a square, got %dx%d (%v)", cfg.Width, cfg.Height, err)
 	}
 }

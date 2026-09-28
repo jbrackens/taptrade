@@ -201,13 +201,7 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		// a matchup tile), once, and remember the answer.
 		if imagePath == nil && covers != nil {
 			if needs, err := repo.NeedsCover(ctx, ur.ID); err == nil && needs {
-				if meta, ok := covers.Resolve(ctx, ur.ID, m, Classify(m)); ok {
-					if err := repo.SetImage(ctx, ur.ID, meta); err != nil {
-						slog.Warn("discover cover save failed", "row_id", ur.ID, "err", err)
-					} else {
-						res.CoversResolved++
-					}
-				}
+				resolveCover(ctx, repo, covers, ur.ID, m, Classify(m), &res)
 			}
 		}
 	}
@@ -237,6 +231,12 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 			res.ImagesDroppedShared = dropped
 		}
 	}
+	// Backfill: bare open imports the board shows, whichever run fetched
+	// them — rows the sweep just stripped of venue branding included.
+	if covers != nil {
+		res.CoversResolved += backfillCovers(ctx, repo, covers, intEnvOr("COVER_BACKFILL_PER_RUN", defaultBackfillRowsPerRun))
+	}
+
 	aligned, err := repo.AlignPromotedMarketImages(ctx)
 	if err != nil {
 		slog.Warn("discover promoted image align failed", "err", err)
@@ -355,4 +355,50 @@ func coverStoreOrNil(repo *Repository) CoverStore {
 		return nil
 	}
 	return repo
+}
+
+// resolveCover finds and stores a cover for one imported row, recording the
+// attempt when nothing was found so the backfill moves on.
+func resolveCover(ctx context.Context, repo *Repository, covers *CoverResolver, id string, m Market, category string, res *SyncResult) bool {
+	meta, ok, complete := covers.ResolveChecked(ctx, id, m, category)
+	if ok {
+		if err := repo.SetImage(ctx, id, meta); err != nil {
+			slog.Warn("discover cover save failed", "row_id", id, "err", err)
+			return false
+		}
+		if res != nil {
+			res.CoversResolved++
+		}
+		return true
+	}
+	if complete {
+		if err := repo.MarkCoverChecked(ctx, id); err != nil {
+			slog.Warn("discover cover check save failed", "row_id", id, "err", err)
+		}
+	}
+	return false
+}
+
+// backfillCovers resolves covers for up to limit bare open imports, stopping
+// when the run's lookup budget is spent. Returns how many it filled.
+func backfillCovers(ctx context.Context, repo *Repository, covers *CoverResolver, limit int) int {
+	rows, err := repo.ListBareOpenImports(ctx, limit)
+	if err != nil {
+		slog.Warn("discover cover backfill list failed", "err", err)
+		return 0
+	}
+	filled := 0
+	for _, b := range rows {
+		if ctx.Err() != nil || covers.Exhausted() {
+			break
+		}
+		m := Market{Title: b.Title, EventTitle: b.EventTitle, Description: b.Description}
+		if resolveCover(ctx, repo, covers, b.ID, m, b.CategorySlug, nil) {
+			filled++
+		}
+	}
+	if filled > 0 {
+		slog.Info("discover cover backfill", "tried", len(rows), "filled", filled)
+	}
+	return filled
 }

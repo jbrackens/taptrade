@@ -98,8 +98,8 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		UPDATE imported_markets SET
 			title = $2,
 			description = $3,
-			image_path = CASE WHEN COALESCE(image_origin, '') = 'manual' THEN image_path ELSE COALESCE($4, image_path) END,
-			image_origin = CASE WHEN $4 IS NOT NULL AND COALESCE(image_origin, '') <> 'manual' THEN 'upstream' ELSE image_origin END,
+			image_path = CASE WHEN COALESCE(image_origin, '') IN ('', 'upstream') THEN COALESCE($4, image_path) ELSE image_path END,
+			image_origin = CASE WHEN $4 IS NOT NULL AND COALESCE(image_origin, '') IN ('', 'upstream') THEN 'upstream' ELSE image_origin END,
 			end_time = $5,
 			volume = $6,
 			outcomes = $7::jsonb,
@@ -265,6 +265,7 @@ func (r *Repository) ListImageRows(ctx context.Context) ([]ImportedImageRow, err
 		SELECT id, image_path, COALESCE(event_group, '')
 		  FROM imported_markets
 		 WHERE image_path IS NOT NULL
+		   AND COALESCE(image_origin, 'upstream') = 'upstream'
 	`)
 	if err != nil {
 		return nil, fmt.Errorf("list image rows: %w", err)
@@ -295,11 +296,12 @@ func (r *Repository) ClearImagePaths(ctx context.Context, ids []string) (int, er
 		       image_credit = NULL,
 		       image_license = NULL,
 		       image_source_url = NULL,
-		       image_origin = NULL,
+		       image_origin = 'swept',
+		       cover_checked_at = NULL,
 		       updated_at = now()
 		 WHERE id = ANY($1::uuid[])
 		   AND image_path IS NOT NULL
-		   AND COALESCE(image_origin, '') <> 'manual'
+		   AND COALESCE(image_origin, 'upstream') = 'upstream'
 	`, pq.Array(ids))
 	if err != nil {
 		return 0, fmt.Errorf("clear image paths: %w", err)
@@ -509,6 +511,7 @@ func (r *Repository) SetImage(ctx context.Context, id string, meta CoverMeta) er
 		       image_license = NULLIF($4, ''),
 		       image_source_url = NULLIF($5, ''),
 		       image_origin = $6,
+		       cover_checked_at = now(),
 		       updated_at = now()
 		 WHERE id = $1
 		   AND COALESCE(image_origin, '') <> 'manual'`,
@@ -651,6 +654,63 @@ func (r *Repository) ListAttributions(ctx context.Context, limit int) ([]Attribu
 			return nil, fmt.Errorf("scan attribution: %w", err)
 		}
 		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
+// MarkCoverChecked records that the resolver tried a row and found nothing,
+// so the backfill moves on and retries it after coverMissRetryAfter.
+func (r *Repository) MarkCoverChecked(ctx context.Context, id string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE imported_markets SET cover_checked_at = now() WHERE id = $1`, id)
+	if err != nil {
+		return fmt.Errorf("mark cover checked: %w", err)
+	}
+	return nil
+}
+
+// BareImport is an open, promoted import with no thumbnail, as the cover
+// backfill sees it.
+type BareImport struct {
+	ID           string
+	Title        string
+	EventTitle   string
+	Description  string
+	CategorySlug string
+}
+
+// ListBareOpenImports returns open promoted imports without an image that
+// the resolver has not tried in the last 30 days, the ones the board is
+// likeliest to show first: contested prices, then 24h and lifetime volume.
+func (r *Repository) ListBareOpenImports(ctx context.Context, limit int) ([]BareImport, error) {
+	if limit <= 0 {
+		return nil, nil
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT im.id, im.title, COALESCE(im.event_title, ''), COALESCE(im.description, ''), COALESCE(pc.slug, '')
+		  FROM imported_markets im
+		  JOIN prediction_markets pm ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
+		  LEFT JOIN prediction_events pe ON pe.id = pm.event_id
+		  LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
+		 WHERE pm.status = 'open'
+		   AND im.image_path IS NULL
+		   AND COALESCE(im.image_origin, '') <> 'manual'
+		   AND (im.cover_checked_at IS NULL OR im.cover_checked_at < now() - interval '30 days')
+		 ORDER BY (pm.yes_price_points BETWEEN 5 AND 95) DESC,
+		          COALESCE(im.volume_24h, 0) DESC,
+		          pm.volume_points DESC,
+		          im.id
+		 LIMIT $1`, limit)
+	if err != nil {
+		return nil, fmt.Errorf("list bare imports: %w", err)
+	}
+	defer rows.Close()
+	var out []BareImport
+	for rows.Next() {
+		var b BareImport
+		if err := rows.Scan(&b.ID, &b.Title, &b.EventTitle, &b.Description, &b.CategorySlug); err != nil {
+			return nil, fmt.Errorf("scan bare import: %w", err)
+		}
+		out = append(out, b)
 	}
 	return out, rows.Err()
 }

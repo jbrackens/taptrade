@@ -16,27 +16,34 @@ import (
 	"time"
 )
 
-// Cover resolver (2026-09-27). An import whose source ships no image — every
-// Kalshi and Manifold market — gets a cover from an open repository, in this
-// order:
+// Cover resolver (2026-09-27, reworked 2026-09-28). An import whose source
+// ships no image — every Kalshi and Manifold market, and Polymarket markets
+// whose image turned out to be venue branding — gets a cover from an open
+// repository, in this order:
 //
 //  1. a matchup tile for "A vs B" sports and esports markets: two team
 //     colours with the teams' abbreviations, generated here (team crests are
 //     trademarked and non-free, so they are never fetched);
-//  2. an entity photo: the person, band, film, show, game, city or country
-//     the title names, resolved through Wikidata to its Wikimedia Commons
-//     image, accepted only under CC0, CC BY, CC BY-SA or the public domain,
-//     and only when the label matches the name exactly and the entity is of
-//     an expected kind — a namesake's photo is the failure that matters;
-//  3. a topic photo from Openverse (commercial-use licences only);
-//  4. nothing — the card falls back to the category tile it has today.
+//  2. the market's named subjects ("Bad Bunny", "France", "Fed" → "Federal
+//     Reserve", "Tesla Roadster", "Sara Duterte"), each resolved through
+//     Wikidata: the top search result whose label or alias is exactly that
+//     name, of a class the resolver knows, fitting the market's category —
+//     then that class's image on Wikimedia Commons under a free licence: a
+//     country's flag, an organisation's logo or seal, a person's or thing's
+//     photo. Free-text Wikipedia and Commons search were tried and dropped:
+//     they matched namesakes and words (a cave for "France", a police car for
+//     the Fed, a papyrus for the film "The Odyssey");
+//  3. an Openverse topic photo, only when OPENVERSE_API_TOKEN is set (the
+//     anonymous API refuses the server with 403);
+//  4. nothing — the card keeps its category tile.
 //
-// Every lookup, hit or miss, is cached in cover_lookups so the sync never
-// asks the same question twice within the retry window, and each run spends
-// at most a small budget of lookups (Openverse allows 200 anonymous requests
-// a day; Wikimedia asks for a descriptive User-Agent and a gentle rate).
-// Credits are stored with the image and shown on the market page and the
-// /attributions page, which is what CC BY requires.
+// Every sync also backfills: open imports the board shows without an image,
+// likeliest-to-be-seen first, not only the rows the sources returned that
+// run. A row is tried once per 30 days (cover_checked_at, migration 062).
+// Every lookup, hit or miss, is cached in cover_lookups; each run spends at
+// most COVER_ENTITY_LOOKUPS_PER_RUN Wikidata lookups. Credits are stored
+// with the image and shown on the market page and /attributions, which is
+// what CC BY requires.
 
 var (
 	wikidataAPIBase  = "https://www.wikidata.org/w/api.php"
@@ -50,8 +57,10 @@ const coverUserAgent = "TapTradeCatalog/1.0 (https://demo.99rtp.io; support@tapt
 
 const (
 	coverMissRetryAfter        = 30 * 24 * time.Hour
-	defaultEntityLookupsPerRun = 25
+	defaultEntityLookupsPerRun = 60
 	defaultTopicLookupsPerRun  = 2
+	defaultBackfillRowsPerRun  = 60
+	maxSubjectsPerMarket       = 4
 )
 
 // CoverMeta is a resolved cover: where the file is served from, the credit
@@ -90,6 +99,10 @@ type CoverResolver struct {
 	topicBudget  int
 	entityUsed   int
 	topicUsed    int
+	openverseKey string
+	// shortOfBudget records that a lookup this run was skipped for budget,
+	// so the caller does not mark the row as checked.
+	shortOfBudget bool
 }
 
 // NewCoverResolver builds a resolver that writes covers through the given
@@ -104,6 +117,7 @@ func NewCoverResolver(rehoster *ImageRehoster, store CoverStore) *CoverResolver 
 		client:       &http.Client{Timeout: 12 * time.Second},
 		entityBudget: intEnvOr("COVER_ENTITY_LOOKUPS_PER_RUN", defaultEntityLookupsPerRun),
 		topicBudget:  intEnvOr("COVER_TOPIC_LOOKUPS_PER_RUN", defaultTopicLookupsPerRun),
+		openverseKey: strings.TrimSpace(os.Getenv("OPENVERSE_API_TOKEN")),
 	}
 }
 
@@ -112,12 +126,30 @@ func (c *CoverResolver) ResetBudget() {
 	c.entityUsed, c.topicUsed = 0, 0
 }
 
+// Exhausted reports whether this run has no lookups left at all.
+func (c *CoverResolver) Exhausted() bool {
+	return c.entityUsed >= c.entityBudget
+}
+
 // Resolve finds a cover for an imported market that has none. ok is false
-// when nothing suitable was found within this run's budget.
+// when nothing suitable was found; complete is false when a lookup was
+// skipped for this run's budget, so the row should be tried again.
 func (c *CoverResolver) Resolve(ctx context.Context, rowID string, m Market, category string) (CoverMeta, bool) {
+	meta, ok, _ := c.ResolveChecked(ctx, rowID, m, category)
+	return meta, ok
+}
+
+// ResolveChecked is Resolve plus whether every step ran (see Resolve).
+func (c *CoverResolver) ResolveChecked(ctx context.Context, rowID string, m Market, category string) (meta CoverMeta, ok bool, complete bool) {
 	if c == nil || c.rehoster == nil || rowID == "" {
-		return CoverMeta{}, false
+		return CoverMeta{}, false, false
 	}
+	c.shortOfBudget = false
+	meta, ok = c.resolve(ctx, rowID, m, category)
+	return meta, ok, !c.shortOfBudget
+}
+
+func (c *CoverResolver) resolve(ctx context.Context, rowID string, m Market, category string) (CoverMeta, bool) {
 	if category == "sports" || category == "esports" {
 		if home, away, ok := matchupTeams(firstNonEmpty(m.EventTitle, m.Title)); ok {
 			if path, err := c.rehoster.WriteLocal(rowID, ".svg", matchupTileSVG(home, away)); err == nil {
@@ -125,18 +157,34 @@ func (c *CoverResolver) Resolve(ctx context.Context, rowID string, m Market, cat
 			}
 		}
 	}
+	subjects := subjectCandidates(m.Title)
 	if name := entityFromTitle(m.Title); name != "" {
-		if meta, ok := c.cachedOrLookup(ctx, rowID, "entity:"+strings.ToLower(name), &c.entityUsed, c.entityBudget, func(ctx context.Context) (CoverLookup, error) {
-			return c.lookupEntity(ctx, name)
+		subjects = append([]string{name}, subjects...)
+	}
+	seen := map[string]bool{}
+	tried := 0
+	for _, subject := range subjects {
+		key := strings.ToLower(subject)
+		if seen[key] || tried >= maxSubjectsPerMarket+1 {
+			continue
+		}
+		seen[key] = true
+		tried++
+		subject := subject
+		cat := normaliseCategory(category)
+		if meta, ok := c.cachedOrLookup(ctx, rowID, "wd:"+cat+":"+key, &c.entityUsed, c.entityBudget, func(ctx context.Context) (CoverLookup, error) {
+			return c.lookupWikidata(ctx, subject, cat)
 		}); ok {
 			return meta, true
 		}
 	}
-	if query := topicQuery(m.Title); query != "" {
-		if meta, ok := c.cachedOrLookup(ctx, rowID, "topic:"+query, &c.topicUsed, c.topicBudget, func(ctx context.Context) (CoverLookup, error) {
-			return c.lookupTopic(ctx, query)
-		}); ok {
-			return meta, true
+	if c.openverseKey != "" {
+		if query := topicQuery(m.Title); query != "" {
+			if meta, ok := c.cachedOrLookup(ctx, rowID, "topic:"+query, &c.topicUsed, c.topicBudget, func(ctx context.Context) (CoverLookup, error) {
+				return c.lookupTopic(ctx, query)
+			}); ok {
+				return meta, true
+			}
 		}
 	}
 	return CoverMeta{}, false
@@ -162,6 +210,7 @@ func (c *CoverResolver) cachedOrLookup(ctx context.Context, rowID, key string, u
 		return c.rehostLookup(rowID, *cached)
 	}
 	if *used >= budget {
+		c.shortOfBudget = true
 		return CoverMeta{}, false
 	}
 	*used++
@@ -184,7 +233,7 @@ func (c *CoverResolver) cachedOrLookup(ctx context.Context, rowID, key string, u
 }
 
 func (c *CoverResolver) rehostLookup(rowID string, l CoverLookup) (CoverMeta, bool) {
-	path, err := c.rehoster.Rehost(rowID, l.ImageURL)
+	path, err := c.rehoster.RehostFitted(rowID, l.ImageURL)
 	if err != nil || path == "" {
 		slog.Warn("cover: rehost failed", "key", l.Key, "err", err)
 		return CoverMeta{}, false
@@ -194,78 +243,135 @@ func (c *CoverResolver) rehostLookup(rowID string, l CoverLookup) (CoverMeta, bo
 
 // ── Entity photos: Wikidata → Wikimedia Commons ─────────────────────────
 
-// wikidataAcceptedClasses are the kinds of thing whose Wikidata image is a
-// fair cover for a market about it. Teams, companies and currencies are left
-// out on purpose: their P18/P154 images are logos.
-var wikidataAcceptedClasses = map[string]string{
-	"Q5":       "human",
-	"Q215380":  "musical group",
-	"Q11424":   "film",
-	"Q5398426": "television series",
-	"Q482994":  "album",
-	"Q7889":    "video game",
-	"Q515":     "city",
-	"Q6256":    "country",
+// Wikidata is the precision layer: it knows what a name refers to. Each
+// accepted class says which image stands for it — a country's flag (P41),
+// an organisation's logo or seal (P154), a person's or thing's photo (P18) —
+// and where in the catalog it may appear, so a band cannot illustrate a
+// tech market named after it ("Muse", "Opus 5.5", 2026-09-28).
+type wikidataGroup struct {
+	name       string
+	properties []string        // image properties, in order of preference
+	categories map[string]bool // nil = any category
 }
 
-func (c *CoverResolver) lookupEntity(ctx context.Context, name string) (CoverLookup, error) {
+var (
+	groupPerson   = &wikidataGroup{name: "person", properties: []string{"P18"}}
+	groupCountry  = &wikidataGroup{name: "country", properties: []string{"P41", "P18"}}
+	groupPlace    = &wikidataGroup{name: "place", properties: []string{"P18", "P41"}}
+	groupOrg      = &wikidataGroup{name: "organisation", properties: []string{"P154", "P158", "P18"}}
+	groupTeam     = &wikidataGroup{name: "team", properties: []string{"P154", "P18"}}
+	groupProduct  = &wikidataGroup{name: "product", properties: []string{"P18", "P154"}}
+	groupCurrency = &wikidataGroup{name: "cryptocurrency", properties: []string{"P154", "P18"}}
+	groupCreative = &wikidataGroup{name: "creative work", properties: []string{"P18", "P154"},
+		categories: map[string]bool{"entertainment": true, "esports": true, "general": true}}
+	groupAnimal = &wikidataGroup{name: "animal", properties: []string{"P18"},
+		categories: map[string]bool{"general": true, "entertainment": true}}
+	groupBrand = &wikidataGroup{name: "brand", properties: []string{"P154"}}
+)
+
+// wikidataClasses maps "instance of" (P31) values to a group. Anything not
+// listed — concepts, poems, disambiguations, abstract topics — gets no
+// cover rather than a guess.
+var wikidataClasses = map[string]*wikidataGroup{
+	"Q5":    groupPerson,
+	"Q6256": groupCountry, "Q3624078": groupCountry, "Q7275": groupCountry,
+	"Q35657": groupCountry, // US state: flag first, like a country
+	"Q515":   groupPlace, "Q1549591": groupPlace, "Q5119": groupPlace, "Q1093829": groupPlace,
+	"Q4830453": groupOrg, "Q783794": groupOrg, "Q6881511": groupOrg, "Q43229": groupOrg, "Q891723": groupOrg,
+	"Q163740": groupOrg, "Q66344": groupOrg, "Q18388277": groupOrg, "Q1058914": groupOrg, "Q7278": groupOrg,
+	"Q31855": groupOrg, "Q484652": groupOrg, "Q327333": groupOrg, "Q7210356": groupOrg, "Q3918": groupOrg,
+	"Q12973014": groupTeam, "Q847017": groupTeam, "Q13393265": groupTeam, "Q17156793": groupTeam,
+	"Q476028": groupTeam, "Q6979593": groupTeam, "Q1194951": groupTeam, "Q4498974": groupTeam,
+	"Q3231690": groupProduct, "Q2424752": groupProduct, "Q7397": groupProduct, "Q166142": groupProduct,
+	"Q1668024": groupProduct, "Q35127": groupProduct, "Q9135": groupProduct, "Q40218": groupProduct,
+	"Q13479982": groupCurrency,
+	"Q11424":    groupCreative, "Q5398426": groupCreative, "Q482994": groupCreative, "Q7889": groupCreative,
+	"Q215380": groupCreative, "Q134556": groupCreative,
+	"Q26401003": groupAnimal, "Q16521": groupAnimal,
+}
+
+// minPersonSitelinks keeps obscure namesakes out: the subject of a market
+// is someone with a presence across Wikipedias.
+const minPersonSitelinks = 3
+
+// lookupWikidata resolves a named subject through Wikidata: the first
+// search result whose label or alias is exactly the subject (never a less
+// prominent namesake further down), an accepted class that fits the
+// market's category, then that class's image on Commons under a free
+// licence.
+func (c *CoverResolver) lookupWikidata(ctx context.Context, subject, category string) (CoverLookup, error) {
+	miss := CoverLookup{Found: false, Origin: "entity"}
 	var search struct {
 		Search []struct {
 			ID    string `json:"id"`
 			Label string `json:"label"`
+			Match struct {
+				Text string `json:"text"`
+			} `json:"match"`
 		} `json:"search"`
 	}
 	if err := c.getJSON(ctx, wikidataAPIBase+"?"+url.Values{
-		"action": {"wbsearchentities"}, "search": {name}, "language": {"en"}, "type": {"item"}, "limit": {"5"}, "format": {"json"},
+		"action": {"wbsearchentities"}, "search": {subject}, "language": {"en"}, "type": {"item"}, "limit": {"5"}, "format": {"json"},
 	}.Encode(), &search); err != nil {
 		return CoverLookup{}, err
 	}
-	ids := make([]string, 0, len(search.Search))
-	for _, s := range search.Search {
-		if strings.EqualFold(strings.TrimSpace(s.Label), name) {
-			ids = append(ids, s.ID)
+	id := ""
+	for _, r := range search.Search {
+		if sameName(r.Label, subject) {
+			id = r.ID
+			break
+		}
+		// An alias match only counts for a real name: "Inc" is an alias of
+		// the Indian National Congress, which put its flag on a Goldman
+		// Sachs earnings market (2026-09-28).
+		if len([]rune(subject)) > 4 && sameName(r.Match.Text, subject) {
+			id = r.ID
+			break
 		}
 	}
-	if len(ids) == 0 {
-		return CoverLookup{Found: false, Origin: "entity"}, nil
+	if id == "" {
+		return miss, nil
 	}
 	var entities struct {
 		Entities map[string]struct {
-			Claims map[string][]struct {
-				Mainsnak struct {
-					Datavalue struct {
-						Value json.RawMessage `json:"value"`
-					} `json:"datavalue"`
-				} `json:"mainsnak"`
-			} `json:"claims"`
+			Sitelinks map[string]json.RawMessage `json:"sitelinks"`
+			Claims    map[string][]wikidataClaim `json:"claims"`
 		} `json:"entities"`
 	}
 	if err := c.getJSON(ctx, wikidataAPIBase+"?"+url.Values{
-		"action": {"wbgetentities"}, "ids": {strings.Join(ids, "|")}, "props": {"claims"}, "format": {"json"},
+		"action": {"wbgetentities"}, "ids": {id}, "props": {"claims|sitelinks"}, "format": {"json"},
 	}.Encode(), &entities); err != nil {
 		return CoverLookup{}, err
 	}
-	for _, id := range ids {
-		e, ok := entities.Entities[id]
-		if !ok {
-			continue
+	e, ok := entities.Entities[id]
+	if !ok {
+		return miss, nil
+	}
+	var group *wikidataGroup
+	for _, claim := range e.Claims["P31"] {
+		var v struct {
+			ID string `json:"id"`
 		}
-		accepted := false
-		for _, claim := range e.Claims["P31"] {
-			var v struct {
-				ID string `json:"id"`
-			}
-			if json.Unmarshal(claim.Mainsnak.Datavalue.Value, &v) == nil {
-				if _, ok := wikidataAcceptedClasses[v.ID]; ok {
-					accepted = true
-					break
-				}
+		if json.Unmarshal(claim.Mainsnak.Datavalue.Value, &v) == nil {
+			if g, ok := wikidataClasses[v.ID]; ok {
+				group = g
+				break
 			}
 		}
-		if !accepted {
-			continue
-		}
-		for _, claim := range e.Claims["P18"] {
+	}
+	// A class we don't list but a logo on file is still a brand or an
+	// organisation ("Goldman Sachs" is an "investment bank"): its logo only.
+	if group == nil && len(e.Claims["P154"]) > 0 {
+		group = groupBrand
+	}
+	if group == nil || (group.categories != nil && !group.categories[normaliseCategory(category)]) {
+		return miss, nil
+	}
+	if group == groupPerson && len(e.Sitelinks) < minPersonSitelinks {
+		return miss, nil
+	}
+	for _, prop := range group.properties {
+		for _, claim := range byRank(e.Claims[prop]) {
 			var file string
 			if json.Unmarshal(claim.Mainsnak.Datavalue.Value, &file) != nil || file == "" {
 				continue
@@ -275,11 +381,63 @@ func (c *CoverResolver) lookupEntity(ctx context.Context, name string) (CoverLoo
 				return CoverLookup{}, err
 			}
 			if lookup.Found {
+				lookup.Origin = "entity"
 				return lookup, nil
 			}
 		}
 	}
-	return CoverLookup{Found: false, Origin: "entity"}, nil
+	return miss, nil
+}
+
+// urlPath is a URL without its query string (Commons thumbnail URLs carry
+// tracking parameters, which hid the ".png" of every SVG rendition).
+func urlPath(raw string) string {
+	if u, err := url.Parse(raw); err == nil {
+		return u.Path
+	}
+	return raw
+}
+
+type wikidataClaim struct {
+	Rank     string `json:"rank"`
+	Mainsnak struct {
+		Datavalue struct {
+			Value json.RawMessage `json:"value"`
+		} `json:"datavalue"`
+	} `json:"mainsnak"`
+}
+
+// byRank orders claims preferred-first and drops deprecated ones: France's
+// first flag claim is a 12th-century banner; the current flag is the
+// preferred one.
+func byRank(claims []wikidataClaim) []wikidataClaim {
+	out := make([]wikidataClaim, 0, len(claims))
+	for _, rank := range []string{"preferred", "normal"} {
+		for _, c := range claims {
+			if c.Rank == rank || (rank == "normal" && c.Rank == "") {
+				out = append(out, c)
+			}
+		}
+	}
+	return out
+}
+
+func sameName(a, b string) bool {
+	norm := func(s string) string {
+		return strings.Join(strings.Fields(strings.ToLower(nonWord.ReplaceAllString(s, " "))), " ")
+	}
+	return a != "" && norm(a) == norm(b)
+}
+
+func normaliseCategory(category string) string {
+	c := strings.ToLower(strings.TrimSpace(category))
+	if c == "technology" {
+		return "tech"
+	}
+	if c == "" {
+		return "general"
+	}
+	return c
 }
 
 // commonsImage fetches a Commons file's 640px rendition and licence. Only
@@ -309,12 +467,17 @@ func (c *CoverResolver) commonsImage(ctx context.Context, file string) (CoverLoo
 	for _, page := range info.Query.Pages {
 		for _, ii := range page.ImageInfo {
 			license := rawString(ii.ExtMetadata["LicenseShortName"].Value)
-			if !licenseAllowsReuse(license) || !strings.HasPrefix(ii.Mime, "image/") || ii.Mime == "image/svg+xml" {
+			if !licenseAllowsReuse(license) || !strings.HasPrefix(ii.Mime, "image/") {
 				continue
 			}
 			imageURL := ii.ThumbURL
 			if imageURL == "" {
 				imageURL = ii.URL
+			}
+			// Flags, seals and emblems live on Commons as SVG; use the PNG
+			// rendition Commons makes for the thumbnail, never the SVG.
+			if ii.Mime == "image/svg+xml" && !strings.HasSuffix(strings.ToLower(urlPath(ii.ThumbURL)), ".png") {
+				continue
 			}
 			artist := stripTags(rawString(ii.ExtMetadata["Artist"].Value))
 			credit := "Wikimedia Commons"
@@ -337,13 +500,187 @@ func licenseAllowsReuse(license string) bool {
 	if l == "" || strings.Contains(l, "NC") || strings.Contains(l, "ND") {
 		return false
 	}
-	return strings.HasPrefix(l, "CC0") || strings.HasPrefix(l, "CC BY") || strings.HasPrefix(l, "CC-BY") ||
-		strings.Contains(l, "PUBLIC DOMAIN") || strings.HasPrefix(l, "PD")
+	if strings.HasPrefix(l, "CC0") || strings.HasPrefix(l, "CC BY") || strings.HasPrefix(l, "CC-BY") ||
+		strings.Contains(l, "PUBLIC DOMAIN") || strings.HasPrefix(l, "PD") {
+		return true
+	}
+	// Permissive software licences some logos are published under
+	// (DeepSeek's is MIT): free to reuse commercially with attribution.
+	for _, permissive := range []string{"MIT", "APACHE", "BSD", "ISC", "ZLIB"} {
+		if strings.HasPrefix(l, permissive) {
+			return true
+		}
+	}
+	return false
 }
 
 // ── Topic photos: Openverse ─────────────────────────────────────────────
 
 var openverseAcceptedLicenses = map[string]bool{"cc0": true, "by": true, "by-sa": true, "pdm": true}
+
+// subjectAliases expands the abbreviations market titles use into the
+// names their Wikipedia pages carry.
+var subjectAliases = map[string]string{
+	"fed": "Federal Reserve System", "ecb": "European Central Bank", "boe": "Bank of England", "boj": "Bank of Japan",
+	"scotus": "Supreme Court of the United States", "gop": "Republican Party (United States)",
+	"uk": "United Kingdom", "eu": "European Union", "un": "United Nations", "btc": "Bitcoin", "eth": "Ethereum",
+}
+
+var (
+	subjectLeadingStops = map[string]bool{
+		"will": true, "who": true, "what": true, "which": true, "when": true, "how": true, "is": true, "are": true,
+		"does": true, "do": true, "can": true, "should": true, "new": true, "next": true, "top": true, "most": true,
+		"first": true, "last": true, "the": true, "a": true, "an": true, "any": true, "daily": true, "weekly": true,
+	}
+	subjectStops = map[string]bool{
+		"i": true, "a": true, "yes": true, "no": true, "o/u": true, "spread": true, "vs": true, "vs.": true, "v": true,
+		"january": true, "february": true, "march": true, "april": true, "may": true, "june": true, "july": true,
+		"august": true, "september": true, "october": true, "november": true, "december": true,
+		"inc": true, "inc.": true, "ltd": true, "llc": true, "plc": true, "corp": true, "co": true, "group": true, "holdings": true,
+		"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true, "sunday": true,
+		"jan": true, "feb": true, "mar": true, "apr": true, "jun": true, "jul": true, "aug": true, "sep": true, "sept": true, "oct": true, "nov": true, "dec": true,
+	}
+	subjectConnectors = map[string]bool{"of": true, "the": true, "de": true, "da": true, "del": true, "la": true, "le": true, "van": true, "von": true, "and": true, "&": true}
+)
+
+// subjectCandidates pulls the named subjects out of a question, in title
+// order: runs of capitalised words ("Bad Bunny", "Luiz Inácio Lula da
+// Silva"), the first two joined when both are short ("Tesla Roadster"),
+// and aliases ("Fed" → "Federal Reserve"). At most maxSubjectsPerMarket.
+func subjectCandidates(title string) []string {
+	tokens := strings.Fields(title)
+	var phrases []string
+	var cur []string
+	afterColon := false
+	flush := func() {
+		for len(cur) > 0 && subjectConnectors[strings.ToLower(cur[len(cur)-1])] {
+			cur = cur[:len(cur)-1]
+		}
+		if len(cur) > 0 {
+			phrases = append(phrases, strings.Join(cur, " "))
+		}
+		cur = nil
+	}
+	for i, raw := range tokens {
+		w := strings.TrimSuffix(strings.TrimSuffix(strings.Trim(raw, `?!.,:;"'“”‘’()[]`), "'s"), "’s")
+		lower := strings.ToLower(w)
+		next := ""
+		if i+1 < len(tokens) {
+			next = strings.Trim(tokens[i+1], `?!.,:;"'“”‘’()[]`)
+		}
+		switch {
+		case w == "":
+			flush()
+		case i == 0 && subjectLeadingStops[lower]:
+			flush()
+		case subjectStops[lower]:
+			flush()
+		// After a colon a capital is just a new clause ("…: Actor cast as
+		// James Bond"), so a lone capitalised word there is not a name.
+		case afterColon && len(cur) == 0 && startsUpper(w) && !startsUpper(next):
+			flush()
+		case startsUpper(w) && !isNumberish(w):
+			cur = append(cur, w)
+		case len(cur) > 0 && subjectConnectors[lower] && i+1 < len(tokens) && startsUpper(strings.Trim(tokens[i+1], `?!.,:;"'“”‘’()[]`)):
+			cur = append(cur, w)
+		default:
+			flush()
+		}
+		afterColon = strings.HasSuffix(raw, ":")
+		if strings.ContainsAny(raw, "?!:;,") {
+			flush()
+		}
+	}
+	flush()
+
+	var out []string
+	seen := map[string]bool{}
+	add := func(s string) {
+		s = strings.TrimSpace(s)
+		if s == "" || seen[strings.ToLower(s)] || len(out) >= maxSubjectsPerMarket {
+			return
+		}
+		seen[strings.ToLower(s)] = true
+		out = append(out, s)
+	}
+	for _, p := range phrases {
+		if alias, ok := subjectAliases[strings.ToLower(p)]; ok {
+			add(alias)
+		}
+		for _, w := range strings.Fields(p) {
+			if alias, ok := subjectAliases[strings.ToLower(w)]; ok {
+				add(alias)
+			}
+		}
+	}
+	if len(phrases) >= 2 && len(strings.Fields(phrases[0])) == 1 && len(strings.Fields(phrases[1])) == 1 {
+		add(phrases[0] + " " + phrases[1])
+	}
+	for _, p := range phrases {
+		if _, aliased := subjectAliases[strings.ToLower(p)]; aliased {
+			continue
+		}
+		if rest, ok := strings.CutPrefix(p, "The "); ok {
+			p = rest
+		}
+		add(p)
+		// A run of product-style words ("OpenAI ChatGPT Astra", "Anthropic
+		// IPO", "DeepSeek V4 Pro") is rarely a name itself; its leading
+		// words are. Wikidata decides whether they name anything we'd show.
+		words := strings.Fields(p)
+		if len(words) >= 2 && !containsConnector(words) {
+			if len(words) >= 3 {
+				add(strings.Join(words[:2], " "))
+			}
+			add(words[0])
+		}
+	}
+	return out
+}
+
+// brandLike is a word shaped like a product or organisation name rather
+// than an ordinary word: an inner capital ("OpenAI", "ChatGPT") or all
+// capitals ("FIBA"). A lone "Clay" or "Avenger" is not tried on its own.
+func brandLike(w string) bool {
+	runes := []rune(w)
+	if len(runes) < 2 {
+		return false
+	}
+	if strings.ToUpper(w) == w && strings.ToLower(w) != w {
+		return true
+	}
+	for _, r := range runes[1:] {
+		if r >= 'A' && r <= 'Z' {
+			return true
+		}
+	}
+	return false
+}
+
+func containsConnector(words []string) bool {
+	for _, w := range words {
+		if subjectConnectors[strings.ToLower(w)] {
+			return true
+		}
+	}
+	return false
+}
+
+func startsUpper(w string) bool {
+	for _, r := range w {
+		return r >= 'A' && r <= 'Z' || (r > 127 && strings.ToUpper(string(r)) == string(r) && strings.ToLower(string(r)) != string(r))
+	}
+	return false
+}
+
+func isNumberish(w string) bool {
+	for _, r := range w {
+		if r >= '0' && r <= '9' {
+			return true
+		}
+	}
+	return false
+}
 
 func (c *CoverResolver) lookupTopic(ctx context.Context, query string) (CoverLookup, error) {
 	var res struct {
@@ -359,9 +696,9 @@ func (c *CoverResolver) lookupTopic(ctx context.Context, query string) (CoverLoo
 			Height            int    `json:"height"`
 		} `json:"results"`
 	}
-	if err := c.getJSON(ctx, openverseAPIBase+"?"+url.Values{
+	if err := c.getJSONAuth(ctx, openverseAPIBase+"?"+url.Values{
 		"q": {query}, "license_type": {"commercial"}, "page_size": {"10"},
-	}.Encode(), &res); err != nil {
+	}.Encode(), c.openverseKey, &res); err != nil {
 		return CoverLookup{}, err
 	}
 	for _, r := range res.Results {
@@ -548,9 +885,16 @@ func xmlEscape(s string) string {
 // ── Helpers ─────────────────────────────────────────────────────────────
 
 func (c *CoverResolver) getJSON(ctx context.Context, endpoint string, out any) error {
+	return c.getJSONAuth(ctx, endpoint, "", out)
+}
+
+func (c *CoverResolver) getJSONAuth(ctx context.Context, endpoint, bearer string, out any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
+	}
+	if bearer != "" {
+		req.Header.Set("Authorization", "Bearer "+bearer)
 	}
 	req.Header.Set("User-Agent", coverUserAgent)
 	req.Header.Set("Accept", "application/json")

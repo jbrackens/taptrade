@@ -1,9 +1,15 @@
 package discover
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	_ "image/jpeg"
+	"image/png"
 	"io"
 	"net/http"
 	"net/url"
@@ -189,4 +195,65 @@ func pickExt(contentType, srcURL string) string {
 func HashKey(source, externalID string) string {
 	sum := sha256.Sum256([]byte(source + ":" + externalID))
 	return hex.EncodeToString(sum[:])
+}
+
+// RehostFitted is Rehost for resolver covers: a very wide or tall image —
+// a wordmark logo, most often ("OpenAI", "Anthropic") — is centred on a
+// white square with a margin instead of being cropped to "pen" by the
+// card's square thumbnail. Other images are stored as-is.
+func (r *ImageRehoster) RehostFitted(rowID, imageURL string) (string, error) {
+	path, err := r.Rehost(rowID, imageURL)
+	if err != nil || path == "" {
+		return path, err
+	}
+	file := filepath.Join(r.PublicRoot, "images", "markets", filepath.Base(path))
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return path, nil
+	}
+	padded, ok := padToSquare(data)
+	if !ok {
+		return path, nil
+	}
+	dest := filepath.Join(r.PublicRoot, "images", "markets", rowID+".png")
+	if err := os.WriteFile(dest, padded, 0o644); err != nil {
+		return path, nil
+	}
+	if dest != file {
+		_ = os.Remove(file)
+	}
+	return "/images/markets/" + rowID + ".png", nil
+}
+
+// padToSquare returns a PNG of the image centred on a white square with a
+// 12% margin, when its aspect ratio is outside 0.6–1.7; ok is false for
+// images that already suit a square thumbnail or cannot be decoded.
+func padToSquare(data []byte) ([]byte, bool) {
+	src, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, false
+	}
+	b := src.Bounds()
+	w, h := b.Dx(), b.Dy()
+	if w == 0 || h == 0 {
+		return nil, false
+	}
+	ratio := float64(w) / float64(h)
+	if ratio >= 0.6 && ratio <= 1.7 {
+		return nil, false
+	}
+	side := w
+	if h > side {
+		side = h
+	}
+	side = side * 112 / 100
+	canvas := image.NewRGBA(image.Rect(0, 0, side, side))
+	draw.Draw(canvas, canvas.Bounds(), &image.Uniform{C: color.White}, image.Point{}, draw.Src)
+	offset := image.Pt((side-w)/2, (side-h)/2)
+	draw.Draw(canvas, image.Rectangle{Min: offset, Max: offset.Add(image.Pt(w, h))}, src, b.Min, draw.Over)
+	var out bytes.Buffer
+	if err := png.Encode(&out, canvas); err != nil {
+		return nil, false
+	}
+	return out.Bytes(), true
 }
