@@ -19,6 +19,8 @@ import { MagnifyingGlassIcon as Search } from "@phosphor-icons/react/dist/csr/Ma
 import { SignOutIcon as LogOut } from "@phosphor-icons/react/dist/csr/SignOut";
 import { PlusIcon as Plus } from "@phosphor-icons/react/dist/csr/Plus";
 import { UserIcon } from "@phosphor-icons/react/dist/csr/User";
+import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
+import { ListIcon as MenuLines } from "@phosphor-icons/react/dist/csr/List";
 import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
 import { useTranslation } from "react-i18next";
@@ -173,8 +175,13 @@ const TOP_BAR_ADD_POINTS_SIZING =
   "min-h-11 shrink-0 px-3 text-[13px] no-underline max-[900px]:px-2.5";
 
 // The avatar is an ink disc with white initials.
+// The account menu's trigger reads as a menu: a pill with the three-line
+// menu mark beside the avatar (a bare initial disc gave no hint it opens
+// anything, 2026-09-28). The disc stays Kilig ink.
+const TOP_BAR_MENU_TRIGGER_CLASS =
+  "inline-flex h-11 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] py-1 pl-3 pr-1 text-[var(--t1)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--t3)] hover:shadow-[var(--shadow-card-hover)] aria-expanded:border-[var(--t3)] aria-expanded:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[359px]:pl-1";
 const TOP_BAR_AVATAR_CLASS =
-  "grid size-10 cursor-pointer place-items-center rounded-full border-0 bg-[var(--accent)] text-[14px] font-bold text-[var(--ticket-cta-text)] transition-transform duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
+  "grid size-8 place-items-center rounded-full bg-[var(--accent)] text-[13px] font-bold text-[var(--ticket-cta-text)]";
 
 const TOP_BAR_AUTH_CTA_SIZING =
   "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
@@ -665,13 +672,16 @@ export function TopBar() {
             <div className={TOP_BAR_MENU_WRAP_CLASS} ref={menuRef}>
               <button
                 type="button"
-                className={TOP_BAR_AVATAR_CLASS}
+                className={TOP_BAR_MENU_TRIGGER_CLASS}
                 onClick={() => setUserMenuOpen((o) => !o)}
                 aria-haspopup="menu"
                 aria-expanded={userMenuOpen}
                 aria-label={t("USER_MENU")}
               >
-                {initial}
+                <MenuLines size={18} weight="bold" aria-hidden="true" className="max-[359px]:hidden" />
+                <span className={TOP_BAR_AVATAR_CLASS} aria-hidden="true">
+                  {initial}
+                </span>
               </button>
               {userMenuOpen && (
                 <div className={TOP_BAR_MENU_CLASS} role="menu">
@@ -681,6 +691,13 @@ export function TopBar() {
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <UserIcon size={14} /> {t("NAV_ACCOUNT")}
+                  </Link>
+                  <Link
+                    href="/rewards"
+                    className={TOP_BAR_MENU_ITEM_CLASS}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Gift size={14} /> {t("NAV_REWARDS")}
                   </Link>
                   <Link
                     href="/portfolio"

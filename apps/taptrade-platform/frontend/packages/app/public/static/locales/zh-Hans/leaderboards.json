@@ -66,6 +66,12 @@
     "trader": "交易者",
     "settled": "已结算",
     "youRank": "#{{rank}} 你",
-    "viewerRow": "#{{rank}} 你 · {{metric}}"
+    "viewerRow": "#{{rank}} 你 · {{metric}}",
+    "you": "你"
+  },
+  "subtitle": "排名随市场结算更新。",
+  "standing": {
+    "title": "你的排名",
+    "empty": "结算市场即可登上排行榜。"
   }
 }

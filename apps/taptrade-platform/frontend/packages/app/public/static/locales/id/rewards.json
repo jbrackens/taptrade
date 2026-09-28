@@ -69,7 +69,8 @@
   },
   "progress": {
     "pointsTo": "{{points}} pts ke",
-    "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami."
+    "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami.",
+    "label": "Progres tingkat"
   },
   "ladder": {
     "aria": "Tangga tier"
@@ -97,5 +98,69 @@
     "adjustment": "Penyesuaian",
     "promotion": "Promosi tier",
     "migration": "Diimpor dari legacy"
+  },
+  "today": {
+    "title": "Hari ini",
+    "streak_one": "{{count}} hari berturut-turut",
+    "streak_other": "{{count}} hari berturut-turut"
+  },
+  "dailyClaim": {
+    "body": "Klaim poin permainan yang tidak dapat ditukar sekali sehari, khusus untuk prediksi.",
+    "cta": "Klaim hari ini",
+    "claiming": "Mengklaim",
+    "claimed": "Sudah diklaim hari ini",
+    "success": "Klaim hari ini tercatat: {{points}} poin ditambahkan ke riwayat poin Anda.",
+    "error": "Klaim harian tidak dapat dicatat. Coba lagi sebentar.",
+    "disabled": "Klaim harian sedang tidak tersedia."
+  },
+  "rewardLimit": {
+    "title": "Batas hadiah harian",
+    "body": "Sisa {{remaining}} dari {{limit}} poin hadiah untuk hari ini.",
+    "reset": "Direset {{date}}"
+  },
+  "missions": {
+    "title": "Misi",
+    "body": "Selesaikan misi permainan untuk mendapatkan poin hadiah yang tidak dapat ditukar.",
+    "progress": "{{progress}} / {{target}} selesai",
+    "cta": "Klaim",
+    "claiming": "Mengklaim",
+    "claimed": "Sudah diklaim",
+    "incomplete": "Belum selesai",
+    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
+    "error": "Hadiah misi tidak dapat dicatat. Coba lagi sebentar."
+  },
+  "streaks": {
+    "title": "Beruntun",
+    "body": "Terus klaim poin permainan harian untuk mendapatkan hadiah beruntun yang tidak dapat ditukar.",
+    "progress": "{{current}} / {{target}} hari",
+    "cta": "Klaim",
+    "claiming": "Mengklaim",
+    "claimed": "Sudah diklaim",
+    "incomplete": "Belum selesai",
+    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
+    "error": "Hadiah beruntun tidak dapat dicatat. Coba lagi sebentar."
+  },
+  "pointPacks": {
+    "title": "Paket poin",
+    "body": "Klaim paket poin permainan sekali pakai, khusus untuk prediksi.",
+    "cta": "Klaim",
+    "claiming": "Mengklaim",
+    "claimed": "Sudah diklaim",
+    "unavailable": "Tidak tersedia",
+    "success": "{{points}} poin ditambahkan ke riwayat poin Anda.",
+    "error": "Paket poin tidak dapat dicatat. Coba lagi sebentar."
+  },
+  "badges": {
+    "title": "Lencana",
+    "body": "Buka lencana kosmetik dari pencapaian permainan. Lencana adalah penanda status yang tidak dapat ditukar.",
+    "earned": "Didapat",
+    "locked": "Terkunci"
+  },
+  "activeBonuses": {
+    "title": "Bonus main poin yang aktif",
+    "body": "Pantau poin permainan promosi dan progres permainannya.",
+    "fallbackName": "Bonus main poin",
+    "status": "Status: {{status}}",
+    "remaining": "poin tersisa"
   }
 }

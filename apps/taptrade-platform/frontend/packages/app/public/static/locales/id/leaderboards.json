@@ -66,6 +66,12 @@
     "trader": "Trader",
     "settled": "Selesai",
     "youRank": "#{{rank}} Anda",
-    "viewerRow": "#{{rank}} Anda · {{metric}}"
+    "viewerRow": "#{{rank}} Anda · {{metric}}",
+    "you": "Anda"
+  },
+  "subtitle": "Peringkat diperbarui saat market selesai.",
+  "standing": {
+    "title": "Posisi Anda",
+    "empty": "Selesaikan market untuk masuk papan peringkat."
   }
 }

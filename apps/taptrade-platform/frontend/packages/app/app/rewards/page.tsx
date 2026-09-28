@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Button, Card } from "../components/ui";
+import { Award, CheckCircle2, Lock, SlidersHorizontal, Sparkles, TrendingUp, XCircle } from "lucide-react";
+import { Button } from "../components/ui";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { ActiveBonusesControl } from "./ActiveBonusesControl";
@@ -37,112 +38,27 @@ import { formatPointsAmount } from "../lib/points";
 import { useAppDispatch } from "../lib/store/hooks";
 import { setCurrentBalance } from "../lib/store/pointBalanceSlice";
 
-// /rewards — Predict-native loyalty center. Layout follows PLAN-loyalty-
-// leaderboards.md §5: horizontal tier ladder strip at top, 2fr/1fr grid of
-// tier card + ledger table below. No illustrations, no centered hero, no
-// tier-circle icons, no "Congrats!" copy. Points render whole (unit model
-// 2026-07-07: wire integers ARE whole Points — never ÷100) via lib/points.
+// /rewards — the rewards hub on the board's card recipe: the tier card (tier,
+// loyalty points, progress and the ladder) beside a "Today" card (daily
+// claim, streak, today's reward limit), then missions, streaks, point packs,
+// bonuses and badges as card grids, and the benefits and recent activity at
+// the foot. A player with no tier yet sees the same page with a start card.
+// Points render whole (unit model 2026-07-07: wire integers ARE whole Points —
+// never ÷100) via lib/points. Pink is for progress and streaks only.
 
 const LEDGER_LIMIT = 20;
 
-const WRAP_CLASS = "mx-auto max-w-[1120px] pb-[60px] max-[768px]:px-4";
-const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
-// Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
-const KICKER_CLASS =
-  "mb-1.5 inline-block text-[12px] font-semibold text-[var(--t3)]";
-const TITLE_CLASS =
-  "type-poster m-0 text-[28px] text-[var(--t1)] max-[768px]:text-[24px]";
+const CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
+const GRID_CLASS = "grid grid-cols-3 gap-3 max-[1024px]:grid-cols-2 max-[640px]:grid-cols-1";
+const ITEM_CLASS = `${CARD_CLASS} flex flex-col p-4`;
+const ITEM_NAME_CLASS = "m-0 text-[14px] font-semibold text-[var(--t1)]";
+const ITEM_DESC_CLASS = "m-0 mt-1 text-[13px] leading-[1.45] text-[var(--t3)]";
+const REWARD_CHIP_CLASS =
+  "shrink-0 rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2 py-0.5 text-[12px] font-semibold tabular-nums text-[var(--t1)]";
+const STATUS_CLASS = "mt-3 text-[13px] leading-[1.5] text-[var(--t2)]";
 const CROSS_LINK_CLASS =
-  "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
-const LADDER_CLASS =
-  "mb-[22px] grid grid-cols-5 gap-2 max-[768px]:grid-flow-col max-[768px]:auto-cols-[140px] max-[768px]:grid-cols-none max-[768px]:overflow-x-auto max-[768px]:[scroll-snap-type:x_mandatory]";
-const LADDER_STEP_BASE_CLASS =
-  "relative flex flex-col gap-1.5 rounded-[var(--r-rh-md)] border-x border-b border-x-[var(--border-1)] border-b-[var(--border-1)] border-t-[3px] bg-[var(--surface-1)] px-3.5 pb-3.5 pt-4 max-[768px]:[scroll-snap-align:start]";
-const LADDER_NAME_CLASS = "text-sm font-bold text-[var(--t1)]";
-const LADDER_THRESHOLD_CLASS =
-  "text-xs text-[var(--t3)] tabular-nums font-mono";
-const GRID_CLASS =
-  "grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[18px] max-[1024px]:grid-cols-1";
-// Surface cards now render via the Card primitive (padding="lg").
-const TIER_CARD_HEAD_CLASS =
-  "mb-[18px] flex items-baseline justify-between gap-3";
-const TIER_PILL_BASE_CLASS =
-  "inline-flex items-center rounded-full px-3 py-1.5 text-xs font-bold tracking-[0.04em] text-[var(--t1)]";
-const BALANCE_CLASS =
-  "mono-wide m-0 text-[34px] font-extrabold tracking-[-0.02em] text-[var(--t1)] tabular-nums font-mono max-[768px]:text-[28px]";
-const BALANCE_UNIT_CLASS = "ml-1 text-sm font-medium text-[var(--t3)]";
-const PROGRESS_CLASS = "mb-5";
-const PROGRESS_HEAD_CLASS =
-  "mb-2 flex justify-between text-[13px] text-[var(--t2)]";
-const PROGRESS_PCT_CLASS =
-  "font-bold text-[var(--t1)] tabular-nums font-mono";
-const PROGRESS_TRACK_CLASS =
-  "block h-2 w-full overflow-hidden rounded-full border border-[var(--border-1)] bg-[var(--surface-2)] [appearance:none] [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-[var(--reward)] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--reward)] [&::-webkit-progress-value]:transition-all [&::-webkit-progress-value]:duration-[240ms] [&::-webkit-progress-value]:ease-out";
-const TOPPED_OUT_CLASS = "m-0 mb-5 text-sm text-[var(--t2)]";
-const BENEFITS_TITLE_CLASS =
-  "m-0 mb-2.5 text-[13px] font-semibold text-[var(--t3)]";
-const BENEFITS_LIST_CLASS = "m-0 flex list-none flex-col gap-2.5 p-0";
-const BENEFIT_CLASS =
-  "grid grid-cols-[10px_1fr_auto] items-center gap-2.5 text-sm text-[var(--t1)]";
-const BENEFIT_DOT_BASE_CLASS = "size-2.5 rounded-full";
-const BENEFIT_SOURCE_CLASS =
-  "text-[12px] text-[var(--t3)]";
-const CLAIM_WRAP_CLASS =
-  "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
-const CLAIM_TITLE_CLASS =
-  "m-0 mb-1 text-[13px] font-semibold text-[var(--t3)]";
-const CLAIM_BODY_CLASS = "m-0 mb-3 text-sm leading-[1.55] text-[var(--t2)]";
-const CLAIM_STATUS_CLASS = "mt-3 text-xs leading-[1.5] text-[var(--t2)]";
-const PACKS_LIST_CLASS = "mt-3 flex flex-col gap-2";
-const PACK_ROW_CLASS =
-  "flex items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
-const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
-const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
-// Generic point balance — ink, not the reward pink (pink is reserved for
-// progress bars and streak highlights, DESIGN.md §3.2 + the Kilig brief).
-const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--t1)] tabular-nums font-mono";
-const MISSION_PROGRESS_CLASS =
-  "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
-// Streak highlight: the one progress figure licensed to read in Kilig pink.
-const STREAK_PROGRESS_CLASS =
-  "mt-1 text-xs font-semibold text-[var(--reward-text)] tabular-nums font-mono";
-const BADGE_GRID_CLASS = "mt-3 grid grid-cols-3 gap-2 max-[768px]:grid-cols-1";
-const BADGE_CARD_BASE_CLASS = "rounded-[var(--r-rh-md)] border p-3 text-left";
-// Earned = the raised-well selection treatment (ink), never pink — badges
-// are a status marker, not a progress/streak signal.
-const BADGE_EARNED_CLASS = "border-[var(--border-2)] bg-[var(--surface-2)]";
-const BADGE_LOCKED_CLASS =
-  "border-[var(--border-1)] bg-[var(--surface-1)] opacity-60";
-const BADGE_STATUS_CLASS =
-  "mt-2 text-[12px] font-semibold text-[var(--t3)]";
-const LIMIT_CLASS =
-  "mb-5 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3 text-left";
-const LEDGER_HEAD_CLASS = "mb-3.5 flex items-baseline justify-between";
-const LEDGER_TITLE_CLASS = "m-0 text-base font-bold text-[var(--t1)]";
-const LEDGER_META_CLASS = "text-xs text-[var(--t3)]";
-const LEDGER_EMPTY_CLASS = "py-10 text-center text-[13px] text-[var(--t3)]";
-const LEDGER_TABLE_CLASS =
-  "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-top [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:align-top [&_th]:text-[11px] [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.08em] [&_th]:text-[var(--t3)]";
-const TEXT_LEFT_CLASS = "text-left";
-const NUM_CLASS = "text-right";
-const MONO_CLASS =
-  "tabular-nums font-mono";
-const DATE_CLASS = `${MONO_CLASS} whitespace-nowrap text-[var(--t2)]`;
-const EVENT_CLASS = "text-[var(--t1)]";
-const REASON_CLASS = "mt-0.5 text-xs text-[var(--t3)]";
-// Ledger deltas are generic point-balance changes, not market P&L — ink
-// carries the signal (weight), not colour.
-const POS_CLASS = "font-semibold text-[var(--t1)]";
-const NEG_CLASS = "text-[var(--t2)]";
-const SUBTLE_CLASS = "text-[var(--t3)]";
-const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
-const PREFIRST_CARD_CLASS = "w-full max-w-[440px] text-center";
-const PREFIRST_TITLE_CLASS = "type-poster m-0 mb-2.5 text-[22px] text-[var(--t1)]";
-const PREFIRST_BODY_CLASS = "m-0 mb-5 text-sm leading-[1.6] text-[var(--t2)]";
-// CTA / claim-button / state-card recipes migrated to the Button and Card
-// primitives (primary lg; lift-hover and 13px text unified away).
-const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
+  "inline-flex min-h-10 items-center text-[13px] font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)] hover:underline";
 
 function tierColorClass(tier: number, target: "ladder" | "pill" | "dot") {
   switch (tier) {
@@ -176,23 +92,6 @@ function tierColorClass(tier: number, target: "ladder" | "pill" | "dot") {
       if (target === "pill")
         return "border border-[var(--border-1)] bg-[var(--surface-2)]";
       return "bg-[var(--border-2)]";
-  }
-}
-
-function currentTierBorderClass(tier: number) {
-  switch (tier) {
-    case 1:
-      return "[border-bottom-color:var(--tier-1)] [border-left-color:var(--tier-1)] [border-right-color:var(--tier-1)]";
-    case 2:
-      return "[border-bottom-color:var(--tier-2)] [border-left-color:var(--tier-2)] [border-right-color:var(--tier-2)]";
-    case 3:
-      return "[border-bottom-color:var(--tier-3)] [border-left-color:var(--tier-3)] [border-right-color:var(--tier-3)]";
-    case 4:
-      return "[border-bottom-color:var(--tier-4)] [border-left-color:var(--tier-4)] [border-right-color:var(--tier-4)]";
-    case 5:
-      return "[border-bottom-color:var(--tier-5)] [border-left-color:var(--tier-5)] [border-right-color:var(--tier-5)]";
-    default:
-      return "[border-bottom-color:var(--border-1)] [border-left-color:var(--border-1)] [border-right-color:var(--border-1)]";
   }
 }
 
@@ -529,223 +428,89 @@ export default function RewardsPage() {
     );
   }
 
-  // Pre-first-settle: full-page empty state with a CTA. Plan §3.
-  if (!standing || standing.rank === 0) {
-    return (
-      <PreFirstSettleState
-        dailyClaim={{
-          loading: dailyClaimLoading,
-          claimed: dailyClaimed,
-          message: dailyClaimMessage,
-          onClaim: handleDailyClaim,
-        }}
-        pointPacks={{
-          packs: pointPacks,
-          loadingPackId: pointPackLoadingId,
-          message: pointPackMessage,
-          onClaim: handlePointPackClaim,
-        }}
-        missions={{
-          missions,
-          loadingMissionId: missionLoadingId,
-          message: missionMessage,
-          onClaim: handleMissionClaim,
-        }}
-        streaks={{
-          streaks,
-          loadingStreakId: streakLoadingId,
-          message: streakMessage,
-          onClaim: handleStreakClaim,
-        }}
-        badges={badges}
-        rewardLimit={rewardLimit}
-        activeBonuses={activeBonuses}
-      />
-    );
-  }
+  // Before the first settled market the player has no tier: the same page,
+  // with a start card where the tier card goes.
+  const started = Boolean(standing && standing.rank > 0);
+  const dailyStreak = streaks.find((streak) => streak.currentStreak > 0) ?? streaks[0];
 
   return (
-    <div className={WRAP_CLASS}>
-      <header className={HEAD_CLASS}>
+    <div className="mx-auto max-w-[1080px] px-6 pb-16 pt-6 max-[640px]:px-4">
+      <header className="mb-5 flex items-end justify-between gap-4">
         <div>
-          <span className={KICKER_CLASS}>{t("kickerShort", "Rewards")}</span>
-          <h1 className={TITLE_CLASS}>{t("loyaltyTitle", "Loyalty")}</h1>
+          <h1 className="type-poster m-0 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
+            {t("kickerShort", "Rewards")}
+          </h1>
+          <p className="m-0 mt-1 max-w-[560px] text-[14px] text-[var(--t3)]">
+            {t(
+              "PAGE_SUBTITLE",
+              "Earn points from every settled trade, climb the tier ladder, and unlock benefits.",
+            )}
+          </p>
         </div>
-        <Link href="/leaderboards" className={CROSS_LINK_CLASS}>
+        <Link href="/leaderboards" className={`${CROSS_LINK_CLASS} shrink-0`}>
           {t("viewLeaderboards", "View leaderboards")} →
         </Link>
       </header>
 
-      <TierLadder tiers={visibleTiers} current={standing.rank} />
-
-      <div className={GRID_CLASS}>
-        <Card
-          as="section"
-          padding="lg"
-          className="relative"
-          aria-labelledby="rw-tier-title"
-        >
-          <header className={TIER_CARD_HEAD_CLASS}>
-            <span
-              className={`${TIER_PILL_BASE_CLASS} ${tierColorClass(
-                standing.rank,
-                "pill",
-              )}`}
-            >
-              {standing.rankName}
-            </span>
-            <h2 id="rw-tier-title" className={BALANCE_CLASS}>
-              {formatPointsAmount(standing.pointsBalance)}
-              <span className={BALANCE_UNIT_CLASS}>
-                {" "}
-                {t("pointsShort", "pts")}
-              </span>
-            </h2>
-          </header>
-
-          {standing.nextRankName ? (
-            <div className={PROGRESS_CLASS}>
-              <div className={PROGRESS_HEAD_CLASS}>
-                <span>
-                  {t("progress.pointsTo", "{{points}} pts to", {
-                    points: formatPointsAmount(standing.xpToNextRank),
-                  })}{" "}
-                  <strong>{standing.nextRankName}</strong>
-                </span>
-                <span className={PROGRESS_PCT_CLASS}>
-                  {Math.round(progressPct)}%
-                </span>
-              </div>
-              <progress
-                className={PROGRESS_TRACK_CLASS}
-                value={progressPct}
-                max={100}
-                aria-label={t("progress.label", "Tier progress")}
-              />
-            </div>
-          ) : (
-            <p className={TOPPED_OUT_CLASS}>
-              {t(
-                "progress.topTier",
-                "Top tier reached — thanks for trading with us.",
-              )}
-            </p>
-          )}
-
-          <BenefitsList tiers={visibleTiers} current={standing.rank} />
-          <StoreCrossLink />
-          <RewardLimitControl status={rewardLimit} />
-          <ActiveBonusesControl bonuses={activeBonuses} />
+      <div className="grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-4 max-[900px]:grid-cols-1">
+        {started && standing ? (
+          <TierCard standing={standing} tiers={visibleTiers} progressPct={progressPct} />
+        ) : (
+          <StartCard tiers={visibleTiers} />
+        )}
+        <section className={`${CARD_CLASS} flex flex-col p-5`} aria-labelledby="rw-today-title">
+          <h2 id="rw-today-title" className="m-0 text-[16px] font-semibold text-[var(--t1)]">
+            {t("today.title", "Today")}
+          </h2>
           <DailyClaimControl
             loading={dailyClaimLoading}
             claimed={dailyClaimed}
             message={dailyClaimMessage}
             onClaim={handleDailyClaim}
           />
-          <PointPacksControl
-            packs={pointPacks}
-            loadingPackId={pointPackLoadingId}
-            message={pointPackMessage}
-            onClaim={handlePointPackClaim}
-          />
-          <MissionsControl
-            missions={missions}
-            loadingMissionId={missionLoadingId}
-            message={missionMessage}
-            onClaim={handleMissionClaim}
-          />
-          <StreaksControl
-            streaks={streaks}
-            loadingStreakId={streakLoadingId}
-            message={streakMessage}
-            onClaim={handleStreakClaim}
-          />
-          <BadgesControl badges={badges} />
-        </Card>
-
-        <Card
-          as="section"
-          padding="lg"
-          className="relative"
-          aria-labelledby="rw-ledger-title"
-        >
-          <header className={LEDGER_HEAD_CLASS}>
-            <h3 id="rw-ledger-title" className={LEDGER_TITLE_CLASS}>
-              {t("ledger.title", "Recent activity")}
-            </h3>
-            <span className={LEDGER_META_CLASS}>
-              {t("ledger.entries", "{{count}} entries", {
-                count: ledger.length,
+          {dailyStreak && dailyStreak.currentStreak > 0 && (
+            <p className="m-0 mt-3 text-[13px] font-semibold text-[var(--reward-text)]">
+              {t("today.streak", {
+                count: dailyStreak.currentStreak,
+                defaultValue: `${dailyStreak.currentStreak}-day streak`,
               })}
-            </span>
-          </header>
-          {ledger.length === 0 ? (
-            <div className={LEDGER_EMPTY_CLASS}>
-              {t(
-                "ledger.empty",
-                "No activity yet — settle a market to start earning.",
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-            <table className={LEDGER_TABLE_CLASS}>
-              <caption className="sr-only">
-                {t(
-                  "ledger.caption",
-                  "Recent loyalty ledger entries for {{name}}",
-                  { name: user.username || user.id },
-                )}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col" className={TEXT_LEFT_CLASS}>
-                    {t("ledger.date", "Date")}
-                  </th>
-                  <th scope="col" className={TEXT_LEFT_CLASS}>
-                    {t("ledger.event", "Event")}
-                  </th>
-                  <th scope="col" className={NUM_CLASS}>
-                    {t("ledger.change", "Change")}
-                  </th>
-                  <th scope="col" className={NUM_CLASS}>
-                    {t("ledger.balance", "Balance")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ledger.map((entry) => (
-                  <tr key={entry.id}>
-                    <td className={DATE_CLASS}>
-                      {formatDate(entry.createdAt)}
-                    </td>
-                    <td>
-                      <div className={EVENT_CLASS}>
-                        {labelForEntry(entry, t)}
-                      </div>
-                      {shouldShowReason(entry) && (
-                        <div className={REASON_CLASS}>{entry.reason}</div>
-                      )}
-                    </td>
-                    <td
-                      className={`${MONO_CLASS} ${NUM_CLASS} ${
-                        entry.deltaPoints >= 0 ? POS_CLASS : NEG_CLASS
-                      }`}
-                    >
-                      {entry.deltaPoints >= 0 ? "+" : ""}
-                      {formatPointsAmount(entry.deltaPoints)}
-                    </td>
-                    <td
-                      className={`${MONO_CLASS} ${NUM_CLASS} ${SUBTLE_CLASS}`}
-                    >
-                      {formatPointsAmount(entry.balanceAfter)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
+            </p>
           )}
-        </Card>
+          <RewardLimitControl status={rewardLimit} />
+          <div className="mt-auto pt-3">
+            <StoreCrossLink />
+          </div>
+        </section>
+      </div>
+
+      <MissionsControl
+        missions={missions}
+        loadingMissionId={missionLoadingId}
+        message={missionMessage}
+        onClaim={handleMissionClaim}
+      />
+      <StreaksControl
+        streaks={streaks}
+        loadingStreakId={streakLoadingId}
+        message={streakMessage}
+        onClaim={handleStreakClaim}
+      />
+      <ActiveBonusesControl bonuses={activeBonuses} />
+      <PointPacksControl
+        packs={pointPacks}
+        loadingPackId={pointPackLoadingId}
+        message={pointPackMessage}
+        onClaim={handlePointPackClaim}
+      />
+      <BadgesControl badges={badges} />
+
+      <div
+        className={`mt-8 grid gap-4 max-[900px]:grid-cols-1 ${
+          started ? "grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]" : "grid-cols-1"
+        }`}
+      >
+        {started && standing && <BenefitsList tiers={visibleTiers} current={standing.rank} />}
+        <LedgerCard ledger={ledger} name={user.username || user.id} />
       </div>
     </div>
   );
@@ -779,23 +544,129 @@ interface StreaksControlProps {
   onClaim: (streakId: string) => void;
 }
 
+function Section({
+  id,
+  title,
+  description,
+  children,
+}: {
+  id: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-8" aria-labelledby={id}>
+      <h2 id={id} className="m-0 text-[17px] font-semibold text-[var(--t1)]">
+        {title}
+      </h2>
+      {description && <p className="m-0 mt-1 text-[13px] text-[var(--t3)]">{description}</p>}
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function Progress({ value, max, tone = "ink" }: { value: number; max: number; tone?: "ink" | "reward" }) {
+  const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  return (
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-2)]" aria-hidden="true">
+      <div
+        className={`h-full rounded-full transition-[width] duration-300 ${
+          tone === "reward" ? "bg-[var(--reward)]" : "bg-[var(--ink)]"
+        }`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+  );
+}
+
+function TierCard({
+  standing,
+  tiers,
+  progressPct,
+}: {
+  standing: LoyaltyStanding;
+  tiers: LoyaltyTier[];
+  progressPct: number;
+}) {
+  const { t } = useTranslation("rewards");
+  return (
+    <section className={`${CARD_CLASS} p-5`} aria-labelledby="rw-tier-title">
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={`inline-flex items-center rounded-[var(--r-pill)] px-3 py-1 text-[12px] font-semibold text-[var(--t1)] ${tierColorClass(
+            standing.rank,
+            "pill",
+          )}`}
+        >
+          {standing.rankName}
+        </span>
+        <span className="text-[12px] text-[var(--t3)]">{t("TIER_BADGE_PREFIX", "Current Tier")}</span>
+      </div>
+      <h2 id="rw-tier-title" className="m-0 mt-4 text-[34px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[var(--t1)] max-[640px]:text-[28px]">
+        {formatPointsAmount(standing.pointsBalance)}
+        <span className="ml-1.5 text-[14px] font-medium tracking-normal text-[var(--t3)]">
+          {t("pointsShort", "pts")}
+        </span>
+      </h2>
+      {standing.nextRankName ? (
+        <div className="mt-4">
+          <div className="mb-2 flex justify-between text-[13px] text-[var(--t2)]">
+            <span>
+              {t("progress.pointsTo", "{{points}} pts to", {
+                points: formatPointsAmount(standing.xpToNextRank),
+              })}{" "}
+              <strong className="font-semibold text-[var(--t1)]">{standing.nextRankName}</strong>
+            </span>
+            <span className="font-semibold tabular-nums text-[var(--t1)]">{Math.round(progressPct)}%</span>
+          </div>
+          <Progress value={progressPct} max={100} tone="reward" />
+          <span className="sr-only">{t("progress.label", "Tier progress")}</span>
+        </div>
+      ) : (
+        <p className="m-0 mt-4 text-[14px] text-[var(--t2)]">
+          {t("progress.topTier", "Top tier reached — thanks for trading with us.")}
+        </p>
+      )}
+      <TierLadder tiers={tiers} current={standing.rank} />
+    </section>
+  );
+}
+
+function StartCard({ tiers }: { tiers: LoyaltyTier[] }) {
+  const { t } = useTranslation("rewards");
+  return (
+    <section className={`${CARD_CLASS} flex flex-col p-5`} aria-labelledby="rw-start-title">
+      <h2 id="rw-start-title" className="m-0 text-[20px] font-semibold tracking-[-0.015em] text-[var(--t1)]">
+        {t("prefirst.title", "No activity yet")}
+      </h2>
+      <p className="m-0 mt-1.5 max-w-[440px] text-[14px] leading-[1.55] text-[var(--t2)]">
+        {t(
+          "prefirst.body",
+          "Settle your first trade to start earning points and climb the tier ladder.",
+        )}
+      </p>
+      <div className="mt-4">
+        <Button variant="primary" size="md" render={<Link href="/predict" />}>
+          {t("prefirst.browse", "Browse markets")} →
+        </Button>
+      </div>
+      <TierLadder tiers={tiers} current={0} />
+    </section>
+  );
+}
+
 // Cross-link into the purchasable Point Store (a separate surface from the
-// free claimable packs above — those stay operator-granted).
+// free claimable packs below — those stay operator-granted).
 function StoreCrossLink() {
   const { t } = useTranslation("store");
   return (
-    <div className={LIMIT_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>
-        {t("entry.needMore", "Need more points?")}
-      </h3>
-      <Link
-        href="/store"
-        className={CROSS_LINK_CLASS}
-        data-testid="add-points-rewards"
-      >
+    <p className="m-0 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--t3)]">
+      {t("entry.needMore", "Need more points?")}
+      <Link href="/store" className={CROSS_LINK_CLASS} data-testid="add-points-rewards">
         {t("entry.visitStore", "Visit the Point Store")} →
       </Link>
-    </div>
+    </p>
   );
 }
 
@@ -803,248 +674,246 @@ function RewardLimitControl({ status }: { status: RewardLimitStatus | null }) {
   const { t } = useTranslation("rewards");
   if (!status?.enabled) return null;
   return (
-    <div className={LIMIT_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>
-        {t("rewardLimit.title", "Daily reward limit")}
-      </h3>
-      <p className={CLAIM_BODY_CLASS}>
-        {t(
-          "rewardLimit.body",
-          "{{remaining}} of {{limit}} reward pts remain for today.",
-          {
-            remaining: formatPointsAmount(status.remainingPoints),
-            limit: formatPointsAmount(status.limitPoints),
-          },
-        )}
-      </p>
-      <div className={MISSION_PROGRESS_CLASS}>
-        {t("rewardLimit.reset", "Resets {{date}}", {
-          date: new Date(status.nextResetAt).toLocaleString(),
-        })}
+    <div className="mt-4 border-t border-[var(--border-1)] pt-4">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h3 className="m-0 text-[13px] font-semibold text-[var(--t2)]">
+          {t("rewardLimit.title", "Daily reward limit")}
+        </h3>
+        <span className="text-[12px] text-[var(--t3)]">
+          {t("rewardLimit.reset", "Resets {{date}}", {
+            date: new Date(status.nextResetAt).toLocaleString(),
+          })}
+        </span>
       </div>
+      <Progress value={status.remainingPoints} max={status.limitPoints} />
+      <p className="m-0 mt-2 text-[13px] text-[var(--t2)]">
+        {t("rewardLimit.body", "{{remaining}} of {{limit}} reward pts remain for today.", {
+          remaining: formatPointsAmount(status.remainingPoints),
+          limit: formatPointsAmount(status.limitPoints),
+        })}
+      </p>
     </div>
   );
 }
 
-function DailyClaimControl({
-  loading,
-  claimed,
-  message,
-  onClaim,
-}: DailyClaimControlProps) {
+function DailyClaimControl({ loading, claimed, message, onClaim }: DailyClaimControlProps) {
   const { t } = useTranslation("rewards");
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>
-        {t("dailyClaim.title", "Daily claim")}
-      </h3>
-      <p className={CLAIM_BODY_CLASS}>
+    <div className="mt-3">
+      <p className="m-0 mb-3 text-[13px] leading-[1.55] text-[var(--t3)]">
         {t(
           "dailyClaim.body",
           "Claim non-redeemable gameplay points once per day for predictions only.",
         )}
       </p>
-      <Button
-        variant="primary"
-        size="lg"
-        disabled={loading || claimed}
-        onClick={onClaim}
-      >
+      <Button variant="primary" size="lg" className="w-full" disabled={loading || claimed} onClick={onClaim}>
         {loading
           ? t("dailyClaim.claiming", "Claiming")
           : claimed
             ? t("dailyClaim.claimed", "Claimed today")
             : t("dailyClaim.cta", "Claim today")}
       </Button>
-      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
+      {message && (
+        <p className={STATUS_CLASS} role="status">
+          {message}
+        </p>
+      )}
     </div>
   );
 }
 
-function PointPacksControl({
-  packs,
-  loadingPackId,
-  message,
-  onClaim,
-}: PointPacksControlProps) {
+function ClaimButton({
+  label,
+  claimable,
+  busy,
+  onClick,
+}: {
+  label: string;
+  claimable: boolean;
+  busy: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant={claimable ? "primary" : "secondary"}
+      size="sm"
+      className="w-full"
+      disabled={!claimable || busy}
+      onClick={onClick}
+    >
+      {label}
+    </Button>
+  );
+}
+
+function PointPacksControl({ packs, loadingPackId, message, onClaim }: PointPacksControlProps) {
   const { t } = useTranslation("rewards");
   if (packs.length === 0) return null;
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>
-        {t("pointPacks.title", "Point packs")}
-      </h3>
-      <p className={CLAIM_BODY_CLASS}>
-        {t(
-          "pointPacks.body",
-          "Claim configured one-time gameplay point packs for predictions only.",
-        )}
-      </p>
-      <p className={CLAIM_BODY_CLASS}>
+    <Section
+      id="rw-packs"
+      title={t("pointPacks.title", "Point packs")}
+      description={t(
+        "pointPacks.body",
+        "Claim configured one-time gameplay point packs for predictions only.",
+      )}
+    >
+      <div className={GRID_CLASS}>
+        {packs.map((pack) => (
+          <article key={pack.id} className={ITEM_CLASS}>
+            <div className="flex items-start justify-between gap-3">
+              <p className={ITEM_NAME_CLASS}>{pack.name}</p>
+              <span className={REWARD_CHIP_CLASS}>+{formatPointsAmount(pack.amountPoints)}</span>
+            </div>
+            <p className={ITEM_DESC_CLASS}>{pack.description}</p>
+            <div className="mt-auto pt-4">
+              <ClaimButton
+                claimable={pack.enabled && !pack.claimed}
+                busy={loadingPackId !== null}
+                onClick={() => onClaim(pack.id)}
+                label={
+                  loadingPackId === pack.id
+                    ? t("pointPacks.claiming", "Claiming")
+                    : pack.claimed
+                      ? t("pointPacks.claimed", "Claimed")
+                      : pack.enabled
+                        ? t("pointPacks.cta", "Claim")
+                        : t("pointPacks.unavailable", "Unavailable")
+                }
+              />
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="m-0 mt-3 text-[12px] leading-normal text-[var(--t3)]">
         {t(
           "pointPacks.disclosure",
           "Points are non-redeemable gameplay points with no cashout, withdrawal, crypto, fiat, or prize path.",
         )}
       </p>
-      <div className={PACKS_LIST_CLASS}>
-        {packs.map((pack) => (
-          <div key={pack.id} className={PACK_ROW_CLASS}>
-            <div>
-              <p className={PACK_NAME_CLASS}>{pack.name}</p>
-              <p className={PACK_DESC_CLASS}>{pack.description}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className={PACK_AMOUNT_CLASS}>
-                {formatPointsAmount(pack.amountPoints)}
-              </span>
-              <Button
-                variant="primary"
-                size="lg"
-                disabled={
-                  !pack.enabled ||
-                  Boolean(pack.claimed) ||
-                  loadingPackId !== null
-                }
-                onClick={() => onClaim(pack.id)}
-              >
-                {loadingPackId === pack.id
-                  ? t("pointPacks.claiming", "Claiming")
-                  : pack.claimed
-                    ? t("pointPacks.claimed", "Claimed")
-                    : pack.enabled
-                      ? t("pointPacks.cta", "Claim")
-                      : t("pointPacks.unavailable", "Unavailable")}
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
-    </div>
+      {message && (
+        <p className={STATUS_CLASS} role="status">
+          {message}
+        </p>
+      )}
+    </Section>
   );
 }
 
-function MissionsControl({
-  missions,
-  loadingMissionId,
-  message,
-  onClaim,
-}: MissionsControlProps) {
+function MissionsControl({ missions, loadingMissionId, message, onClaim }: MissionsControlProps) {
   const { t } = useTranslation("rewards");
   if (missions.length === 0) return null;
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>{t("missions.title", "Missions")}</h3>
-      <p className={CLAIM_BODY_CLASS}>
-        {t(
-          "missions.body",
-          "Complete gameplay missions to earn non-redeemable reward points.",
-        )}
-      </p>
-      <div className={PACKS_LIST_CLASS}>
+    <Section
+      id="rw-missions"
+      title={t("missions.title", "Missions")}
+      description={t(
+        "missions.body",
+        "Complete gameplay missions to earn non-redeemable reward points.",
+      )}
+    >
+      <div className={GRID_CLASS}>
         {missions.map((mission) => (
-          <div key={mission.id} className={PACK_ROW_CLASS}>
-            <div>
-              <p className={PACK_NAME_CLASS}>{mission.name}</p>
-              <p className={PACK_DESC_CLASS}>{mission.description}</p>
-              <div className={MISSION_PROGRESS_CLASS}>
-                {t("missions.progress", "{{progress}} / {{target}} complete", {
-                  progress: mission.progress,
-                  target: mission.target,
-                })}
+          <article key={mission.id} className={ITEM_CLASS}>
+            <div className="flex items-start justify-between gap-3">
+              <p className={ITEM_NAME_CLASS}>{mission.name}</p>
+              <span className={REWARD_CHIP_CLASS}>+{formatPointsAmount(mission.rewardPoints)}</span>
+            </div>
+            <p className={ITEM_DESC_CLASS}>{mission.description}</p>
+            <div className="mt-auto pt-4">
+              <div className="mb-1.5 flex justify-between text-[12px] tabular-nums text-[var(--t3)]">
+                <span>
+                  {t("missions.progress", "{{progress}} / {{target}} complete", {
+                    progress: mission.progress,
+                    target: mission.target,
+                  })}
+                </span>
+              </div>
+              <Progress value={mission.progress} max={mission.target} />
+              <div className="mt-3">
+                <ClaimButton
+                  claimable={mission.enabled && mission.completed && !mission.claimed}
+                  busy={loadingMissionId !== null}
+                  onClick={() => onClaim(mission.id)}
+                  label={
+                    loadingMissionId === mission.id
+                      ? t("missions.claiming", "Claiming")
+                      : mission.claimed
+                        ? t("missions.claimed", "Claimed")
+                        : mission.completed
+                          ? t("missions.cta", "Claim")
+                          : t("missions.incomplete", "Incomplete")
+                  }
+                />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className={PACK_AMOUNT_CLASS}>
-                {formatPointsAmount(mission.rewardPoints)}
-              </span>
-              <Button
-                variant="primary"
-                size="lg"
-                disabled={
-                  !mission.enabled ||
-                  !mission.completed ||
-                  mission.claimed ||
-                  loadingMissionId !== null
-                }
-                onClick={() => onClaim(mission.id)}
-              >
-                {loadingMissionId === mission.id
-                  ? t("missions.claiming", "Claiming")
-                  : mission.claimed
-                    ? t("missions.claimed", "Claimed")
-                    : mission.completed
-                      ? t("missions.cta", "Claim")
-                      : t("missions.incomplete", "Incomplete")}
-              </Button>
-            </div>
-          </div>
+          </article>
         ))}
       </div>
-      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
-    </div>
+      {message && (
+        <p className={STATUS_CLASS} role="status">
+          {message}
+        </p>
+      )}
+    </Section>
   );
 }
 
-function StreaksControl({
-  streaks,
-  loadingStreakId,
-  message,
-  onClaim,
-}: StreaksControlProps) {
+function StreaksControl({ streaks, loadingStreakId, message, onClaim }: StreaksControlProps) {
   const { t } = useTranslation("rewards");
   if (streaks.length === 0) return null;
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>{t("streaks.title", "Streaks")}</h3>
-      <p className={CLAIM_BODY_CLASS}>
-        {t(
-          "streaks.body",
-          "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
-        )}
-      </p>
-      <div className={PACKS_LIST_CLASS}>
+    <Section
+      id="rw-streaks"
+      title={t("streaks.title", "Streaks")}
+      description={t(
+        "streaks.body",
+        "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
+      )}
+    >
+      <div className={GRID_CLASS}>
         {streaks.map((streak) => (
-          <div key={streak.id} className={PACK_ROW_CLASS}>
-            <div>
-              <p className={PACK_NAME_CLASS}>{streak.name}</p>
-              <p className={PACK_DESC_CLASS}>{streak.description}</p>
-              <div className={STREAK_PROGRESS_CLASS}>
+          <article key={streak.id} className={ITEM_CLASS}>
+            <div className="flex items-start justify-between gap-3">
+              <p className={ITEM_NAME_CLASS}>{streak.name}</p>
+              <span className={REWARD_CHIP_CLASS}>+{formatPointsAmount(streak.rewardPoints)}</span>
+            </div>
+            <p className={ITEM_DESC_CLASS}>{streak.description}</p>
+            <div className="mt-auto pt-4">
+              {/* Streaks are the one progress figure licensed to read in pink. */}
+              <div className="mb-1.5 text-[12px] font-semibold tabular-nums text-[var(--reward-text)]">
                 {t("streaks.progress", "{{current}} / {{target}} days", {
                   current: streak.currentStreak,
                   target: streak.target,
                 })}
               </div>
+              <Progress value={streak.currentStreak} max={streak.target} tone="reward" />
+              <div className="mt-3">
+                <ClaimButton
+                  claimable={streak.enabled && streak.completed && !streak.claimed}
+                  busy={loadingStreakId !== null}
+                  onClick={() => onClaim(streak.id)}
+                  label={
+                    loadingStreakId === streak.id
+                      ? t("streaks.claiming", "Claiming")
+                      : streak.claimed
+                        ? t("streaks.claimed", "Claimed")
+                        : streak.completed
+                          ? t("streaks.cta", "Claim")
+                          : t("streaks.incomplete", "Incomplete")
+                  }
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className={PACK_AMOUNT_CLASS}>
-                {formatPointsAmount(streak.rewardPoints)}
-              </span>
-              <Button
-                variant="primary"
-                size="lg"
-                disabled={
-                  !streak.enabled ||
-                  !streak.completed ||
-                  streak.claimed ||
-                  loadingStreakId !== null
-                }
-                onClick={() => onClaim(streak.id)}
-              >
-                {loadingStreakId === streak.id
-                  ? t("streaks.claiming", "Claiming")
-                  : streak.claimed
-                    ? t("streaks.claimed", "Claimed")
-                    : streak.completed
-                      ? t("streaks.cta", "Claim")
-                      : t("streaks.incomplete", "Incomplete")}
-              </Button>
-            </div>
-          </div>
+          </article>
         ))}
       </div>
-      {message && <div className={CLAIM_STATUS_CLASS}>{message}</div>}
-    </div>
+      {message && (
+        <p className={STATUS_CLASS} role="status">
+          {message}
+        </p>
+      )}
+    </Section>
   );
 }
 
@@ -1052,168 +921,179 @@ function BadgesControl({ badges }: { badges: Badge[] }) {
   const { t } = useTranslation("rewards");
   if (badges.length === 0) return null;
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>{t("badges.title", "Badges")}</h3>
-      <p className={CLAIM_BODY_CLASS}>
-        {t(
-          "badges.body",
-          "Unlock cosmetic badges from gameplay milestones. Badges are non-redeemable status markers.",
-        )}
-      </p>
-      <div className={BADGE_GRID_CLASS}>
+    <Section
+      id="rw-badges"
+      title={t("badges.title", "Badges")}
+      description={t(
+        "badges.body",
+        "Unlock cosmetic badges from gameplay milestones. Badges are non-redeemable status markers.",
+      )}
+    >
+      <div className="grid grid-cols-4 gap-3 max-[1024px]:grid-cols-3 max-[640px]:grid-cols-2">
         {badges.map((badge) => (
-          <div
+          <article
             key={badge.id}
-            className={`${BADGE_CARD_BASE_CLASS} ${
-              badge.earned ? BADGE_EARNED_CLASS : BADGE_LOCKED_CLASS
-            }`}
+            className={`${CARD_CLASS} flex flex-col items-center px-3 py-4 text-center ${badge.earned ? "" : "opacity-60"}`}
           >
-            <p className={PACK_NAME_CLASS}>{badge.name}</p>
-            <p className={PACK_DESC_CLASS}>{badge.description}</p>
-            <div className={BADGE_STATUS_CLASS}>
-              {badge.earned
-                ? t("badges.earned", "Earned")
-                : t("badges.locked", "Locked")}
-            </div>
-          </div>
+            <span
+              className={`grid h-11 w-11 place-items-center rounded-full ${
+                badge.earned ? "bg-[var(--ink)] text-[var(--on-ink)]" : "bg-[var(--surface-2)] text-[var(--t3)]"
+              }`}
+              aria-hidden="true"
+            >
+              {badge.earned ? <Award size={20} /> : <Lock size={18} />}
+            </span>
+            <p className="m-0 mt-2.5 text-[13px] font-semibold text-[var(--t1)]">{badge.name}</p>
+            <p className="m-0 mt-0.5 text-[12px] leading-[1.4] text-[var(--t3)]">{badge.description}</p>
+            <span className="mt-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+              {badge.earned ? t("badges.earned", "Earned") : t("badges.locked", "Locked")}
+            </span>
+          </article>
         ))}
       </div>
-    </div>
+    </Section>
   );
 }
 
-function TierLadder({
-  tiers,
-  current,
-}: {
-  tiers: LoyaltyTier[];
-  current: number;
-}) {
+// The ladder as a stepper: reached tiers filled in their colour, the
+// current one ringed, later ones hollow.
+function TierLadder({ tiers, current }: { tiers: LoyaltyTier[]; current: number }) {
   const { t } = useTranslation("rewards");
+  if (tiers.length === 0) return null;
   return (
-    <ul className={LADDER_CLASS} aria-label={t("ladder.aria", "Tier ladder")}>
-      {tiers.map((t) => {
-        const isCurrent = t.rank === current;
-        const isPast = t.rank < current;
+    <ol
+      className="m-0 mt-5 flex list-none gap-2 overflow-x-auto border-t border-[var(--border-1)] p-0 pt-4"
+      aria-label={t("ladder.aria", "Tier ladder")}
+    >
+      {tiers.map((tier) => {
+        const reached = tier.rank <= current;
+        const isCurrent = tier.rank === current;
         return (
           <li
-            key={t.rank}
-            className={`${LADDER_STEP_BASE_CLASS} ${tierColorClass(
-              t.rank,
-              "ladder",
-            )} ${
-              isCurrent
-                ? `bg-[var(--surface-2)] ${currentTierBorderClass(t.rank)}`
-                : isPast
-                  ? ""
-                  : "opacity-[0.45]"
-            }`}
+            key={tier.rank}
+            className="flex min-w-[76px] flex-1 flex-col items-center text-center"
             aria-current={isCurrent ? "step" : undefined}
           >
-            <span className={LADDER_NAME_CLASS}>{t.rankName}</span>
-            <span className={LADDER_THRESHOLD_CLASS}>
-              {formatPointsAmount(t.minXpPoints)}
+            <span
+              className={`h-3 w-3 rounded-full ${
+                reached ? tierColorClass(tier.rank, "dot") : "border-2 border-[var(--border-2)] bg-[var(--surface-1)]"
+              } ${isCurrent ? "ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--surface-1)]" : ""}`}
+              aria-hidden="true"
+            />
+            <span
+              className={`mt-2 text-[12px] font-semibold ${reached ? "text-[var(--t1)]" : "text-[var(--t3)]"}`}
+            >
+              {tier.rankName}
             </span>
+            <span className="text-[11px] tabular-nums text-[var(--t3)]">{formatPointsAmount(tier.minXpPoints)}</span>
           </li>
         );
       })}
-    </ul>
+    </ol>
   );
 }
 
-function BenefitsList({
-  tiers,
-  current,
-}: {
-  tiers: LoyaltyTier[];
-  current: number;
-}) {
+function BenefitsList({ tiers, current }: { tiers: LoyaltyTier[]; current: number }) {
   const { t } = useTranslation("rewards");
-  // Benefits are cumulative — show every benefit from tier 1 up through the
-  // user's current tier. Matches plan §2.Tiers.
-  const rows: Array<{ key: string; tier: number; name: string; copy: string }> =
-    [];
-  for (const t of tiers) {
-    if (t.rank > current) continue;
-    const benefits = t.benefits ?? [];
+  // Benefits are cumulative — every benefit from tier 1 up through the
+  // player's current tier. Matches plan §2.Tiers.
+  const rows: Array<{ key: string; tier: number; name: string; copy: string }> = [];
+  for (const tier of tiers) {
+    if (tier.rank > current) continue;
+    const benefits = tier.benefits ?? [];
     for (let i = 0; i < benefits.length; i++) {
-      rows.push({
-        key: `${t.rank}-${i}`,
-        tier: t.rank,
-        name: t.rankName,
-        copy: benefits[i],
-      });
+      rows.push({ key: `${tier.rank}-${i}`, tier: tier.rank, name: tier.rankName, copy: benefits[i] });
     }
   }
-  if (rows.length === 0) return null;
   return (
-    <div>
-      <h3 className={BENEFITS_TITLE_CLASS}>
+    <section className={`${CARD_CLASS} p-5`} aria-labelledby="rw-benefits-title">
+      <h2 id="rw-benefits-title" className="m-0 text-[16px] font-semibold text-[var(--t1)]">
         {t("benefits.unlocked", "Unlocked")}
-      </h3>
-      <ul className={BENEFITS_LIST_CLASS}>
-        {rows.map((row) => (
-          <li key={row.key} className={BENEFIT_CLASS}>
-            <span
-              className={`${BENEFIT_DOT_BASE_CLASS} ${tierColorClass(
-                row.tier,
-                "dot",
-              )}`}
-              aria-hidden="true"
-            />
-            <span>{row.copy}</span>
-            <span className={BENEFIT_SOURCE_CLASS}>{row.name}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+      </h2>
+      {rows.length === 0 ? (
+        <p className="m-0 mt-2 text-[13px] text-[var(--t3)]">
+          {t("BENEFITS_EMPTY", "No benefits configured for this tier yet.")}
+        </p>
+      ) : (
+        <ul className="m-0 mt-3 flex list-none flex-col gap-2.5 p-0">
+          {rows.map((row) => (
+            <li key={row.key} className="grid grid-cols-[10px_1fr_auto] items-center gap-2.5 text-[14px] text-[var(--t1)]">
+              <span className={`size-2.5 rounded-full ${tierColorClass(row.tier, "dot")}`} aria-hidden="true" />
+              <span>{row.copy}</span>
+              <span className="text-[12px] text-[var(--t3)]">{row.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
-function PreFirstSettleState({
-  dailyClaim,
-  pointPacks,
-  missions,
-  streaks,
-  badges,
-  rewardLimit,
-  activeBonuses,
-}: {
-  dailyClaim: DailyClaimControlProps;
-  pointPacks: PointPacksControlProps;
-  missions: MissionsControlProps;
-  streaks: StreaksControlProps;
-  badges: Badge[];
-  rewardLimit: RewardLimitStatus | null;
-  activeBonuses: PlayerBonus[];
-}) {
+const LEDGER_ICON: Record<string, typeof Sparkles> = {
+  won: CheckCircle2,
+  lost: XCircle,
+  accrual: TrendingUp,
+  promotion: Sparkles,
+  adjustment: SlidersHorizontal,
+};
+
+function LedgerCard({ ledger, name }: { ledger: LoyaltyLedgerEntry[]; name: string }) {
   const { t } = useTranslation("rewards");
   return (
-    <div className={STATE_CLASS}>
-      <div className={PREFIRST_CARD_CLASS}>
-        <span className={KICKER_CLASS}>{t("kickerShort", "Rewards")}</span>
-        <h1 className={PREFIRST_TITLE_CLASS}>
-          {t("prefirst.title", "No activity yet")}
-        </h1>
-        <p className={PREFIRST_BODY_CLASS}>
-          {t(
-            "prefirst.body",
-            "Settle your first trade to start earning points and climb the tier ladder.",
-          )}
+    <section className={`${CARD_CLASS} overflow-hidden`} aria-labelledby="rw-ledger-title">
+      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--border-1)] px-5 py-4">
+        <h2 id="rw-ledger-title" className="m-0 text-[16px] font-semibold text-[var(--t1)]">
+          {t("ledger.title", "Recent activity")}
+        </h2>
+        <span className="text-[12px] text-[var(--t3)]">
+          {t("ledger.entries", "{{count}} entries", { count: ledger.length })}
+        </span>
+      </header>
+      {ledger.length === 0 ? (
+        <p className="m-0 px-5 py-10 text-center text-[13px] text-[var(--t3)]">
+          {t("ledger.empty", "No activity yet — settle a market to start earning.")}
         </p>
-        <StoreCrossLink />
-        <RewardLimitControl status={rewardLimit} />
-        <ActiveBonusesControl bonuses={activeBonuses} />
-        <DailyClaimControl {...dailyClaim} />
-        <MissionsControl {...missions} />
-        <StreaksControl {...streaks} />
-        <BadgesControl badges={badges} />
-        <PointPacksControl {...pointPacks} />
-        <Button variant="primary" size="lg" render={<Link href="/predict" />}>
-          {t("prefirst.browse", "Browse markets")} →
-        </Button>
-      </div>
-    </div>
+      ) : (
+        <ul
+          className="m-0 list-none divide-y divide-[var(--border-1)] p-0"
+          aria-label={t("ledger.caption", "Recent loyalty ledger entries for {{name}}", { name })}
+        >
+          {ledger.map((entry) => {
+            const outcome = entry.reason?.includes("(won)") ? "won" : entry.reason?.includes("(lost)") ? "lost" : entry.eventType;
+            const Icon = LEDGER_ICON[outcome] ?? Sparkles;
+            return (
+              <li key={entry.id} className="flex items-center gap-3 px-5 py-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--surface-2)] text-[var(--t2)]" aria-hidden="true">
+                  <Icon size={16} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[14px] font-medium text-[var(--t1)]">{labelForEntry(entry, t)}</span>
+                  <span className="block truncate text-[12px] text-[var(--t3)]">
+                    {formatDate(entry.createdAt)}
+                    {shouldShowReason(entry) ? ` · ${entry.reason}` : ""}
+                  </span>
+                </span>
+                <span className="shrink-0 text-right">
+                  {/* Ledger deltas are point-balance changes, not market
+                   * results — weight carries the signal, not colour. */}
+                  <span
+                    className={`block text-[14px] tabular-nums ${
+                      entry.deltaPoints >= 0 ? "font-semibold text-[var(--t1)]" : "text-[var(--t2)]"
+                    }`}
+                  >
+                    {entry.deltaPoints >= 0 ? "+" : ""}
+                    {formatPointsAmount(entry.deltaPoints)}
+                  </span>
+                  <span className="block text-[12px] tabular-nums text-[var(--t3)]">
+                    {formatPointsAmount(entry.balanceAfter)}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -1225,23 +1105,15 @@ function PageState({
   cta?: { href: string; label: string };
 }) {
   return (
-    <div className={STATE_CLASS}>
-      <Card
-        as="div"
-        padding="lg"
-        className="relative w-full max-w-[440px] text-center"
-      >
-        <p className={STATE_MESSAGE_CLASS}>{message}</p>
+    <div className="flex min-h-[60vh] items-center justify-center px-6">
+      <div className={`${CARD_CLASS} w-full max-w-[440px] p-7 text-center`}>
+        <p className="m-0 mb-3.5 leading-[1.6] text-[var(--t2)]">{message}</p>
         {cta && (
-          <Button
-            variant="primary"
-            size="lg"
-            render={<Link href={cta.href} />}
-          >
+          <Button variant="primary" size="lg" render={<Link href={cta.href} />}>
             {cta.label}
           </Button>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

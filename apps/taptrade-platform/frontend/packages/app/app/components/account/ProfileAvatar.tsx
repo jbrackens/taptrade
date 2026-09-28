@@ -7,6 +7,7 @@
 import { profileInitials } from "./profile-data";
 
 const SIZE_CLASS = {
+  32: "h-8 w-8 text-[12px]",
   48: "h-12 w-12 text-[17px]",
   64: "h-16 w-16 text-[22px]",
 } as const;

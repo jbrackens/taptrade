@@ -69,7 +69,8 @@
   },
   "progress": {
     "pointsTo": "还差 {{points}} 积分到",
-    "topTier": "已达到最高等级，感谢你的交易。"
+    "topTier": "已达到最高等级，感谢你的交易。",
+    "label": "等级进度"
   },
   "ladder": {
     "aria": "等级阶梯"
@@ -97,5 +98,69 @@
     "adjustment": "调整",
     "promotion": "等级提升",
     "migration": "从旧系统导入"
+  },
+  "today": {
+    "title": "今天",
+    "streak_one": "连续 {{count}} 天",
+    "streak_other": "连续 {{count}} 天"
+  },
+  "dailyClaim": {
+    "body": "每天可领取一次仅用于预测的不可兑换游戏点数。",
+    "cta": "今日领取",
+    "claiming": "领取中",
+    "claimed": "今日已领取",
+    "success": "今日领取已记录：{{points}} 点已计入你的点数明细。",
+    "error": "无法记录今日领取，请稍后再试。",
+    "disabled": "每日领取暂不可用。"
+  },
+  "rewardLimit": {
+    "title": "每日奖励上限",
+    "body": "今天还剩 {{remaining}} / {{limit}} 奖励点数。",
+    "reset": "{{date}} 重置"
+  },
+  "missions": {
+    "title": "任务",
+    "body": "完成游戏任务，赚取不可兑换的奖励点数。",
+    "progress": "已完成 {{progress}} / {{target}}",
+    "cta": "领取",
+    "claiming": "领取中",
+    "claimed": "已领取",
+    "incomplete": "未完成",
+    "success": "{{points}} 点已计入你的点数明细。",
+    "error": "无法记录任务奖励，请稍后再试。"
+  },
+  "streaks": {
+    "title": "连续记录",
+    "body": "坚持每日领取游戏点数，赚取不可兑换的连续奖励。",
+    "progress": "{{current}} / {{target}} 天",
+    "cta": "领取",
+    "claiming": "领取中",
+    "claimed": "已领取",
+    "incomplete": "未完成",
+    "success": "{{points}} 点已计入你的点数明细。",
+    "error": "无法记录连续奖励，请稍后再试。"
+  },
+  "pointPacks": {
+    "title": "点数包",
+    "body": "领取仅用于预测的一次性游戏点数包。",
+    "cta": "领取",
+    "claiming": "领取中",
+    "claimed": "已领取",
+    "unavailable": "不可用",
+    "success": "{{points}} 点已计入你的点数明细。",
+    "error": "无法记录点数包，请稍后再试。"
+  },
+  "badges": {
+    "title": "徽章",
+    "body": "通过游戏里程碑解锁装饰徽章。徽章是不可兑换的身份标记。",
+    "earned": "已获得",
+    "locked": "未解锁"
+  },
+  "activeBonuses": {
+    "title": "进行中的积分玩法加成",
+    "body": "查看推广游戏点数及其玩法进度。",
+    "fallbackName": "积分玩法加成",
+    "status": "状态：{{status}}",
+    "remaining": "点剩余"
   }
 }

@@ -66,6 +66,12 @@
     "trader": "Trader name",
     "settled": "Settled markets",
     "youRank": "#{{rank}} Ikaw",
-    "viewerRow": "#{{rank}} Ikaw · {{metric}}"
+    "viewerRow": "#{{rank}} Ikaw · {{metric}}",
+    "you": "Ikaw"
+  },
+  "subtitle": "Nag-a-update ang ranking habang nase-settle ang mga market.",
+  "standing": {
+    "title": "Ang puwesto mo",
+    "empty": "Mag-settle ng mga market para mapabilang sa boards."
   }
 }

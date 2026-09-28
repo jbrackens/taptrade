@@ -66,6 +66,12 @@
     "trader": "Trader",
     "settled": "Settled",
     "youRank": "#{{rank}} You",
-    "viewerRow": "#{{rank}} You · {{metric}}"
+    "viewerRow": "#{{rank}} You · {{metric}}",
+    "you": "You"
+  },
+  "subtitle": "Rankings update as markets settle.",
+  "standing": {
+    "title": "Your standing",
+    "empty": "Settle markets to earn a place on the boards."
   }
 }

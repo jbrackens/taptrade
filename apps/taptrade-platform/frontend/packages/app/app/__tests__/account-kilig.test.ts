@@ -142,6 +142,21 @@ describe("header chips at 390 (step 8)", () => {
     );
   });
 
+  it("lists Rewards in the avatar menu right below Account, above Portfolio", () => {
+    const account = topBar.indexOf('href="/account"');
+    const rewards = topBar.indexOf('href="/rewards"', account);
+    const portfolio = topBar.indexOf('href="/portfolio"', account);
+    assert.ok(account > 0 && rewards > account && portfolio > rewards, "menu order: Account, Rewards, Portfolio");
+  });
+
+  it("makes the account menu trigger read as a menu: three lines beside the avatar", () => {
+    assert.match(topBar, /TOP_BAR_MENU_TRIGGER_CLASS =\s*\n?\s*"inline-flex[^"]*rounded-\[var\(--r-pill\)\] border/);
+    assert.match(
+      topBar,
+      /className=\{TOP_BAR_MENU_TRIGGER_CLASS\}[\s\S]{0,300}aria-haspopup="menu"[\s\S]{0,300}<MenuLines [\s\S]{0,200}<span className=\{TOP_BAR_AVATAR_CLASS\}/,
+    );
+  });
+
   it("uses the Kilig ink avatar disc in the top bar", () => {
     assert.ok(!topBar.includes("#6d63dc"));
     // Kilig: an ink disc with white initials (the interaction voice).

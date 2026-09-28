@@ -69,7 +69,8 @@
   },
   "progress": {
     "pointsTo": "{{points}} pts to",
-    "topTier": "Top tier reached — thanks for trading with us."
+    "topTier": "Top tier reached — thanks for trading with us.",
+    "label": "Tier progress"
   },
   "ladder": {
     "aria": "Tier ladder"
@@ -97,5 +98,69 @@
     "adjustment": "Adjustment",
     "promotion": "Tier promotion",
     "migration": "Imported from legacy"
+  },
+  "today": {
+    "title": "Today",
+    "streak_one": "{{count}}-day streak",
+    "streak_other": "{{count}}-day streak"
+  },
+  "dailyClaim": {
+    "body": "Claim non-redeemable gameplay points once per day for predictions only.",
+    "cta": "Claim today",
+    "claiming": "Claiming",
+    "claimed": "Claimed today",
+    "success": "Today's claim is recorded: {{points}} pts added to your point ledger.",
+    "error": "Daily claim could not be recorded. Try again shortly.",
+    "disabled": "Daily claim is not available right now."
+  },
+  "rewardLimit": {
+    "title": "Daily reward limit",
+    "body": "{{remaining}} of {{limit}} reward pts remain for today.",
+    "reset": "Resets {{date}}"
+  },
+  "missions": {
+    "title": "Missions",
+    "body": "Complete gameplay missions to earn non-redeemable reward points.",
+    "progress": "{{progress}} / {{target}} complete",
+    "cta": "Claim",
+    "claiming": "Claiming",
+    "claimed": "Claimed",
+    "incomplete": "Incomplete",
+    "success": "{{points}} pts added to your point ledger.",
+    "error": "Mission reward could not be recorded. Try again shortly."
+  },
+  "streaks": {
+    "title": "Streaks",
+    "body": "Keep daily gameplay-point claims going to earn non-redeemable streak rewards.",
+    "progress": "{{current}} / {{target}} days",
+    "cta": "Claim",
+    "claiming": "Claiming",
+    "claimed": "Claimed",
+    "incomplete": "Incomplete",
+    "success": "{{points}} pts added to your point ledger.",
+    "error": "Streak reward could not be recorded. Try again shortly."
+  },
+  "pointPacks": {
+    "title": "Point packs",
+    "body": "Claim configured one-time gameplay point packs for predictions only.",
+    "cta": "Claim",
+    "claiming": "Claiming",
+    "claimed": "Claimed",
+    "unavailable": "Unavailable",
+    "success": "{{points}} pts added to your point ledger.",
+    "error": "Point pack could not be recorded. Try again shortly."
+  },
+  "badges": {
+    "title": "Badges",
+    "body": "Unlock cosmetic badges from gameplay milestones. Badges are non-redeemable status markers.",
+    "earned": "Earned",
+    "locked": "Locked"
+  },
+  "activeBonuses": {
+    "title": "Active point-play bonuses",
+    "body": "Track promotional gameplay points and their point-play progress.",
+    "fallbackName": "Point-play bonus",
+    "status": "Status: {{status}}",
+    "remaining": "pts remaining"
   }
 }

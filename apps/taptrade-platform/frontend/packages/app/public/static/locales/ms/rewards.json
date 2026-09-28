@@ -69,7 +69,8 @@
   },
   "progress": {
     "pointsTo": "{{points}} pts ke",
-    "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami."
+    "topTier": "Tier tertinggi dicapai — terima kasih kerana berdagang dengan kami.",
+    "label": "Kemajuan tahap"
   },
   "ladder": {
     "aria": "Tangga tier"
@@ -97,5 +98,69 @@
     "adjustment": "Pelarasan",
     "promotion": "Promosi tier",
     "migration": "Diimport daripada legacy"
+  },
+  "today": {
+    "title": "Hari ini",
+    "streak_one": "{{count}} hari berturut-turut",
+    "streak_other": "{{count}} hari berturut-turut"
+  },
+  "dailyClaim": {
+    "body": "Tuntut mata permainan yang tidak boleh ditebus sekali sehari, untuk ramalan sahaja.",
+    "cta": "Tuntut hari ini",
+    "claiming": "Menuntut",
+    "claimed": "Sudah dituntut hari ini",
+    "success": "Tuntutan hari ini direkodkan: {{points}} mata ditambah ke lejar mata anda.",
+    "error": "Tuntutan harian tidak dapat direkodkan. Cuba lagi sebentar nanti.",
+    "disabled": "Tuntutan harian tidak tersedia buat masa ini."
+  },
+  "rewardLimit": {
+    "title": "Had ganjaran harian",
+    "body": "{{remaining}} daripada {{limit}} mata ganjaran berbaki untuk hari ini.",
+    "reset": "Ditetapkan semula {{date}}"
+  },
+  "missions": {
+    "title": "Misi",
+    "body": "Lengkapkan misi permainan untuk memperoleh mata ganjaran yang tidak boleh ditebus.",
+    "progress": "{{progress}} / {{target}} selesai",
+    "cta": "Tuntut",
+    "claiming": "Menuntut",
+    "claimed": "Sudah dituntut",
+    "incomplete": "Belum selesai",
+    "success": "{{points}} mata ditambah ke lejar mata anda.",
+    "error": "Ganjaran misi tidak dapat direkodkan. Cuba lagi sebentar nanti."
+  },
+  "streaks": {
+    "title": "Rentetan",
+    "body": "Teruskan tuntutan mata permainan harian untuk memperoleh ganjaran rentetan yang tidak boleh ditebus.",
+    "progress": "{{current}} / {{target}} hari",
+    "cta": "Tuntut",
+    "claiming": "Menuntut",
+    "claimed": "Sudah dituntut",
+    "incomplete": "Belum selesai",
+    "success": "{{points}} mata ditambah ke lejar mata anda.",
+    "error": "Ganjaran rentetan tidak dapat direkodkan. Cuba lagi sebentar nanti."
+  },
+  "pointPacks": {
+    "title": "Pek mata",
+    "body": "Tuntut pek mata permainan sekali sahaja, untuk ramalan sahaja.",
+    "cta": "Tuntut",
+    "claiming": "Menuntut",
+    "claimed": "Sudah dituntut",
+    "unavailable": "Tidak tersedia",
+    "success": "{{points}} mata ditambah ke lejar mata anda.",
+    "error": "Pek mata tidak dapat direkodkan. Cuba lagi sebentar nanti."
+  },
+  "badges": {
+    "title": "Lencana",
+    "body": "Buka lencana kosmetik daripada pencapaian permainan. Lencana ialah penanda status yang tidak boleh ditebus.",
+    "earned": "Diperoleh",
+    "locked": "Dikunci"
+  },
+  "activeBonuses": {
+    "title": "Bonus main mata yang aktif",
+    "body": "Jejaki mata permainan promosi dan kemajuan mainnya.",
+    "fallbackName": "Bonus main mata",
+    "status": "Status: {{status}}",
+    "remaining": "mata berbaki"
   }
 }

@@ -69,7 +69,8 @@
   },
   "progress": {
     "pointsTo": "还差 {{points}} 积分到",
-    "topTier": "已达到最高等级，感谢你的交易。"
+    "topTier": "已达到最高等级，感谢你的交易。",
+    "label": "等級進度"
   },
   "ladder": {
     "aria": "等级阶梯"
@@ -97,5 +98,69 @@
     "adjustment": "调整",
     "promotion": "等级提升",
     "migration": "从旧系统导入"
+  },
+  "today": {
+    "title": "今天",
+    "streak_one": "連續 {{count}} 天",
+    "streak_other": "連續 {{count}} 天"
+  },
+  "dailyClaim": {
+    "body": "每天可領取一次僅用於預測的不可兌換遊戲點數。",
+    "cta": "今日領取",
+    "claiming": "領取中",
+    "claimed": "今日已領取",
+    "success": "今日領取已記錄：{{points}} 點已計入你的點數明細。",
+    "error": "無法記錄今日領取，請稍後再試。",
+    "disabled": "每日領取暫不可用。"
+  },
+  "rewardLimit": {
+    "title": "每日獎勵上限",
+    "body": "今天還剩 {{remaining}} / {{limit}} 獎勵點數。",
+    "reset": "{{date}} 重置"
+  },
+  "missions": {
+    "title": "任務",
+    "body": "完成遊戲任務，賺取不可兌換的獎勵點數。",
+    "progress": "已完成 {{progress}} / {{target}}",
+    "cta": "領取",
+    "claiming": "領取中",
+    "claimed": "已領取",
+    "incomplete": "未完成",
+    "success": "{{points}} 點已計入你的點數明細。",
+    "error": "無法記錄任務獎勵，請稍後再試。"
+  },
+  "streaks": {
+    "title": "連續記錄",
+    "body": "堅持每日領取遊戲點數，賺取不可兌換的連續獎勵。",
+    "progress": "{{current}} / {{target}} 天",
+    "cta": "領取",
+    "claiming": "領取中",
+    "claimed": "已領取",
+    "incomplete": "未完成",
+    "success": "{{points}} 點已計入你的點數明細。",
+    "error": "無法記錄連續獎勵，請稍後再試。"
+  },
+  "pointPacks": {
+    "title": "點數包",
+    "body": "領取僅用於預測的一次性遊戲點數包。",
+    "cta": "領取",
+    "claiming": "領取中",
+    "claimed": "已領取",
+    "unavailable": "不可用",
+    "success": "{{points}} 點已計入你的點數明細。",
+    "error": "無法記錄點數包，請稍後再試。"
+  },
+  "badges": {
+    "title": "徽章",
+    "body": "透過遊戲里程碑解鎖裝飾徽章。徽章是不可兌換的身分標記。",
+    "earned": "已獲得",
+    "locked": "未解鎖"
+  },
+  "activeBonuses": {
+    "title": "進行中的積分玩法加成",
+    "body": "查看推廣遊戲點數及其玩法進度。",
+    "fallbackName": "積分玩法加成",
+    "status": "狀態：{{status}}",
+    "remaining": "點剩餘"
   }
 }

@@ -5,29 +5,27 @@ import { WageringProgress } from "../components/WageringProgress";
 import type { PlayerBonus } from "../lib/api/bonus-client";
 import { formatPointsAmount } from "../lib/points";
 
-const CLAIM_WRAP_CLASS =
-  "mb-5 mt-6 border-t border-[var(--border-1)] pt-5 text-left";
-const CLAIM_TITLE_CLASS =
-  "m-0 mb-1 text-[13px] font-semibold text-[var(--t3)]";
-const CLAIM_BODY_CLASS = "m-0 mb-3 text-sm leading-[1.55] text-[var(--t2)]";
-const PACKS_LIST_CLASS = "mt-3 flex flex-col gap-2";
+// Same section and card recipe as the rest of /rewards.
+const CLAIM_WRAP_CLASS = "mt-8";
+const CLAIM_TITLE_CLASS = "m-0 text-[17px] font-semibold text-[var(--t1)]";
+const CLAIM_BODY_CLASS = "m-0 mt-1 text-[13px] text-[var(--t3)]";
+const PACKS_LIST_CLASS = "mt-3 grid grid-cols-2 gap-3 max-[640px]:grid-cols-1";
 const PACK_ROW_CLASS =
-  "flex items-center justify-between gap-3 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-3";
-const PACK_NAME_CLASS = "m-0 text-sm font-bold text-[var(--t1)]";
-const PACK_DESC_CLASS = "m-0 mt-0.5 text-xs leading-[1.45] text-[var(--t3)]";
+  "flex items-start justify-between gap-3 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-4 shadow-[var(--shadow-card)]";
+const PACK_NAME_CLASS = "m-0 text-[14px] font-semibold text-[var(--t1)]";
+const PACK_DESC_CLASS = "m-0 mt-1 text-[13px] leading-[1.45] text-[var(--t3)]";
 const PACK_AMOUNT_CLASS =
-  "whitespace-nowrap text-sm font-bold text-[var(--reward-text)] tabular-nums font-mono";
-const MISSION_PROGRESS_CLASS =
-  "mt-1 text-xs text-[var(--t3)] tabular-nums font-mono";
+  "whitespace-nowrap text-[14px] font-semibold tabular-nums text-[var(--reward-text)]";
+const MISSION_PROGRESS_CLASS = "mt-0.5 text-[12px] text-[var(--t3)]";
 
 export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
   const { t } = useTranslation("rewards");
   if (bonuses.length === 0) return null;
   return (
-    <div className={CLAIM_WRAP_CLASS}>
-      <h3 className={CLAIM_TITLE_CLASS}>
+    <section className={CLAIM_WRAP_CLASS}>
+      <h2 className={CLAIM_TITLE_CLASS}>
         {t("activeBonuses.title", "Active point-play bonuses")}
-      </h3>
+      </h2>
       <p className={CLAIM_BODY_CLASS}>
         {t(
           "activeBonuses.body",
@@ -67,6 +65,6 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

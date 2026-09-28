@@ -66,6 +66,12 @@
     "trader": "Trader",
     "settled": "Selesai",
     "youRank": "#{{rank}} Anda",
-    "viewerRow": "#{{rank}} Anda · {{metric}}"
+    "viewerRow": "#{{rank}} Anda · {{metric}}",
+    "you": "Anda"
+  },
+  "subtitle": "Kedudukan dikemas kini apabila pasaran diselesaikan.",
+  "standing": {
+    "title": "Kedudukan anda",
+    "empty": "Selesaikan pasaran untuk mendapat tempat di papan."
   }
 }

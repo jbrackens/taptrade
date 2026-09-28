@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { Button, Card } from "../components/ui";
+import { Button } from "../components/ui";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -15,71 +15,26 @@ import {
 } from "../lib/api/leaderboards-client";
 import { logger } from "../lib/logger";
 import { formatPoints } from "../lib/points";
+import { ProfileAvatar } from "../components/account/ProfileAvatar";
 
-// /leaderboards — Predict-native boards. Layout follows PLAN-loyalty-
-// leaderboards.md §5: left sidebar with all boards + the viewer's rank on
-// each; right pane shows the active board as a semantic <table>. The viewer
-// row is highlighted with --accent-soft and #N You prefix.
-//
-// Category Champions boards share one slot in the sidebar via a <select>.
-// Mobile: standing summary card above active board (responsive Tailwind classes).
+// /leaderboards — the boards, laid out like Polymarket's leaderboard on the
+// board's card recipe: board tabs across the top (Category Champions opens a
+// category picker beside them), the active board as a ranked list with
+// avatars, and the viewer's standing on every board in a side panel. The
+// viewer's row is marked "You" on a raised well, never lavender.
 
 const ENTRIES_LIMIT = 25;
 
-const WRAP_CLASS = "mx-auto max-w-[1180px] pb-[60px] max-[720px]:px-4";
-const HEAD_CLASS = "mb-[22px] flex items-end justify-between gap-4";
-// Micro-label eyebrow: mono, uppercase, tracked wide (DESIGN.md §4).
-const KICKER_CLASS =
-  "mb-1.5 inline-block text-[12px] font-semibold text-[var(--t3)]";
-// Page title: the sentence-case heading voice (DESIGN.md §4).
-const TITLE_CLASS =
-  "type-poster m-0 text-[28px] text-[var(--t1)] max-[720px]:text-[24px]";
-const CROSS_LINK_CLASS =
-  "border-b border-[var(--border-1)] pb-0.5 text-[13px] text-[var(--t2)] hover:border-[var(--accent)] hover:text-[var(--t1)]";
-const GRID_CLASS =
-  "grid grid-cols-[280px_minmax(0,1fr)] items-start gap-[18px] max-[1024px]:grid-cols-1";
-// Surface shell (rounded/border/surface-1) now comes from the Card
-// primitive; sidebar/detail/state cards keep their density inline.
-const TAB_BASE_CLASS =
-  "grid cursor-pointer grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 gap-y-0.5 rounded-[var(--r-rh-md)] border p-3.5 text-left text-[var(--t2)] transition-[background,border-color] duration-[120ms] ease-[ease] [font-family:inherit] hover:bg-[var(--surface-2)] max-[1024px]:flex-[0_0_220px] max-[1024px]:[scroll-snap-align:start]";
-const TAB_ACTIVE_CLASS =
-  "border-[var(--accent)] bg-[var(--accent-soft)] hover:bg-[var(--accent-soft)]";
-const TAB_INACTIVE_CLASS = "border-transparent bg-transparent";
-const TAB_NAME_CLASS =
-  "col-start-1 row-start-1 text-sm font-bold text-[var(--t1)]";
-const TAB_SUB_CLASS =
-  "col-start-1 row-start-2 text-[12px] text-[var(--t3)]";
-const TAB_RANK_BASE_CLASS =
-  "col-start-2 row-span-2 row-start-1 self-center text-base font-bold text-[var(--t1)] tabular-nums font-mono";
-const TAB_RANK_ACTIVE_CLASS = "text-[var(--accent)]";
-const CATEGORY_CLASS = `${TAB_BASE_CLASS} cursor-default max-[1024px]:flex-[0_0_280px]`;
-const CATEGORY_SELECT_CLASS =
- "col-start-1 row-start-2 mt-1 cursor-pointer appearance-none rounded-[var(--r-rh-sm)] border border-[var(--border-1)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--t1)] focus-visible:[outline:2px_solid_var(--accent)] focus-visible:outline-offset-2 [font-family:inherit] max-[1024px]:min-h-9 max-[1024px]:w-full max-[1024px]:px-2.5 max-[1024px]:py-2 max-[1024px]:text-[13px]";
-const DETAIL_HEAD_CLASS =
- "mb-[18px] flex items-start justify-between gap-[18px] max-[720px]:flex-col max-[720px]:gap-2";
-const DETAIL_TITLE_CLASS =
- "m-0 mb-1.5 text-[22px] font-extrabold text-[var(--t1)]";
-const DETAIL_BODY_CLASS =
- "m-0 max-w-[540px] text-[13px] leading-[1.6] text-[var(--t2)]";
-const DETAIL_WINDOW_CLASS =
- "text-[11px] text-[var(--t3)] tabular-nums font-mono";
-const EMPTY_CLASS = "py-[60px] text-center text-sm text-[var(--t2)]";
-const EMPTY_SUB_CLASS = "mt-1.5 text-xs text-[var(--t3)]";
-const TABLE_CLASS =
- "w-full border-collapse text-[13px] [&_td]:border-b [&_td]:border-[var(--border-1)] [&_td]:px-1.5 [&_td]:py-2.5 [&_td]:align-middle [&_th]:border-b [&_th]:border-[var(--border-1)] [&_th]:px-1.5 [&_th]:py-2.5 [&_th]:text-[12px] [&_th]:font-bold [&_th]:text-[var(--t3)]";
-const TEXT_LEFT_CLASS = "text-left";
-const NUM_CLASS = "text-right";
-const MONO_CLASS =
- "tabular-nums font-mono";
-const HIDE_SM_CLASS = "max-[720px]:hidden";
-const TRADER_CLASS = "font-medium text-[var(--t1)]";
-const SUBTLE_CLASS = "text-[var(--t3)]";
-const VIEWER_ROW_CLASS =
- "bg-[var(--accent-soft)] [&>td]:font-semibold [&>td]:text-[var(--t1)]";
-const VIEWER_CELL_CLASS = "p-3 text-center text-[var(--t1)]";
-const STATE_CLASS = "flex min-h-[60vh] items-center justify-center px-6";
-const STATE_MESSAGE_CLASS = "m-0 mb-3.5 leading-[1.6] text-[var(--t2)]";
-// State CTA migrated to Button primary lg (same unification as rewards).
+const CARD_CLASS =
+  "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
+const TAB_CLASS = (active: boolean) =>
+  `inline-flex min-h-9 shrink-0 cursor-pointer items-center rounded-[var(--r-pill)] border px-4 text-[14px] font-semibold transition-colors duration-150 max-[640px]:min-h-10 ${
+    active
+      ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--on-ink)]"
+      : "border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--t2)] hover:border-[var(--border-2)] hover:text-[var(--t1)]"
+  }`;
+const SELECT_CLASS =
+  "min-h-9 cursor-pointer rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3.5 text-[14px] font-semibold text-[var(--t1)] outline-none focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] max-[640px]:min-h-10";
 
 export default function LeaderboardsPage() {
  const { t } = useTranslation("leaderboards");
@@ -244,52 +199,75 @@ export default function LeaderboardsPage() {
     );
   }
 
+  const categoryActive = categoryBoards.some((b) => b.id === selectedId);
+
   return (
-    <div className={WRAP_CLASS}>
-      <header className={HEAD_CLASS}>
+    <div className="mx-auto max-w-[1080px] px-6 pb-16 pt-6 max-[640px]:px-4">
+      <header className="mb-5 flex items-end justify-between gap-4">
         <div>
-          <span className={KICKER_CLASS}>{t("kicker", "Leaderboards")}</span>
-          <h1 className={TITLE_CLASS}>{t("title", "Rankings")}</h1>
+          <h1 className="type-poster m-0 text-[28px] text-[var(--t1)] max-[640px]:text-[24px]">
+            {t("kicker", "Leaderboards")}
+          </h1>
+          <p className="m-0 mt-1 text-[14px] text-[var(--t3)]">
+            {t("subtitle", "Rankings update as markets settle.")}
+          </p>
         </div>
-        <Link href="/rewards" className={CROSS_LINK_CLASS}>
+        <Link
+          href="/rewards"
+          className="inline-flex min-h-10 shrink-0 items-center text-[13px] font-semibold text-[var(--t2)] no-underline hover:text-[var(--t1)] hover:underline"
+        >
           {t("viewTier", "View your tier")} →
         </Link>
       </header>
 
-      <div className={GRID_CLASS}>
-        <Card
-          as="div"
-          padding="none"
-          className="relative flex flex-col gap-1.5 p-2.5 max-[1024px]:flex-row max-[1024px]:overflow-x-auto max-[1024px]:[scroll-snap-type:x_mandatory]"
-          role="tablist"
-          aria-label={t("boardsAria", "Boards")}
-        >
-          {staticBoards.map((board) => (
-            <BoardTab
-              key={board.id}
-              board={board}
-              active={board.id === selectedId}
-              userEntry={standingByBoard.get(board.id) ?? null}
-              onClick={() => selectBoard(board.id)}
-            />
-          ))}
+      <div
+        className="-mx-6 mb-5 flex gap-2 overflow-x-auto px-6 pb-1 max-[640px]:-mx-4 max-[640px]:px-4"
+        role="tablist"
+        aria-label={t("boardsAria", "Boards")}
+      >
+        {staticBoards.map((board) => (
+          <button
+            key={board.id}
+            type="button"
+            role="tab"
+            aria-selected={board.id === selectedId}
+            className={TAB_CLASS(board.id === selectedId)}
+            onClick={() => selectBoard(board.id)}
+          >
+            {boardName(board, t)}
+          </button>
+        ))}
+        {categoryBoards.length > 0 && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={categoryActive}
+            className={TAB_CLASS(categoryActive)}
+            onClick={() => {
+              if (!categoryActive && categoryBoards[0]) selectBoard(categoryBoards[0].id);
+            }}
+          >
+            {t("categoryChampions", "Category Champions")}
+          </button>
+        )}
+        {categoryActive && (
+          <select
+            className={SELECT_CLASS}
+            value={selectedId}
+            onChange={(e) => selectBoard(e.target.value)}
+            aria-label={t("chooseCategory", "Choose a category")}
+          >
+            {categoryBoards.map((b) => (
+              <option key={b.id} value={b.id}>
+                {categoryLabel(b, t)}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
 
-          {categoryBoards.length > 0 && (
-            <CategoryPicker
-              boards={categoryBoards}
-              selectedId={selectedId}
-              userStanding={standingByBoard}
-              onSelect={selectBoard}
-            />
-          )}
-        </Card>
-
-        <Card
-          as="section"
-          padding="none"
-          className="relative min-h-[420px] p-[22px]"
-          aria-labelledby="lb-detail-title"
-        >
+      <div className="grid grid-cols-[minmax(0,1fr)_320px] items-start gap-4 max-[1024px]:grid-cols-1">
+        <section className={`${CARD_CLASS} min-h-[420px]`} aria-labelledby="lb-detail-title">
           {selectedBoard ? (
             <DetailPanel
               board={selectedBoard}
@@ -299,95 +277,19 @@ export default function LeaderboardsPage() {
               currentUserId={user?.id ?? ""}
             />
           ) : (
-            <div className={EMPTY_CLASS}>
+            <div className="px-6 py-16 text-center text-[14px] text-[var(--t3)]">
               {t("state.pickBoard", "Pick a board to see rankings.")}
             </div>
           )}
-        </Card>
+        </section>
+
+        <StandingPanel
+          boards={boards}
+          standing={standingByBoard}
+          selectedId={selectedId}
+          onSelect={selectBoard}
+        />
       </div>
-    </div>
-  );
-}
-
-function BoardTab({
-  board,
-  active,
-  userEntry,
-  onClick,
-}: {
-  board: LeaderboardDefinition;
-  active: boolean;
-  userEntry: LeaderboardEntry | null;
-  onClick: () => void;
-}) {
-  const { t } = useTranslation("leaderboards");
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      className={`${TAB_BASE_CLASS} ${
-        active ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
-      }`}
-      onClick={onClick}
-    >
-      <span className={TAB_NAME_CLASS}>{boardName(board, t)}</span>
-      <span className={TAB_SUB_CLASS}>{metricLabel(board, t)}</span>
-      <span
-        className={`${TAB_RANK_BASE_CLASS} ${
-          active ? TAB_RANK_ACTIVE_CLASS : ""
-        }`}
-      >
-        {userEntry ? `#${userEntry.rank}` : "—"}
-      </span>
-    </button>
-  );
-}
-
-function CategoryPicker({
-  boards,
-  selectedId,
-  userStanding,
-  onSelect,
-}: {
-  boards: LeaderboardDefinition[];
-  selectedId: string;
-  userStanding: Map<string, LeaderboardEntry>;
-  onSelect: (id: string) => void;
-}) {
-  const { t } = useTranslation("leaderboards");
-  const activeInCategory = boards.some((b) => b.id === selectedId);
-  const currentValue = activeInCategory ? selectedId : (boards[0]?.id ?? "");
-  const userEntry = userStanding.get(currentValue) ?? null;
-
-  return (
-    <div
-      className={`${CATEGORY_CLASS} ${
-        activeInCategory ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
-      }`}
-    >
-      <span className={TAB_NAME_CLASS}>
-        {t("categoryChampions", "Category Champions")}
-      </span>
-      <select
-        className={CATEGORY_SELECT_CLASS}
-        value={currentValue}
-        onChange={(e) => onSelect(e.target.value)}
-        aria-label={t("chooseCategory", "Choose a category")}
-      >
-        {boards.map((b) => (
-          <option key={b.id} value={b.id}>
-            {categoryLabel(b, t)}
-          </option>
-        ))}
-      </select>
-      <span
-        className={`${TAB_RANK_BASE_CLASS} ${
-          activeInCategory ? TAB_RANK_ACTIVE_CLASS : ""
-        }`}
-      >
-        {userEntry ? `#${userEntry.rank}` : "—"}
-      </span>
     </div>
   );
 }
@@ -406,108 +308,158 @@ function DetailPanel({
   currentUserId: string;
 }) {
   const { t } = useTranslation("leaderboards");
+  const viewerListed = entries.some((e) => e.userId === currentUserId);
   return (
     <>
-      <header className={DETAIL_HEAD_CLASS}>
-        <div>
-          <h2 id="lb-detail-title" className={DETAIL_TITLE_CLASS}>
+      <header className="flex items-start justify-between gap-4 border-b border-[var(--border-1)] px-5 py-4 max-[640px]:flex-col max-[640px]:gap-2">
+        <div className="min-w-0">
+          <h2 id="lb-detail-title" className="m-0 text-[18px] font-semibold tracking-[-0.01em] text-[var(--t1)]">
             {boardName(board, t)}
           </h2>
-          <p className={DETAIL_BODY_CLASS}>{boardDescription(board, t)}</p>
+          <p className="m-0 mt-1 max-w-[540px] text-[13px] leading-normal text-[var(--t3)]">
+            {boardDescription(board, t)}
+          </p>
         </div>
-        <div className={DETAIL_WINDOW_CLASS}>
+        <span className="shrink-0 rounded-[var(--r-pill)] bg-[var(--surface-2)] px-2.5 py-1 text-[12px] font-semibold text-[var(--t2)]">
           {windowLabel(board.window, t)}
-        </div>
+        </span>
       </header>
 
       {loading ? (
-        <div className={EMPTY_CLASS}>
+        <div className="px-5 py-16 text-center text-[14px] text-[var(--t3)]">
           {t("state.loadingRankings", "Loading rankings…")}
         </div>
       ) : entries.length === 0 ? (
-        <div className={EMPTY_CLASS}>
-          <p>{qualificationMessage(board, t)}</p>
+        <div className="px-6 py-16 text-center">
+          <p className="m-0 text-[15px] font-semibold text-[var(--t1)]">{qualificationMessage(board, t)}</p>
           {viewerEntry === null && (
-            <p className={EMPTY_SUB_CLASS}>
-              {t(
-                "state.noQualified",
-                "Nobody has qualified for this board yet.",
-              )}
+            <p className="m-0 mt-1 text-[13px] text-[var(--t3)]">
+              {t("state.noQualified", "Nobody has qualified for this board yet.")}
             </p>
           )}
         </div>
       ) : (
-        <table
-          className={TABLE_CLASS}
-          aria-label={t("table.rankingsAria", "{{board}} rankings", {
-            board: boardName(board, t),
-          })}
-        >
-          <caption className="sr-only">
-            {t("table.caption", "{{board}} rankings — {{window}}", {
-              board: boardName(board, t),
-              window: windowLabel(board.window, t),
-            })}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col" className={NUM_CLASS}>
-                {t("table.rank", "Rank")}
-              </th>
-              <th scope="col" className={TEXT_LEFT_CLASS}>
-                {t("table.trader", "Trader")}
-              </th>
-              <th scope="col" className={NUM_CLASS}>
-                {metricLabel(board, t)}
-              </th>
-              <th scope="col" className={`${NUM_CLASS} ${HIDE_SM_CLASS}`}>
-                {t("table.settled", "Settled")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => {
-              const isViewer = e.userId === currentUserId;
-              return (
-                <tr
-                  key={`${e.boardId}:${e.userId}`}
-                  className={isViewer ? VIEWER_ROW_CLASS : ""}
-                  aria-current={isViewer ? "true" : undefined}
-                >
-                  <td className={`${NUM_CLASS} ${MONO_CLASS}`}>
-                    {isViewer
-                      ? t("table.youRank", "#{{rank}} You", { rank: e.rank })
-                      : `#${e.rank}`}
-                  </td>
-                  <td className={TRADER_CLASS}>{e.displayName}</td>
-                  <td className={`${NUM_CLASS} ${MONO_CLASS}`}>
-                    {formatMetric(board, e.metricValue)}
-                  </td>
-                  <td className={`${NUM_CLASS} ${HIDE_SM_CLASS} ${MONO_CLASS}`}>
-                    {typeof e.settledCount === "number" ? (
-                      e.settledCount
-                    ) : (
-                      <span className={SUBTLE_CLASS}>—</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {viewerEntry &&
-              !entries.some((e) => e.userId === currentUserId) && (
-                <tr className={VIEWER_ROW_CLASS} aria-current="true">
-                  <td colSpan={4} className={VIEWER_CELL_CLASS}>
-                    {t("table.viewerRow", "#{{rank}} You · {{metric}}", {
-                      rank: viewerEntry.rank,
-                      metric: formatMetric(board, viewerEntry.metricValue),
-                    })}
-                  </td>
-                </tr>
-              )}
-          </tbody>
-        </table>
+        <>
+          <div className="grid grid-cols-[40px_minmax(0,1fr)_72px_104px] items-center gap-3 border-b border-[var(--border-1)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)] max-[640px]:grid-cols-[32px_minmax(0,1fr)_96px]">
+            <span>{t("table.rank", "Rank")}</span>
+            <span>{t("table.trader", "Trader")}</span>
+            <span className="text-right max-[640px]:hidden">{t("table.settled", "Settled")}</span>
+            <span className="text-right">{metricLabel(board, t)}</span>
+          </div>
+          <ol
+            className="m-0 list-none divide-y divide-[var(--border-1)] p-0"
+            aria-label={t("table.rankingsAria", "{{board}} rankings", { board: boardName(board, t) })}
+          >
+            {entries.map((e) => (
+              <RankRow key={`${e.boardId}:${e.userId}`} board={board} entry={e} isViewer={e.userId === currentUserId} />
+            ))}
+          </ol>
+          {viewerEntry && !viewerListed && (
+            <div className="border-t-2 border-dashed border-[var(--border-1)]">
+              <RankRow board={board} entry={viewerEntry} isViewer />
+            </div>
+          )}
+        </>
       )}
     </>
+  );
+}
+
+function RankRow({
+  board,
+  entry,
+  isViewer,
+}: {
+  board: LeaderboardDefinition;
+  entry: LeaderboardEntry;
+  isViewer: boolean;
+}) {
+  const { t } = useTranslation("leaderboards");
+  const podium = entry.rank <= 3;
+  return (
+    <li
+      className={`grid grid-cols-[40px_minmax(0,1fr)_72px_104px] items-center gap-3 px-5 py-3 max-[640px]:grid-cols-[32px_minmax(0,1fr)_96px] ${
+        isViewer ? "bg-[var(--surface-2)]" : ""
+      }`}
+      aria-current={isViewer ? "true" : undefined}
+    >
+      <span
+        className={`text-[15px] tabular-nums ${
+          podium ? "font-bold text-[var(--t1)]" : "font-medium text-[var(--t3)]"
+        }`}
+      >
+        {entry.rank}
+      </span>
+      <span className="flex min-w-0 items-center gap-3">
+        <ProfileAvatar name={entry.displayName} size={32} />
+        <span className="truncate text-[14px] font-semibold text-[var(--t1)]">{entry.displayName}</span>
+        {isViewer && (
+          <span className="shrink-0 rounded-[var(--r-rh-sm)] bg-[var(--ink)] px-1.5 py-px text-[11px] font-semibold text-[var(--on-ink)]">
+            {t("table.you", "You")}
+          </span>
+        )}
+      </span>
+      <span className="text-right text-[14px] tabular-nums text-[var(--t2)] max-[640px]:hidden">
+        {typeof entry.settledCount === "number" ? entry.settledCount : "—"}
+      </span>
+      <span className="text-right text-[14px] font-semibold tabular-nums text-[var(--t1)]">
+        {formatMetric(board, entry.metricValue)}
+      </span>
+    </li>
+  );
+}
+
+function StandingPanel({
+  boards,
+  standing,
+  selectedId,
+  onSelect,
+}: {
+  boards: LeaderboardDefinition[];
+  standing: Map<string, LeaderboardEntry>;
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  const { t } = useTranslation("leaderboards");
+  const ranked = boards.filter((b) => standing.has(b.id));
+  return (
+    <aside className={`${CARD_CLASS} p-5`} aria-labelledby="lb-standing-title">
+      <h2 id="lb-standing-title" className="m-0 text-[16px] font-semibold text-[var(--t1)]">
+        {t("standing.title", "Your standing")}
+      </h2>
+      {ranked.length === 0 ? (
+        <p className="m-0 mt-2 text-[13px] leading-normal text-[var(--t3)]">
+          {t("standing.empty", "Settle markets to earn a place on the boards.")}
+        </p>
+      ) : (
+        <ul className="m-0 mt-3 flex list-none flex-col gap-1 p-0">
+          {ranked.map((board) => {
+            const entry = standing.get(board.id);
+            if (!entry) return null;
+            const active = board.id === selectedId;
+            return (
+              <li key={board.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(board.id)}
+                  className={`flex w-full cursor-pointer items-center justify-between gap-3 rounded-[var(--r-rh-md)] border-0 px-3 py-2.5 text-left transition-colors duration-150 ${
+                    active ? "bg-[var(--surface-2)]" : "bg-transparent hover:bg-[var(--surface-2)]"
+                  }`}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate text-[14px] font-semibold text-[var(--t1)]">{boardName(board, t)}</span>
+                    <span className="block text-[12px] tabular-nums text-[var(--t3)]">
+                      {formatMetric(board, entry.metricValue)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[18px] font-semibold tabular-nums text-[var(--t1)]">#{entry.rank}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </aside>
   );
 }
 
@@ -519,23 +471,15 @@ function PageState({
   cta?: { href: string; label: string };
 }) {
   return (
-    <div className={STATE_CLASS}>
-      <Card
-        as="div"
-        padding="none"
-        className="relative max-w-[440px] p-7 text-center"
-      >
-        <p className={STATE_MESSAGE_CLASS}>{message}</p>
+    <div className="flex min-h-[60vh] items-center justify-center px-6">
+      <div className={`${CARD_CLASS} max-w-[440px] p-7 text-center`}>
+        <p className="m-0 mb-3.5 leading-[1.6] text-[var(--t2)]">{message}</p>
         {cta && (
-          <Button
-            variant="primary"
-            size="lg"
-            render={<Link href={cta.href} />}
-          >
+          <Button variant="primary" size="lg" render={<Link href={cta.href} />}>
             {cta.label}
           </Button>
         )}
-      </Card>
+      </div>
     </div>
   );
 }
