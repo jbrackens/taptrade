@@ -72,8 +72,11 @@ const (
 	coverMissRetryAfter        = 30 * 24 * time.Hour
 	defaultEntityLookupsPerRun = 60
 	defaultTopicLookupsPerRun  = 2
-	defaultBackfillRowsPerRun  = 60
-	maxSubjectsPerMarket       = 4
+	// Rows the backfill works per sync. Re-resolving a row whose lookups are
+	// cached costs a download, not a lookup, so a queue of re-checks (063,
+	// 064: 700+ covers) clears in a few syncs rather than an afternoon.
+	defaultBackfillRowsPerRun = 200
+	maxSubjectsPerMarket      = 4
 )
 
 // CoverMeta is a resolved cover: where the file is served from, the credit
