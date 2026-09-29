@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -98,6 +99,51 @@ func (c *JSONRPCEVMClient) TokenBalance(ctx context.Context, token common.Addres
 		return nil, ErrTxVerificationMissing
 	}
 	return new(big.Int).SetBytes(out), nil
+}
+
+// TokenDecimals reads the token's ERC-20 decimals().
+func (c *JSONRPCEVMClient) TokenDecimals(ctx context.Context, token common.Address) (int, error) {
+	selector := crypto.Keccak256([]byte("decimals()"))[:4]
+	out, err := c.client.CallContract(ctx, ethereum.CallMsg{To: &token, Data: selector}, nil)
+	if err != nil {
+		return 0, err
+	}
+	if len(out) != 32 {
+		return 0, fmt.Errorf("decimals() returned %d bytes, want 32", len(out))
+	}
+	value := new(big.Int).SetBytes(out)
+	if !value.IsUint64() || value.Uint64() > 255 {
+		return 0, fmt.Errorf("decimals() returned %s, not a uint8", value)
+	}
+	return int(value.Uint64()), nil
+}
+
+// DecimalsReader is the slice of an EVM client that reads a token's
+// decimals(); JSONRPCEVMClient satisfies it.
+type DecimalsReader interface {
+	TokenDecimals(ctx context.Context, token common.Address) (int, error)
+}
+
+// VerifyTokenDecimals fails unless the token's on-chain decimals() equals
+// the configured ALPHA_CASHIER_TOKEN_DECIMALS. Every amount conversion is
+// scaled by that value, so a wrong one (USDT is 6 decimals on Ethereum but
+// 18 on BSC) would mis-size every deposit match and withdrawal by 10^delta.
+// Ported from feat/hula-na-cashier's startup guard.
+func VerifyTokenDecimals(ctx context.Context, reader DecimalsReader, cfg Config) error {
+	if reader == nil {
+		return ErrTxVerificationMissing
+	}
+	if !common.IsHexAddress(cfg.TokenAddress) {
+		return fmt.Errorf("token address %q is not a hex address", cfg.TokenAddress)
+	}
+	got, err := reader.TokenDecimals(ctx, common.HexToAddress(cfg.TokenAddress))
+	if err != nil {
+		return fmt.Errorf("read decimals() of %s: %w", cfg.TokenAddress, err)
+	}
+	if got != cfg.TokenDecimals {
+		return fmt.Errorf("token %s reports decimals()=%d but ALPHA_CASHIER_TOKEN_DECIMALS=%d", cfg.TokenAddress, got, cfg.TokenDecimals)
+	}
+	return nil
 }
 
 type TransferExpectation struct {

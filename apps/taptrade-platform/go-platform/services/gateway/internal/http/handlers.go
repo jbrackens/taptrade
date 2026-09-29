@@ -499,6 +499,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		if alphaCashierConfig.Enabled {
 			if evmClient, err := alphacashier.NewJSONRPCEVMClient(context.Background(), alphaCashierConfig.RPCURL); err != nil {
 				slog.Warn("alpha cashier: EVM RPC client unavailable; tx submission will fail closed", "error", err)
+			} else if err := verifyAlphaTokenDecimals(evmClient, alphaCashierConfig); err != nil {
+				// A wrong decimals setting scales every amount by 10^delta, so
+				// the rail stays without a chain client (submission, the
+				// scanner and the reorg watcher all fail closed) until an
+				// operator fixes the config and restarts.
+				slog.Error("alpha cashier: token decimals check failed; chain access disabled", "error", err)
 			} else {
 				alphaCashierService.SetEVMClient(evmClient)
 			}
@@ -921,4 +927,12 @@ func resolutionMessage(m *prediction.Market) (subject, body string) {
 	}
 	return fmt.Sprintf("Market resolved %s: %s", result, m.Ticker),
 		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions settle at 100 points per share.", m.Title, m.Ticker, result)
+}
+
+// verifyAlphaTokenDecimals checks ALPHA_CASHIER_TOKEN_DECIMALS against the
+// token contract before the alpha cashier gets chain access.
+func verifyAlphaTokenDecimals(reader alphacashier.DecimalsReader, cfg alphacashier.Config) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return alphacashier.VerifyTokenDecimals(ctx, reader, cfg)
 }
