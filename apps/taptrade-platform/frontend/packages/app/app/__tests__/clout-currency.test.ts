@@ -50,7 +50,8 @@ describe("Clout", () => {
       for (const file of readdirSync(resolve(localeRoot, locale)).filter((f) => f.endsWith(".json"))) {
         const json = JSON.parse(readFileSync(resolve(localeRoot, locale, file), "utf-8"));
         for (const s of strings(json)) {
-          if (/(?<![A-Za-z])(pts|PTS)(?![A-Za-z])/.test(s)) offenders.push(`${locale}/${file}: ${s}`);
+          // Singular too: "1 pt" slipped through the 2026-09-28 rename.
+          if (/(?<![A-Za-z])(pts?|PTS?)(?![A-Za-z])/.test(s)) offenders.push(`${locale}/${file}: ${s}`);
         }
       }
     }

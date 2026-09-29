@@ -7,12 +7,13 @@
 > production/staging configuration, edge hardening. **Not for:** every
 > environment variable → [ENVIRONMENT.md](ENVIRONMENT.md); CI workflows other
 > than the deploy → [ENVIRONMENT.md](ENVIRONMENT.md#5-ci--githubworkflows);
-> on-call procedures → [`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md)
-> and [`stack/RUNBOOKS.md`](../apps/taptrade-platform/RUNBOOKS.md).
+> on-call and routine procedures → [`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md).
 > **Last verified:** 2026-09-29 at commit `4924a670` — `.github/workflows/deploy-demo.yml`,
 > `stack/docker-compose.yml`, `stack/docker-compose.demo.yml`, `stack/Caddyfile`,
 > `gateway/cmd/gateway/main.go` (`validateGatewayRuntimeConfig`), and a live smoke
-> check of the demo after the deploy of `4924a670`.
+> check of the demo after the deploy of `4924a670`. Updated the same day for the
+> hardening change (CI gate, release retention and rollback, backups, two-factor
+> key); the backup and restore figures come from a drill run on the box that day.
 
 Consolidated on 2026-09-29 from `apps/taptrade-platform/DEPLOYMENT.md` (moved
 here) and `docs/DEMO_DEPLOYMENT.md` (archived).
@@ -39,7 +40,7 @@ GitHub Actions ──SSH──▶ Hetzner box (:80/:443 firewalled to Cloudflare
                           ├─ predict_office   :3001
                           ├─ postgres 16      (named volume — survives rsync --delete)
                           ├─ redis            (auth sessions + rate limiters; not a read cache)
-                          ├─ db-backup        6h pg_dump sidecar (opt-in)
+                          ├─ db-backup        6h pg_dump sidecar (started by the deploy)
                           └─ rocketchat (+mongo)  community chat, iframed under /chat
 ```
 
@@ -67,8 +68,18 @@ Triggers: a push to `main` touching `apps/taptrade-platform/**` or the workflow
 file, or a manual `workflow_dispatch`. Runs are serialized
 (`concurrency: deploy-demo`, no cancel-in-progress), 90-minute timeout.
 
+0. **Wait for CI** (`ci-gate` job) — `scripts/wait-for-ci.sh` polls the
+   GitHub runs for the pushed commit and fails unless every one of `test.yml`,
+   `guard-money-path.yml`, `guard-db-migrations.yml` and
+   `guard-openapi-drift.yml` that ran on it succeeded (the guards are
+   path-filtered, so only the ones triggered are required). The `deploy` job
+   `needs` it. A manual dispatch waits for CI on the dispatched commit the same way.
 1. **Guard branch** — `DEMO_DEPLOY_BRANCH_ALLOWLIST=main`; any other ref aborts.
-2. **Free disk space** on the box; fails if it is still over 90% full.
+   The release id is the first 12 characters of the commit.
+2. **Free disk space** on the box: prune release images beyond the newest
+   three (`stack/scripts/releases.sh prune`), then stopped containers, unused
+   networks and dangling images only (not `system prune -a`, which would delete
+   the retained releases); fails if the disk is still over 90% full.
 3. **Rsync** `apps/taptrade-platform/` to `/opt/phoenix/` (`rsync -az --delete`;
    Postgres data and market images live on named volumes, so `--delete` cannot
    touch them).
@@ -79,8 +90,14 @@ file, or a manual `workflow_dispatch`. Runs are serialized
    `EDGE_SHARED_SECRET` (hard-fails if unset), the social OAuth client pairs,
    chat URLs, and two values **generated fresh on every deploy**
    (`ROCKETCHAT_ADMIN_PASSWORD`, `STORE_WEBHOOK_SECRET`, via `openssl rand`).
-6. **Build auth on the runner**, load it on the box, recreate it, poll
-   `:18081/healthz` (abort on failure).
+   Then **append `AUTH_MFA_ENCRYPTION_KEY`** from `/var/lib/taptrade/mfa.key`,
+   which is generated once (32 random bytes, base64, mode 600) and never
+   rotated by the deploy: it decrypts every stored authenticator secret
+   ([Two-factor key](#two-factor-key)).
+6. **Build auth on the runner**, load it on the box (also tagged
+   `taptrade-auth:rel-<id>`), recreate it, poll `:18081/healthz` (abort on
+   failure). Every image the deploy loads gets the same `rel-<id>` tag
+   (front ends: `app-rel-<id>`, `office-rel-<id>`) for [rollback](#rollback).
 7. **Build gateway**, **apply migrations**, recreate gateway, poll
    `:18080/healthz` (abort on failure). Migrations run before the new binary
    starts, so the schema is always ahead of the code.
@@ -94,13 +111,13 @@ file, or a manual `workflow_dispatch`. Runs are serialized
     (basic_auth blocks an external probe).
 12. **Force-recreate Caddy** (a plain reload keeps the old Caddyfile inode after
     rsync).
-13. **Re-firewall the origin** — `stack/scripts/security/cf-firewall.sh`
+13. **Start the `db-backup` sidecar** (`up -d --no-deps db-backup`; a no-op
+    when it is already running).
+14. **Record the release** in `/var/lib/taptrade/releases.log`
+    (`releases.sh record <id>`), which rollback and pruning read.
+15. **Re-firewall the origin** — `stack/scripts/security/cf-firewall.sh`
     restricts `:80/:443` to Cloudflare ranges and syncs its systemd unit; the
     run fails if the firewall is not verifiably in force.
-
-**The deploy is not gated on CI.** A push to `main` starts `deploy-demo.yml`
-and the test and guard workflows at the same time; nothing makes the deploy
-wait for them ([TD-018](TECH_DEBT.md#d-delivery-and-operations)).
 
 There is no `migrate` compose service. The gateway image ships `/app/migrate`
 and `/app/migrations/`, and migrations run through it:
@@ -124,6 +141,7 @@ Names only. Values live in GitHub repository secrets and are never committed.
 |---|---|
 | `DEPLOY_SSH_KEY` | SSH key for the deploy user on the box |
 | `BACKOFFICE_BASIC_AUTH_HASH` | bcrypt hash for the office host's `basic_auth` |
+| `GITHUB_TOKEN` (built in) | Lets the `ci-gate` job read the commit's workflow runs (`actions: read`) |
 | `EDGE_SHARED_SECRET` | Token Caddy stamps as `X-Edge-Auth`; shared with the gateway |
 | `OPENROUTER_API_KEY` | Optional — AI market drafting (office) and market translation (gateway) |
 | `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET`, `DISCORD_…`, `FACEBOOK_…`, `TWITTER_…`, `REDDIT_…`, `TIKTOK_OAUTH_CLIENT_KEY` / `_SECRET` | Optional — each social provider stays off until its pair is set ([SOCIAL_LOGIN_SETUP.md](SOCIAL_LOGIN_SETUP.md)) |
@@ -141,10 +159,33 @@ Names only. Values live in GitHub repository secrets and are never committed.
 Verified 2026-09-29 against the deploy of `4924a670` (all rows except the
 office check, which was not run).
 
-**Open question — rollback.** No document or workflow describes rolling back a
-bad deploy. Images are built per run and not kept by tag, so today the only
-path is pushing a revert to `main`. Needs a decision on retaining images per
-deploy and a written procedure ([TD-019](TECH_DEBT.md#d-delivery-and-operations)).
+### Rollback
+
+`rollback-demo.yml` (manual, same concurrency group as the deploy, so it never
+overlaps one) restores an earlier release's **images**:
+
+1. Actions → *Roll back demo (Hetzner)* → *Run workflow*. Leave `release`
+   empty for the release before the current one, or give a 12-character commit
+   prefix from the release log. Keep `dry_run` on first: it prints the log and
+   the image swaps without changing anything.
+2. Run it again with `dry_run` off. It re-points the running tags
+   (`taptrade-auth:latest`, `taptrade-gateway:latest`,
+   `predict-frontend:app-slim`, `predict-frontend:office-slim`) at that
+   release's `rel-` images, recreates auth, gateway, player and office, waits
+   for both health checks, logs `rollback-from-<id>`, and smoke-checks the
+   player API.
+
+On the box the same thing is `bash stack/scripts/releases.sh list` /
+`rollback [id]` (`DRY_RUN=1` to preview), run from `/opt/phoenix`.
+
+Limits: only the newest three releases are kept; **migrations are not
+reverted** and the rsynced config (compose files, Caddyfile) stays at the
+current version. If the bad release applied a migration the older code can't
+run against, fix forward instead. Rollback does not survive the next push to
+`main`, which deploys again — revert the commit as well.
+
+Not yet exercised on the demo: the first deploy after this change records the
+first release, so a rollback needs two deploys of history.
 
 ## Required production/staging configuration
 
@@ -164,6 +205,8 @@ The gateway **fails closed at boot** (`gateway/cmd/gateway/main.go`,
 | `BETA_COMPLIANCE_MODE=permissive` | Refused in production; staging only with `COMPLIANCE_STARTUP_ACK=true` (which also waives the geo/KYC rows above) |
 | `STORE_WEBHOOK_SECRET` | Required (and not the dev placeholder) when `STORE_ENABLED=true` |
 | Auth session store | `auth` exits at boot unless `AUTH_SESSION_REDIS_URL`, `AUTH_REDIS_URL` or `AUTH_SESSION_STORE_FILE` is set |
+| `AUTH_MFA_ENCRYPTION_KEY` | Required: staff two-factor sign-in is on by default in production/staging and `auth` exits without the key. Turning it off takes `AUTH_ADMIN_MFA_REQUIRED=false` **and** `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true` |
+| `ENVIRONMENT` | Must be one of `local`, `dev`, `development`, `test`, `demo`, `staging`, `production` or unset; gateway and auth refuse anything else at boot (a typo such as `prod` used to run as development) |
 
 Refused outright in production/staging (each is a boot error):
 
@@ -198,23 +241,43 @@ Refused outright in production/staging (each is a boot error):
   the loopback bind, not the header check. (The archived demo note said the
   gateway denies direct requests; that holds only with require-mode on.)
 
-## Backup & restore
+## Backups and restore
 
 `stack/ops/backup/` has `backup-db.sh` (logical `pg_dump`, gzipped,
 retention-pruned) and `restore-db.sh` (refuses to restore over the live DB
 without `--force`). The demo's `db-backup` sidecar loops every
-`BACKUP_INTERVAL_SECONDS` (6h), but must be started once by hand
-(`docker compose … up -d db-backup`). Dumps stay on the same box unless
-`BACKUP_OFFSITE_CMD` is set. Details: [`stack/ops/backup/README.md`](../apps/taptrade-platform/ops/backup/README.md).
+`BACKUP_INTERVAL_SECONDS` (6h) and writes to the `phoenix_db_backups` volume.
+Until 2026-09-29 it had never been started on the demo, so there were no
+backups; every deploy now starts it. Details:
+[`stack/ops/backup/README.md`](../apps/taptrade-platform/ops/backup/README.md).
 
-**Unverified:** whether the sidecar is running on the demo today, and whether
-a restore has been exercised since the scratch-DB restore recorded there on
-2026-05-23.
+**Offsite: not configured.** When `BACKUP_OFFSITE_CMD` is set, the sidecar
+runs it with each new dump's path; it is empty on the demo, so a lost box
+loses the database ([TD-020](TECH_DEBT.md#d-delivery-and-operations), waiting
+on the destination decision [D-13](TASKS.md#needs-a-decision)).
+
+**Restore drill, 2026-09-29, on the demo box:** a one-off dump
+(`docker compose run --rm --no-deps db-backup sh /ops/backup-db.sh`) took 12 s
+and produced 75 MB; restoring it into a scratch database
+(`predict_restore_drill`) took 22 s. Row counts matched the live database on
+every table checked (80 tables; 6,408 markets, 896 events, 5 punters, 242,151
+orders, 864 trades, 127 positions, 594 settlements, 6,673 imports). The scratch
+database was dropped. The restore procedure is in the
+[runbook](../apps/taptrade-platform/ops/RUNBOOK.md).
+
+### Two-factor key
+
+`/var/lib/taptrade/mfa.key` is the `AUTH_MFA_ENCRYPTION_KEY` that encrypts
+authenticator secrets in `auth_mfa_totp`. It is deliberately **not** in the
+database dumps. Restoring a dump onto a box without the same key leaves every
+enrollment unreadable: staff sign-in then answers 503 until each account is
+cleared with `auth mfa-reset` ([runbook](../apps/taptrade-platform/ops/RUNBOOK.md))
+and enrolls again. Keep a copy of the key somewhere other than the dumps
+(part of [D-13](TASKS.md#needs-a-decision)).
 
 ## Gaps
 
-No staging tier, no infrastructure-as-code, no production pipeline, the deploy
-is not gated on CI, backups are local-only by default, no tested restore
-drill, and no rollback procedure. Tracked in [TECH_DEBT.md](TECH_DEBT.md) and
+No staging tier, no infrastructure-as-code, no production pipeline, and
+backups that stay on the box. Tracked in [TECH_DEBT.md](TECH_DEBT.md) and
 [TASKS.md](TASKS.md) (originally P3-08 in
 [`audit/IMPROVEMENT_PLAN.md`](audit/IMPROVEMENT_PLAN.md)).

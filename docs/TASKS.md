@@ -7,7 +7,8 @@
 > (linked by TD id, not repeated); decisions already made → [DECISIONS.md](DECISIONS.md).
 > **Last verified:** 2026-09-29 at commit `4924a670` — reconciled with
 > [TECH_DEBT.md](TECH_DEBT.md), the ADRs, the archived `CURRENT_STATE.md` and
-> AI-drafting plan, and `git log --since=2026-09-15`.
+> AI-drafting plan, and `git log --since=2026-09-15`. Updated the same day
+> when the hardening change closed T-003 – T-006, T-008 – T-010, T-021 and T-029.
 
 When a task is finished, move it to [Done recently](#done-recently) with its
 commit, and close the matching TECH_DEBT entry. When one becomes obsolete, delete
@@ -30,33 +31,26 @@ priority, then effort.
 | ID | Action | Links | Done when |
 |---|---|---|---|
 | T-002 | Wire the two-person rule into admin wallet credit/debit and manual settlement | [TD-001, TD-002](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Blocked on [D-1](#needs-a-decision); above the threshold, a second admin must approve before the action runs |
-| T-003 | Add TOTP MFA for back-office staff | [TD-005](TECH_DEBT.md#b-authentication-and-access-control) | Admin login requires a second factor; the account 2FA toggle reflects real state |
-| T-004 | Fail closed when the KYC store cannot start | [TD-006](TECH_DEBT.md#b-authentication-and-access-control) | `FailClosedKYCService` replaces the mock fallback |
-| T-005 | Gate the demo deploy on CI | [TD-018](TECH_DEBT.md#d-delivery-and-operations) | A red test or guard run stops the deploy |
-| T-006 | Keep deploy images by tag and write a rollback procedure | [TD-019](TECH_DEBT.md#d-delivery-and-operations) | A documented command restores the previous release in [DEPLOYMENT.md](DEPLOYMENT.md) |
-| T-007 | Configure offsite backups and run a restore drill | [TD-020](TECH_DEBT.md#d-delivery-and-operations) | `BACKUP_OFFSITE_CMD` set on the demo; restore time recorded in [DEPLOYMENT.md](DEPLOYMENT.md) |
-| T-008 | Rewrite the on-call runbook's SQL for the `*_points` schema, and merge the two runbooks | [TD-021, TD-022](TECH_DEBT.md#d-delivery-and-operations) | Every query in the runbook runs against a fresh migrated DB; one runbook remains |
-| T-009 | Refuse unknown `ENVIRONMENT` values at boot | [TD-007](TECH_DEBT.md#b-authentication-and-access-control) | `ENVIRONMENT=prod` fails boot instead of running in dev mode |
-| T-010 | Make `/api/v1/bot/keys` session-authenticated | [TD-008](TECH_DEBT.md#b-authentication-and-access-control) | A signed-in player can list and create keys (subject to `BOT_KEYS_SELF_SERVE`) |
+| T-007 | Send the demo's backups offsite, with a copy of the two-factor key kept apart from them | [TD-020](TECH_DEBT.md#d-delivery-and-operations) | Blocked on [D-13](#needs-a-decision). `BACKUP_OFFSITE_CMD` set on the demo and one dump restored from the offsite copy (the on-box drill passed on 2026-09-29) |
 | T-011 | Harden front-end session handling: office proxy fails closed; stop mirroring tokens to `localStorage` | [TD-010, TD-011](TECH_DEBT.md#b-authentication-and-access-control) | No token readable from JS; an auth-backend outage keeps the office locked |
 | T-012 | Cap `GrantBonus` and wire wagering contributions | [TD-003](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Grants respect campaign budget and an absolute cap; a real order moves wagering progress |
 | T-013 | Make loyalty tier edits take effect, or make the settings page read-only | [TD-004](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Office edits and runtime accrual agree |
 | T-014 | Build the KYC review queue | [TD-013](TECH_DEBT.md#c-compliance-and-licensability) | Operators see pending submissions and decide them in the office |
 | T-015 | Persist and enforce session-duration limits, or remove the endpoint and the copy | [TD-016](TECH_DEBT.md#c-compliance-and-licensability) | The responsible-gaming page describes only what is enforced |
+| T-030 | Make responsible-gaming limits fail closed when their store cannot start | [TD-059](TECH_DEBT.md#c-compliance-and-licensability) | A production/staging gateway with a broken RG store refuses trades instead of skipping limits |
+| T-031 | Two-factor follow-ups: recovery codes, a QR code, operator-issued staff enrollment, and refresh for office-created staff | [TD-056 – TD-058](TECH_DEBT.md#b-authentication-and-access-control) | A lost phone doesn't need an operator; a new admin can't be enrolled by whoever learns the temporary password; office sessions refresh |
 | T-016 | Move the trade compliance gate into middleware | [TD-033](TECH_DEBT.md#f-gateway-api-and-real-time) | New trade routes are covered without handler changes |
-| T-029 | Put Recovery, Metrics and AccessLog outermost in the gateway middleware chain, pin the order with a test, and add the tenant middleware to the auth-enabled chain | [TD-055](TECH_DEBT.md#f-gateway-api-and-real-time) | 401/403/429 responses appear in the access log and metrics; a test fails if the order changes |
 | T-017 | Server-render `/predict`, `/market/[ticker]`, `/category/[slug]` | [TD-040](TECH_DEBT.md#g-player-app) | Market content is in the initial HTML |
 | T-018 | Make `gate.sh` pass: resolve the three stubs and rebuild `FEATURE_MANIFEST.json` `pages[]` from the real routes | [TD-042](TECH_DEBT.md#g-player-app) | `./gate.sh` exits 0 |
 | T-019 | Run AI market drafting end-to-end with a real key; add the redirect/DNS-rebinding SSRF test; record `cost_micros` | [TD-046](TECH_DEBT.md#h-ai-market-drafting) | One live draft recorded; SSRF test in CI; cost column populated |
 | T-020 | Build self-service password reset; persist notification preferences | [TD-043](TECH_DEBT.md#g-player-app) | Reset email works end to end; preferences survive reload |
-| T-021 | Finish the "Clout" rename in all locales | [TD-044](TECH_DEBT.md#g-player-app) | No player-facing "Points" label remains except where Points is deliberate |
 | T-022 | Scope market-integrity surveillance and duplicate-account detection for a points market | [TD-014, TD-015](TECH_DEBT.md#c-compliance-and-licensability) | A written scope, then the first detector |
 | T-023 | Remove dead or misleading surface: the mock geo route and client, never-broadcast WS channels, fixed-payload report endpoints, the `/v1/provider-callbacks/` prefix, the unsaved profile update, the unused `withdrawal.status` event, the duplicated launch predicate, `cancel_both` | [TD-017](TECH_DEBT.md#c-compliance-and-licensability), [TD-034 – TD-037, TD-039](TECH_DEBT.md#f-gateway-api-and-real-time) | Each item removed or wired, with the OpenAPI spec updated |
 | T-024 | Config hygiene: `go vet` in CI, `gofmt`, drop `JWT_SECRET` and the inert keys, fix the compose header comment, repoint `TODOS.md` comments to this file | [TD-024 – TD-028](TECH_DEBT.md#d-delivery-and-operations), [TD-045, TD-053](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Grep for each key returns nothing; CI runs vet |
 | T-025 | Data-model cleanup migration and keyset pagination | [TD-031, TD-032](TECH_DEBT.md#e-ledger-data-model-and-tenancy) | Dead columns and tables dropped after a reader check; hot lists use keyset |
 | T-026 | Rewrite `stack/API_EXAMPLES.md`, `MIGRATION.md`, `UPGRADE.md` for Points wire fields | [TD-054](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Examples round-trip against a local gateway |
 | T-027 | RBAC-gate CMS and bonus admin routes; decide the fail-open posture of rate limiters and lockout; stand up metrics or drop the dashboards | [TD-009, TD-012](TECH_DEBT.md#b-authentication-and-access-control), [TD-023](TECH_DEBT.md#d-delivery-and-operations) | Each decided and implemented |
-| T-028 | Remove legacy residue: sportsbook-shaped seed JSON, the mock server and old Playwright config | [TD-051, TD-052](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Removed as one change after confirming nothing uses them |
+| T-028 | Remove legacy residue: sportsbook-shaped seed JSON, the mock server and old Playwright config, and the locale namespaces nothing renders | [TD-051, TD-052, TD-060](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Removed as one change after confirming nothing uses them |
 
 ## Needs a decision
 
@@ -75,12 +69,22 @@ Each names what would resolve it.
 | D-9 | Move AI-drafted markets to propose → challenge → finalize once contested markets appear | Owner/product (archived AI-drafting plan §19) |
 | D-10 | `/cashier`: build wallet connect and deposits, or leave a dormant information card | Owner/product/legal ([TD-048](TECH_DEBT.md#i-dormant-cashier-not-mounted-in-any-deployment), [ADR-0012](adr/0012-cashier-merged-dark-behind-flags.md)) |
 | D-11 | Jurisdiction allowlist and geo source of truth for any production launch | Legal/counsel ([compliance/geofencing-kyc.md](compliance/geofencing-kyc.md)) |
-| D-12 | Whether `main` has branch protection requiring the guard workflows | Owner — a GitHub setting, not visible in the repository ([ADR-0011](adr/0011-deployment-topology-single-branch-hetzner-compose.md)) |
+| D-12 | Whether branch protection on `main` should also bind admins | Owner. Checked 2026-09-29 (GitHub API): `main` is protected and requires `cashier-guards`, `frontend-tests`, `go-build-and-test`, `money-path` and `conventions`, but enforcement is `non_admins`, so the owner's direct pushes skip them. The deploy now waits for CI either way (`scripts/wait-for-ci.sh`); binding admins would mean merging through pull requests ([ADR-0011](adr/0011-deployment-topology-single-branch-hetzner-compose.md)) |
+| D-13 | Where the demo's backups go offsite (for example an S3-compatible bucket or a second box), and where a copy of the two-factor key is kept | Owner. The backup sidecar runs `BACKUP_OFFSITE_CMD` with each new dump's path; the key must not travel with the dumps ([TD-020](TECH_DEBT.md#d-delivery-and-operations)) |
 
 ## Done recently
 
 From `git log --since=2026-09-15` on `main`, grouped:
 
+- **Hardening (2026-09-29)** — staff two-factor sign-in, players optional
+  (T-003); KYC fails closed (T-004); the deploy waits for CI (T-005); release
+  images kept with a rollback workflow (T-006); the backup sidecar running and a
+  restore drill recorded, offsite still open (T-007, D-13); the runbook's SQL
+  rewritten and the two runbooks merged (T-008); unknown `ENVIRONMENT` refused
+  (T-009); bot keys session-authenticated (T-010); the last rendered "pt" renamed
+  (T-021); gateway middleware order fixed (T-029). Also: settlement override
+  reasons are stored (migration 066). See
+  [Recently resolved](TECH_DEBT.md#recently-resolved).
 - **Cashier merged dark and money code hardened (2026-09-29)** — `d91b21c2`,
   `e50a897d`, `960c94b9`, `d69d4e73`, `af3d0611` (merge record), `71350057`
   (Node cashier fixes), `185c982f` (`webhookauth`, `approval`, `internal/cashier`
@@ -90,7 +94,7 @@ From `git log --since=2026-09-15` on `main`, grouped:
   `99b74895`, `5cda9032`, `9bedeb0d`, then `eedffdf4` (closed-market covers, one
   icon family, one label per action). Signed-in verification remains: T-001.
 - **Play currency renamed "Clout" (2026-09-28)** — `fe4338fb`, `df83f1aa`
-  (incomplete in three locale files: T-021).
+  (finished by the hardening change).
 - **Leaderboards, rewards and navigation** — `98da1271`, `c76505b1`, `2c22c12d`.
 - **Covers and catalog** — the cover resolver, matchup tiles, event-card
   grouping, the 15-minute catalog sync and the market-image admin route

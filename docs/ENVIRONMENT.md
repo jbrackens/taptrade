@@ -2,7 +2,7 @@
 
 > **Scope:** Prerequisites, local setup, environment variables, build/lint/test commands, CI workflows, and demo deployment mechanics for the Tap Trade stack.
 > **Authoritative for:** local dev setup, the env-var reference, CI pipeline shape, "how does a push become a deploy". **Not for:** system topology → [ARCHITECTURE.md](ARCHITECTURE.md); the deploy pipeline and production configuration → [DEPLOYMENT.md](DEPLOYMENT.md); what each integration does → [INTEGRATIONS.md](INTEGRATIONS.md); on-call procedures → [`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md).
-> **Last verified:** 2026-09-29 at commit `4924a670` — go.mod/go.work (gateway, auth, platform-mod), frontend `package.json`/`.nvmrc`, `stack/docker-compose.yml` + `docker-compose.demo.yml`, env-var grep (`os.Getenv`/`getenv(`/`envBool(`/`envString(`/`envInt64(`/`process.env.`) across gateway, auth, platform-mod, player, office, and the dormant Node cashier services, all nine `.github/workflows/*.yml`, gateway `Makefile`, root `Makefile`, `player/gate.sh`, `scripts/*`, and `stack/DEVELOPMENT.md` / `stack/DEPLOYMENT.md` / `docs/DEMO_DEPLOYMENT.md` / `stack/README.md` / `frontend/README.md` / `player/README.md` / `office/README.md` / root `README.md` / `CLAUDE.md` for conflicts.
+> **Last verified:** 2026-09-29 at commit `4924a670` — go.mod/go.work (gateway, auth, platform-mod), frontend `package.json`/`.nvmrc`, `stack/docker-compose.yml` + `docker-compose.demo.yml`, env-var grep (`os.Getenv`/`getenv(`/`envBool(`/`envString(`/`envInt64(`/`process.env.`) across gateway, auth, platform-mod, player, office, and the dormant Node cashier services, all nine `.github/workflows/*.yml` (ten since the 2026-09-29 hardening change added `rollback-demo.yml`, documented below with the new auth variables and scripts), gateway `Makefile`, root `Makefile`, `player/gate.sh`, `scripts/*`, and `stack/DEVELOPMENT.md` / `stack/DEPLOYMENT.md` / `docs/DEMO_DEPLOYMENT.md` / `stack/README.md` / `frontend/README.md` / `player/README.md` / `office/README.md` / root `README.md` / `CLAUDE.md` for conflicts.
 
 ## 1. Prerequisites
 
@@ -90,7 +90,7 @@ Grepped from code (`os.Getenv`, `getenv(`, `envBool(`, `envString(`, `envInt64(`
 | `GATEWAY_ALLOW_ADMIN_ANON` | off | Dev-only RBAC bypass | **Boot error** if `true` | `false` |
 | `GATEWAY_AUTH_ENABLED` | on | `false` = dev-only auth kill switch | **Boot error** if `false` | `true` |
 | `WALLET_DB_MAX_OPEN_CONNS` / `WALLET_DB_MAX_IDLE_CONNS` / `WALLET_DB_CONN_MAX_IDLE_TIME` / `WALLET_DB_CONN_MAX_LIFETIME` | driver defaults | Wallet DB pool tuning (no `GATEWAY_DB_MAX_*` equivalent exists — grep-confirmed) | — | `20` / `4` |
-| `ENVIRONMENT` | unset | `production`/`staging` gates the boot-refusal rules below; anything else (incl. unset, as on the demo box) skips them | — | `production` |
+| `ENVIRONMENT` | unset | `production`/`staging` gates the boot-refusal rules below; `local`, `dev`, `development`, `test`, `demo` or unset (as on the demo box) skip them. Any other value is a **boot error** in gateway and auth (`platform-mod/runtime/environment.go`), so a typo such as `prod` can't run as development | — | `production` |
 | `LOG_LEVEL` | info-shaped | `debug` enables debug logging (`platform-mod/logging/logger.go`; only checks for the literal string `debug`) | — | `debug` |
 
 **Discrepancy ([TD-026](TECH_DEBT.md#d-delivery-and-operations)):** `GATEWAY_READ_REPO_MODE` is set in `stack/docker-compose.yml` (`GATEWAY_READ_REPO_MODE: "db"`) and referenced in `stack/README.md`'s prose ("store-mode gates … `GATEWAY_READ_REPO_MODE`") but **no Go code reads it** (confirmed by grep across gateway/auth/platform-mod) — it is inert, matching CLAUDE.md's own callout.
@@ -166,10 +166,25 @@ Full knob set (all read via `envString(getenv,…)` / `envBool(getenv,…)` / `e
 | `AUTH_FRONTEND_URL` | `http://localhost:3000` | Where OAuth callbacks return the user; code default targets port 3000, not the actual local dev port 3010 — must be overridden locally | — |
 | `AUTH_DEMO_USERNAME`/`_PASSWORD`, `AUTH_ADMIN_USERNAME`/`_PASSWORD`, `AUTH_DEMO_USER_ID` (default `u-1`), `AUTH_ADMIN_USER_ID` (default `user-admin`) | seeded defaults | Dev/demo bootstrap account overrides | — |
 | `TRUSTED_PROXY_CIDRS` | unset | Proxy trust for auth's own rate limiter | — |
-| `ENVIRONMENT` | unset | Same production/staging gate as gateway | — |
+| `ENVIRONMENT` | unset | Same allowlist and production/staging gate as gateway | Unknown values are a boot error |
+| `AUTH_ADMIN_MFA_REQUIRED` | on in production/staging, off elsewhere | Admin accounts must sign in with an authenticator code (`internal/http/mfa.go`); `true` on the demo | Turning it off needs `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true` too, or boot fails |
+| `AUTH_MFA_ENCRYPTION_KEY` | unset (two-factor sign-in unavailable) | Base64 of 32 bytes; AES-256-GCM key for the stored TOTP secrets. Changing it makes every enrollment unreadable. Demo: `/var/lib/taptrade/mfa.key`, appended to `.env` by the deploy | Required while `AUTH_ADMIN_MFA_REQUIRED` is on (boot fails without it) |
+| `AUTH_MFA_ISSUER` | `TapTrade` | Account label shown in authenticator apps | — |
 | `{PROVIDER}_OAUTH_CLIENT_ID` + `_CLIENT_SECRET` + `_REDIRECT_URI` for `GOOGLE`, `FACEBOOK`, `DISCORD`, `TWITTER`, `REDDIT`; TikTok uses `TIKTOK_OAUTH_CLIENT_KEY` instead of `_CLIENT_ID` | each provider OFF until its client id is set | Social login; redirect URI defaults to `http://localhost:18081/api/v1/auth/oauth/<provider>/callback` | Google/Discord auto-link on verified email; Facebook is isolated (no verified-email claim); Twitter/TikTok/Reddit are always isolated (no email) |
 
 Full OAuth reference with provider console links: `auth/.env.example`.
+
+`AUTH_TEST_DB_DSN` (tests only) runs the Postgres-backed two-factor store and
+`mfa-reset` tests in `auth/internal/http/mfa_test.go`; without it they skip.
+
+### db-backup sidecar (demo)
+
+Set in `docker-compose.demo.yml`, read by `stack/ops/backup/backup-db.sh`:
+`BACKUP_DIR` (`/backups`, the `db_backups` volume), `BACKUP_RETENTION_DAYS` (`7`),
+`BACKUP_INTERVAL_SECONDS` (`21600`, 6h) and `BACKUP_OFFSITE_CMD` (empty; when set,
+it is run with the new dump's path as `$1`, e.g. an `aws s3 cp` command — the
+destination is [D-13](TASKS.md#needs-a-decision)). Connection comes from the
+standard `PG*` variables.
 
 ### player app (`NEXT_PUBLIC_*` unless noted)
 
@@ -251,11 +266,11 @@ None of the office vars above are documented in CLAUDE.md, `office/README.md`, o
 
 ### Other scripts in `scripts/` (root) — one line each
 
-`agent-preflight.sh` / `check-conventions.sh` — see above. `check-cashier-all.sh` — orchestrates every cashier check below plus `go test ./cmd/gateway ./internal/payments ./internal/webhookauth`, the cashier-api Node tests, `packages/cashier-sdk` test+build, and `replay-cashier-mock-e2e.mjs`. `check-alpha-cashier-stage1.sh`, `check-cashier-guards.sh`, `check-cashier-frontend-types.sh` — shell guards over the gateway/app trees for the Alpha cashier and legacy cashier boundaries. `check-cashier-contracts.mjs`, `check-cashier-doc-links.mjs`, `check-cashier-launch-readiness.mjs`, `check-cashier-observability.mjs`, `check-cashier-openapi.mjs`, `check-cashier-provider-scenarios.mjs`, `check-cashier-schema.mjs`, `check-cashier-service-stubs.mjs`, `check-cashier-sql-artifacts.mjs` — Node assertion scripts validating the dormant `contracts/`, `services/cashier-api/`, `services/bridge-watcher/` trees stay internally consistent (schema ↔ rollback SQL, OpenAPI ↔ contract docs, provider fixture manifest, launch-readiness matrix). `check-no-external-symlinks.sh` — fails if the checkout has symlinks pointing outside the repo (clean-clone guard, runs in `test.yml`). `check-openapi-drift.sh` — G-04, `api/openapi.yaml` vs. gateway's registered routes. `check-trongrid-smoke.mjs` — live smoke check against TronGrid (`TRONGRID_API_KEY`), unrelated to the EVM-based Alpha cashier. `replay-cashier-mock-e2e.mjs` — replays a mock cashier flow end to end against fixtures. `seed-local-cashier-dev.sh` — seeds `services/cashier-api`'s local dev DB from `seeds/local_cashier_seed.sql`. `prediction_markets.py` — standalone Python fetcher pulling market metadata from Polymarket/Kalshi/other free APIs for demo-seed authoring; not wired into any Make target or CI job.
+`agent-preflight.sh` / `check-conventions.sh` — see above. `wait-for-ci.sh <sha> [owner/repo]` — waits for `test.yml` and whichever `guard-*` workflows ran on a commit and fails unless all succeeded; the deploy's `ci-gate` job runs it (needs `gh` and `jq`; `CI_WAIT_TIMEOUT_SECONDS`, `CI_WAIT_SETTLE_SECONDS`, `CI_WAIT_POLL_SECONDS` tune it). `check-cashier-all.sh` — orchestrates every cashier check below plus `go test ./cmd/gateway ./internal/payments ./internal/webhookauth`, the cashier-api Node tests, `packages/cashier-sdk` test+build, and `replay-cashier-mock-e2e.mjs`. `check-alpha-cashier-stage1.sh`, `check-cashier-guards.sh`, `check-cashier-frontend-types.sh` — shell guards over the gateway/app trees for the Alpha cashier and legacy cashier boundaries. `check-cashier-contracts.mjs`, `check-cashier-doc-links.mjs`, `check-cashier-launch-readiness.mjs`, `check-cashier-observability.mjs`, `check-cashier-openapi.mjs`, `check-cashier-provider-scenarios.mjs`, `check-cashier-schema.mjs`, `check-cashier-service-stubs.mjs`, `check-cashier-sql-artifacts.mjs` — Node assertion scripts validating the dormant `contracts/`, `services/cashier-api/`, `services/bridge-watcher/` trees stay internally consistent (schema ↔ rollback SQL, OpenAPI ↔ contract docs, provider fixture manifest, launch-readiness matrix). `check-no-external-symlinks.sh` — fails if the checkout has symlinks pointing outside the repo (clean-clone guard, runs in `test.yml`). `check-openapi-drift.sh` — G-04, `api/openapi.yaml` vs. gateway's registered routes. `check-trongrid-smoke.mjs` — live smoke check against TronGrid (`TRONGRID_API_KEY`), unrelated to the EVM-based Alpha cashier. `replay-cashier-mock-e2e.mjs` — replays a mock cashier flow end to end against fixtures. `seed-local-cashier-dev.sh` — seeds `services/cashier-api`'s local dev DB from `seeds/local_cashier_seed.sql`. `prediction_markets.py` — standalone Python fetcher pulling market metadata from Polymarket/Kalshi/other free APIs for demo-seed authoring; not wired into any Make target or CI job.
 
 ### `stack/scripts/` (i.e. `apps/taptrade-platform/scripts/`)
 
-Only `security/cf-firewall.sh` (+ its `cf-firewall.service` systemd unit) — restricts the demo box's `:80`/`:443` to Cloudflare IP ranges via iptables; re-run automatically on every `deploy-demo.yml` run.
+`security/cf-firewall.sh` (+ its `cf-firewall.service` systemd unit) — restricts the demo box's `:80`/`:443` to Cloudflare IP ranges via iptables; re-run automatically on every `deploy-demo.yml` run. `releases.sh {record|list|prune|rollback}` — runs on the box (piped over SSH by the workflows): records each deploy in `/var/lib/taptrade/releases.log`, prunes release images beyond `KEEP` (3), and rolls back to a kept release (`DRY_RUN=1` previews) — see [DEPLOYMENT.md](DEPLOYMENT.md#rollback).
 
 ## 5. CI — `.github/workflows/`
 
@@ -268,7 +283,8 @@ Only `security/cf-firewall.sh` (+ its `cf-firewall.service` systemd unit) — re
 | `guard-conventions.yml` (G-01) | `workflow_dispatch` + PR → `main` (PR trigger noted as a follow-up in-repo until proven green) | `scripts/check-conventions.sh` | none |
 | `frontend-build.yml` | PR touching `frontend/**` | Clean-clone install, typecheck, unit test, production build of the player app (catches cross-repo symlinks / machine-local deps) | none |
 | `e2e.yml` (P3-11) | PR → `main` (frontend/go-platform paths) + manual | Playwright journey suite against a freshly seeded stack (`next dev`, not a production build; desktop-only, sequential) | none |
-| `deploy-demo.yml` | push to `main` touching `apps/taptrade-platform/**` + manual | The full deploy pipeline (§6) | `DEPLOY_SSH_KEY`, `BACKOFFICE_BASIC_AUTH_HASH`, `EDGE_SHARED_SECRET`, `OPENROUTER_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`/`_SECRET`, `FACEBOOK_OAUTH_CLIENT_ID`/`_SECRET`, `DISCORD_OAUTH_CLIENT_ID`/`_SECRET`, `TWITTER_OAUTH_CLIENT_ID`/`_SECRET`, `TIKTOK_OAUTH_CLIENT_KEY`/`_SECRET`, `REDDIT_OAUTH_CLIENT_ID`/`_SECRET` |
+| `deploy-demo.yml` | push to `main` touching `apps/taptrade-platform/**` + manual | The full deploy pipeline (§6), after a `ci-gate` job that waits for the commit's tests and guards (`scripts/wait-for-ci.sh`, built-in `GITHUB_TOKEN` with `actions: read`) | `DEPLOY_SSH_KEY`, `BACKOFFICE_BASIC_AUTH_HASH`, `EDGE_SHARED_SECRET`, `OPENROUTER_API_KEY`, `GOOGLE_OAUTH_CLIENT_ID`/`_SECRET`, `FACEBOOK_OAUTH_CLIENT_ID`/`_SECRET`, `DISCORD_OAUTH_CLIENT_ID`/`_SECRET`, `TWITTER_OAUTH_CLIENT_ID`/`_SECRET`, `TIKTOK_OAUTH_CLIENT_KEY`/`_SECRET`, `REDDIT_OAUTH_CLIENT_ID`/`_SECRET` |
+| `rollback-demo.yml` | manual only (`release`, `dry_run` inputs; shares the deploy's concurrency group) | Restores a kept release's images on the box and recreates auth, gateway, player and office ([DEPLOYMENT.md](DEPLOYMENT.md#rollback)) | `DEPLOY_SSH_KEY` |
 | `migrate-demo.yml` | manual only (`workflow_dispatch`, goose command choice) | One-shot goose command against the box DB over SSH, in a throwaway golang container | `DEPLOY_SSH_KEY` |
 | `demo-ops.yml` | manual only | Read-only box maintenance: diagnose catalog sync, optionally restart gateway | `DEPLOY_SSH_KEY` |
 
@@ -280,8 +296,7 @@ A push to `main` that touches `apps/taptrade-platform/**` deploys the demo via
 `.github/workflows/deploy-demo.yml`. The pipeline, the secrets it uses, the
 smoke checks, the missing rollback procedure and the production/staging boot
 rules are in [DEPLOYMENT.md](DEPLOYMENT.md). On-call procedures:
-[`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md) (read its
-warning banner first) and [`stack/RUNBOOKS.md`](../apps/taptrade-platform/RUNBOOKS.md).
+[`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md) (incident scenarios, then routine procedures in Part 2).
 
 ## 7. Test credentials
 

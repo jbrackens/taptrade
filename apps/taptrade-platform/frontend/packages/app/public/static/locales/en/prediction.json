@@ -311,7 +311,7 @@
   "SOCIAL_FOLLOWERS_LABEL": "followers",
   "SOCIAL_FOLLOWING_LABEL": "following",
   "VOL_SHORT": "vol",
-  "PTS_COUNT_one": "{{count}} pt",
+  "PTS_COUNT_one": "{{count}} Clout",
   "PTS_COUNT_other": "{{count}} Clout",
   "CLOSES_IN_SHORT": "Closes in {{time}}",
   "CLOSES_IN_LABEL": "Closes in",

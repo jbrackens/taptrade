@@ -35,13 +35,13 @@ const (
 type AuthService struct {
 	mu sync.RWMutex
 
-	usersByUsername  map[string]user
-	oauthIdentities  map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
-	twoFactorEnabled map[string]bool
-	db               *sql.DB // nil = in-memory mode
-	store            SessionStore
-	audit            AuditLogger
-	metrics          authMetrics
+	usersByUsername map[string]user
+	oauthIdentities map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
+	db              *sql.DB           // nil = in-memory mode
+	store           SessionStore
+	audit           AuditLogger
+	metrics         authMetrics
+	mfa             mfaSettings // two-factor sign-in (mfa.go)
 
 	accessTTL  time.Duration
 	refreshTTL time.Duration
@@ -86,6 +86,7 @@ type user struct {
 	Password                   string // plaintext (dev mode only, deprecated)
 	PasswordHash               string // bcrypt hash (production mode)
 	Role                       string // "player" or "admin"
+	Directory                  string // "" or "auth_users"; "admin_users" for back-office staff
 	TermsAccepted              bool
 	TermsVersion               string
 	TermsAcceptedAt            string
@@ -98,6 +99,7 @@ type session struct {
 	UserID                     string    `json:"userId"`
 	Username                   string    `json:"username"`
 	Role                       string    `json:"role"`
+	Directory                  string    `json:"directory,omitempty"` // which table the account is in (mfa.go)
 	AccessTokenDigest          string    `json:"accessTokenDigest"`
 	RefreshTokenDigest         string    `json:"refreshTokenDigest"`
 	AccessUntil                time.Time `json:"accessUntil"`
@@ -127,10 +129,6 @@ type changePasswordRequest struct {
 	CurrentCamel    string `json:"currentPassword"`
 	NewPassword     string `json:"new_password"`
 	NewCamel        string `json:"newPassword"`
-}
-
-type toggleTwoFactorRequest struct {
-	Enabled *bool `json:"enabled"`
 }
 
 type tokenResponse struct {
@@ -210,6 +208,11 @@ func NewAuthService() *AuthService {
 			adminPassword = "admin123"
 		}
 	}
+	mfa, err := loadMFASettings(env, os.Getenv)
+	if err != nil {
+		log.Fatalf("FATAL: %v", err)
+	}
+
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
 	// Session store backend selection. Redis is preferred: it is durable across
 	// an auth-service restart AND shared across instances, so the service scales
@@ -285,16 +288,15 @@ func NewAuthService() *AuthService {
 	}
 
 	svc := &AuthService{
-		usersByUsername:  users,
-		oauthIdentities:  map[string]string{},
-		twoFactorEnabled: map[string]bool{},
-		store:            sessionStore,
-		audit:            &structuredAuditLogger{logger: log.Default()},
-		accessTTL:        durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
-		refreshTTL:       durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
-		loginLimiter:     loginLimiter,
-		registerLimiter:  registerLimiter,
-		lockout:          lockoutBackend,
+		usersByUsername: users,
+		oauthIdentities: map[string]string{},
+		store:           sessionStore,
+		audit:           &structuredAuditLogger{logger: log.Default()},
+		accessTTL:       durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
+		refreshTTL:      durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
+		loginLimiter:    loginLimiter,
+		registerLimiter: registerLimiter,
+		lockout:         lockoutBackend,
 	}
 
 	// Optionally initialize DB-backed user store
@@ -335,6 +337,18 @@ func NewAuthService() *AuthService {
 			log.Printf("warning: AUTH_STORE_MODE=%s but AUTH_DB_DSN is empty; using in-memory", storeMode)
 		}
 	}
+
+	// Two-factor enrollments live next to the users. Without a database,
+	// development keeps them in memory; production and staging get no store,
+	// so staff sign-in fails closed instead of forgetting enrollments on
+	// restart.
+	switch {
+	case svc.db != nil:
+		mfa.store = sqlMFAStore{db: svc.db}
+	case env != "production" && env != "staging":
+		mfa.store = newMemoryMFAStore()
+	}
+	svc.mfa = mfa
 
 	return svc
 }
@@ -395,7 +409,10 @@ CREATE TABLE IF NOT EXISTS auth_identities (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (provider, subject)
 )`)
-	return err
+	if err != nil {
+		return err
+	}
+	return ensureMFASchema(ctx, db)
 }
 
 func (a *AuthService) seedDBUsers(username, password, id, role string) {
@@ -470,34 +487,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.TooManyRequests("too many login attempts, try again later")
 		}
 
-		response, err := auth.Login(body.Username, body.Password)
+		outcome, err := auth.Login(body.Username, body.Password)
 		if err != nil {
 			return err
 		}
+		if outcome.Challenge != nil {
+			// Password accepted; the session waits for the code (mfa.go).
+			setMFAChallengeCookie(w, outcome.Challenge.MFAToken, int(mfaChallengeTTL.Seconds()))
+			return httpx.WriteJSON(w, stdhttp.StatusOK, outcome.Challenge)
+		}
 
 		// Set HttpOnly cookies for secure token transport
-		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name:     "access_token",
-			Value:    response.AccessToken,
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   secure,
-			SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge:   int(auth.accessTTL.Seconds()),
-		})
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name:     "refresh_token",
-			Value:    response.RefreshToken,
-			Path:     "/api/v1/auth/refresh",
-			HttpOnly: true,
-			Secure:   secure,
-			SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge:   int(auth.refreshTTL.Seconds()),
-		})
-		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
-
-		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
+		writeSessionCookies(w, auth, *outcome.Tokens)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, outcome.Tokens)
 	}))
 
 	mux.Handle("/api/v1/auth/register", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -832,38 +834,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"message": "password updated"})
 	}))
 
-	mux.Handle("/api/v1/auth/2fa/toggle", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
-		}
-
-		currentSession, err := auth.currentSessionFromRequest(r)
-		if err != nil {
-			return err
-		}
-
-		var body toggleTwoFactorRequest
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
-		}
-
-		enabled := !auth.IsTwoFactorEnabled(currentSession.UserID)
-		if body.Enabled != nil {
-			enabled = *body.Enabled
-		}
-		auth.SetTwoFactorEnabled(currentSession.UserID, enabled)
-
-		status := "disabled"
-		if enabled {
-			status = "enabled"
-		}
-
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"userId":  currentSession.UserID,
-			"enabled": enabled,
-			"status":  status,
-		})
-	}))
+	registerMFARoutes(mux, auth)
 
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
@@ -901,19 +872,21 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
-func (a *AuthService) Login(username string, password string) (tokenResponse, error) {
+// Login checks the password. Accounts without a second factor get a session;
+// the rest get a challenge for POST /api/v1/auth/login/mfa (mfa.go).
+func (a *AuthService) Login(username string, password string) (loginOutcome, error) {
 	a.PruneExpiredSessions()
 
 	// Rate limit: 10 login attempts per minute per username
 	if !a.loginLimiter.Allow("login:"+username, 10, time.Minute) {
 		a.audit.Event("auth.login.rate_limited", map[string]any{"username": username})
-		return tokenResponse{}, httpx.TooManyRequests("too many login attempts, try again later")
+		return loginOutcome{}, httpx.TooManyRequests("too many login attempts, try again later")
 	}
 
 	// Account lockout check
 	if a.lockout.IsLocked(username) {
 		a.audit.Event("auth.login.locked_out", map[string]any{"username": username})
-		return tokenResponse{}, httpx.TooManyRequests("account temporarily locked due to repeated failures")
+		return loginOutcome{}, httpx.TooManyRequests("account temporarily locked due to repeated failures")
 	}
 
 	account, exists := a.lookupUser(username)
@@ -940,26 +913,47 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 		a.lockout.RecordFailure(username)
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
-		return tokenResponse{}, httpx.Unauthorized("invalid username or password")
+		return loginOutcome{}, httpx.Unauthorized("invalid username or password")
+	}
+
+	challenge, err := a.challengeFor(account, username, true)
+	if err != nil {
+		a.recordAuthMetric("login_failure")
+		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "mfa_unavailable"})
+		return loginOutcome{}, err
+	}
+	if challenge != nil {
+		// The failure count is cleared only once the code is accepted, so
+		// asking for fresh challenges can't reset it between wrong codes.
+		return loginOutcome{Challenge: challenge}, nil
 	}
 
 	// Successful login clears lockout state
 	a.lockout.ClearFailures(username)
 
+	tokens, err := a.openSession(account, username)
+	if err != nil {
+		return loginOutcome{}, err
+	}
+	return loginOutcome{Tokens: &tokens}, nil
+}
+
+// openSession issues and stores a session for an authenticated account.
+func (a *AuthService) openSession(account user, loginName string) (tokenResponse, error) {
 	s, response, err := newSession(account, a.accessTTL, a.refreshTTL)
 	if err != nil {
 		a.recordAuthMetric("login_failure")
-		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "token_generation_failed"})
+		a.audit.Event("auth.login.failed", map[string]any{"username": loginName, "reason": "token_generation_failed"})
 		return tokenResponse{}, httpx.Internal("failed to initialize session", err)
 	}
 	if err := a.store.Put(s); err != nil {
 		a.recordAuthMetric("login_failure")
-		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "session_store_failed"})
+		a.audit.Event("auth.login.failed", map[string]any{"username": loginName, "reason": "session_store_failed"})
 		return tokenResponse{}, httpx.Internal("failed to persist session", err)
 	}
 
 	a.recordAuthMetric("login_success")
-	a.audit.Event("auth.login.success", map[string]any{"username": username, "userId": account.ID})
+	a.audit.Event("auth.login.success", map[string]any{"username": loginName, "userId": account.ID})
 
 	return response, nil
 }
@@ -1365,19 +1359,8 @@ WHERE lower(email) = lower($1) AND status = 'active'`, username).
 		return user{}, false
 	}
 	u.Role = "admin"
+	u.Directory = mfaDirectoryStaff
 	return u, true
-}
-
-func (a *AuthService) IsTwoFactorEnabled(userID string) bool {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	return a.twoFactorEnabled[userID]
-}
-
-func (a *AuthService) SetTwoFactorEnabled(userID string, enabled bool) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.twoFactorEnabled[userID] = enabled
 }
 
 func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tokenResponse, error) {
@@ -1400,6 +1383,7 @@ func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tok
 			UserID:                     account.ID,
 			Username:                   account.Username,
 			Role:                       role,
+			Directory:                  account.Directory,
 			AccessTokenDigest:          digestToken(accessToken),
 			RefreshTokenDigest:         digestToken(refreshToken),
 			AccessUntil:                now.Add(accessTTL),

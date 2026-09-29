@@ -65,7 +65,7 @@ repeating it.
 | [`../CLAUDE.md`](../CLAUDE.md), [`player/CLAUDE.md`](../apps/taptrade-platform/frontend/packages/app/CLAUDE.md) | Agent rules and procedures for the repo and the player package |
 | [`player/README.md`](../apps/taptrade-platform/frontend/packages/app/README.md), [`office/README.md`](../apps/taptrade-platform/frontend/packages/office/README.md), [`go-platform/README.md`](../apps/taptrade-platform/go-platform/README.md) | Package orientation (`go-platform/README.md` is scanned by `TestLaunchDocsStayPointsOnly` — keep the path) |
 | [`gateway/internal/ws/README.md`](../apps/taptrade-platform/go-platform/services/gateway/internal/ws/README.md) | WebSocket wire protocol |
-| [`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md), [`stack/RUNBOOKS.md`](../apps/taptrade-platform/RUNBOOKS.md) | On-call and operational procedures (merge pending: T-008) |
+| [`stack/ops/RUNBOOK.md`](../apps/taptrade-platform/ops/RUNBOOK.md) | The runbook: on-call incident scenarios, then routine procedures (Part 2) |
 | [`stack/ERRORS.md`](../apps/taptrade-platform/ERRORS.md), [`stack/API_EXAMPLES.md`](../apps/taptrade-platform/API_EXAMPLES.md), [`stack/UPGRADE.md`](../apps/taptrade-platform/UPGRADE.md), [`stack/MIGRATION.md`](../apps/taptrade-platform/MIGRATION.md), [`stack/DX.md`](../apps/taptrade-platform/DX.md) | Developer guides (the last four carry staleness banners until rewritten: T-026) |
 | [`stack/ops/backup/README.md`](../apps/taptrade-platform/ops/backup/README.md), [`stack/ops/grafana/README.md`](../apps/taptrade-platform/ops/grafana/README.md) | Backup scripts; dashboards and alert rules |
 | `services/*/README.md`, `packages/cashier-sdk/README.md` | The dormant Node cashier trees |

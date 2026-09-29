@@ -541,15 +541,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	var kycService compliance.KYCService
 	var rgService compliance.ResponsibleGamblingService
 	var pgKYC *compliance.PostgresKYCService
-	if complianceDB := walletService.DB(); complianceDB != nil {
-		if svc, err := compliance.NewPostgresKYCService(complianceDB, compliance.NewIDVProviderFromEnv()); err != nil {
-			slog.Warn("compliance: Postgres KYC init failed, falling back to mock", "error", err)
-			kycService = compliance.NewMockKYCService()
-		} else {
-			pgKYC = svc
-			kycService = svc
-			slog.Info("compliance: Postgres KYC service initialized", "idv_provider", svc.ProviderName())
-		}
+	complianceDB := walletService.DB()
+	kycService, pgKYC = selectKYCService(complianceDB, func(db *sql.DB) (*compliance.PostgresKYCService, error) {
+		return compliance.NewPostgresKYCService(db, compliance.NewIDVProviderFromEnv())
+	}, realDeploymentEnvironment())
+	if complianceDB != nil {
 		if svc, err := compliance.NewPostgresResponsibleGamblingService(complianceDB); err != nil {
 			slog.Warn("compliance: Postgres RG init failed, falling back to mock", "error", err)
 			rgService = compliance.NewMockResponsibleGamblingService()
@@ -558,7 +554,6 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			slog.Info("compliance: Postgres responsible-gambling service initialized")
 		}
 	} else {
-		kycService = compliance.NewMockKYCService()
 		rgService = compliance.NewMockResponsibleGamblingService()
 	}
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
@@ -925,4 +920,31 @@ func verifyAlphaTokenDecimals(reader alphacashier.DecimalsReader, cfg alphacashi
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	return alphacashier.VerifyTokenDecimals(ctx, reader, cfg)
+}
+
+// realDeploymentEnvironment reports whether ENVIRONMENT is production or
+// staging — the environments whose fallbacks must fail closed.
+func realDeploymentEnvironment() bool {
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	return env == "production" || env == "staging"
+}
+
+// selectKYCService picks the KYC implementation. With a database it is the
+// Postgres service; if that fails to start, the fail-closed service (every
+// user pending) — never the mock, which approves everyone (TD-006). With no
+// database, the mock is allowed only outside production/staging.
+func selectKYCService(db *sql.DB, newPostgres func(*sql.DB) (*compliance.PostgresKYCService, error), realEnv bool) (compliance.KYCService, *compliance.PostgresKYCService) {
+	if db == nil {
+		if realEnv {
+			return compliance.NewFailClosedKYCService(), nil
+		}
+		return compliance.NewMockKYCService(), nil
+	}
+	svc, err := newPostgres(db)
+	if err != nil {
+		slog.Error("compliance: Postgres KYC init failed; KYC is fail-closed (every user pending) until restart", "error", err)
+		return compliance.NewFailClosedKYCService(), nil
+	}
+	slog.Info("compliance: Postgres KYC service initialized", "idv_provider", svc.ProviderName())
+	return svc, svc
 }

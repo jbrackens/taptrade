@@ -298,7 +298,7 @@ func TestLoginRejectsInvalidCredentials(t *testing.T) {
 	}
 }
 
-func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
+func TestChangePasswordAndRetiredTwoFactorToggle(t *testing.T) {
 	t.Setenv("AUTH_DEMO_USERNAME", "demo@taptrade.local")
 	t.Setenv("AUTH_DEMO_PASSWORD", "Password123!")
 
@@ -359,19 +359,17 @@ func TestChangePasswordAndToggleTwoFactor(t *testing.T) {
 		t.Fatalf("decode refreshed login response: %v", err)
 	}
 
+	if refreshedTokens.AccessToken == "" {
+		t.Fatalf("expected a session after logging in with the new password")
+	}
+
+	// The in-memory 2FA toggle was cosmetic and is gone; two-factor sign-in
+	// is /api/v1/auth/mfa (mfa_test.go).
 	twoFaReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/2fa/toggle/", bytes.NewBufferString(`{"enabled":true}`))
 	twoFaReq.Header.Set("Authorization", "Bearer "+refreshedTokens.AccessToken)
 	twoFaRes := httptest.NewRecorder()
 	handler.ServeHTTP(twoFaRes, twoFaReq)
-	if twoFaRes.Code != http.StatusOK {
-		t.Fatalf("expected 2fa toggle status 200, got %d, body=%s", twoFaRes.Code, twoFaRes.Body.String())
-	}
-
-	var twoFaPayload map[string]any
-	if err := json.Unmarshal(twoFaRes.Body.Bytes(), &twoFaPayload); err != nil {
-		t.Fatalf("decode 2fa payload: %v", err)
-	}
-	if enabled, _ := twoFaPayload["enabled"].(bool); !enabled {
-		t.Fatalf("expected enabled=true in 2fa response, got %#v", twoFaPayload["enabled"])
+	if twoFaRes.Code != http.StatusNotFound {
+		t.Fatalf("expected the retired 2fa toggle to 404, got %d", twoFaRes.Code)
 	}
 }

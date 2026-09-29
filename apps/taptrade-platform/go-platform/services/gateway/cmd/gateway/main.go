@@ -95,48 +95,18 @@ func main() {
 	}
 	corsMW := httpx.CORS(strings.Split(corsOrigins, ","))
 
-	// Build middleware chain — execution order is right-to-left:
-	// Recovery -> Metrics -> AccessLog -> RateLimit -> CSRF -> Auth -> RequestID -> handler
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
-
-	// IP-keyed rate limiting on public read prefixes only. Runs before Auth
-	// on the way in so unauthenticated abuse traffic is dropped before any
-	// auth-service or DB work; 429s still hit AccessLog/Metrics (both sit
-	// outside it). Pass-through no-op when GATEWAY_RATELIMIT_ENABLED=false.
-	rateLimitMW := buildRateLimitMiddleware()
-
-	middlewares := []httpx.Middleware{
-		// Auth-disabled (dev/demo) chain has no httpx.Auth to strip client-set
-		// identity headers, so do it explicitly here (SECURITY-REVIEW #24).
-		stripClientIdentityHeaders,
-		tenant.Middleware, // innermost: resolves the active tenant after auth (ADR-0005 step 2)
-		httpx.RequestID(),
-		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
-		tracing.Middleware(),
-		httpx.SecurityHeaders(),
-		corsMW,
-		rateLimitMW,
-		httpx.AccessLog(log.Default()),
-		httpx.Metrics(metricsRegistry),
-		httpx.Recovery(log.Default()),
-		httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
-	}
-
+	middlewares := gatewayMiddlewares(gatewayMiddlewareDeps{
+		authEnabled:      authEnabled,
+		authServiceURL:   authServiceURL,
+		publicPrefixes:   publicPrefixes,
+		csrfSkipPrefixes: csrfSkipPrefixes,
+		cors:             corsMW,
+		rateLimit:        buildRateLimitMiddleware(),
+		metrics:          metricsRegistry,
+		logger:           log.Default(),
+	})
 	if authEnabled {
-		middlewares = []httpx.Middleware{
-			httpx.RequestID(),
-			httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
-			tracing.Middleware(),
-			httpx.SecurityHeaders(),
-			corsMW,
-			httpx.Auth(authServiceURL, publicPrefixes),
-			httpx.CSRF(csrfSkipPrefixes),
-			rateLimitMW,
-			httpx.AccessLog(log.Default()),
-			httpx.Metrics(metricsRegistry),
-			httpx.Recovery(log.Default()),
-			httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
-		}
 		slog.Info("auth middleware enabled", "auth_service", authServiceURL)
 	} else {
 		slog.Warn("auth middleware DISABLED — all routes are unprotected", "reason", "GATEWAY_AUTH_ENABLED=false")
@@ -308,8 +278,12 @@ func gatewayPublicPrefixes() []string {
 		// and still requires a session.
 		"/api/v1/leaderboards",
 
-		// Bot API uses its own API-key auth middleware, not the session auth
-		"/api/v1/bot/",
+		// Bot API routes authenticate with an API key (BotAuthMiddleware),
+		// not the session. Listed one by one: /api/v1/bot/keys is managed by
+		// a signed-in player and must go through session auth (TD-008).
+		"/api/v1/bot/orders",
+		"/api/v1/bot/positions",
+		"/api/v1/bot/markets",
 	}
 	if legacyMoneyRoutesEnabledFromOS() {
 		prefixes = append(prefixes,
@@ -336,6 +310,12 @@ func gatewayCSRFSkipPrefixes() []string {
 		"/readyz",
 		"/metrics",
 		"/api/v1/status",
+		// API-key bot routes: a bearer key is not an ambient credential, so
+		// a cross-site page cannot forge these requests and CSRF does not
+		// apply. /api/v1/bot/keys (session-authenticated) keeps CSRF.
+		"/api/v1/bot/orders",
+		"/api/v1/bot/positions",
+		"/api/v1/bot/markets",
 	}
 	if legacyMoneyRoutesEnabledFromOS() {
 		prefixes = append(prefixes,
@@ -350,6 +330,12 @@ func gatewayCSRFSkipPrefixes() []string {
 }
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
+	// Refuse an unrecognised ENVIRONMENT first: the checks below, and many
+	// request-time gates, treat every value but production/staging as
+	// development, so "prod" would otherwise boot with protections off.
+	if err := runtime.ValidateEnvironment(getenv("ENVIRONMENT")); err != nil {
+		return err
+	}
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
 	realEnv := env == "production" || env == "staging"
 	if legacyMoneyRoutesEnabled(getenv) && realEnv {
@@ -513,3 +499,58 @@ func hasCountryEntries(raw string) bool {
 // CORS configuration moved to platform/transport/httpx as httpx.CORS — see
 // that package for the implementation and security notes (it ships with a
 // strict allowlist contract that route handlers must not bypass).
+
+type gatewayMiddlewareDeps struct {
+	authEnabled      bool
+	authServiceURL   string
+	publicPrefixes   []string
+	csrfSkipPrefixes []string
+	cors             httpx.Middleware
+	rateLimit        httpx.Middleware
+	metrics          *httpx.MetricsRegistry
+	logger           *log.Logger
+}
+
+// gatewayMiddlewares returns the gateway's middleware in request order:
+// httpx.Chain makes the FIRST entry the outermost, so a request passes
+// through them top to bottom (TD-055).
+//
+//   - RequestID and trailing-slash normalization come first, so everything
+//     after sees the request id and the canonical path (metrics label by it).
+//   - AccessLog and Metrics sit outside every middleware that can reject a
+//     request, so 401s, 403s and 429s are logged and counted too.
+//   - Recovery sits inside them, so a panic becomes a 500 that is logged and
+//     counted; it covers every middleware below it and the handler.
+//   - Security headers and CORS wrap the rejecting middleware, so 401/403/429
+//     responses carry them.
+//   - The rate limiter runs before Auth, so abusive traffic on public reads
+//     is dropped before any auth-service call.
+//   - The tenant resolver is innermost, after Auth (ADR-0005).
+func gatewayMiddlewares(d gatewayMiddlewareDeps) []httpx.Middleware {
+	head := []httpx.Middleware{
+		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
+		httpx.AccessLog(d.logger),
+		httpx.Metrics(d.metrics),
+		httpx.Recovery(d.logger),
+		httpx.MaxBodySize(1 << 20), // 1 MB
+		tracing.Middleware(),
+		httpx.SecurityHeaders(),
+		d.cors,
+		d.rateLimit,
+	}
+	if d.authEnabled {
+		return append(head,
+			httpx.Auth(d.authServiceURL, d.publicPrefixes),
+			httpx.CSRF(d.csrfSkipPrefixes),
+			tenant.Middleware,
+		)
+	}
+	// Auth disabled (dev only; refused at boot in production/staging): there
+	// is no httpx.Auth to strip client-set identity headers, so strip them
+	// explicitly (SECURITY-REVIEW #24).
+	return append(head,
+		stripClientIdentityHeaders,
+		tenant.Middleware,
+	)
+}

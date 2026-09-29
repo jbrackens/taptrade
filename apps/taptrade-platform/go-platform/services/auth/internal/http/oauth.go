@@ -374,6 +374,20 @@ func (p *socialProvider) handleCallback(auth *AuthService, frontendURL string) f
 			return httpx.Internal("failed to resolve OAuth account", err)
 		}
 
+		// An account with two-factor sign-in still needs its code: hand the
+		// challenge to the login page's code step. Enrolling needs the page
+		// that shows the new secret, so that stays with password sign-in.
+		challenge, err := auth.challengeFor(account, account.Username, false)
+		if err != nil {
+			return err
+		}
+		if challenge != nil {
+			setMFAChallengeCookie(w, challenge.MFAToken, int(mfaChallengeTTL.Seconds()))
+			auth.audit.Event("auth.oauth."+p.name+".mfa_challenge", map[string]any{"userId": account.ID, "provider": p.name})
+			stdhttp.Redirect(w, r, frontendURL+"/auth/login?mfa=1", stdhttp.StatusTemporaryRedirect)
+			return nil
+		}
+
 		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
 		if err != nil {
 			return httpx.Internal("failed to create session", err)

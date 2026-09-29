@@ -7,11 +7,20 @@ import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button, Input } from "../../components/ui";
 import {
+  activateMfa,
   changePassword,
+  disableMfa,
+  getMfaStatus,
   getSessions,
   revokeSession,
+  startMfaEnrollment,
 } from "../../lib/api/auth-client";
-import type { Session } from "../../lib/api/auth-client";
+import type {
+  MfaEnrollment,
+  MfaStatus,
+  Session,
+} from "../../lib/api/auth-client";
+import AuthenticatorKey from "../../components/auth/AuthenticatorKey";
 import { logger } from "../../lib/logger";
 import { SettingsShell } from "../../components/account/SettingsShell";
 
@@ -21,6 +30,20 @@ const cardClass =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-6 shadow-[var(--shadow-card)]";
 const descClass = "mb-6 text-[13px] text-[var(--t2)]";
 const labelClass = "text-[13px] font-semibold text-[var(--t2)]";
+const errorClass =
+  "rounded-[var(--r-rh-md)] border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-3 py-2.5 text-[13px] font-medium text-[var(--danger)]";
+
+function errorText(err: unknown, fallback: string): string {
+  const message = err instanceof Error ? err.message : "";
+  const lower = message.toLowerCase();
+  if (lower.includes("incorrect code")) {
+    return "That code didn't work. Enter the current code from your authenticator app.";
+  }
+  if (lower.includes("already used")) {
+    return "That code was already used. Wait for the next one, then enter it.";
+  }
+  return message || fallback;
+}
 
 // Segmented pills, ink selected state (DESIGN.md §6 selection rule).
 const TAB_TRACK_CLASS =
@@ -35,7 +58,7 @@ function tabClass(active: boolean) {
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "password", label: "Password" },
-  { id: "twofa", label: "Two-factor auth" },
+  { id: "twofa", label: "Two-factor sign-in" },
   { id: "sessions", label: "Active sessions" },
 ];
 
@@ -52,9 +75,15 @@ export default function SecurityPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  // 2FA state
-  const [twoFaEnabled, setTwoFaEnabled] = useState(false);
-  const [twoFaLoading, setTwoFaLoading] = useState(false);
+  // Two-factor sign-in: the server's status, a setup in progress, and the
+  // code field shared by "turn on" and "turn off".
+  const [mfaStatus, setMfaStatus] = useState<MfaStatus | null>(null);
+  const [mfaLoadFailed, setMfaLoadFailed] = useState(false);
+  const [enrollment, setEnrollment] = useState<MfaEnrollment | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaBusy, setMfaBusy] = useState(false);
+  const [mfaError, setMfaError] = useState("");
+  const [disabling, setDisabling] = useState(false);
 
   // Sessions list
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -81,6 +110,77 @@ export default function SecurityPage() {
     };
     loadSessions();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+    getMfaStatus()
+      .then((status) => {
+        if (active) setMfaStatus(status);
+      })
+      .catch((err: unknown) => {
+        logger.error(
+          "Security",
+          "Failed to load two-factor status",
+          err instanceof Error ? err.message : String(err),
+        );
+        if (active) setMfaLoadFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  const resetMfaForm = () => {
+    setEnrollment(null);
+    setDisabling(false);
+    setMfaCode("");
+    setMfaError("");
+  };
+
+  const handleStartSetup = async () => {
+    setMfaBusy(true);
+    setMfaError("");
+    try {
+      setEnrollment(await startMfaEnrollment());
+      setMfaCode("");
+    } catch (err: unknown) {
+      setMfaError(errorText(err, "Couldn't start setup. Try again."));
+    } finally {
+      setMfaBusy(false);
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = mfaCode.replace(/\s/g, "");
+    if (!code) return;
+    setMfaBusy(true);
+    setMfaError("");
+    try {
+      if (disabling) {
+        await disableMfa(code);
+        setMfaStatus((s) => (s ? { ...s, enabled: false, pending: false } : s));
+        toast.success(
+          "Two-factor sign-in is off",
+          "You'll sign in with your password only",
+        );
+      } else {
+        await activateMfa(code);
+        setMfaStatus((s) => (s ? { ...s, enabled: true, pending: false } : s));
+        toast.success(
+          "Two-factor sign-in is on",
+          "You'll enter a code from your authenticator app when you sign in",
+        );
+      }
+      resetMfaForm();
+    } catch (err: unknown) {
+      setMfaCode("");
+      setMfaError(errorText(err, "Something went wrong. Try again."));
+    } finally {
+      setMfaBusy(false);
+    }
+  };
 
   const handleRevokeSession = async (sessionId: string) => {
     setRevokingId(sessionId);
@@ -136,30 +236,6 @@ export default function SecurityPage() {
       toast.error("Password change failed", msg);
     } finally {
       setPasswordLoading(false);
-    }
-  };
-
-  const handleToggle2FA = async () => {
-    setTwoFaLoading(true);
-    try {
-      const response = await fetch("/api/v1/auth/2fa/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ enabled: !twoFaEnabled }),
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data?.error?.message || "Failed to update 2FA setting");
-      }
-      setTwoFaEnabled(!twoFaEnabled);
-      toast.success(`2FA ${!twoFaEnabled ? "enabled" : "disabled"}`);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update 2FA";
-      toast.error(message);
-    } finally {
-      setTwoFaLoading(false);
     }
   };
 
@@ -232,10 +308,7 @@ export default function SecurityPage() {
             </div>
 
             {passwordError && (
-              <div
-                className="rounded-[var(--r-rh-md)] border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] px-3 py-2.5 text-[13px] font-medium text-[var(--danger)]"
-                role="alert"
-              >
+              <div className={errorClass} role="alert">
                 {passwordError}
               </div>
             )}
@@ -251,46 +324,162 @@ export default function SecurityPage() {
       {tab === "twofa" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
-            Two-factor authentication
+            Two-factor sign-in
           </h2>
           <p className={descClass}>
-            Add an extra layer of security to your account
+            Sign in with your password and a code from an authenticator app,
+            such as 1Password, Google Authenticator or Authy.
           </p>
 
-          <div className="flex items-center justify-between gap-4 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start">
-            <div className="flex flex-1 items-start gap-3">
-              <Lock
-                size={20}
-                className="mt-0.5 shrink-0 text-[var(--t2)]"
-                aria-hidden="true"
-              />
-              <div>
-                <div className="mb-1 text-[15px] font-bold text-[var(--t1)]">
-                  {twoFaEnabled ? "2FA enabled" : "2FA disabled"}
-                </div>
-                <div className="text-[13px] text-[var(--t3)]">
-                  {twoFaEnabled
-                    ? "Your account is protected with two-factor authentication"
-                    : "Enable 2FA to add extra security via authenticator app"}
-                </div>
-              </div>
+          {!mfaStatus && !mfaLoadFailed && (
+            <div className="p-6 text-center text-sm text-[var(--t3)]">
+              Loading…
             </div>
+          )}
+          {mfaLoadFailed && (
+            <div className={errorClass} role="alert">
+              Couldn't load your two-factor settings. Reload the page to try
+              again.
+            </div>
+          )}
+          {mfaStatus && !mfaStatus.available && !mfaStatus.enabled && (
+            <div className="rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 text-[13px] text-[var(--t2)]">
+              Two-factor sign-in isn't available right now.
+            </div>
+          )}
 
-            <Button
-              type="button"
-              variant={twoFaEnabled ? "secondary" : "primary"}
-              size="none"
-              className="min-h-11 px-4 text-[13px]"
-              onClick={handleToggle2FA}
-              disabled={twoFaLoading}
-            >
-              {twoFaLoading
-                ? "Updating…"
-                : twoFaEnabled
-                  ? "Disable 2FA"
-                  : "Enable 2FA"}
-            </Button>
-          </div>
+          {mfaStatus && (mfaStatus.available || mfaStatus.enabled) && (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-4 rounded-[var(--r-rh-md)] border border-[var(--border-1)] bg-[var(--surface-2)] p-4 max-[640px]:flex-col max-[640px]:items-start">
+                <div className="flex flex-1 items-start gap-3">
+                  <Lock
+                    size={20}
+                    className="mt-0.5 shrink-0 text-[var(--t2)]"
+                    aria-hidden="true"
+                  />
+                  <div>
+                    <div className="mb-1 text-[15px] font-bold text-[var(--t1)]">
+                      {mfaStatus.enabled ? "On" : "Off"}
+                    </div>
+                    <div className="text-[13px] text-[var(--t3)]">
+                      {mfaStatus.enabled
+                        ? mfaStatus.required
+                          ? "Required for staff accounts. If you lose your authenticator, ask an operator to reset it."
+                          : "You enter a code from your authenticator app when you sign in."
+                        : "Anyone with your password can sign in."}
+                    </div>
+                  </div>
+                </div>
+
+                {!enrollment && !disabling && !mfaStatus.enabled && (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="none"
+                    className="min-h-11 px-4 text-[13px]"
+                    onClick={handleStartSetup}
+                    disabled={mfaBusy}
+                  >
+                    {mfaBusy ? "Starting…" : "Set up"}
+                  </Button>
+                )}
+                {!enrollment &&
+                  !disabling &&
+                  mfaStatus.enabled &&
+                  !mfaStatus.required && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="none"
+                      className="min-h-11 px-4 text-[13px]"
+                      onClick={() => {
+                        setDisabling(true);
+                        setMfaError("");
+                      }}
+                    >
+                      Turn off
+                    </Button>
+                  )}
+              </div>
+
+              {(enrollment || disabling) && (
+                <form
+                  onSubmit={handleMfaSubmit}
+                  className="flex flex-col gap-4"
+                  noValidate
+                >
+                  {enrollment && (
+                    <>
+                      <p className="m-0 text-[13px] text-[var(--t2)]">
+                        Add this key to your authenticator app, then enter the
+                        6-digit code it shows.
+                      </p>
+                      <AuthenticatorKey enrollment={enrollment} />
+                    </>
+                  )}
+                  {disabling && (
+                    <p className="m-0 text-[13px] text-[var(--t2)]">
+                      Enter the current code from your authenticator app to
+                      turn two-factor sign-in off.
+                    </p>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="mfa-code" className={labelClass}>
+                      6-digit code
+                    </label>
+                    <Input
+                      id="mfa-code"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={7}
+                      value={mfaCode}
+                      onChange={(e) => setMfaCode(e.target.value)}
+                      className="tabular-nums font-mono"
+                      placeholder="123456"
+                    />
+                  </div>
+
+                  {mfaError && (
+                    <div className={errorClass} role="alert">
+                      {mfaError}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="submit"
+                      variant={disabling ? "danger" : "primary"}
+                      disabled={
+                        mfaBusy || mfaCode.replace(/\s/g, "").length < 6
+                      }
+                    >
+                      {mfaBusy
+                        ? "Checking…"
+                        : disabling
+                          ? "Turn off"
+                          : "Turn on"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={resetMfaForm}
+                      disabled={mfaBusy}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {!enrollment && !disabling && mfaError && (
+                <div className={errorClass} role="alert">
+                  {mfaError}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

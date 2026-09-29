@@ -11,7 +11,13 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { apiClient } from "../lib/api/client";
-import { login as authLogin, getSession } from "../lib/api/auth-client";
+import {
+  login as authLogin,
+  getSession,
+  isMfaChallenge,
+  MfaRequiredError,
+  verifyLoginMfa,
+} from "../lib/api/auth-client";
 import { getCoolOffStatus } from "../lib/api/compliance-client";
 import { claimStarterGrant } from "../lib/api/wallet-client";
 import { IdleActivityMonitor } from "./IdleActivityMonitor";
@@ -39,11 +45,14 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** Throws MfaRequiredError when the account needs an authenticator code. */
   login: (
     username: string,
     password: string,
     opts?: { welcomeToast?: boolean },
   ) => Promise<User>;
+  /** The code step after MfaRequiredError, or after social sign-in (?mfa=1). */
+  verifyMfa: (code: string, mfaToken?: string) => Promise<User>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   error: Error | null;
@@ -243,18 +252,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const login = useCallback(
-    async (
-      username: string,
-      password: string,
-      opts?: { welcomeToast?: boolean },
-    ) => {
-      setIsLoading(true);
-      setError(null);
+  // completeLogin runs once the auth service has set the session cookies:
+  // it validates the session, applies the cool-off block, and stores the user.
+  const completeLogin = useCallback(
+    async (opts?: { welcomeToast?: boolean }) => {
       try {
-        // Login sets HttpOnly cookies server-side, no client token handling needed
-        await authLogin({ username, password });
-
         // Validate session via cookie-authenticated endpoint
         const session = await getSession();
         if (!session.authenticated) {
@@ -310,11 +312,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const loginError = err instanceof Error ? err : new Error(String(err));
         setError(loginError);
         throw loginError;
+      }
+    },
+    [toast],
+  );
+
+  const login = useCallback(
+    async (
+      username: string,
+      password: string,
+      opts?: { welcomeToast?: boolean },
+    ) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Login sets HttpOnly cookies server-side, no client token handling
+        // needed. An account with two-factor sign-in gets a challenge
+        // instead, and no session until verifyMfa succeeds.
+        let result: Awaited<ReturnType<typeof authLogin>>;
+        try {
+          result = await authLogin({ username, password });
+        } catch (err) {
+          // Issue #5 fix: clear cookies on any login failure to prevent half-auth
+          await fetch("/api/v1/auth/logout/", {
+            method: "POST",
+            credentials: "include",
+            headers: getCSRFHeaders(),
+          }).catch(() => {});
+          clearStoredUser();
+          setUser(null);
+          const loginError =
+            err instanceof Error ? err : new Error(String(err));
+          setError(loginError);
+          throw loginError;
+        }
+        if (isMfaChallenge(result)) {
+          throw new MfaRequiredError(result);
+        }
+        return await completeLogin(opts);
       } finally {
         setIsLoading(false);
       }
     },
-    [toast],
+    [completeLogin],
+  );
+
+  const verifyMfa = useCallback(
+    async (code: string, mfaToken?: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // A wrong code leaves no session behind, so there is nothing to
+        // clear; the page shows the error and asks again.
+        await verifyLoginMfa(code, mfaToken);
+        return await completeLogin();
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [completeLogin],
   );
 
   const logout = useCallback(async () => {
@@ -367,6 +423,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated,
       isLoading,
       login,
+      verifyMfa,
       logout,
       refreshToken: refreshTokenFn,
       error,
@@ -377,6 +434,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated,
       isLoading,
       login,
+      verifyMfa,
       logout,
       refreshTokenFn,
       error,

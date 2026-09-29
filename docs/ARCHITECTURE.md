@@ -9,7 +9,8 @@
 > endpoint contracts → [SPEC_CURRENT.md](SPEC_CURRENT.md); point-store/payments
 > detail → [../STORE_AND_PAYMENTS.md](../STORE_AND_PAYMENTS.md); UI/visual
 > design → [../DESIGN.md](../DESIGN.md).
-> **Last verified:** 2026-09-29 at commit `4924a670` — read against
+> **Last verified:** 2026-09-29 at commit `4924a670`; the middleware order and
+> two-factor sign-in were updated the same day with the hardening change. Read against
 > `gateway/cmd/gateway/main.go`, `gateway/internal/http/handlers.go`,
 > `gateway/internal/prediction/{wallet_adapter,exchange,settlement,sql_exchange_repository}.go`,
 > `gateway/internal/ws/README.md`, `gateway/internal/discover/{sync,promote}.go`,
@@ -35,7 +36,7 @@ deployed, unreachable from any launch surface (see [§9](#9-boundaries--invarian
 | Back office | `office/` | Next.js, dev :3001 | Market/settlement/risk/RBAC admin UI | `office/app/layout.tsx` |
 | Gateway | `gateway/` | Go 1.25, stdlib `net/http`, :18080 | REST + WS API: prediction, wallet, compliance, loyalty, leaderboards, discover, content, RBAC | `gateway/cmd/gateway/main.go` |
 | Auth service | `auth/` | Go, :18081 | Login/register/OAuth, opaque bearer tokens, session cookies | `auth/cmd/auth/main.go` |
-| PostgreSQL 16 | docker-compose `postgres` | :5434 (host) | Single writer; goose migrations, head 065 | `gateway/migrations/` |
+| PostgreSQL 16 | docker-compose `postgres` | :5434 (host) | Single writer; goose migrations, head 066 | `gateway/migrations/` |
 | Redis | docker-compose `redis` | :6380 (host) | Auth sessions + rate limiter; gateway rate limiter; optional WS backbone | n/a |
 | Node cashier API / bridge-watcher / relayer | `services/*` | Node (dormant) | Non-custodial cashier seed — not deployed | `services/*/src/` |
 | Cashier SDK | `packages/cashier-sdk/` | TS (dormant) | Client SDK for the cashier API seed | `packages/cashier-sdk/src/` |
@@ -82,30 +83,37 @@ caller decides which actions require it).
 
 ### Middleware chain and auth
 
-`gateway/cmd/gateway/main.go` builds the chain with `httpx.Chain`, which
-makes the **first** listed middleware the outermost. The order a request
-actually passes through, with auth enabled (the default):
+`gateway/cmd/gateway/main.go` builds the chain in `gatewayMiddlewares` with
+`httpx.Chain`, which makes the **first** listed middleware the outermost. The
+order a request passes through, with auth enabled (the default):
 
-`RequestID → NormalizeTrailingSlash → tracing → SecurityHeaders → CORS → Auth
-→ CSRF → RateLimit → AccessLog → Metrics → Recovery → MaxBodySize → handler`
+`RequestID → NormalizeTrailingSlash → AccessLog → Metrics → Recovery →
+MaxBodySize → tracing → SecurityHeaders → CORS → RateLimit → Auth → CSRF →
+tenant → handler`
 
-**Discrepancy:** the comments beside that list assume the reverse (for example
-that Recovery and MaxBodySize are outermost and that 429s reach AccessLog).
-In fact requests rejected by Auth, CSRF or the rate limiter are not access-logged
-or counted, and Recovery covers only the handler ([TD-055](TECH_DEBT.md#f-gateway-api-and-real-time)).
+Logging, metrics and panic recovery sit outside everything that can reject a
+request, so 401/403/429 responses and panics in any middleware are logged and
+counted. `cmd/gateway/middleware_order_test.go` fails if that changes (it
+checks a 401 from Auth, a 429 from the limiter and a recovered panic all reach
+the access log and metrics). Until 2026-09-29 the list was reversed, and the
+tenant middleware ran only with auth disabled.
 
 With `GATEWAY_AUTH_ENABLED=false` (dev only, refused at boot in
-production/staging) a different list is used: no Auth or CSRF, plus
-`stripClientIdentityHeaders` (strips `X-User-ID`, `X-Admin-Role`… at ingress
-so no handler can honour a forged identity) and `tenant.Middleware`, which is
-wired in this chain only.
+production/staging) the tail is `stripClientIdentityHeaders → tenant` instead
+of `Auth → CSRF → tenant`; `stripClientIdentityHeaders` removes `X-User-ID`,
+`X-Admin-Role`… at ingress so no handler can honour a forged identity.
 
 - **`gatewayPublicPrefixes()`** — skips `httpx.Auth`: health/status,
   `/auth/`, `/ws` (self-authenticates), CMS delivery, public prediction reads
   (`discover`, `discovery`, `live-markets`, `categories`, `series`, `tags`,
-  `events`, `markets`, `leaderboards`), bot API (own key auth); webhook
+  `events`, `markets`, `leaderboards`), the key-authenticated bot routes
+  (`/api/v1/bot/orders`, `/positions`, `/markets` — not `/api/v1/bot/keys`,
+  which needs a session); webhook
   prefixes are appended only when their tree is enabled (self-verifying HMAC).
-- **CSRF** — `gatewayCSRFSkipPrefixes()` skips auth endpoints + webhooks.
+- **CSRF** — `gatewayCSRFSkipPrefixes()` skips auth endpoints, webhooks and
+  the key-authenticated bot routes (API clients carry no cookies). The auth
+  service checks the CSRF pair itself on its cookie-authenticated
+  state-changing routes.
 - **Rate limit** — IP-keyed, only on `rateLimitedReadPrefixes()` (public
   reads, which Auth passes through without calling the auth service). Redis-backed
   (shared across replicas) when `REDIS_URL` set, else in-memory; default 120
@@ -239,6 +247,17 @@ settlement is engine-agnostic.
    `admin_users` for staff login; issues an opaque bearer token (SHA-256
    digest stored), writes HttpOnly session cookies, persists the session in
    Redis (`RedisSessionStore`) or a file-backed store.
+   **Two-factor sign-in** (`auth/internal/http/mfa.go`): for an account with an
+   authenticator (every admin while `AUTH_ADMIN_MFA_REQUIRED` is on), the
+   password step returns a 5-minute challenge instead (`mfaRequired`,
+   `mfaToken`, also set as an HttpOnly `mfa_challenge` cookie), and
+   `POST /api/v1/auth/login/mfa` exchanges it plus a TOTP code for the
+   session. An admin with no authenticator is enrolled inside that challenge.
+   Social sign-in hands its challenge to the player login page
+   (`/auth/login?mfa=1`). Secrets are AES-256-GCM encrypted
+   (`AUTH_MFA_ENCRYPTION_KEY`), codes are single use, and wrong codes count
+   toward the login lockout. The office's server-side login proxy relays the
+   challenge (`office/app/api/auth/login/mfa`).
 3. Gateway requests: `httpx.Auth` calls the auth service to validate before
    the handler runs (except public prefixes, [§2](#2-gateway-internals)).
 4. WS auth is separate: `internal/ws/handler.go` reads the `access_token`

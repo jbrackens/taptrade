@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/RUNBOOKS.md`. Merged, with corrections, into Part 2 of [`stack/ops/RUNBOOK.md`](../../../apps/taptrade-platform/ops/RUNBOOK.md). Historical record only — do not treat as current.
+
 # Tap Trade — Operational Runbooks
 
 > Prediction-market operations. The previous sportsbook runbook documented tables
@@ -105,7 +107,7 @@ Symptom: clients not receiving live price/portfolio updates.
 
 The gateway fails closed on missing compliance config. The boot error names the
 exact missing variable (geo gate, allowlist, edge secret, KYC ack, etc.) — set it
-per [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#required-productionstaging-configuration).
+per [DEPLOYMENT.md](../../DEPLOYMENT.md#required-productionstaging-configuration).
 This is intentional: a gateway that can't prove its jurisdiction posture must not
 serve traffic.
 

@@ -126,6 +126,12 @@ services:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
       JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
       LOG_LEVEL: "info"
+      # Staff sign in with a password and an authenticator code
+      # (services/auth/internal/http/mfa.go). The key that encrypts the
+      # enrolled secrets is generated once on the box (/var/lib/taptrade/mfa.key)
+      # and appended to .env by every deploy; it must not change.
+      AUTH_ADMIN_MFA_REQUIRED: "true"
+      AUTH_MFA_ENCRYPTION_KEY: "${AUTH_MFA_ENCRYPTION_KEY:?the deploy writes AUTH_MFA_ENCRYPTION_KEY into .env}"
       # Social OAuth. Client id/secret come from /opt/phoenix/.env (written each
       # deploy from GitHub Actions secrets); a provider stays OFF until its id is
       # set (start returns "not configured"). Redirect URIs are public + fixed
@@ -461,6 +467,10 @@ services:
       BACKUP_DIR: /backups
       BACKUP_RETENTION_DAYS: "7"
       BACKUP_INTERVAL_SECONDS: "21600"   # 6h
+      # Offsite copy: a shell command given the dump path as $1, e.g. an
+      # rclone/aws upload. Empty = local-only (does not survive box loss).
+      # The destination is an owner decision (docs/TASKS.md D-13).
+      BACKUP_OFFSITE_CMD: "${BACKUP_OFFSITE_CMD:-}"
     volumes:
       - ./ops/backup:/ops:ro
       - db_backups:/backups

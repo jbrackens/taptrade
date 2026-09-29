@@ -65,11 +65,34 @@ env:
   DEMO_DEPLOY_BRANCH_ALLOWLIST: main
 
 jobs:
+  # Deploy only commits whose CI passed (TD-018). A push to main starts this
+  # workflow and the test/guard workflows at the same time; this job waits for
+  # the ones that ran on this commit and fails the run if any of them failed.
+  ci-gate:
+    name: Wait for CI on this commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for tests and guards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/wait-for-ci.sh "${{ github.sha }}" "${{ github.repository }}"
+
   deploy:
+    needs: ci-gate
     runs-on: ubuntu-latest
     timeout-minutes: 90   # auth+gateway Go builds (usually cached/fast) + two Next.js builds (~15-20 min each)
     steps:
       - uses: actions/checkout@v4
+
+      - name: Release id
+        # Images are also tagged with this id on the box so a later rollback
+        # can restore them (apps/taptrade-platform/scripts/releases.sh).
+        run: echo "RELEASE_ID=${GITHUB_SHA::12}" >> "$GITHUB_ENV"
 
       - name: Guard demo deploy branch
         run: |
@@ -98,11 +121,18 @@ jobs:
         # containers/networks + build cache (NEVER --volumes), cap the
         # journal, drop apt caches. Fails the deploy loudly if the disk is
         # still >90% full afterwards, instead of corrupting a migration.
+        # Release images: keep the newest three releases' tagged images for
+        # rollback (releases.sh prune), then prune only untagged images —
+        # `docker system prune -a` would delete every retained release.
         run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" 'bash -s -- prune' \
+            < apps/taptrade-platform/scripts/releases.sh
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
             set -e
             df -h / | tail -1
-            docker system prune -af 2>/dev/null | tail -1 || true
+            docker container prune -f 2>/dev/null | tail -1 || true
+            docker network prune -f 2>/dev/null | tail -1 || true
+            docker image prune -f 2>/dev/null | tail -1 || true
             docker builder prune -af 2>/dev/null | tail -1 || true
             journalctl --vacuum-size=200M 2>/dev/null | tail -1 || true
             apt-get clean 2>/dev/null || true
@@ -201,6 +231,26 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && printf "\nCOMPOSE_PROJECT_NAME=phoenix\n" >> /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
 
+      - name: Add the two-factor encryption key to .env
+        # AUTH_MFA_ENCRYPTION_KEY encrypts the authenticator secrets stored in
+        # the database, so it must outlive every deploy: it is generated once
+        # on the box, kept outside the rsynced /opt/phoenix, and appended to
+        # the .env written above. It is not in the database backups; losing it
+        # means resetting every enrollment with `auth mfa-reset`
+        # (docs/DEPLOYMENT.md).
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            set -eu
+            key_file=/var/lib/taptrade/mfa.key
+            mkdir -p /var/lib/taptrade
+            if [ ! -s "$key_file" ]; then
+              (umask 077 && head -c 32 /dev/urandom | base64 > "$key_file")
+              echo "generated a new two-factor encryption key"
+            fi
+            chmod 600 "$key_file"
+            printf "AUTH_MFA_ENCRYPTION_KEY=%s\n" "$(cat "$key_file")" >> /opt/phoenix/.env
+            echo "two-factor encryption key added to .env"'
+
       - name: Build auth image and load on the box
         # Auth service owns signup/login/session behavior. Rebuild it before
         # gateway so auth changes ship with the same push as frontend/gateway
@@ -213,7 +263,7 @@ jobs:
             apps/taptrade-platform/go-platform
           docker save taptrade-auth:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-              'gunzip | docker load'
+              "gunzip | docker load && docker tag taptrade-auth:latest taptrade-auth:rel-$RELEASE_ID"
 
       - name: Recreate auth container
         run: |
@@ -248,7 +298,7 @@ jobs:
             apps/taptrade-platform/go-platform
           docker save taptrade-gateway:latest | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-              'gunzip | docker load'
+              "gunzip | docker load && docker tag taptrade-gateway:latest taptrade-gateway:rel-$RELEASE_ID"
 
       - name: Apply gateway migrations
         # Keep DB schema ahead of the recreated gateway. The gateway image
@@ -378,7 +428,7 @@ jobs:
             apps/taptrade-platform/frontend
           docker save predict-frontend:app-slim | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-              'gunzip | docker load'
+              "gunzip | docker load && docker tag predict-frontend:app-slim predict-frontend:app-rel-$RELEASE_ID"
 
       - name: Recreate player container
         run: |
@@ -544,7 +594,7 @@ jobs:
             apps/taptrade-platform/frontend
           docker save predict-frontend:office-slim | gzip -1 | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-              'gunzip | docker load'
+              "gunzip | docker load && docker tag predict-frontend:office-slim predict-frontend:office-rel-$RELEASE_ID"
 
       - name: Recreate office container
         run: |
@@ -598,6 +648,26 @@ jobs:
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate caddy'
+
+      - name: Start database backup sidecar
+        # Dumps the database every 6h to the db_backups volume, keeping 7 days
+        # (stack/ops/backup/). Idempotent: compose leaves a running, unchanged
+        # sidecar alone. Before 2026-09-29 it had to be started by hand and
+        # was not running on the demo.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps db-backup &&
+            docker ps --filter name=predict_db_backup --format "{{.Names}} {{.Status}}"'
+
+      - name: Record release
+        # Adds this release to /var/lib/taptrade/releases.log so
+        # rollback-demo.yml can restore it later. Recorded once every app
+        # container is up and healthy.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" "bash -s -- record $RELEASE_ID" \
+            < apps/taptrade-platform/scripts/releases.sh
 
       - name: Firewall origin to Cloudflare IPs
         # Restrict :80/:443 to CF ranges so direct-to-origin requests can't

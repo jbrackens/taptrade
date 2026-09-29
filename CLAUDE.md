@@ -44,7 +44,7 @@ taptrade/
 │   │   │   ├── internal/wallet/           ← wallet + ledger (kept from sportsbook, adapted)
 │   │   │   ├── internal/ws/               ← WebSocket hub
 │   │   │   ├── internal/http/             ← HTTP handlers
-│   │   │   ├── migrations/                ← 014 created the prediction schema; 065 is the highest today
+│   │   │   ├── migrations/                ← 014 created the prediction schema; 066 is the highest today
 │   │   │   └── seed-data/seed_prediction.sql
 │   │   ├── services/auth/                 ← Auth service (Go, port 18081)
 │   │   └── modules/platform/              ← Shared Go module `taptrade/platform` (canonical, logging, runtime, transport/httpx)
@@ -92,6 +92,11 @@ Treat the user phrase `commit/push/deploy` as a strict procedure:
 6. Push only `main`.
 7. Monitor the GitHub Actions deploy run and smoke-check the demo URLs after success.
 
+The deploy's `ci-gate` job waits for the commit's test and guard workflows
+(`scripts/wait-for-ci.sh`), so a red run stops the deploy. A bad release is
+rolled back with the manual `rollback-demo.yml` workflow (images only;
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#rollback)).
+
 Feature work happens on short-lived branches merged into `main`; do not push a
 non-`main` branch for deploy purposes unless the user explicitly names that
 branch. Do not include unrelated untracked files without explicit user approval.
@@ -114,7 +119,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/`.
 2. **Fix errors at the root, don't work around them.** Zero bug policy.
 3. **Keep the `prediction` Go package decoupled from `wallet`.** It uses the `prediction.WalletAdapter` interface — the concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Don't import `wallet` from `prediction/`.
-4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (065 is the highest today, so the next is 066). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
+4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (066 is the highest today, so the next is 067). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
 
 ## Points-only launch boundary
 
@@ -226,6 +231,14 @@ Code: `internal/rbac/`, `internal/http/rbac_admin_handlers.go`; UI:
 - **Login:** the auth service `Login` falls back to `admin_users` (active,
   role=admin), so staff created in the office sign in with their temporary
   password (`services/auth/internal/http/handlers.go` `lookupAdminUser`).
+- **Two-factor sign-in:** while `AUTH_ADMIN_MFA_REQUIRED` is on (default in
+  production/staging, on for the demo, off locally) every admin signs in with a
+  password and then an authenticator code; an admin without one is enrolled at
+  that sign-in (`services/auth/internal/http/mfa.go`). It needs
+  `AUTH_MFA_ENCRYPTION_KEY`; on the demo that key lives in
+  `/var/lib/taptrade/mfa.key` and must never change. A lost authenticator is
+  cleared with `auth mfa-reset <email>` ([runbook §16](apps/taptrade-platform/ops/RUNBOOK.md)).
+  Players can turn it on from Account → Security.
 - **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
   `admin@taptrade.local` (Super Admin), `ops@taptrade.local` (Operations Manager),
   `support@taptrade.local` (Customer Support) — all password `admin123`.
@@ -249,8 +262,10 @@ Code: `internal/rbac/`, `internal/http/rbac_admin_handlers.go`; UI:
   `internal/prediction/workers/`); every worker, its interval, flag and failure
   handling: [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md#background-workers-and-scheduled-jobs).
 - **Middleware order:** `httpx.Chain` makes the *first* listed middleware the
-  outermost — the opposite of what the comments in `cmd/gateway/main.go` assume
-  ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), TD-055).
+  outermost. `gatewayMiddlewares` in `cmd/gateway/main.go` puts AccessLog,
+  Metrics and Recovery outside Auth, CSRF and the rate limiter, and
+  `cmd/gateway/middleware_order_test.go` fails if a rejection or panic stops
+  reaching the log and metrics ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
 ### Key files to know
 

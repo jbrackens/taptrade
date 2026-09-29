@@ -303,8 +303,9 @@ only when a database is configured. There are no cron jobs or systemd timers.
 | Alpha reorg watcher | 5 min | Re-verify credited deposits; freeze reorged ones | alpha cashier enabled | Dormant |
 | Alpha deposit scanner | 15 s | Match treasury transfers to open deposit intents | `ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED` | Dormant |
 
-Outside the gateway: the demo's `db-backup` sidecar loops a `pg_dump` every six
-hours when started ([DEPLOYMENT.md](DEPLOYMENT.md#backup--restore)), and
+Outside the gateway: the demo's `db-backup` sidecar, started by every deploy,
+loops a `pg_dump` every six hours and keeps the dumps on the box
+([DEPLOYMENT.md](DEPLOYMENT.md#backups-and-restore)), and
 `cf-firewall.service` re-applies the origin firewall at boot.
 
 ## Platform services

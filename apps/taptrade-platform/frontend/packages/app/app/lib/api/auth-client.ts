@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { ApiError, apiClient } from "./client";
 
 // Request types
 export interface GoLoginRequest {
@@ -39,17 +39,6 @@ export interface ResetPasswordRequest {
 
 export interface VerifyEmailRequest {
   token: string;
-}
-
-export interface VerifyMfaRequest {
-  user_id: string;
-  code: string;
-  action?: string;
-}
-
-export interface RequestMfaCodeRequest {
-  user_id: string;
-  method?: "sms" | "email";
 }
 
 export interface ChangePasswordRequest {
@@ -109,17 +98,6 @@ interface ResetPasswordResponseRaw {
 interface VerifyEmailResponseRaw {
   user_id: string;
   status: string;
-}
-
-interface VerifyMfaResponseRaw {
-  verified: boolean;
-  access_token?: string;
-  refresh_token?: string;
-}
-
-interface RequestMfaCodeResponseRaw {
-  sent: boolean;
-  method: string;
 }
 
 interface ChangePasswordResponseRaw {
@@ -198,15 +176,46 @@ export interface VerifyEmailResponse {
   status: string;
 }
 
-export interface VerifyMfaResponse {
-  verified: boolean;
-  accessToken?: string;
-  refreshToken?: string;
+/**
+ * Returned by login instead of tokens when the account signs in with a code
+ * from an authenticator app. `enrollment` is present when a staff account has
+ * no authenticator yet: the page shows the key, and the first code confirms it.
+ */
+export interface MfaChallenge {
+  mfaRequired: true;
+  mfaToken: string;
+  expiresInSeconds: number;
+  enrollment?: MfaEnrollment;
 }
 
-export interface RequestMfaCodeResponse {
-  sent: boolean;
-  method: string;
+export interface MfaEnrollment {
+  secret: string;
+  otpauthUrl: string;
+}
+
+export interface MfaStatus {
+  available: boolean;
+  enabled: boolean;
+  pending: boolean;
+  required: boolean;
+}
+
+/** Thrown by AuthProvider.login when the password was right and a code is next. */
+export class MfaRequiredError extends Error {
+  challenge: MfaChallenge;
+  constructor(challenge: MfaChallenge) {
+    super("two-factor code required");
+    this.name = "MfaRequiredError";
+    this.challenge = challenge;
+  }
+}
+
+export function isMfaChallenge(value: unknown): value is MfaChallenge {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    (value as Record<string, unknown>).mfaRequired === true
+  );
 }
 
 export interface ChangePasswordResponse {
@@ -244,7 +253,9 @@ function normalizeSnakeCase<T extends object>(obj: T): unknown {
 /**
  * Login with username and password
  */
-export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
+export async function login(
+  request: GoLoginRequest,
+): Promise<GoLoginResponse | MfaChallenge> {
   const response = await fetch("/api/v1/auth/login/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -269,8 +280,50 @@ export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
     throw new Error(readable);
   }
 
+  const raw: unknown = await response.json();
+  if (isMfaChallenge(raw)) return raw;
+  return normalizeSnakeCase(raw as GoLoginResponseRaw) as GoLoginResponse;
+}
+
+/**
+ * Second sign-in step: the authenticator code. The challenge travels in an
+ * HttpOnly cookie set by the password step (or by social sign-in); pass
+ * mfaToken when the page has it from the login response.
+ */
+export async function verifyLoginMfa(
+  code: string,
+  mfaToken?: string,
+): Promise<GoLoginResponse> {
+  const response = await fetch("/api/v1/auth/login/mfa/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(mfaToken ? { code, mfaToken } : { code }),
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.text());
+  }
   const raw = (await response.json()) as GoLoginResponseRaw;
   return normalizeSnakeCase(raw) as GoLoginResponse;
+}
+
+export function getMfaStatus(): Promise<MfaStatus> {
+  return apiClient.get<MfaStatus>("/api/v1/auth/mfa");
+}
+
+/** Starts (or restarts) setup: returns a new key for the authenticator app. */
+export function startMfaEnrollment(): Promise<MfaEnrollment> {
+  return apiClient.post<MfaEnrollment>("/api/v1/auth/mfa/enroll", {});
+}
+
+/** Confirms setup with the first code from the new key. */
+export async function activateMfa(code: string): Promise<void> {
+  await apiClient.post("/api/v1/auth/mfa/activate", { code });
+}
+
+/** Turns two-factor sign-in off; needs a current code. */
+export async function disableMfa(code: string): Promise<void> {
+  await apiClient.post("/api/v1/auth/mfa/disable", { code });
 }
 
 /**
@@ -383,32 +436,6 @@ export async function verifyEmail(
     request,
   );
   return normalizeSnakeCase(raw) as VerifyEmailResponse;
-}
-
-/**
- * Verify MFA code
- */
-export async function verifyMfa(
-  request: VerifyMfaRequest,
-): Promise<VerifyMfaResponse> {
-  const raw = await apiClient.post<VerifyMfaResponseRaw>(
-    "/api/v1/auth/verify-mfa",
-    request,
-  );
-  return normalizeSnakeCase(raw) as VerifyMfaResponse;
-}
-
-/**
- * Request MFA code
- */
-export async function requestMfaCode(
-  request: RequestMfaCodeRequest,
-): Promise<RequestMfaCodeResponse> {
-  const raw = await apiClient.post<RequestMfaCodeResponseRaw>(
-    "/api/v1/auth/request-mfa-code",
-    request,
-  );
-  return normalizeSnakeCase(raw) as RequestMfaCodeResponse;
 }
 
 /**

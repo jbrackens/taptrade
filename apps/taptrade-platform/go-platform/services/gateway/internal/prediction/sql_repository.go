@@ -1129,13 +1129,15 @@ func (r *SQLRepository) PersistSettlementHeader(ctx context.Context, market *Mar
 		`INSERT INTO prediction_settlements
 		 (market_id, result, attestation_source, attestation_id, attestation_digest,
 		  attestation_data, settled_by, total_payout_points, positions_settled,
-		  payouts_total, payouts_completed)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0)
+		  payouts_total, payouts_completed,
+		  override_reason, overridden_by_user_id, overridden_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,$11,$12,$13)
 		 RETURNING id, settled_at`,
 		settlement.MarketID, settlement.Result, settlement.AttestationSource,
 		settlement.AttestationID, settlement.AttestationDigest, settlement.AttestationData,
 		settlement.SettledBy, settlement.TotalPayoutPoints, settlement.PositionsSettled,
 		settlement.PayoutsTotal,
+		settlement.OverrideReason, settlement.OverriddenByUserID, settlement.OverriddenAt,
 	).Scan(&settlement.ID, &settlement.SettledAt); err != nil {
 		return fmt.Errorf("insert settlement header: %w", err)
 	}
@@ -1464,12 +1466,14 @@ func (r *SQLRepository) createSettlementWithExec(ctx context.Context, execer sql
 	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
 		 (market_id, result, attestation_source, attestation_id,
-		  attestation_digest, attestation_data, settled_by, total_payout_points, positions_settled)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+		  attestation_digest, attestation_data, settled_by, total_payout_points, positions_settled,
+		  override_reason, overridden_by_user_id, overridden_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		 RETURNING id, settled_at`,
 		s.MarketID, s.Result, s.AttestationSource, s.AttestationID,
 		s.AttestationDigest, s.AttestationData, s.SettledBy,
 		s.TotalPayoutPoints, s.PositionsSettled,
+		s.OverrideReason, s.OverriddenByUserID, s.OverriddenAt,
 	).Scan(&s.ID, &s.SettledAt)
 }
 

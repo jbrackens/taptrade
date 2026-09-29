@@ -7,14 +7,15 @@
 > narratives → [`audit/`](audit/).
 > **Last verified:** 2026-09-29 at commit `4924a670` — every item was re-checked
 > against source (read or grep) in the 2026-09-29 review rather than copied from an audit.
+> Updated the same day by the hardening change that closed ten items (see
+> [Recently resolved](#recently-resolved)) and added TD-056 – TD-060.
 > Candidate lists came from `audit/AUDIT_REPORT.md`, `audit/IMPROVEMENT_PLAN.md`,
 > `audit/SECURITY-REVIEW-2026-06-14.md`, `audit/ARCH-CLEANUP-2026-06-14.md`, the
 > archived `CURRENT_STATE.md` and `licensability-gaps.md`, the ADRs,
 > `player/FEATURE_MANIFEST.json`, and the research done for that review.
 
 Audit findings that the code now shows as fixed are not listed; the notable ones
-are under [Recently resolved](#recently-resolved). Nothing here changes
-application behaviour — the 2026-09-29 review only recorded it.
+are under [Recently resolved](#recently-resolved).
 
 **Priority:** **P0** real-money loss, critical auth or data-integrity breach, or a
 production build break — none open. **P1** a live gap with no compensating
@@ -34,13 +35,12 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 
 | ID | Title | Evidence | Impact | P | Remediation |
 |---|---|---|---|---|---|
-| TD-005 | Staff MFA does not exist; the 2FA toggle is cosmetic | No TOTP/MFA code in `auth/`; the account 2FA toggle writes an in-memory map login never reads; `player/app/account/security/page.tsx` never loads the current status | Admin accounts are password-only | P1 | DB-backed TOTP for `admin_users`, required at admin login (reference implementation on tag `archive/pam-p0-modernization-2026-07-06`; rebuild, don't cherry-pick) |
-| TD-006 | KYC falls back to an auto-approving mock | `gateway/internal/http/handlers.go` wires `compliance.NewMockKYCService()` when the Postgres KYC store is unavailable, in every environment; `compliance.FailClosedKYCService` has no caller | A DB fault silently turns identity checks into auto-approve (matters once `KYC_REQUIRED_FOR_TRADING` is on) | P1 | Use `FailClosedKYCService` on init failure |
-| TD-007 | Unrecognised `ENVIRONMENT` values fall into dev behaviour | `gateway/internal/http/pretrade_gate.go` treats only `production`/`staging` as real; `gateway/cmd/gateway/main.go` `validateGatewayRuntimeConfig` likewise | A typo such as `prod` disables the boot policy and the fail-closed trade gate | P2 | Allowlist environment names; refuse unknown ones at boot |
-| TD-008 | Self-serve bot API key routes always return 401 | `/api/v1/bot/` is a public prefix (`gatewayPublicPrefixes`), so `httpx.Auth` never sets a user; it strips `X-User-ID`; `/api/v1/bot/keys` is not wrapped by `BotAuthMiddleware`, so `userIDFromRequest` is always empty (`gateway/internal/http/bot_handlers.go`) | Players cannot list, create or revoke their own keys; operators can still issue keys via `/api/v1/admin/partner-keys` | P2 | Take `/api/v1/bot/keys` out of the public prefix (session-authenticate it) |
 | TD-009 | CMS and bonus admin routes check role only | `gateway/internal/http/content_handlers.go`, `bonus_handlers.go` use an inline `role == "admin"` check, not `requireAdminPermission` | Any admin can publish content or grant bonuses regardless of RBAC role | P3 | Gate with RBAC permissions like the other admin routes |
 | TD-010 | Player tokens are mirrored into `localStorage` | `player/app/lib/api/client.ts` (`taptrade_access_token`, `taptrade_refresh_token`) | A future XSS could steal a session | P2 | Rely on the HttpOnly cookie only |
 | TD-011 | Office proxy degrades open when the auth backend is unreachable | `office/proxy.ts` `validateSession` returns `null` on fetch error and the caller falls back to a token-presence check | A gateway outage or misconfigured URL lets any token-shaped cookie into the office shell (the gateway still enforces RBAC on data) | P2 | Fail closed in production |
+| TD-057 | A staff account's first two-factor enrollment trusts the password | `auth/internal/http/mfa.go` `challengeFor`: an admin with no active factor is enrolled inside the sign-in challenge, so whoever signs in first with the password registers the authenticator; `auth mfa-reset` returns an account to that state | Until each admin enrolls, their password alone still decides who holds the second factor | P2 | Enroll every admin right after enabling it; longer term, an operator-issued enrollment link instead of first-sign-in enrollment |
+| TD-056 | Two-factor sign-in has no recovery codes and no QR code | `auth/internal/http/mfa.go` returns a text setup key and an `otpauth://` link; a lost authenticator is cleared only by `auth mfa-reset` on the box | A player who loses their phone needs an operator; staff type the key by hand | P3 | One-time recovery codes; render the provisioning URI as a QR code |
+| TD-058 | Sessions of office-created staff cannot be refreshed | `auth/internal/http/handlers.go` `Refresh` re-reads the account with `lookupUser` (`auth_users` only), so a refresh for an `admin_users` session answers 500; the office never calls refresh, so staff sign in again (now with a code) every `AUTH_ACCESS_TTL_SECONDS` (15 minutes by default) | Short office sessions; a latent 500 | P3 | Look the account up by `session.Directory` in `Refresh` |
 | TD-012 | Rate limiters and login lockout fail open on Redis errors | `platform-mod/transport/httpx/ratelimit.go` `RedisRateLimiter.Allow`; `auth/internal/http/redis_rate_limiter.go` (limiter and `IsLocked`) | A Redis outage removes rate limiting and lockout | P3 | Decide the intended posture; alert on the error path at minimum |
 
 ## C. Compliance and licensability
@@ -51,17 +51,14 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-014 | No market-integrity surveillance | No wash/self-trade/spoofing detection in `gateway/internal/` | No manipulation monitoring on an order-book exchange | P2 | Scope to what a points market needs |
 | TD-015 | No duplicate-account detection | No email-normalisation collision check (plus-addressing, dots, aliases) | Multi-accounting is the main abuse path for a faucet-funded economy | P2 | Add normalised-email uniqueness at signup |
 | TD-016 | Session-duration limit is accepted but neither stored nor enforced | `gateway/internal/compliance/handlers.go` `/api/v1/compliance/rg/session-limit` validates and echoes; no table, no enforcement; `player/app/responsible-gaming/page.tsx` says session limits work | Users could believe a limit is active when it is not (page is behind `NEXT_PUBLIC_FEATURE_RG`, off by default) | P2 | Persist and enforce, or remove the endpoint and the copy |
+| TD-059 | Responsible-gaming limits fall back to a mock | `gateway/internal/http/handlers.go` wires `compliance.NewMockResponsibleGamblingService()` when the Postgres RG store fails to start or no DB is wired, in every environment (the KYC equivalent, TD-006, was fixed to fail closed) | A DB fault silently stops enforcing deposit, stake and loss limits and self-exclusion checks on the trading path | P2 | Fail closed in production/staging, as `selectKYCService` does |
 | TD-017 | Mock GPS geo service is mounted in every environment | `gateway/internal/http/handlers.go` wires `compliance.NewMockGeoComplianceServiceFromEnv()` behind `POST /api/v1/compliance/geo/verify`, which takes `userId` from the body; `FailClosedGeoComplianceService` has no caller; the player client for it (`player/app/lib/services/geocomply.ts`) has no importer | A reachable mock with no effect today (the real gate uses `CF-IPCountry`); a trap if anything starts trusting it | P3 | Remove the route and client, or back it with the fail-closed service |
 
 ## D. Delivery and operations
 
 | ID | Title | Evidence | Impact | P | Remediation |
 |---|---|---|---|---|---|
-| TD-018 | The deploy does not wait for CI | `.github/workflows/deploy-demo.yml` has no dependency on `test.yml` or the `guard-*` workflows; all start on the same push to `main` | A change that fails tests still deploys | P2 | Gate the deploy on the test and guard workflows (or on branch protection plus PR-only merges) |
-| TD-019 | No rollback path | No procedure in any doc or workflow; images are built per run and not retained by tag | A bad deploy can only be undone by pushing a revert | P2 | Tag and keep recent images; document a rollback |
-| TD-020 | Backups are local and the restore is untested since May | `stack/ops/backup/`; the `db-backup` sidecar is opt-in and writes to the same box; last recorded restore 2026-05-23 | Box loss loses the database | P2 | Configure `BACKUP_OFFSITE_CMD`; run and record a restore drill |
-| TD-021 | On-call runbook SQL uses renamed columns | `stack/ops/RUNBOOK.md` queries `collateral_pool_cents`, `total_cost_cents`, `amount_cents`, `balance_after_cents`…; migration 050 renamed the prediction and wallet columns to `*_points` | Incident queries fail when they are needed | P2 | Rewrite the queries against the current schema ([DATA_MODEL.md](DATA_MODEL.md)); a warning banner was added on 2026-09-29 |
-| TD-022 | Two runbooks, contradicting each other | `stack/RUNBOOKS.md` §6 says the WebSocket Redis backbone is not built; `gateway/internal/ws/backbone.go` and `stack/ops/RUNBOOK.md` say it is | Wrong operational guidance | P3 | Merge into one runbook |
+| TD-020 | Backups stay on the demo box | The deploy starts the `db-backup` sidecar (`deploy-demo.yml`, since 2026-09-29) and a restore drill passed that day ([DEPLOYMENT.md](DEPLOYMENT.md#backups-and-restore)), but `BACKUP_OFFSITE_CMD` is empty, so dumps live in the `phoenix_db_backups` volume on the same box; the two-factor key (`/var/lib/taptrade/mfa.key`) has no copy anywhere else | Box loss loses the database and every staff enrollment | P2 | Choose an offsite destination ([D-13](TASKS.md#needs-a-decision)), set `BACKUP_OFFSITE_CMD`, and keep a copy of the key apart from the dumps |
 | TD-023 | No metrics stack runs; tracing export is plaintext | Neither compose file runs Prometheus or Grafana (dashboards in `stack/ops/grafana/` are import-only); `gateway/internal/tracing/tracing.go` hard-codes `otlptracegrpc.WithInsecure()` and no exporter is configured anywhere | Alerts in `stack/ops/prometheus/alert-rules.yml` never fire; enabling tracing would send spans unencrypted | P3 | Stand up a scraper or drop the claims; add a TLS option |
 | TD-024 | `go vet` is not in CI | No `go vet` step in `.github/workflows/` (the code is vet-clean today) | A vet warning can ship | P3 | Add `go vet ./...` to `test.yml` |
 | TD-025 | `JWT_SECRET` is required but unused | Both compose files demand it (`${JWT_SECRET:?}`); no Go code reads it; the deploy passes `JWT_SECRET=unused` | Misleads operators into managing a secret that does nothing | P3 | Remove it from compose, the deploy and docs |
@@ -88,7 +85,6 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-036 | Profile update is not saved | `gateway/internal/http/user_handlers.go` `PUT /api/v1/users/{id}/profile` echoes the body and does not check the path id against the session | The UI reports success for changes that vanish | P3 | Persist with an owner check, or remove the edit UI |
 | TD-037 | Launch-boundary predicate is duplicated | `legacyMoneyRoutesEnabled` in both `gateway/cmd/gateway/main.go` and `gateway/internal/http/launch_boundary.go` | The two can drift | P3 | Share one implementation |
 | TD-038 | AMM code retained without a decision | `gateway/internal/prediction/amm.go` still quotes legacy AMM markets; execution is refused ([ADR-0008](adr/0008-clob-execution-replaces-amm.md)); the `execution_mode` CHECK still allows `amm` | Dead-ish code path | P3 | Decide keep-as-quote-only or delete ([D-4](TASKS.md#needs-a-decision)) |
-| TD-055 | Middleware order is the reverse of what the code comments say | `platform-mod/transport/httpx/middleware.go` `Chain` makes the **first** listed middleware outermost; `gateway/cmd/gateway/main.go` comments assume the opposite. Effective order with auth on: RequestID → NormalizeTrailingSlash → tracing → SecurityHeaders → CORS → Auth → CSRF → rate limit → AccessLog → Metrics → Recovery → MaxBodySize → handler (confirmed by running a copy of `Chain`). `tenant.Middleware` appears only in the auth-disabled chain | 401/403/429 responses from Auth, CSRF and the rate limiter never reach AccessLog or Metrics; `Recovery` only covers the handler; the tenant middleware is not wired in any deployment that has auth on | P2 | Reorder the list (Recovery, Metrics, AccessLog outermost) and add a test that pins the order; add `tenant.Middleware` to the auth-enabled chain |
 | TD-039 | `cancel_both` self-match behaves like `cancel_taker` | `gateway/internal/prediction/exchange.go` `applySelfMatch` (commented "v1 simplification") | API accepts an option it does not honour | P3 | Implement or reject the value |
 
 ## G. Player app
@@ -99,7 +95,6 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-041 | Signed-in states of the 2026-09-29 redesign never visually checked | Balance chip, the bell below 480px, the account menu — not covered by `player/tests/visual` for signed-in users | Shipped UI may not match the approved mockups | P2 | [T-001](TASKS.md#agreed-work) |
 | TD-042 | Gate 5 fails, and the manifest is stale | `player/gate.sh` gate 5 fails on 3 STUBBED entries (`/cashier`, `ChatSidebar`, `chat-client`); `player/FEATURE_MANIFEST.json` `pages[]` still lists sportsbook-era pages (`/bets`, `/match/[id]`, `/promotions`…) as REAL although they do not exist | `gate.sh` never exits 0, and the manifest overstates coverage | P2 | Resolve the stubs; rebuild `pages[]` from `player/app/**/page.tsx` |
 | TD-043 | Account flow gaps | `/auth/forgot-password` is a static notice (no reset endpoint); notification preferences are never persisted (disclosed in the UI); `/contact-us` falls back to `mailto:` | Users cannot self-serve a password reset | P3 | Build the reset flow; persist preferences |
-| TD-044 | "Clout" rename incomplete | `player/public/static/locales/en/rewards.json` (`STAT_BALANCE`: "Points Balance"), `bonus.json`, `win-loss-statistics.json` still say Points | Inconsistent currency name in the UI | P3 | Finish the rename in all six locales |
 | TD-045 | Comments point at a missing `TODOS.md` | `player/app/contact-us/page.tsx`, `support-mailto.ts` | A tracked follow-up cannot be found | P3 | Point them at [TASKS.md](TASKS.md) |
 
 ## H. AI market drafting
@@ -124,11 +119,46 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-051 | Seed JSON still frames markets as sports | `gateway/seed-data.json` (`sportKey` on every market) | Sportsbook residue in seed content | P3 | Re-theme the seed (content decision) |
 | TD-052 | Dead mock server and legacy Playwright config | `frontend/packages/mock-server/`, `frontend/playwright.config.ts` alongside the live `playwright.prediction.config.ts` | "Which e2e do I run?" | P3 | Remove as one unit after confirming no user |
 | TD-053 | `gofmt` flags one file | `gateway/internal/prediction/types.go` (alignment only) | Cosmetic | P3 | `gofmt -w` |
+| TD-060 | Locale files nothing renders still say "Points" | `footer`, `account-status-bar` and `api-errors` are registered in `player/app/lib/i18n/config.ts` but no component reads them; `transaction-history`, `win-loss-statistics`, `page-esports-bets`, `communication-settings` and `rg-history` are not loaded at all; `rewards.json` `STAT_BALANCE` and the `bonus.json` balance keys have no reader | Translators maintain dead strings, and the currency-name check has to skip them | P3 | Delete the unused namespaces and keys in all six locales |
 | TD-054 | App-level guides drifted | `stack/ERRORS.md` (fixed 2026-09-29: 500 is `internal_error`, and there is no 422 `validation_failed`); `stack/API_EXAMPLES.md`, `stack/MIGRATION.md`, `stack/UPGRADE.md` still show `*Cents` wire fields | Examples that no longer match the API | P3 | Rewrite against [SPEC_CURRENT.md](SPEC_CURRENT.md) (warning banners added 2026-09-29) |
 
 ## Recently resolved
 
-Fixed on 2026-09-29 (commits `d91b21c2`, `d69d4e73`, `af3d0611`, `185c982f`,
+Fixed by the 2026-09-29 hardening change ([TASKS.md](TASKS.md#done-recently)):
+
+- TD-005 — staff two-factor sign-in: TOTP with AES-GCM-encrypted secrets
+  (`auth/internal/http/mfa.go`), required for admins while
+  `AUTH_ADMIN_MFA_REQUIRED` is on (default on in production/staging, on for the
+  demo), optional for players from Account → Security; the cosmetic toggle is gone.
+- TD-006 — KYC fails closed (`FailClosedKYCService`) when the Postgres store
+  cannot start, or when a production/staging gateway has no DB.
+- TD-007 — gateway and auth refuse an unrecognised `ENVIRONMENT` at boot
+  (`platform/runtime.ValidateEnvironment`).
+- TD-008 — `/api/v1/bot/keys` needs a session; only the key-authenticated bot
+  routes (`orders`, `positions`, `markets`) are public and CSRF-exempt.
+- TD-018 — the demo deploy waits for the test and guard workflows
+  (`scripts/wait-for-ci.sh`).
+- TD-019 — the deploy keeps the last three releases' images and
+  `rollback-demo.yml` restores one.
+- TD-021, TD-022 — every runbook query rewritten and run against a migrated
+  database; the two runbooks merged into `stack/ops/RUNBOOK.md`.
+- TD-044 — the last rendered "pt" label now reads Clout; what remains is in
+  files nothing renders (TD-060).
+- TD-055 — the gateway middleware order is fixed and pinned by a test, and the
+  tenant middleware runs with auth on.
+
+Found and fixed during that work:
+
+- A settlement override reason was accepted but never stored, and storing the
+  acting admin would have failed its foreign key to `punters` (migration 066
+  drops it); both are now recorded.
+- The runbook's manual-settlement SQL marked a market settled without paying
+  anyone; it now points at the office override, and forbids setting `settled`
+  by hand.
+- The `db-backup` sidecar had never been started on the demo, so there were no
+  backups; the deploy starts it now.
+
+Fixed earlier on 2026-09-29 (commits `d91b21c2`, `d69d4e73`, `af3d0611`, `185c982f`,
 `71350057`, `4924a670`), though older audits still list them as open:
 
 - Alpha cashier withdrawal completion trusted the operator — now requires an
@@ -152,5 +182,5 @@ redirect, the leaderboard page-size clamp, and the two-person withdrawal default
 
 ## Totals
 
-55 open items: 0 P0, 4 P1 (TD-001, TD-002, TD-005, TD-006), 22 P2, 29 P3.
+50 open items: 0 P0, 2 P1 (TD-001, TD-002), 18 P2, 30 P3.
 Backlog, owners and blocking decisions: [TASKS.md](TASKS.md).

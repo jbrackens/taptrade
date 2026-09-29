@@ -11,6 +11,59 @@ import (
 	"taptrade/platform/transport/httpx"
 )
 
+// TD-008: /api/v1/bot/keys is managed by a signed-in player, so it must go
+// through session auth and CSRF; the API-key routes skip both.
+func TestBotKeysNeedSessionWhileBotAPIUsesItsKey(t *testing.T) {
+	public := gatewayPublicPrefixes()
+	csrfSkip := gatewayCSRFSkipPrefixes()
+	for _, path := range []string{"/api/v1/bot/keys", "/api/v1/bot/keys/key-1"} {
+		if matchesAnyPrefix(path, public) {
+			t.Fatalf("%s must require a session; public prefixes=%v", path, public)
+		}
+		if matchesAnyPrefix(path, csrfSkip) {
+			t.Fatalf("%s must keep CSRF protection; skip prefixes=%v", path, csrfSkip)
+		}
+	}
+	for _, path := range []string{"/api/v1/bot/orders", "/api/v1/bot/positions", "/api/v1/bot/markets"} {
+		if !matchesAnyPrefix(path, public) {
+			t.Fatalf("%s authenticates with an API key and must skip session auth", path)
+		}
+		if !matchesAnyPrefix(path, csrfSkip) {
+			t.Fatalf("%s authenticates with an API key and must skip CSRF", path)
+		}
+	}
+
+	reached := map[string]bool{}
+	mux := http.NewServeMux()
+	for _, path := range []string{"/api/v1/bot/orders", "/api/v1/bot/keys"} {
+		path := path
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			reached[path] = true
+			w.WriteHeader(http.StatusOK)
+		})
+	}
+	handler := httpx.Chain(mux,
+		httpx.Auth("http://127.0.0.1:1", public),
+		httpx.CSRF(csrfSkip),
+	)
+
+	// A bot order with only a bearer key (no cookies) reaches the handler.
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/bot/orders", strings.NewReader(`{}`))
+	req.Header.Set("Authorization", "Bearer tna_abc_secret")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if !reached["/api/v1/bot/orders"] {
+		t.Fatalf("bot order blocked before its handler: %d %s", rec.Code, rec.Body.String())
+	}
+
+	// Key management without a session is refused by session auth.
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/bot/keys", nil))
+	if rec.Code != http.StatusUnauthorized || reached["/api/v1/bot/keys"] {
+		t.Fatalf("GET /api/v1/bot/keys without a session: %d, reached=%v; want 401 before the handler", rec.Code, reached["/api/v1/bot/keys"])
+	}
+}
+
 func TestLegacyMoneyPathsAreNotPublicOrCSRFSkippedByDefault(t *testing.T) {
 	t.Setenv(legacyMoneyRoutesEnv, "")
 	publicPrefixes := gatewayPublicPrefixes()
@@ -261,6 +314,27 @@ func TestPredictionTaxonomyReadEndpointsBypassAuth(t *testing.T) {
 				t.Fatalf("expected public taxonomy route to bypass auth, got %d", res.Code)
 			}
 		})
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRefusesUnknownEnvironment(t *testing.T) {
+	// "prod" is not "production": without this check it would boot with the
+	// whole production policy skipped (TD-007).
+	for _, env := range []string{"prod", "preprod", "live"} {
+		err := validateGatewayRuntimeConfig(prodBaseEnv(map[string]string{"ENVIRONMENT": env}))
+		if err == nil || !strings.Contains(err.Error(), "not recognised") {
+			t.Fatalf("ENVIRONMENT=%q: got %v, want an unrecognised-environment error", env, err)
+		}
+	}
+	for _, env := range []string{"", "development", "test", "demo"} {
+		if err := validateGatewayRuntimeConfig(func(key string) string {
+			if key == "ENVIRONMENT" {
+				return env
+			}
+			return ""
+		}); err != nil {
+			t.Fatalf("ENVIRONMENT=%q: got %v, want nil for a development environment", env, err)
+		}
 	}
 }
 

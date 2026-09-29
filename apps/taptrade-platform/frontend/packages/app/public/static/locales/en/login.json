@@ -19,5 +19,19 @@
   "PASSWORD_PLACEHOLDER": "Enter your password",
   "SIGNING_IN": "Signing In...",
   "INCORRECT_CREDENTIALS": "Incorrect username or password.",
-  "WELCOME_TITLE": "Welcome back"
+  "WELCOME_TITLE": "Welcome back",
+  "MFA_TITLE": "Enter your code",
+  "MFA_SUBTITLE": "Open your authenticator app and enter the 6-digit code for {{brand}}.",
+  "MFA_SETUP_TITLE": "Set up two-factor sign-in",
+  "MFA_SETUP_SUBTITLE": "This account signs in with a code from an authenticator app. Add this key to one, such as 1Password, Google Authenticator or Authy, then enter the 6-digit code it shows.",
+  "MFA_SETUP_KEY": "Setup key",
+  "MFA_COPY_KEY": "Copy key",
+  "MFA_COPIED": "Copied",
+  "MFA_OPEN_APP": "Open in authenticator app",
+  "MFA_CODE_LABEL": "6-digit code",
+  "MFA_VERIFY": "Verify",
+  "MFA_VERIFYING": "Verifying…",
+  "MFA_START_OVER": "Sign in with a different account",
+  "MFA_EXPIRED": "Your sign-in timed out. Enter your password again.",
+  "MFA_INCORRECT_CODE": "That code didn't work. Check your authenticator app and try the current code."
 }

@@ -1,0 +1,73 @@
+name: Roll back demo (Hetzner)
+
+# Restores the auth, gateway, player and office images of an earlier release
+# on the demo box and recreates those containers (TD-019). The deploy keeps
+# the newest three releases' images (apps/taptrade-platform/scripts/releases.sh).
+#
+# Images only: migrations are not reverted and the rsynced config (compose
+# files, Caddyfile) stays at the current version. If the release being rolled
+# back applied a migration the older code can't run against, roll forward
+# with a fix instead. See docs/DEPLOYMENT.md "Rollback".
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release id to restore (12-character commit prefix). Empty = the release before the current one."
+        type: string
+        default: ""
+      dry_run:
+        description: "Only show what would be restored"
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-demo          # never overlaps a deploy
+  cancel-in-progress: false
+
+env:
+  BOX: 91.98.118.132
+  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up deploy SSH key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Validate input
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          if [ -n "$RELEASE" ] && ! printf '%s' "$RELEASE" | grep -Eq '^[0-9a-f]{12}$'; then
+            echo "::error::release must be a 12-character lowercase hex commit prefix"
+            exit 1
+          fi
+
+      - name: Roll back
+        env:
+          RELEASE: ${{ inputs.release }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            "DRY_RUN=$DRY_RUN bash -s -- rollback $RELEASE" \
+            < apps/taptrade-platform/scripts/releases.sh
+
+      - name: Smoke check
+        if: ${{ !inputs.dry_run }}
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 'https://demo.99rtp.io/api/v1/markets?limit=1' || echo 000)
+            [ "$code" = "200" ] && { echo "player API OK"; exit 0; }
+            echo "attempt $i: $code"; sleep 10
+          done
+          echo "::error::demo did not answer 200 after the rollback"
+          exit 1

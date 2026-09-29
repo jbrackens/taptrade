@@ -1,10 +1,7 @@
-> **Warning (2026-09-29): some SQL below uses pre-migration-050 column names.**
-> Migration `050_points_unit_model.sql` renamed the prediction and wallet
-> `*_cents` columns to `*_points` (for example `collateral_pool_cents` →
-> `collateral_pool_points`, `total_cost_cents` → `total_cost_points`,
-> `amount_cents` → `amount_points`). Substitute the current names from
-> [`docs/DATA_MODEL.md`](../../../docs/DATA_MODEL.md) before running a query.
-> Tracked as TD-021 in [`docs/TECH_DEBT.md`](../../../docs/TECH_DEBT.md).
+> **SQL checked 2026-09-29:** every query below uses the post-migration-050
+> column names (`*_points`) and was run against a freshly migrated and seeded
+> database (write blocks inside a rolled-back transaction). Schema reference:
+> [`docs/DATA_MODEL.md`](../../../docs/DATA_MODEL.md).
 
 # Tap Trade exchange — on-call runbook
 
@@ -33,8 +30,8 @@ rows. Slack/PagerDuty fires on the slog line `reconciler: collateral drift
 detected`.
 
 **What it means:** the reconciler's two-phase check found that a market's
-`collateral_pool_cents` column doesn't equal `sum(YES quantity) × 100¢` plus
-`sum(NO quantity) × 100¢`. Confirmed drift writes a row to
+`collateral_pool_points` column doesn't equal `sum(YES quantity) × 100` plus
+`sum(NO quantity) × 100`. Confirmed drift writes a row to
 `prediction_collateral_ledger` with `entry_type = 'adjustment'`.
 
 ### Diagnose
@@ -44,19 +41,19 @@ detected`.
 SELECT m.ticker,
        m.id AS market_id,
        COUNT(*) AS adjustments,
-       SUM(ABS(l.amount_cents)) AS total_drift_cents,
+       SUM(ABS(l.amount_points)) AS total_drift_points,
        MAX(l.created_at) AS most_recent
 FROM prediction_collateral_ledger l
 JOIN prediction_markets m ON m.id = l.market_id
 WHERE l.entry_type = 'adjustment'
   AND l.created_at > NOW() - INTERVAL '24 hours'
 GROUP BY m.ticker, m.id
-ORDER BY total_drift_cents DESC;
+ORDER BY total_drift_points DESC;
 
 -- Full forensic chain for one market
-SELECT entry_type, amount_cents, balance_after_cents, reason, created_at
+SELECT entry_type, amount_points, balance_after_points, reason, created_at
 FROM prediction_collateral_ledger
-WHERE market_id = '<UUID-from-above>'
+WHERE market_id = '<MARKET_ID>'  -- a market_id from the query above
 ORDER BY created_at DESC
 LIMIT 50;
 ```
@@ -96,20 +93,20 @@ Evidence to capture before unhalting:
 -- Snapshot of positions on this market (sums should match the pool)
 SELECT side,
        SUM(quantity) AS qty,
-       SUM(total_cost_cents) AS cost_cents,
+       SUM(total_cost_points) AS cost_points,
        SUM(quantity) * 100 AS expected_pool_contribution
 FROM prediction_positions
 WHERE market_id = '<MARKET_ID>' AND quantity > 0
 GROUP BY side;
 
 -- Pool right now
-SELECT collateral_pool_cents FROM prediction_markets WHERE id = '<MARKET_ID>';
+SELECT collateral_pool_points FROM prediction_markets WHERE id = '<MARKET_ID>';
 
 -- All trades, newest first
-SELECT id, trade_kind, engine_kind, price_cents, quantity, created_at
+SELECT id, trade_kind, engine_kind, price_points, quantity, traded_at
 FROM prediction_trades
 WHERE market_id = '<MARKET_ID>'
-ORDER BY created_at DESC
+ORDER BY traded_at DESC
 LIMIT 20;
 ```
 
@@ -147,7 +144,7 @@ ORDER BY updated_at
 LIMIT 20;
 
 -- Market lifecycle state
-SELECT id, ticker, status, execution_mode, close_at, settled_at
+SELECT id, ticker, status, execution_mode, close_at, updated_at
 FROM prediction_markets
 WHERE ticker = '<TICKER>';
 
@@ -302,61 +299,34 @@ The advisory-lock holding time is the actual scarcity metric.
 
 ---
 
-## 5. Settlement with collateral imbalance (override required)
+## 5. Settlement when collateral has drifted
 
-**Symptom:** admin clicks Settle in the back-office and gets the toast
-"collateral imbalance — override required". The settlement modal now
-exposes an Override Reason textarea, but the request body doesn't yet
-pipe `overrideReason` to the gateway (tracked TODO in
-`internal/prediction/settlement.go`).
+**Corrected 2026-09-29.** This section used to describe a "collateral
+imbalance — override required" error and a hand-written SQL settlement. The
+gateway raises no such error, and the SQL procedure was dangerous: it set a
+market to `settled` without crediting anyone, and nothing pays out a market
+marked settled by hand (the auto-settler only acts on `closed` markets).
 
-### Right now (pre-wire-up)
+**What to do:** run the scenario-1 drift diagnostic first, then settle from
+the office as usual (Prediction admin → Settlements). If you are settling
+despite drift, write the reason and ticket in the **Override Reason** field.
+Since 2026-09-29 it is stored on the settlement row with who and when, and
+counted in the settlement metrics.
 
-Use `psql` directly. **Only do this after running the scenario-1 drift
-diagnostic** — settle-with-override leaves money in or out of the system
-that needs accounting somewhere.
+**Never** update `prediction_markets.status` to `settled` in SQL — payouts are
+credited in the same transaction as the settlement, and only the settlement
+path does it. If the settle call fails, page an engineer.
+
+Review recent overrides:
 
 ```sql
-BEGIN;
-
--- 1. Force the market to settled status
-UPDATE prediction_markets
-SET status = 'settled',
-    result = '<yes|no>',
-    settled_at = NOW(),
-    updated_at = NOW()
-WHERE id = '<MARKET_ID>';
-
--- 2. Write the settlement row by hand
-INSERT INTO prediction_settlements
-  (market_id, result, attestation_source, settled_by, override_reason, settled_at)
-VALUES
-  ('<MARKET_ID>', '<yes|no>', 'admin-manual', '<your-uuid>',
-   'override: <ticket-link>, drift was $X.XX, manual reconciliation by <name>',
-   NOW());
-
--- 3. Lifecycle audit row
-INSERT INTO prediction_lifecycle_events (market_id, event_type, actor_id, actor_type, reason, occurred_at)
-VALUES ('<MARKET_ID>', 'settled', '<your-uuid>', 'admin',
-        'override settlement: ticket <link>', NOW());
-
--- 4. Verify before commit
-SELECT id, status, result FROM prediction_markets WHERE id = '<MARKET_ID>';
-
-COMMIT;  -- or ROLLBACK if anything looks wrong
+SELECT market_id, result, settled_by, override_reason,
+       overridden_by_user_id, overridden_at
+FROM prediction_settlements
+WHERE override_reason IS NOT NULL
+ORDER BY overridden_at DESC
+LIMIT 20;
 ```
-
-Payouts still need to be credited. Manual wallet credits are an unsafe
-path; prefer to let the auto-settler retry once the lifecycle row exists.
-If that doesn't fire within 5 minutes, page an engineer.
-
-### Long-term fix
-
-Wire `overrideReason` through `ResolveMarketRequest` in
-`internal/prediction/types.go` and the corresponding HTTP handler in
-`internal/http/handlers.go`. Then the back-office modal works end-to-end
-and this scenario reduces to a UI click. Tracked TODO in
-`internal/prediction/settlement.go`.
 
 ---
 
@@ -383,7 +353,7 @@ gwlog | grep -i "smm:" | tail -30
 
 ```sql
 -- Bot's open orders right now
-SELECT m.ticker, o.side, o.price_cents, o.quantity, o.created_at
+SELECT m.ticker, o.side, o.price_points, o.quantity, o.created_at
 FROM prediction_orders o
 JOIN prediction_markets m ON m.id = o.market_id
 WHERE o.user_id = 'user-bot' AND o.status = 'open'
@@ -391,8 +361,8 @@ ORDER BY o.created_at DESC LIMIT 50;
 
 -- Bot's cash + commitment
 SELECT
-  (SELECT balance_cents FROM wallet_balances WHERE user_id = 'user-bot') AS balance,
-  (SELECT COALESCE(SUM(amount_cents - captured_amount_cents), 0)
+  (SELECT balance_points FROM wallet_balances WHERE user_id = 'user-bot') AS balance,
+  (SELECT COALESCE(SUM(amount_points - captured_amount_points), 0)
    FROM wallet_reservations WHERE user_id = 'user-bot' AND status = 'held') AS reserved,
   (SELECT COUNT(*) FROM prediction_orders WHERE user_id = 'user-bot' AND status = 'open') AS open_orders;
 ```
@@ -531,3 +501,157 @@ verification before any deletion; and a lockstep update of `deploy-demo.yml`,
 `migrate-on-box.sh`, `migrate-demo.yml`, `cf-firewall.sh`, and the `cf-firewall.service`
 systemd unit **installed in /etc** (which the `mv` does not touch, and whose failure
 silently leaves the Cloudflare origin filter fail-open at next boot).
+
+---
+
+# Part 2 — Routine procedures
+
+Merged 2026-09-29 from the former `RUNBOOKS.md` (archived) and corrected
+against the code. Conventions as above; on the demo box prefix database
+commands with
+`docker compose -f docker-compose.yml -f docker-compose.demo.yml exec postgres psql -U predict -d predict`.
+
+## 7. Market lifecycle
+
+States and transitions are enforced by `internal/prediction/lifecycle.go`
+(diagram: [`docs/DATA_MODEL.md`](../../../docs/DATA_MODEL.md#marketevent-lifecycle-state-machines)).
+
+- **Open, halt, close or void a market:** office → Prediction admin → Markets,
+  or `POST /api/v1/admin/markets/{id}/lifecycle/{open|halt|close|void}`
+  (`markets:edit`). Voiding refunds every position at entry cost.
+- `MarketCloser` closes markets past `close_at` every 30 s.
+- **Resting orders** are finalized by `RestingOrderExpirer` (60 s) only once
+  their market is closed, settled or voided; orders on an open market never
+  age out. For orders stuck in `pending`, see scenario 2.
+
+## 8. Settlement
+
+- **Manual settlement:** office → Prediction admin → Settlements, or
+  `POST /api/v1/admin/settlements/{marketId}` (`settlements:resolve`). Winners
+  are credited 100 Points per contract in the same transaction; one admin can
+  do this alone.
+- **Windowed settlement** (propose → one-hour challenge window → finalize):
+  `/api/v1/admin/markets/{id}/propose` and `/finalize`; the finalizer must
+  differ from the proposer. Disputes are reviewed at office → Disputes.
+- **Concurrency:** settle and void each begin with a status-guarded update, so
+  a concurrent settle and void resolve to exactly one; the loser gets
+  **409 Conflict**. No retry is needed — the market is already terminal.
+- **Automatic settlement:** only manual sources are registered at launch, so
+  every market is settled by an admin. A failing source leaves its markets
+  closed for manual settlement (`resolution source unhealthy` in the logs).
+- **Crash mid-payout:** a resumer runs at boot and every 60 s and finishes the
+  batch exactly once; `POST /api/v1/admin/settlements/replay` triggers it.
+- **Verify:** one `prediction_payouts` row per position, and wallet credits
+  keyed `prediction_payout:<market>:<position>`. Overrides: scenario 5.
+
+## 9. Void and refund
+
+Voiding refunds every position at entry cost (ledger keys
+`prediction_void:<market>:<position>`). Use it for mis-created or unresolvable
+markets. A settled or voided market cannot be voided.
+
+## 10. Cashier (dormant)
+
+The alpha cashier and the legacy payments rail are not mounted in any
+deployment: they need `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` and
+`ALPHA_CASHIER_ENABLED=true`, both refused at boot in production/staging, and
+the office has no cashier page. If they are ever enabled, operations run
+through the admin API (`/api/v1/admin/cashier/alpha/*`, `cashier:*`
+permissions): an approver and a different broadcaster (two-person control),
+and completion requires on-chain proof of the payout transfer. See
+[ADR-0012](../../../docs/adr/0012-cashier-merged-dark-behind-flags.md) and
+[`docs/INTEGRATIONS.md`](../../../docs/INTEGRATIONS.md#alpha-cashier-evm-rpc--dormant).
+
+## 11. Reconciliation
+
+The in-process `Reconciler` checks every open order-book market's collateral
+every 15 minutes, logs drift at ERROR and counts it in `/metrics/prediction`.
+The `ReconcilerDriftDetected` alert rule is in `ops/prometheus/alert-rules.yml`,
+but no Prometheus runs today, so read the logs (scenario 1). The
+`prediction-reconciliation-report` command runs the reconciliation maths on
+fixture cases offline; it does not read the live database.
+
+## 12. WebSocket / real-time
+
+Symptom: clients stop receiving live price or portfolio updates.
+
+- The hub is per-instance. With `WS_BACKBONE=redis` and a valid `REDIS_URL`,
+  broadcasts also fan out across replicas
+  (`go-platform/services/gateway/internal/ws/backbone.go`); without them, run a
+  single gateway replica. `/readyz` reports `ws_backbone: ok | degraded`.
+- A slow client is dropped and disconnected (it resyncs on reconnect); see
+  `ws_dropped_messages_total` and `ws_slow_clients_disconnected_total`.
+- Auth failures at upgrade return 401 before the socket opens; check the auth
+  service (`:18081/healthz`).
+
+## 13. Database restore
+
+1. Stop gateway and auth: `docker compose -f docker-compose.yml -f docker-compose.demo.yml stop gateway auth`.
+2. Restore: `ops/backup/restore-db.sh <dump.sql.gz> <target_db> [--force]`
+   (it refuses to overwrite the live `predict` database without `--force`;
+   rehearse into a scratch database first).
+3. If the dump predates the current schema, apply migrations through the
+   gateway image:
+   `docker compose -f docker-compose.yml -f docker-compose.demo.yml run --rm --no-deps -e MIGRATIONS_DIR=/app/migrations gateway ./migrate up`.
+4. Start the services and check `:18080/healthz` and `:18081/healthz`.
+5. Check the reconciler logs for drift before reopening trading.
+6. Restoring onto a different box: the dump does not contain the two-factor
+   key. Copy `/var/lib/taptrade/mfa.key` across before the next deploy, or
+   staff sign-in answers 503 until every enrolled account is reset (§16).
+
+## 14. Boot-validation failure
+
+The gateway refuses to start in production/staging when compliance or
+security configuration is missing, and in any environment when `ENVIRONMENT`
+is not a recognised value. Auth refuses an unrecognised `ENVIRONMENT` too, and
+refuses to start without `AUTH_MFA_ENCRYPTION_KEY` while staff two-factor
+sign-in is required. The error names the variable. Requirements:
+[`docs/DEPLOYMENT.md`](../../../docs/DEPLOYMENT.md#required-productionstaging-configuration).
+
+## 15. Health checks
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:18080/healthz   # gateway
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:18081/healthz   # auth
+curl -s http://localhost:18080/readyz                                     # auth, DB, WS backbone
+```
+
+The gateway takes longer than the front ends to become healthy (DB and
+workers). Metrics: `/metrics` and `/metrics/prediction`.
+
+## 16. Two-factor sign-in
+
+Staff (admin accounts) sign in with a password and a 6-digit code from an
+authenticator app; players can turn it on under Account → Security. An admin
+with no authenticator yet is shown a setup key at their next sign-in, and the
+first code from it turns it on. Whoever signs in first with the password
+enrolls, so enroll new admins promptly.
+
+**Lost authenticator.** Clear the enrollment; the person then sets up a new
+authenticator at their next sign-in (staff) or can turn it on again from
+Account → Security (players):
+
+```bash
+cd /opt/phoenix
+JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+  exec auth ./auth mfa-reset someone@example.com
+```
+
+It matches the username or email in `auth_users` and the email in
+`admin_users`, prints how many accounts and enrollments it cleared, and exits 1
+if no account matches. It does not sign anyone out.
+
+**Staff sign-in answers 503 "two-factor sign-in is unavailable".** Auth could
+not read or decrypt the account's secret. Check the auth logs for
+`two-factor lookup failed` (database) or `did not decrypt` (the key in `.env`
+does not match the one the secret was stored with; compare with
+`/var/lib/taptrade/mfa.key`). With the key truly lost, reset each account.
+
+**Locked out after wrong codes.** Wrong codes count toward the same lockout as
+wrong passwords (5 failures, 15 minutes).
+
+## 17. Rollback
+
+Restore the previous release's images with the *Roll back demo (Hetzner)*
+workflow, dry run first. Migrations are not reverted. Procedure and limits:
+[`docs/DEPLOYMENT.md`](../../../docs/DEPLOYMENT.md#rollback).

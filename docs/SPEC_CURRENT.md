@@ -9,7 +9,9 @@
 > configuration → [ENVIRONMENT.md](ENVIRONMENT.md); economy-rule history →
 > [taptrade-economy-rules.md](taptrade-economy-rules.md); store contract →
 > [`../STORE_AND_PAYMENTS.md`](../STORE_AND_PAYMENTS.md).
-> **Last verified:** 2026-09-29 at commit `4924a670` — route registrations in
+> **Last verified:** 2026-09-29 at commit `4924a670`; bot keys, settlement
+> overrides and two-factor sign-in updated the same day with the hardening
+> change. Route registrations in
 > `gateway/internal/**` and `gateway/cmd/gateway/main.go`, `gateway/internal/prediction`
 > business logic, every `player/app/**/page.tsx` and `office/app/(dashboard)/**/page.tsx`,
 > `player/FEATURE_MANIFEST.json`, `player/app/lib/features.ts`, and the demo
@@ -129,6 +131,10 @@ geo and KYC gates are off, `SMM_ENABLED=true`, `STORE_ENABLED=true` with the
 - **Direct settlement** — `POST /api/v1/admin/settlements/{marketId}` settles a
   closed market immediately and needs only `settlements:resolve`: one admin can
   settle a market alone ([TD-002](TECH_DEBT.md#a-admin-controls-and-points-integrity)).
+  When the admin gives an override reason (the office's *Override Reason*
+  field, for settling against the imbalance check), it is stored on
+  `prediction_settlements` with who overrode and when (since 2026-09-29;
+  earlier overrides recorded nothing).
 
 ### 2.5 Settlement sources — Partial
 
@@ -216,7 +222,7 @@ returns 404 or redirects unless the named build-time flag is `true`.
 | Leaderboards | `/leaderboards`, `/leaderboards/[id]` | Boards and standings; `[id]` redirects to `?board=` | Complete |
 | Account | `/account` | Own profile hub: balance, marked positions, result sparkline | Complete |
 | Account | `/account/settings` | Details, language, privacy toggle; KYC card (`FEATURE_KYC`), limits (`FEATURE_LIMITS`) | Complete; the details save is not persisted ([TD-036](TECH_DEBT.md#f-gateway-api-and-real-time)) |
-| Account | `/account/security` | Password change, sessions; 2FA toggle never loads current state | Partial ([TD-005](TECH_DEBT.md#b-authentication-and-access-control)) |
+| Account | `/account/security` | Password change, sessions, two-factor sign-in (status, setup with an authenticator key, turn off with a code) | Complete |
 | Account | `/account/notifications` | Preference UI; backend does not persist | Partial / Stub |
 | Account | `/account/transactions` | Clout ledger with filters and CSV export | Complete |
 | Account | `/account/rg-history`, `/account/self-exclude`, `/responsible-gaming` | Responsible-play history, self-exclusion wizard, info page | Flag `NEXT_PUBLIC_FEATURE_RG` |
@@ -284,7 +290,13 @@ entries are `/cashier`, `ChatSidebar` (renders "Chat isn't connected yet") and
    Social login (Google, Facebook, Discord, X, TikTok, Reddit) probes
    `/api/v1/auth/oauth/<provider>/start/`; a provider without credentials shows
    "not configured". Only Google and Discord link to an existing account, and
-   only on a verified email ([INTEGRATIONS.md](INTEGRATIONS.md)).
+   only on a verified email ([INTEGRATIONS.md](INTEGRATIONS.md)). An account
+   with two-factor sign-in gets a second step for the 6-digit code from its
+   authenticator app, after a password or a social sign-in.
+8. **Turn on two-factor sign-in.** `/account/security` → *Two-factor sign-in* →
+   *Set up* shows a key for an authenticator app; the first code turns it on.
+   Turning it off needs a current code. Staff can't turn it off while it is
+   required, and a staff account without it is set up at its next sign-in.
 2. **Get Clout.** Claim the starter grant and daily claim on `/rewards`, or buy
    a pack on `/store` (simulated checkout on the demo).
 3. **Discover and quick-trade.** `/predict` → a card's Yes/No opens the trade
@@ -341,6 +353,15 @@ on the demo also sits behind HTTP basic auth.
   last active super-admin cannot be removed; nobody can suspend or delete
   themselves. Production has no seeded staff: create the first super-admin with
   `gateway rbac-bootstrap`.
+- **Two-factor sign-in for staff.** While `AUTH_ADMIN_MFA_REQUIRED` is on
+  (default in production/staging; on for the demo), every admin account — in
+  `auth_users` with role `admin`, or in `admin_users` — signs in with a password
+  and then a TOTP code. An admin without an authenticator is shown a setup key
+  at their next sign-in, and the first code both confirms it and signs them in;
+  until then the password alone decides who enrolls
+  ([TD-057](TECH_DEBT.md#b-authentication-and-access-control)). Staff cannot
+  turn it off; an operator clears a lost authenticator with `auth mfa-reset`
+  ([runbook §16](../apps/taptrade-platform/ops/RUNBOOK.md)).
 
 | Permission | Super Admin | Operations Manager | Customer Support |
 |---|---|---|---|
@@ -361,14 +382,16 @@ on the demo also sits behind HTTP basic auth.
   (`gateway/cmd/gateway/main.go`): health and status, `/api/v1/auth/`, `/ws`
   (authenticates itself), CMS delivery, attributions, recent activity, the
   public catalogue (`discover`, `discovery`, `live-markets`, `categories`,
-  `series`, `tags`, `events`, `markets`), leaderboards, and `/api/v1/bot/`
-  (API-key auth). `/api/v1/store/webhook` and the legacy webhook prefixes are
+  `series`, `tags`, `events`, `markets`), leaderboards, and the API-key bot
+  routes `/api/v1/bot/orders`, `/positions` and `/markets` (also CSRF-exempt).
+  `/api/v1/store/webhook` and the legacy webhook prefixes are
   added only when their feature is on. Everything else needs a session.
 - **Bot API keys**: `Authorization: Bearer tna_<prefix>_<secret>`, bcrypt-checked,
   scoped (`read`, `trade`, `admin`), rate-limited per key
   (`gateway/internal/prediction/botauth.go`). Operators issue partner keys via
-  `/api/v1/admin/partner-keys`. **Defect:** the self-serve `/api/v1/bot/keys`
-  routes always return 401 ([TD-008](TECH_DEBT.md#b-authentication-and-access-control)).
+  `/api/v1/admin/partner-keys`. Players manage their own keys at
+  `/api/v1/bot/keys` with their session (subject to `BOT_KEYS_SELF_SERVE`);
+  until 2026-09-29 those routes always answered 401.
 - **Dev bypasses** — `GATEWAY_ALLOW_ADMIN_ANON=true` and
   `GATEWAY_AUTH_ENABLED=false` — refuse boot in production/staging.
 
@@ -399,8 +422,8 @@ are exempt, and methods and schemas are not checked.
 | Compliance | 16 routes under `/api/v1/compliance/{geo,kyc,rg}/*`; all but the geo routes bind the user to the session |
 | Users | `GET/PUT /api/v1/users/{id}/profile` (PUT not persisted), `POST /api/v1/punters/delete` (schedules deletion in 30 days) |
 | CMS (public, DB only) | `GET /api/v1/content/{slug}`, `/api/v1/banners` |
-| Bot (API key) | `POST /api/v1/bot/orders`, `GET /api/v1/bot/positions`, `/bot/markets`; `/api/v1/bot/keys` broken (see §6) |
-| Auth | `/api/v1/auth/*` and `/auth/*` are reverse-proxied to the auth service |
+| Bot (API key) | `POST /api/v1/bot/orders`, `GET /api/v1/bot/positions`, `/bot/markets`; key management `GET/POST /api/v1/bot/keys`, `DELETE /api/v1/bot/keys/{id}` (session) |
+| Auth | `/api/v1/auth/*` and `/auth/*` are reverse-proxied to the auth service. Two-factor: `POST /api/v1/auth/login/mfa` (challenge + code → session); `GET /api/v1/auth/mfa` (status); `POST /api/v1/auth/mfa/enroll`, `/activate`, `/disable` (session + CSRF). The old `POST /api/v1/auth/2fa/toggle` is gone |
 
 **Admin API** (`/api/v1/admin/*`, most also mounted under `/admin/*`): markets
 and taxonomy, lifecycle actions, propose/finalize, settlements and replay,

@@ -19,3 +19,4 @@ descriptions of the current system.
 | `OFFICE-COMPONENTS.md` | `office/app/COMPONENTS.md` | nothing — already a retired pointer |
 | `OFFICE-IMPLEMENTATION_SUMMARY.md` | `office/app/IMPLEMENTATION_SUMMARY.md` | nothing — already a retired pointer |
 | `OFFICE-INTEGRATION_GUIDE.md` | `office/app/INTEGRATION_GUIDE.md` | nothing — already a retired pointer |
+| `PLATFORM-RUNBOOKS.md` | `apps/taptrade-platform/RUNBOOKS.md` | Part 2 of [`stack/ops/RUNBOOK.md`](../../../apps/taptrade-platform/ops/RUNBOOK.md) (merged 2026-09-29) |

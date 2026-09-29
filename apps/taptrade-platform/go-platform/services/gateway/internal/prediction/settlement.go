@@ -516,6 +516,15 @@ func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketR
 	if req.OverrideReason != nil && strings.TrimSpace(*req.OverrideReason) != "" {
 		trimmed := strings.TrimSpace(*req.OverrideReason)
 		settlement.OverrideReason = &trimmed
+		// The table's all-or-none CHECK needs who and when alongside the
+		// reason; without them the override was accepted but never stored.
+		overriddenAt := settlement.SettledAt
+		settlement.OverriddenAt = &overriddenAt
+		overriddenBy := "system"
+		if settledBy != nil && strings.TrimSpace(*settledBy) != "" {
+			overriddenBy = strings.TrimSpace(*settledBy)
+		}
+		settlement.OverriddenByUserID = &overriddenBy
 	}
 
 	// Get all positions for this market
