@@ -1462,6 +1462,9 @@ export default function MarketDetailPage() {
                 side={selectedSide}
                 yesPricePoints={market.yesPricePoints}
                 noPricePoints={market.noPricePoints}
+                // The mockups' chart height: shorter on phones so the stats
+                // and rules stay near the first screen.
+                height={isTicketBand ? 220 : 260}
               />
             </div>
           </div>
