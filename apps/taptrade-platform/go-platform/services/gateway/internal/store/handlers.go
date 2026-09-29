@@ -11,15 +11,21 @@ import (
 	"time"
 
 	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/webhookauth"
 	"taptrade/platform/transport/httpx"
 )
+
+// WebhookSignatureHeader carries the webhookauth signature (`sha256=<hex>`
+// of the HMAC-SHA256 over the raw body). Stripe later: swap the verifier for
+// Stripe's `Stripe-Signature: t=...,v1=...` scheme; nothing else changes.
+const WebhookSignatureHeader = "X-Store-Signature"
 
 // RegisterRoutes mounts the point store tree under /api/v1/store/*
 // (STORE_AND_PAYMENTS.md §7). The caller registers this ONLY when
 // STORE_ENABLED=true. Every route is session-authenticated except the
 // webhook, which performs its own HMAC verification.
 func RegisterRoutes(mux *stdhttp.ServeMux, svc *Service) {
-	verifier := newWebhookVerifier(svc.Config().WebhookSecret)
+	verifier := webhookauth.NewVerifier(svc.Config().WebhookSecret)
 
 	mux.Handle("/api/v1/store/packs", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
@@ -318,13 +324,9 @@ func mapStoreError(err error) error {
 
 func mapWebhookVerificationError(err error) error {
 	switch {
-	case errors.Is(err, ErrWebhookSecretMissing):
+	case errors.Is(err, webhookauth.ErrSecretMissing):
 		return httpx.NewError(stdhttp.StatusServiceUnavailable, "service_unavailable", "store webhook is not configured", nil, nil)
-	case errors.Is(err, ErrWebhookSignatureMissing),
-		errors.Is(err, ErrWebhookSignatureInvalid),
-		errors.Is(err, ErrWebhookTimestampMissing),
-		errors.Is(err, ErrWebhookTimestampInvalid),
-		errors.Is(err, ErrWebhookTimestampExpired):
+	case errors.Is(err, webhookauth.ErrRejected):
 		return httpx.Unauthorized("invalid webhook signature")
 	default:
 		return httpx.Internal("webhook verification failed", err)

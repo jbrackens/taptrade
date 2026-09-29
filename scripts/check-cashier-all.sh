@@ -14,7 +14,7 @@ node "$ROOT/scripts/check-cashier-provider-scenarios.mjs"
 node "$ROOT/scripts/check-cashier-launch-readiness.mjs"
 "$ROOT/scripts/check-cashier-frontend-types.sh"
 
-(cd "$ROOT/apps/taptrade-platform/go-platform/services/gateway" && go test ./internal/cashier ./cmd/gateway ./internal/payments)
+(cd "$ROOT/apps/taptrade-platform/go-platform/services/gateway" && go test ./cmd/gateway ./internal/payments ./internal/webhookauth)
 
 node --test "$ROOT/services/cashier-api/test/"*.test.mjs
 

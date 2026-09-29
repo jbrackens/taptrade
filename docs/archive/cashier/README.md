@@ -329,7 +329,7 @@ payments package.
 - [Cashier SDK tests](../../../packages/cashier-sdk/test/cashier-sdk.test.mjs)
 - [Cashier guard checks](../../../scripts/check-cashier-all.sh)
 - [Provider scenario manifest](../../../services/bridge-watcher/fixtures/provider-scenarios.manifest.json)
-- [Gateway cashier domain package](../../../apps/taptrade-platform/go-platform/services/gateway/internal/cashier/README.md)
+- Gateway cashier domain package (`internal/cashier`): deleted 2026-09-29. Its webhook signature check and two-person rule survive, fixed, as the gateway's `internal/webhookauth` and `internal/approval`.
 - [Alpha cashier gateway package](../../../apps/taptrade-platform/go-platform/services/gateway/internal/alphacashier)
 
 Primary local check:

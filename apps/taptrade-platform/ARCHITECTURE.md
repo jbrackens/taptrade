@@ -147,7 +147,7 @@ Channels: `market:<id>`, `trades:<marketId>`, `orderbook:<marketId>`,
   `ALPHA_CASHIER_ENABLED=true` and any `CRYPTO_RPC_URL` / `CRYPTO_ASSET_CONTRACT` /
   `CRYPTO_DEPOSIT_ADDRESS_SOURCE` value.
 - **Dormant cashier code** still sits in the tree — `internal/alphacashier`,
-  `internal/payments`, `internal/cashier`, plus the non-custodial seed
+  `internal/payments`, plus the non-custodial seed
   (`contracts/`, `services/{relayer,bridge-watcher,cashier-api}`,
   `packages/cashier-sdk`). None of it is reachable at launch. Its design record
   is archived under `docs/archive/cashier/`.

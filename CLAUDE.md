@@ -117,7 +117,7 @@ The platform launches on non-redeemable Points. There is no cash-out.
 - `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED` (default off, `internal/http/launch_boundary.go`) is the single switch that mounts the legacy deposit / withdrawal / payments-webhook / provider-callback / crypto-rail trees. Setting it to `true` when `ENVIRONMENT=production|staging` is a **boot error**.
 - `ALPHA_CASHIER_ENABLED=true` is likewise a boot error in production/staging, and outside those envs it additionally requires the legacy flag.
 - `CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT` and `CRYPTO_DEPOSIT_ADDRESS_SOURCE` **must be unset**: in production/staging any non-empty value refuses boot (`cmd/gateway/main.go`, `validateGatewayRuntimeConfig`). They are not activation knobs.
-- `internal/payments/crypto_rail.go`, `internal/cashier/`, `internal/alphacashier/`, plus the root-level `contracts/`, `packages/cashier-sdk/` and `services/{cashier-api,bridge-watcher,relayer}` are the **dormant real-money workstream**. They are validated by `make cashier-check` and are not deployed. Do not treat them as live seams, and do not delete them without asking.
+- `internal/payments/crypto_rail.go`, `internal/alphacashier/`, plus the root-level `contracts/`, `packages/cashier-sdk/` and `services/{cashier-api,bridge-watcher,relayer}` are the **dormant real-money workstream**. They are validated by `make cashier-check` and are not deployed. Do not treat them as live seams, and do not delete them without asking.
 - **The cashier is merged but dark (2026-09-29).** `feat/hula-na-cashier` was reconciled into `main` by hand: its crypto deposit watcher became alphacashier's `DepositScanner` (`internal/alphacashier/deposit_scanner.go`, migration 065, `ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED`), and the player app gained one page, `/cashier` (a read-only deposit card on `GET /api/v1/cashier/alpha/config`), which calls `notFound()` unless `NEXT_PUBLIC_FEATURE_CASHIER_UI=true` at build time. Nothing links to it. Its sportsbook-era cashier UI (USD methods, cheque payouts) and duplicate Solidity were dropped. The same pass hardened the rails: withdrawal completion requires on-chain proof from `ALPHA_CASHIER_PAYOUT_ADDRESS` (default: the treasury), deposit/withdrawal requests serialize per user, the withdrawal KYC threshold counts both rails (`payments.CrossRailWithdrawnCents`), and cashier admin actions refuse to run without RBAC when a DB is configured. `internal/http/demo_money_flags_test.go` fails CI if the demo compose file or deploy workflow ever sets a money flag, and `app/__tests__/cashier-flag.test.ts` pins the page's gate.
 - `internal/http/launch_docs_test.go` `TestLaunchDocsStayPointsOnly` fails CI if the gateway `README.md`, `Makefile` or `api/openapi.yaml` reintroduce cashier/deposit/withdraw/crypto/USD/dollar vocabulary.
 - The play-money faucet is `STARTER_GRANT_CENTS` (the env name still says CENTS; the value is Points). 0 or unset disables it.
@@ -278,7 +278,7 @@ granular permissions like `users:read/write`, `roles:read/write`,
 
 ### Other backend subsystems
 
-`internal/` holds 22 packages. Beyond `prediction`, `wallet`, `http`, `ws`, `rbac` and `compliance`:
+`internal/` holds 23 packages. Beyond `prediction`, `wallet`, `http`, `ws`, `rbac` and `compliance`:
 
 | Package | Surface |
 |---|---|
@@ -294,7 +294,9 @@ granular permissions like `users:read/write`, `roles:read/write`,
 | `markettranslate` | Market copy translation |
 | `webhooks` | Outbound webhook endpoints (admin-managed) |
 | `tracing` | OpenTelemetry setup |
-| `payments`, `cashier`, `alphacashier` | Dormant — see the launch boundary section |
+| `payments`, `alphacashier` | Dormant — see the launch boundary section |
+| `webhookauth` | The one inbound webhook signature check (HMAC-SHA256 over the raw body, 5-minute window on the signed body's timestamp), used by the store and payments webhooks |
+| `approval` | Two-person rule for admin actions over a Points threshold. Not wired yet: waiting on a decision about which admin actions (large credits, manual settlement) should need a second admin |
 
 Social (comments, follows, moderation) lives in `internal/http/market_social_handlers.go` under `/api/v1/social/*` (migrations 044/049/054); the watchlist is `/api/v1/watchlist/*` (migration 045); disputes are `/api/v1/disputes`.
 

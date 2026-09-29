@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/webhookauth"
 	"taptrade/platform/transport/httpx"
 )
 
@@ -289,7 +290,7 @@ func TestRegisterPaymentRoutes_WebhookAcceptsValidSignature(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/webhook", strings.NewReader(string(body)))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(webhookSignatureHeader, signWebhookBody("whsec_test", body))
+	req.Header.Set(webhookSignatureHeader, webhookauth.Sign("whsec_test", body))
 	rec := httptest.NewRecorder()
 
 	mux.ServeHTTP(rec, req)
@@ -325,7 +326,7 @@ func TestRegisterPaymentRoutes_WebhookRejectsExpiredTimestamp(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/webhook", strings.NewReader(string(body)))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(webhookSignatureHeader, signWebhookBody("whsec_test", body))
+	req.Header.Set(webhookSignatureHeader, webhookauth.Sign("whsec_test", body))
 	rec := httptest.NewRecorder()
 
 	mux.ServeHTTP(rec, req)

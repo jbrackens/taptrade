@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"taptrade/gateway/internal/compliance"
+	"taptrade/gateway/internal/webhookauth"
 	"taptrade/platform/transport/httpx"
 )
 
@@ -399,13 +400,9 @@ func mapPaymentError(err error) error {
 
 func mapWebhookVerificationError(err error) error {
 	switch {
-	case errors.Is(err, ErrWebhookSecretMissing):
+	case errors.Is(err, webhookauth.ErrSecretMissing):
 		return httpx.NewError(stdhttp.StatusServiceUnavailable, "service_unavailable", "payments webhook is not configured", nil, nil)
-	case errors.Is(err, ErrWebhookSignatureMissing),
-		errors.Is(err, ErrWebhookSignatureInvalid),
-		errors.Is(err, ErrWebhookTimestampMissing),
-		errors.Is(err, ErrWebhookTimestampInvalid),
-		errors.Is(err, ErrWebhookTimestampExpired):
+	case errors.Is(err, webhookauth.ErrRejected):
 		return httpx.Unauthorized("invalid webhook signature")
 	default:
 		return httpx.Internal("webhook verification failed", err)

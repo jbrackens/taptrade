@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"taptrade/gateway/internal/webhookauth"
 	"taptrade/platform/transport/httpx"
 )
 
@@ -207,7 +208,7 @@ func TestWebhookVerifiesSignatureAndFulfills(t *testing.T) {
 		t.Fatalf("unsigned webhook returned %d, want 401", res.Code)
 	}
 	badReq := httptest.NewRequest(http.MethodPost, "/api/v1/store/webhook", strings.NewReader(body))
-	badReq.Header.Set(WebhookSignatureHeader, signWebhookBody("whsec_wrong", []byte(body)))
+	badReq.Header.Set(WebhookSignatureHeader, webhookauth.Sign("whsec_wrong", []byte(body)))
 	badRes := httptest.NewRecorder()
 	h.mux.ServeHTTP(badRes, badReq)
 	if badRes.Code != http.StatusUnauthorized {
@@ -219,7 +220,7 @@ func TestWebhookVerifiesSignatureAndFulfills(t *testing.T) {
 
 	// A correctly signed webhook fulfills without any session.
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/store/webhook", strings.NewReader(body))
-	req.Header.Set(WebhookSignatureHeader, signWebhookBody(h.secret, []byte(body)))
+	req.Header.Set(WebhookSignatureHeader, webhookauth.Sign(h.secret, []byte(body)))
 	res := httptest.NewRecorder()
 	h.mux.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {
@@ -231,7 +232,7 @@ func TestWebhookVerifiesSignatureAndFulfills(t *testing.T) {
 
 	// Replaying the same signed webhook is a 200-OK no-op.
 	replay := httptest.NewRequest(http.MethodPost, "/api/v1/store/webhook", strings.NewReader(body))
-	replay.Header.Set(WebhookSignatureHeader, signWebhookBody(h.secret, []byte(body)))
+	replay.Header.Set(WebhookSignatureHeader, webhookauth.Sign(h.secret, []byte(body)))
 	replayRes := httptest.NewRecorder()
 	h.mux.ServeHTTP(replayRes, replay)
 	if replayRes.Code != http.StatusOK {
@@ -257,7 +258,7 @@ func TestWebhookFailsClosedWithoutSecret(t *testing.T) {
 
 	body := fmt.Sprintf(`{"purchaseId":"sp_x","status":"completed","timestamp":"%d"}`, time.Now().Unix())
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/store/webhook", strings.NewReader(body))
-	req.Header.Set(WebhookSignatureHeader, signWebhookBody("", []byte(body)))
+	req.Header.Set(WebhookSignatureHeader, webhookauth.Sign("", []byte(body)))
 	res := httptest.NewRecorder()
 	mux.ServeHTTP(res, req)
 	if res.Code != http.StatusServiceUnavailable {

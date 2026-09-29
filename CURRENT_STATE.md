@@ -79,8 +79,10 @@ These are not unfinished work. They are boundaries the gateway enforces at boot
   when `ENVIRONMENT` is `production` or `staging` is a boot **error**, not a warning.
 - **The alpha crypto cashier** — `ALPHA_CASHIER_ENABLED=true` is likewise a boot error
   in deployed environments, and outside them it additionally requires the legacy
-  money-route flag. The `internal/cashier`, `internal/alphacashier` and
-  `internal/payments` packages still exist in the tree but do not mount at launch.
+  money-route flag. The `internal/alphacashier` and `internal/payments` packages
+  still exist in the tree but do not mount at launch. (`internal/cashier` was
+  deleted on 2026-09-29; its webhook check and two-person rule live on, fixed,
+  in `internal/webhookauth` and `internal/approval`.)
 - **Admin anonymous bypass and the auth kill switch** — `GATEWAY_ALLOW_ADMIN_ANON=true`
   and `GATEWAY_AUTH_ENABLED=false` are local-dev only, and both refuse to boot in
   deployed environments.
