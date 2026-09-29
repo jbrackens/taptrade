@@ -119,3 +119,18 @@ export const DEMO_SYNTHETIC_CHARTS =
  */
 export const HERO_AMBIENT_VIDEO =
   process.env.NEXT_PUBLIC_HERO_AMBIENT_VIDEO || "";
+
+/**
+ * Crypto cashier UI (/cashier): the fail-closed crypto deposit card over the
+ * gateway's alpha cashier, merged from feat/hula-na-cashier (2026-09-29).
+ * Off by default and never set on the demo (the gateway test
+ * TestDemoDeployNeverSetsMoneyFlags pins that): Tap Trade launches on
+ * non-redeemable play Clout, and the gateway's money routes stay unmounted
+ * unless TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED and ALPHA_CASHIER_ENABLED are
+ * on, which production and staging refuse at boot.
+ *
+ * Currently gates: the /cashier route (404 when off). No navigation links
+ * to it.
+ */
+export const FEATURE_CASHIER_UI =
+  process.env.NEXT_PUBLIC_FEATURE_CASHIER_UI === "true";

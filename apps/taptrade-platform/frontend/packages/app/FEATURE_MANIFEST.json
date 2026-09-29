@@ -2,9 +2,9 @@
   "$schema": "taptrade-feature-manifest-v1",
   "generated": "2026-04-13",
   "summary": {
-    "total_features": 74,
+    "total_features": 75,
     "real": 72,
-    "stubbed": 2,
+    "stubbed": 3,
     "missing": 0
   },
   "pages": [
@@ -181,6 +181,12 @@
       "status": "REAL",
       "module": "store",
       "notes": "Point Store: live pack catalogue, order summary, demo checkout, and purchase result states wired to /api/v1/store/* (gateway STORE_ENABLED, demo provider)"
+    },
+    {
+      "app_equivalent": "app/cashier/page.tsx",
+      "status": "STUBBED",
+      "module": "cashier",
+      "notes": "Crypto cashier behind FEATURE_CASHIER_UI (off everywhere, never set on the demo). Merged from feat/hula-na-cashier 2026-09-29: a fail-closed deposit card that reads the gateway alpha cashier's real config (/api/v1/cashier/alpha/config) but has no deposit action, because the app has no wallet connection yet. STUBBED until wallet connect + deposit intents are wired."
     }
   ],
   "components": [
@@ -188,7 +194,7 @@
       "name": "ChatSidebar",
       "status": "STUBBED",
       "module": "chat",
-      "notes": "Feature-gated chat shell only (desktop pill + sidebar, mobile sheet) that says chat isn't connected. No chat transport exists: the gateway serves no /api/v1/chat/* routes. The fabricated seed feed, local-only send echo, 'Live activity' claim and report form were removed 2026-09-24 (DESIGN.md \u00a72 rule 5)."
+      "notes": "Feature-gated chat shell only (desktop pill + sidebar, mobile sheet) that says chat isn't connected. No chat transport exists: the gateway serves no /api/v1/chat/* routes. The fabricated seed feed, local-only send echo, 'Live activity' claim and report form were removed 2026-09-24 (DESIGN.md §2 rule 5)."
     },
     {
       "legacy_path": "components/auth/login",
@@ -218,13 +224,13 @@
       "legacy_path": "components/auth/mfa-modal",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "MFA modal with CodeInput, wired to verifyMfa/requestMfaCode from auth-client \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "MFA modal with CodeInput, wired to verifyMfa/requestMfaCode from auth-client — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/auth/accept-terms",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Scroll-to-accept modal wired to acceptTerms() from auth-client \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Scroll-to-accept modal wired to acceptTerms() from auth-client — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/auth/email-confirmation",
@@ -290,13 +296,13 @@
       "legacy_path": "components/id-comply-modal",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "ID-Comply KBA/IDPV verification modal with compliance API integration \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "ID-Comply KBA/IDPV verification modal with compliance API integration — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/open-chat-button",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Floating chat button \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Floating chat button — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/layout/betslip",
@@ -326,7 +332,7 @@
       "legacy_path": "components/pagination",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Reusable pagination with page numbers and ellipsis \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Reusable pagination with page numbers and ellipsis — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/transaction-history-list",
@@ -344,31 +350,31 @@
       "legacy_path": "components/avatar",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Avatar with initials fallback and color hash \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Avatar with initials fallback and color hash — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/current-balance",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Balance display wired to getBalance() with compact/full modes \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Balance display wired to getBalance() with compact/full modes — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/count-down-time",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Countdown timer with days/hours/minutes/seconds \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Countdown timer with days/hours/minutes/seconds — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/code-input",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "6-digit code input for MFA with auto-focus and paste support \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "6-digit code input for MFA with auto-focus and paste support — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/collapse",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Expandable/collapsible section with animation \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Expandable/collapsible section with animation — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/errors",
@@ -380,13 +386,13 @@
       "legacy_path": "components/form/country-select",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Country dropdown with 20+ countries \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Country dropdown with 20+ countries — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/form/nationality-select",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Reuses CountrySelect component \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Reuses CountrySelect component — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/modals",
@@ -398,25 +404,25 @@
       "legacy_path": "components/sandboxes",
       "app_equivalent": null,
       "status": "REAL",
-      "notes": "Dev-only sandbox components \u2014 not needed for production App Router build"
+      "notes": "Dev-only sandbox components — not needed for production App Router build"
     },
     {
       "legacy_path": "components/static-page",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "StaticPage wrapper component for consistent content page styling \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "StaticPage wrapper component for consistent content page styling — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/table",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Reusable data table with headers, striped rows, loading skeleton \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Reusable data table with headers, striped rows, loading skeleton — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "components/tabs",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Reusable horizontal tab bar \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Reusable horizontal tab bar — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "legacy_path": "app/components/LiveNow.tsx",
@@ -518,7 +524,7 @@
       "name": "WalletBreakdown",
       "status": "RETIRED",
       "module": "bonus",
-      "notes": "Real+bonus balance display \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Real+bonus balance display — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "WageringProgress",
@@ -536,7 +542,7 @@
       "name": "BannerCarousel",
       "status": "RETIRED",
       "module": "content",
-      "notes": "CMS banner rotation on homepage \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "CMS banner rotation on homepage — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "ContentPageRenderer",
@@ -721,13 +727,13 @@
       "legacy_path": "lib/slices/channels/channelsReducer",
       "app_equivalent": "",
       "status": "RETIRED",
-      "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     },
     {
       "name": "bonusSlice",
       "status": "RETIRED",
       "module": "bonus",
-      "notes": "Active bonuses + wallet breakdown Redux state \u2014 Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
+      "notes": "Active bonuses + wallet breakdown Redux state — Deleted in P12 dead-code sweep (2026-07-12): zero importers in app/."
     }
   ]
 }

@@ -55,7 +55,6 @@ function listSourceFiles(rel: string): string[] {
 describe("points-only safety boundary", () => {
   it("does not ship the user-facing cashier routes", () => {
     for (const rel of [
-      "cashier/page.tsx",
       "cashier/cheque/page.tsx",
       "cashier/loading.tsx",
       "cashier/error.tsx",
@@ -66,6 +65,17 @@ describe("points-only safety boundary", () => {
         `${rel} should not exist in the points-only app`,
       );
     }
+    // The one exception (2026-09-29, feat/hula-na-cashier merged behind a
+    // flag): /cashier may exist only if it 404s unless FEATURE_CASHIER_UI is
+    // on, which no deploy sets (cashier-flag.test.ts; the gateway's
+    // TestDemoDeployNeverSetsMoneyFlags pins the demo).
+    if (existsSync(resolve(appRoot, "cashier/page.tsx"))) {
+      assert.match(
+        read("cashier/page.tsx"),
+        /export default function \w+\(\) \{\s*if \(!FEATURE_CASHIER_UI\) notFound\(\);/,
+        "cashier/page.tsx must 404 first thing unless FEATURE_CASHIER_UI is on",
+      );
+    }
   });
 
   it("does not expose prohibited money path segments in app routes", () => {
@@ -74,8 +84,11 @@ describe("points-only safety boundary", () => {
     );
     const prohibitedSegment =
       /(^|\/)(cashier|cashout|crypto|deposit|deposits|fiat|payment|payments|prize|prizes|redeem|redemption|withdraw|withdrawal|withdrawals)(\/|$)/i;
-    const offenders = routeFiles.filter((rel) =>
-      prohibitedSegment.test(rel.replace(/^\.\//, "")),
+    // ./cashier/page.tsx is the flag-gated exception pinned above.
+    const offenders = routeFiles.filter(
+      (rel) =>
+        rel !== "./cashier/page.tsx" &&
+        prohibitedSegment.test(rel.replace(/^\.\//, "")),
     );
 
     assert.deepEqual(offenders, []);
@@ -235,10 +248,20 @@ describe("points-only safety boundary", () => {
   it("has no cashier or crypto payment endpoints in the user app API layer", () => {
     const forbiddenEndpoint =
       /\/api\/v1\/cashier|\/v1\/cashier|\/api\/v1\/payments\/crypto|deposit-intents|withdrawal-intents|wallet_switchEthereumChain|eth_sendTransaction|MetaMask is required|USDC cashier/;
-    const offenders = listSourceFiles("lib/api").filter((rel) =>
-      forbiddenEndpoint.test(read(rel)),
+    // lib/api/cashier-client.ts (FEATURE_CASHIER_UI) may read the alpha
+    // cashier's config and nothing else: no intents, no wallet transactions.
+    const offenders = listSourceFiles("lib/api").filter(
+      (rel) => !rel.endsWith("cashier-client.ts") && forbiddenEndpoint.test(read(rel)),
     );
     assert.deepEqual(offenders, []);
+    const cashierClient = listSourceFiles("lib/api").find((rel) => rel.endsWith("cashier-client.ts"));
+    if (cashierClient) {
+      const src = read(cashierClient);
+      // Paths the client requests (quoted), not the ones its comments name.
+      const paths = (src.match(/["'`]\/api\/v1\/[\w/.-]+/g) ?? []).map((p) => p.slice(1));
+      assert.deepEqual([...new Set(paths)], ["/api/v1/cashier/alpha/config"]);
+      assert.doesNotMatch(src, /deposit-intents|withdrawal-requests|eth_sendTransaction|wallet_switchEthereumChain/);
+    }
   });
 
   it("keeps public homepage teasers away from crypto and cash-value framing", () => {
