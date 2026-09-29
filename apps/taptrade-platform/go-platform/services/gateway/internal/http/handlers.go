@@ -616,16 +616,6 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		payments.DepositComplianceChecker = rgService
 		payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
 		payments.RegisterPaymentRoutes(mux, paymentService)
-		// Legacy on-chain rail. This branch is only registered when legacy money
-		// routes are explicitly enabled; launch mode leaves these routes absent.
-		if walletDB := walletService.DB(); walletDB != nil {
-			if err := payments.EnsureCryptoSchema(walletDB); err != nil {
-				slog.Warn("payments: crypto schema init failed", "error", err)
-			}
-			cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
-			payments.RegisterCryptoRoutes(mux, cryptoRail)
-			slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
-		}
 	} else {
 		slog.Info("legacy payment routes disabled for Tap Trade launch", "env", legacyMoneyRoutesEnv)
 	}
@@ -700,7 +690,7 @@ func gatewayRouteDomains(legacyMoneyEnabled bool) []string {
 		"compliance",
 	}
 	if legacyMoneyEnabled {
-		routes = append(routes, "alpha_cashier", "payments", "crypto_payments")
+		routes = append(routes, "alpha_cashier", "payments")
 	}
 	routes = append(routes, "loyalty", "leaderboards", "auth")
 	return routes

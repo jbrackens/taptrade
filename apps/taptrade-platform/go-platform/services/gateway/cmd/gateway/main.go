@@ -431,7 +431,7 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 
 	for _, key := range []string{"CRYPTO_RPC_URL", "CRYPTO_ASSET_CONTRACT", "CRYPTO_DEPOSIT_ADDRESS_SOURCE"} {
 		if strings.TrimSpace(getenv(key)) != "" {
-			return fmt.Errorf("%s must not be set in production: legacy custodial cashier rail is prototype-only; use non-custodial cashier services instead", key)
+			return fmt.Errorf("%s must not be set when ENVIRONMENT=%s: the legacy crypto rail it configured was removed on 2026-09-29, and the crypto cashier is configured with ALPHA_CASHIER_* instead", key, env)
 		}
 	}
 

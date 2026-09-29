@@ -261,8 +261,8 @@ services:
       # --- default; uncomment + supply real values to take each live). ---
       # Closed Alpha custodial USDC cashier. Fails closed until explicitly
       # enabled with reviewed RPC, token, and treasury values. Keep withdrawals
-      # manual-review only for Stage 1; do NOT use the legacy CRYPTO_* prototype
-      # rail for this Alpha path.
+      # manual-review only for Stage 1. (The legacy CRYPTO_* prototype rail was
+      # removed on 2026-09-29; those variables still refuse boot in prod/staging.)
       # ALPHA_CASHIER_ENABLED: "false"
       # ALPHA_CASHIER_CHAIN_ID: "8453"
       # ALPHA_CASHIER_CHAIN_NAME: "base"

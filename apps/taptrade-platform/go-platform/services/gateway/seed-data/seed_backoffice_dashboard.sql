@@ -164,9 +164,6 @@ WHERE user_id LIKE 'bo-seed-user-%' OR idempotency_key LIKE 'bo-seed:%';
 DELETE FROM ledger_entries
 WHERE punter_id LIKE 'bo-seed-user-%' OR id LIKE 'bo-seed-%';
 
-DELETE FROM crypto_deposit_addresses
-WHERE user_id LIKE 'bo-seed-user-%';
-
 DELETE FROM wallet_balances
 WHERE user_id LIKE 'bo-seed-user-%';
 
@@ -233,15 +230,6 @@ SELECT
   'USD',
   date_trunc('minute', now() - interval '30 days' + (seq - 1) * interval '30 hours'),
   now()
-FROM bo_seed_users;
-
-INSERT INTO crypto_deposit_addresses (user_id, network, asset, address, created_at)
-SELECT
-  format('bo-seed-user-%s', lpad(seq::text, 2, '0')),
-  'polygon',
-  'USDC',
-  '0x' || substr(md5('bo-seed-wallet-address-' || seq) || md5('bo-seed-wallet-address-extra-' || seq), 1, 40),
-  date_trunc('minute', now() - interval '30 days' + (seq - 1) * interval '30 hours')
 FROM bo_seed_users;
 
 INSERT INTO prediction_series (

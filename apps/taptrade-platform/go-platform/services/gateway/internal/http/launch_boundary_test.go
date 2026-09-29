@@ -125,10 +125,14 @@ func TestStatusEndpointReportsLaunchPointBoundary(t *testing.T) {
 
 func TestLegacyRouteDomainSummaryRequiresExplicitOptIn(t *testing.T) {
 	domains := gatewayRouteDomains(true)
-	for _, domain := range []string{"alpha_cashier", "payments", "crypto_payments"} {
+	for _, domain := range []string{"alpha_cashier", "payments"} {
 		if !slices.Contains(domains, domain) {
 			t.Fatalf("legacy opt-in route summary should include %s: %v", domain, domains)
 		}
+	}
+	// The crypto rail was removed on 2026-09-29; no flag brings it back.
+	if slices.Contains(domains, "crypto_payments") {
+		t.Fatalf("route summary must not advertise the removed crypto rail: %v", domains)
 	}
 }
 

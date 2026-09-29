@@ -31,8 +31,8 @@ import (
 //     auto-link; they always get an isolated account keyed by provider+subject.
 //     This closes the "unverified-email account-takeover" vector.
 //   - This service NEVER provisions wallets or crypto addresses. Wallets are
-//     owned by the gateway and created lazily; crypto deposit addresses come
-//     from the gateway's fail-closed CryptoRail. (Confirmed design boundary.)
+//     owned by the gateway and created lazily; any crypto cashier also lives
+//     in the gateway (internal/alphacashier). (Confirmed design boundary.)
 
 const oauthUserAgent = "taptrade-auth/1.0"
 
