@@ -2,6 +2,15 @@
 > Superseded by the points-only launch — see the supersession note below for what replaced this workstream and where the boot refusal is enforced.
 > See `CLAUDE.md` for current architecture.
 
+> **Update 2026-09-29.** `feat/hula-na-cashier` was merged into `main` behind
+> flags, so two statements below are no longer literal: the player app now has
+> one cashier route, `/cashier`, and one cashier client,
+> `app/lib/api/cashier-client.ts` (read-only, `GET /api/v1/cashier/alpha/config`).
+> The page 404s unless `NEXT_PUBLIC_FEATURE_CASHIER_UI=true`, no deploy sets
+> it, and `qa-regressions-2026-04-18.test.ts` and `cashier-flag.test.ts` pin
+> both. The rail itself stays unmounted by the boot refusals described here.
+> See the "Points-only launch boundary" section of `CLAUDE.md`.
+
 # TapTrade Cashier — design & decision record
 
 **Status:** SUPERSEDED 2026-09-06 — abandoned workstream (was: "Architecture timeline updated 2026-05-27.").

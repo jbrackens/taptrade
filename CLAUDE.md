@@ -36,7 +36,7 @@ taptrade/
 │   │   │   ├── internal/wallet/           ← wallet + ledger (kept from sportsbook, adapted)
 │   │   │   ├── internal/ws/               ← WebSocket hub
 │   │   │   ├── internal/http/             ← HTTP handlers
-│   │   │   ├── migrations/                ← 014 created the prediction schema; 064 is the highest today
+│   │   │   ├── migrations/                ← 014 created the prediction schema; 065 is the highest today
 │   │   │   └── seed-data/seed_prediction.sql
 │   │   ├── services/auth/                 ← Auth service (Go, port 18081)
 │   │   └── modules/platform/              ← Shared Go module `taptrade/platform` (canonical, logging, runtime, transport/httpx)
@@ -107,7 +107,7 @@ branch. Do not include unrelated untracked files without explicit user approval.
 1. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/`.
 2. **Fix errors at the root, don't work around them.** Zero bug policy.
 3. **Keep the `prediction` Go package decoupled from `wallet`.** It uses the `prediction.WalletAdapter` interface — the concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Don't import `wallet` from `prediction/`.
-4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (064 is the highest today, so the next is 065). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
+4. **New tables/columns** go through a new goose migration with the next free prefix — run `ls migrations/ | tail` first (065 is the highest today, so the next is 066). Never edit a shipped migration in place. In particular, 014's column names are no longer the live schema: 050 renamed them.
 
 ## Points-only launch boundary
 
@@ -118,6 +118,7 @@ The platform launches on non-redeemable Points. There is no cash-out.
 - `ALPHA_CASHIER_ENABLED=true` is likewise a boot error in production/staging, and outside those envs it additionally requires the legacy flag.
 - `CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT` and `CRYPTO_DEPOSIT_ADDRESS_SOURCE` **must be unset**: in production/staging any non-empty value refuses boot (`cmd/gateway/main.go`, `validateGatewayRuntimeConfig`). They are not activation knobs.
 - `internal/payments/crypto_rail.go`, `internal/cashier/`, `internal/alphacashier/`, plus the root-level `contracts/`, `packages/cashier-sdk/` and `services/{cashier-api,bridge-watcher,relayer}` are the **dormant real-money workstream**. They are validated by `make cashier-check` and are not deployed. Do not treat them as live seams, and do not delete them without asking.
+- **The cashier is merged but dark (2026-09-29).** `feat/hula-na-cashier` was reconciled into `main` by hand: its crypto deposit watcher became alphacashier's `DepositScanner` (`internal/alphacashier/deposit_scanner.go`, migration 065, `ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED`), and the player app gained one page, `/cashier` (a read-only deposit card on `GET /api/v1/cashier/alpha/config`), which calls `notFound()` unless `NEXT_PUBLIC_FEATURE_CASHIER_UI=true` at build time. Nothing links to it. Its sportsbook-era cashier UI (USD methods, cheque payouts) and duplicate Solidity were dropped. The same pass hardened the rails: withdrawal completion requires on-chain proof from `ALPHA_CASHIER_PAYOUT_ADDRESS` (default: the treasury), deposit/withdrawal requests serialize per user, the withdrawal KYC threshold counts both rails (`payments.CrossRailWithdrawnCents`), and cashier admin actions refuse to run without RBAC when a DB is configured. `internal/http/demo_money_flags_test.go` fails CI if the demo compose file or deploy workflow ever sets a money flag, and `app/__tests__/cashier-flag.test.ts` pins the page's gate.
 - `internal/http/launch_docs_test.go` `TestLaunchDocsStayPointsOnly` fails CI if the gateway `README.md`, `Makefile` or `api/openapi.yaml` reintroduce cashier/deposit/withdraw/crypto/USD/dollar vocabulary.
 - The play-money faucet is `STARTER_GRANT_CENTS` (the env name still says CENTS; the value is Points). 0 or unset disables it.
 - The point store (`internal/store`, migration 051, `/api/v1/store/*`) is the sanctioned way Points enter a wallet, gated by `STORE_ENABLED`.
@@ -430,6 +431,7 @@ NEXT_PUBLIC_FEATURE_SOCIAL_AUTH= # social login buttons (demo sets this true at 
 NEXT_PUBLIC_FEATURE_LIVE_MARKETS=# /live route content + Live nav entries
 NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS= # demo boxes ONLY: synthetic-walk chart fallback while loading/error/flat
 NEXT_PUBLIC_HERO_AMBIENT_VIDEO=  # public asset path for the landing hero video; empty = no video element
+NEXT_PUBLIC_FEATURE_CASHIER_UI=  # /cashier crypto deposit card; 404 when unset. Never set on the demo (CI-enforced)
 
 # Gateway
 GATEWAY_DB_DSN=postgres://...
@@ -475,6 +477,8 @@ SMTP_HOST=                      # set to send resolution emails; otherwise notif
 # Gateway — launch boundary (see the Points-only section; all boot-refused in prod/staging)
 TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=  # mounts deposit/withdraw/cashier/crypto/provider-callback routes
 ALPHA_CASHIER_ENABLED=                 # alpha crypto cashier; also requires the flag above
+ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED= # watch the treasury for USDC transfers and credit matching open deposit intents
+ALPHA_CASHIER_PAYOUT_ADDRESS=          # hot wallet withdrawals are paid from; completion is verified against it (default: treasury)
 PAYMENTS_WEBHOOK_SECRET=               # only validated when the legacy money routes are enabled
 CRYPTO_RPC_URL=                        # MUST be unset — any value refuses boot in production/staging
 CRYPTO_ASSET_CONTRACT=                 # MUST be unset
