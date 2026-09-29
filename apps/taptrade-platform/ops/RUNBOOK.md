@@ -621,6 +621,9 @@ workers). Metrics: `/metrics` and `/metrics/prediction`.
 
 ## 16. Two-factor sign-in
 
+**Off on the demo** (`AUTH_MFA_ENABLED` unset; owner, 2026-09-29). The rest of
+this section applies once it is turned on.
+
 Staff (admin accounts) sign in with a password and a 6-digit code from an
 authenticator app; players can turn it on under Account → Security. An admin
 with no authenticator yet is shown a setup key at their next sign-in, and the

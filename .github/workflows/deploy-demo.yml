@@ -233,7 +233,8 @@ jobs:
 
       - name: Add the two-factor encryption key to .env
         # AUTH_MFA_ENCRYPTION_KEY encrypts the authenticator secrets stored in
-        # the database, so it must outlive every deploy: it is generated once
+        # the database (two-factor sign-in is off until AUTH_MFA_ENABLED is
+        # set; the key is kept ready), so it must outlive every deploy: it is generated once
         # on the box, kept outside the rsynced /opt/phoenix, and appended to
         # the .env written above. It is not in the database backups; losing it
         # means resetting every enrollment with `auth mfa-reset`

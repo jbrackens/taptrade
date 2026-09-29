@@ -231,14 +231,15 @@ Code: `internal/rbac/`, `internal/http/rbac_admin_handlers.go`; UI:
 - **Login:** the auth service `Login` falls back to `admin_users` (active,
   role=admin), so staff created in the office sign in with their temporary
   password (`services/auth/internal/http/handlers.go` `lookupAdminUser`).
-- **Two-factor sign-in:** while `AUTH_ADMIN_MFA_REQUIRED` is on (default in
-  production/staging, on for the demo, off locally) every admin signs in with a
-  password and then an authenticator code; an admin without one is enrolled at
-  that sign-in (`services/auth/internal/http/mfa.go`). It needs
-  `AUTH_MFA_ENCRYPTION_KEY`; on the demo that key lives in
-  `/var/lib/taptrade/mfa.key` and must never change. A lost authenticator is
-  cleared with `auth mfa-reset <email>` ([runbook §16](apps/taptrade-platform/ops/RUNBOOK.md)).
-  Players can turn it on from Account → Security.
+- **Two-factor sign-in is built but off** (owner, 2026-09-29): the auth
+  service ignores it unless `AUTH_MFA_ENABLED=true`, and the player's settings
+  tab needs `NEXT_PUBLIC_FEATURE_MFA=true`. Turned on, with
+  `AUTH_ADMIN_MFA_REQUIRED`, every admin signs in with a password and then an
+  authenticator code, enrolling at their first sign-in
+  (`services/auth/internal/http/mfa.go`). Keep it off unless the owner asks.
+  The key (`AUTH_MFA_ENCRYPTION_KEY`, on the demo `/var/lib/taptrade/mfa.key`)
+  must never change; `auth mfa-reset <email>` clears a lost authenticator
+  ([runbook §16](apps/taptrade-platform/ops/RUNBOOK.md)).
 - **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
   `admin@taptrade.local` (Super Admin), `ops@taptrade.local` (Operations Manager),
   `support@taptrade.local` (Customer Support) — all password `admin123`.

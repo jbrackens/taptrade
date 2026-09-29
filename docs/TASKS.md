@@ -8,7 +8,8 @@
 > **Last verified:** 2026-09-29 at commit `4924a670` — reconciled with
 > [TECH_DEBT.md](TECH_DEBT.md), the ADRs, the archived `CURRENT_STATE.md` and
 > AI-drafting plan, and `git log --since=2026-09-15`. Updated the same day
-> when the hardening change closed T-003 – T-006, T-008 – T-010, T-021 and T-029.
+> when the hardening change closed T-004 – T-006, T-008 – T-010, T-021 and T-029
+> and built T-003, which the owner then switched off.
 
 When a task is finished, move it to [Done recently](#done-recently) with its
 commit, and close the matching TECH_DEBT entry. When one becomes obsolete, delete
@@ -31,6 +32,7 @@ priority, then effort.
 | ID | Action | Links | Done when |
 |---|---|---|---|
 | T-002 | Wire the two-person rule into admin wallet credit/debit and manual settlement | [TD-001, TD-002](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Blocked on [D-1](#needs-a-decision); above the threshold, a second admin must approve before the action runs |
+| T-003 | Turn on two-factor sign-in: `AUTH_MFA_ENABLED` and `AUTH_ADMIN_MFA_REQUIRED` on auth, `NEXT_PUBLIC_FEATURE_MFA` on the player build, then enroll every admin straight away | [TD-005, TD-057](TECH_DEBT.md#b-authentication-and-access-control) | Deferred by the owner on 2026-09-29 ("we don't need to worry about authenticator yet"). The code is built and tested; done when admins sign in with a code |
 | T-007 | Send the demo's backups offsite, with a copy of the two-factor key kept apart from them | [TD-020](TECH_DEBT.md#d-delivery-and-operations) | Blocked on [D-13](#needs-a-decision). `BACKUP_OFFSITE_CMD` set on the demo and one dump restored from the offsite copy (the on-box drill passed on 2026-09-29) |
 | T-011 | Harden front-end session handling: office proxy fails closed; stop mirroring tokens to `localStorage` | [TD-010, TD-011](TECH_DEBT.md#b-authentication-and-access-control) | No token readable from JS; an auth-backend outage keeps the office locked |
 | T-012 | Cap `GrantBonus` and wire wagering contributions | [TD-003](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Grants respect campaign budget and an absolute cap; a real order moves wagering progress |
@@ -76,8 +78,9 @@ Each names what would resolve it.
 
 From `git log --since=2026-09-15` on `main`, grouped:
 
-- **Hardening (2026-09-29)** — staff two-factor sign-in, players optional
-  (T-003); KYC fails closed (T-004); the deploy waits for CI (T-005); release
+- **Hardening (2026-09-29)** — two-factor sign-in built, then switched off
+  behind `AUTH_MFA_ENABLED` / `NEXT_PUBLIC_FEATURE_MFA` at the owner's request
+  (T-003 stays open); KYC fails closed (T-004); the deploy waits for CI (T-005); release
   images kept with a rollback workflow (T-006); the backup sidecar running and a
   restore drill recorded, offsite still open (T-007, D-13); the runbook's SQL
   rewritten and the two runbooks merged (T-008); unknown `ENVIRONMENT` refused

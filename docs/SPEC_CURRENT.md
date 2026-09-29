@@ -222,7 +222,7 @@ returns 404 or redirects unless the named build-time flag is `true`.
 | Leaderboards | `/leaderboards`, `/leaderboards/[id]` | Boards and standings; `[id]` redirects to `?board=` | Complete |
 | Account | `/account` | Own profile hub: balance, marked positions, result sparkline | Complete |
 | Account | `/account/settings` | Details, language, privacy toggle; KYC card (`FEATURE_KYC`), limits (`FEATURE_LIMITS`) | Complete; the details save is not persisted ([TD-036](TECH_DEBT.md#f-gateway-api-and-real-time)) |
-| Account | `/account/security` | Password change, sessions, two-factor sign-in (status, setup with an authenticator key, turn off with a code) | Complete |
+| Account | `/account/security` | Password change, sessions; the two-factor tab (status, setup with an authenticator key, turn off with a code) shows only with `NEXT_PUBLIC_FEATURE_MFA` (off) | Complete (two-factor off by flag) |
 | Account | `/account/notifications` | Preference UI; backend does not persist | Partial / Stub |
 | Account | `/account/transactions` | Clout ledger with filters and CSV export | Complete |
 | Account | `/account/rg-history`, `/account/self-exclude`, `/responsible-gaming` | Responsible-play history, self-exclusion wizard, info page | Flag `NEXT_PUBLIC_FEATURE_RG` |
@@ -290,13 +290,14 @@ entries are `/cashier`, `ChatSidebar` (renders "Chat isn't connected yet") and
    Social login (Google, Facebook, Discord, X, TikTok, Reddit) probes
    `/api/v1/auth/oauth/<provider>/start/`; a provider without credentials shows
    "not configured". Only Google and Discord link to an existing account, and
-   only on a verified email ([INTEGRATIONS.md](INTEGRATIONS.md)). An account
-   with two-factor sign-in gets a second step for the 6-digit code from its
-   authenticator app, after a password or a social sign-in.
-8. **Turn on two-factor sign-in.** `/account/security` → *Two-factor sign-in* →
-   *Set up* shows a key for an authenticator app; the first code turns it on.
-   Turning it off needs a current code. Staff can't turn it off while it is
-   required, and a staff account without it is set up at its next sign-in.
+   only on a verified email ([INTEGRATIONS.md](INTEGRATIONS.md)).
+8. **Two-factor sign-in — built, switched off** (`AUTH_MFA_ENABLED`,
+   `NEXT_PUBLIC_FEATURE_MFA`; owner, 2026-09-29). When on: an account with it
+   gets a second step for the 6-digit code from its authenticator app, after a
+   password or a social sign-in; `/account/security` → *Two-factor sign-in* →
+   *Set up* shows a key and the first code turns it on; turning it off needs a
+   current code; staff can't turn it off while it is required, and a staff
+   account without it is set up at its next sign-in.
 2. **Get Clout.** Claim the starter grant and daily claim on `/rewards`, or buy
    a pack on `/store` (simulated checkout on the demo).
 3. **Discover and quick-trade.** `/predict` → a card's Yes/No opens the trade
@@ -353,8 +354,10 @@ on the demo also sits behind HTTP basic auth.
   last active super-admin cannot be removed; nobody can suspend or delete
   themselves. Production has no seeded staff: create the first super-admin with
   `gateway rbac-bootstrap`.
-- **Two-factor sign-in for staff.** While `AUTH_ADMIN_MFA_REQUIRED` is on
-  (default in production/staging; on for the demo), every admin account — in
+- **Two-factor sign-in for staff — off.** The feature is built but off unless
+  `AUTH_MFA_ENABLED=true` (off on the demo, [TD-005](TECH_DEBT.md#b-authentication-and-access-control)).
+  With it on and `AUTH_ADMIN_MFA_REQUIRED` on (the default in
+  production/staging once the feature is enabled), every admin account — in
   `auth_users` with role `admin`, or in `admin_users` — signs in with a password
   and then a TOTP code. An admin without an authenticator is shown a setup key
   at their next sign-in, and the first code both confirms it and signs them in;
@@ -423,7 +426,7 @@ are exempt, and methods and schemas are not checked.
 | Users | `GET/PUT /api/v1/users/{id}/profile` (PUT not persisted), `POST /api/v1/punters/delete` (schedules deletion in 30 days) |
 | CMS (public, DB only) | `GET /api/v1/content/{slug}`, `/api/v1/banners` |
 | Bot (API key) | `POST /api/v1/bot/orders`, `GET /api/v1/bot/positions`, `/bot/markets`; key management `GET/POST /api/v1/bot/keys`, `DELETE /api/v1/bot/keys/{id}` (session) |
-| Auth | `/api/v1/auth/*` and `/auth/*` are reverse-proxied to the auth service. Two-factor: `POST /api/v1/auth/login/mfa` (challenge + code → session); `GET /api/v1/auth/mfa` (status); `POST /api/v1/auth/mfa/enroll`, `/activate`, `/disable` (session + CSRF). The old `POST /api/v1/auth/2fa/toggle` is gone |
+| Auth | `/api/v1/auth/*` and `/auth/*` are reverse-proxied to the auth service. Two-factor, mounted only with `AUTH_MFA_ENABLED=true`: `POST /api/v1/auth/login/mfa` (challenge + code → session); `GET /api/v1/auth/mfa` (status); `POST /api/v1/auth/mfa/enroll`, `/activate`, `/disable` (session + CSRF). The old `POST /api/v1/auth/2fa/toggle` is gone |
 
 **Admin API** (`/api/v1/admin/*`, most also mounted under `/admin/*`): markets
 and taxonomy, lifecycle actions, propose/finalize, settlements and replay,

@@ -10,7 +10,8 @@
 > detail → [../STORE_AND_PAYMENTS.md](../STORE_AND_PAYMENTS.md); UI/visual
 > design → [../DESIGN.md](../DESIGN.md).
 > **Last verified:** 2026-09-29 at commit `4924a670`; the middleware order and
-> two-factor sign-in were updated the same day with the hardening change. Read against
+> two-factor sign-in (built, off by default) were updated the same day with the
+> hardening change. Read against
 > `gateway/cmd/gateway/main.go`, `gateway/internal/http/handlers.go`,
 > `gateway/internal/prediction/{wallet_adapter,exchange,settlement,sql_exchange_repository}.go`,
 > `gateway/internal/ws/README.md`, `gateway/internal/discover/{sync,promote}.go`,
@@ -247,7 +248,8 @@ settlement is engine-agnostic.
    `admin_users` for staff login; issues an opaque bearer token (SHA-256
    digest stored), writes HttpOnly session cookies, persists the session in
    Redis (`RedisSessionStore`) or a file-backed store.
-   **Two-factor sign-in** (`auth/internal/http/mfa.go`): for an account with an
+   **Two-factor sign-in** (`auth/internal/http/mfa.go`, off unless
+   `AUTH_MFA_ENABLED=true`; off on the demo): for an account with an
    authenticator (every admin while `AUTH_ADMIN_MFA_REQUIRED` is on), the
    password step returns a 5-minute challenge instead (`mfaRequired`,
    `mfaToken`, also set as an HttpOnly `mfa_challenge` cookie), and

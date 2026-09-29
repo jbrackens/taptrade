@@ -205,7 +205,7 @@ The gateway **fails closed at boot** (`gateway/cmd/gateway/main.go`,
 | `BETA_COMPLIANCE_MODE=permissive` | Refused in production; staging only with `COMPLIANCE_STARTUP_ACK=true` (which also waives the geo/KYC rows above) |
 | `STORE_WEBHOOK_SECRET` | Required (and not the dev placeholder) when `STORE_ENABLED=true` |
 | Auth session store | `auth` exits at boot unless `AUTH_SESSION_REDIS_URL`, `AUTH_REDIS_URL` or `AUTH_SESSION_STORE_FILE` is set |
-| `AUTH_MFA_ENCRYPTION_KEY` | Required: staff two-factor sign-in is on by default in production/staging and `auth` exits without the key. Turning it off takes `AUTH_ADMIN_MFA_REQUIRED=false` **and** `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true` |
+| `AUTH_MFA_ENABLED` + `AUTH_MFA_ENCRYPTION_KEY` | Two-factor sign-in is off unless `AUTH_MFA_ENABLED=true`. Once it is on, staff two-factor is required by default in production/staging and `auth` exits without the key; switching staff off there takes `AUTH_ADMIN_MFA_REQUIRED=false` **and** `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true`. Turn it on before a production launch ([TD-005](TECH_DEBT.md#b-authentication-and-access-control)) |
 | `ENVIRONMENT` | Must be one of `local`, `dev`, `development`, `test`, `demo`, `staging`, `production` or unset; gateway and auth refuse anything else at boot (a typo such as `prod` used to run as development) |
 
 Refused outright in production/staging (each is a boot error):
@@ -268,7 +268,9 @@ database was dropped. The restore procedure is in the
 ### Two-factor key
 
 `/var/lib/taptrade/mfa.key` is the `AUTH_MFA_ENCRYPTION_KEY` that encrypts
-authenticator secrets in `auth_mfa_totp`. It is deliberately **not** in the
+authenticator secrets in `auth_mfa_totp`. Two-factor sign-in is off on the demo
+(`AUTH_MFA_ENABLED` unset), so nothing uses the key yet; the deploy keeps it
+in `.env` so the feature can be turned on without a new key. It is deliberately **not** in the
 database dumps. Restoring a dump onto a box without the same key leaves every
 enrollment unreadable: staff sign-in then answers 503 until each account is
 cleared with `auth mfa-reset` ([runbook](../apps/taptrade-platform/ops/RUNBOOK.md))

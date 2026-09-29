@@ -21,6 +21,7 @@ import type {
   Session,
 } from "../../lib/api/auth-client";
 import AuthenticatorKey from "../../components/auth/AuthenticatorKey";
+import { FEATURE_MFA } from "../../lib/features";
 import { logger } from "../../lib/logger";
 import { SettingsShell } from "../../components/account/SettingsShell";
 
@@ -56,9 +57,10 @@ function tabClass(active: boolean) {
   }`;
 }
 
+// The two-factor tab is behind FEATURE_MFA (off by default).
 const TABS: { id: Tab; label: string }[] = [
   { id: "password", label: "Password" },
-  { id: "twofa", label: "Two-factor sign-in" },
+  ...(FEATURE_MFA ? [{ id: "twofa" as const, label: "Two-factor sign-in" }] : []),
   { id: "sessions", label: "Active sessions" },
 ];
 
@@ -112,7 +114,7 @@ export default function SecurityPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!FEATURE_MFA || !user?.id) return;
     let active = true;
     getMfaStatus()
       .then((status) => {
@@ -321,7 +323,7 @@ export default function SecurityPage() {
       )}
 
       {/* 2FA Tab */}
-      {tab === "twofa" && (
+      {FEATURE_MFA && tab === "twofa" && (
         <div className={cardClass}>
           <h2 className="mb-2 text-lg font-bold text-[var(--t1)]">
             Two-factor sign-in

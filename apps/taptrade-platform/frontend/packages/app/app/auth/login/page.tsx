@@ -13,7 +13,8 @@
  *
  * Accounts with two-factor sign-in get a second step in the same card: the
  * code from their authenticator app (plus, for staff enrolling on first
- * sign-in, the setup key). Social sign-in lands here with ?mfa=1 for it.
+ * sign-in, the setup key). Social sign-in lands here with ?mfa=1 for it
+ * (honoured only when FEATURE_MFA is on).
  */
 
 import { useCallback, useState } from "react";
@@ -22,7 +23,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
-import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
+import { FEATURE_MFA, FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import { brand } from "../../lib/brand";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import AuthenticatorKey from "../../components/auth/AuthenticatorKey";
@@ -83,7 +84,9 @@ export default function LoginPage() {
   // The code step: after a password that needs a code, or arriving from
   // social sign-in with ?mfa=1 (the challenge is in an HttpOnly cookie).
   const [challenge, setChallenge] = useState<MfaChallenge | null>(null);
-  const [codeStep, setCodeStep] = useState(searchParams.get("mfa") === "1");
+  const [codeStep, setCodeStep] = useState(
+    FEATURE_MFA && searchParams.get("mfa") === "1",
+  );
   const [code, setCode] = useState("");
 
   const onSubmit = useCallback(

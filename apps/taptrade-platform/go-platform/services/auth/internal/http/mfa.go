@@ -2,9 +2,11 @@ package http
 
 // Two-factor sign-in with an authenticator app (TOTP).
 //
-// Staff (role admin, whether from auth_users or the gateway's admin_users)
-// must use it while AUTH_ADMIN_MFA_REQUIRED is on; players can turn it on from
-// Account → Security. With a factor in play, login takes two steps: the
+// The whole feature is off unless AUTH_MFA_ENABLED=true: no challenges at
+// sign-in, and the /api/v1/auth/login/mfa and /api/v1/auth/mfa routes are not
+// mounted. When it is on, staff (role admin, whether from auth_users or the
+// gateway's admin_users) must use it while AUTH_ADMIN_MFA_REQUIRED is on, and
+// players can turn it on from Account → Security. With a factor in play, login takes two steps: the
 // password returns a short-lived challenge instead of a session, and
 // POST /api/v1/auth/login/mfa trades the challenge plus a code for the
 // session. A staff member with no authenticator yet is enrolled inside that
@@ -99,6 +101,7 @@ type mfaStore interface {
 }
 
 type mfaSettings struct {
+	enabled       bool // AUTH_MFA_ENABLED; everything below is inert when false
 	adminRequired bool
 	cipher        *mfaCipher // nil when AUTH_MFA_ENCRYPTION_KEY is unset
 	store         mfaStore   // nil when no store can be trusted (see NewAuthService)
@@ -106,12 +109,27 @@ type mfaSettings struct {
 	now           func() time.Time // the clock codes are checked against
 }
 
-// loadMFASettings reads the MFA environment. Staff MFA defaults on in
-// production and staging, where switching it off takes a second, explicit
-// flag, and it cannot be on without the key that encrypts the secrets.
+// loadMFASettings reads the MFA environment. The feature is off unless
+// AUTH_MFA_ENABLED=true. Once on, staff MFA defaults on in production and
+// staging, where switching it off takes a second, explicit flag, and it
+// cannot be on without the key that encrypts the secrets.
 func loadMFASettings(env string, getenv func(string) string) (mfaSettings, error) {
 	deployed := env == "production" || env == "staging"
-	s := mfaSettings{adminRequired: deployed, issuer: strings.TrimSpace(getenv("AUTH_MFA_ISSUER")), now: time.Now}
+	s := mfaSettings{issuer: strings.TrimSpace(getenv("AUTH_MFA_ISSUER")), now: time.Now}
+	if raw := strings.TrimSpace(getenv("AUTH_MFA_ENABLED")); raw != "" {
+		enabled, err := strconv.ParseBool(raw)
+		if err != nil {
+			return mfaSettings{}, fmt.Errorf("AUTH_MFA_ENABLED=%q is not true or false", raw)
+		}
+		s.enabled = enabled
+	}
+	if !s.enabled {
+		if required, _ := strconv.ParseBool(strings.TrimSpace(getenv("AUTH_ADMIN_MFA_REQUIRED"))); required {
+			return mfaSettings{}, errors.New("AUTH_ADMIN_MFA_REQUIRED=true needs AUTH_MFA_ENABLED=true")
+		}
+		return s, nil
+	}
+	s.adminRequired = deployed
 	if s.issuer == "" {
 		s.issuer = defaultMFAIssuer
 	}
@@ -140,10 +158,12 @@ func loadMFASettings(env string, getenv func(string) string) (mfaSettings, error
 	return s, nil
 }
 
-func (a *AuthService) mfaAvailable() bool { return a.mfa.store != nil && a.mfa.cipher != nil }
+func (a *AuthService) mfaAvailable() bool {
+	return a.mfa.enabled && a.mfa.store != nil && a.mfa.cipher != nil
+}
 
 func (a *AuthService) mfaRequiredForRole(role string) bool {
-	return a.mfa.adminRequired && role == roleAdmin
+	return a.mfa.enabled && a.mfa.adminRequired && role == roleAdmin
 }
 
 // ─── Sign-in ────────────────────────────────────────────────
@@ -172,6 +192,9 @@ type mfaEnrollment struct {
 // provide, sign-in stops. allowEnroll=false refuses a sign-in that would have
 // to enroll, for flows with no page to show the new secret.
 func (a *AuthService) challengeFor(account user, loginName string, allowEnroll bool) (*mfaChallengeResponse, error) {
+	if !a.mfa.enabled {
+		return nil, nil
+	}
 	required := a.mfaRequiredForRole(account.Role)
 	if a.mfa.store == nil {
 		if required {
@@ -456,6 +479,9 @@ func (a *AuthService) MFADisable(s session, code string) error {
 // ─── Routes ─────────────────────────────────────────────────
 
 func registerMFARoutes(mux *stdhttp.ServeMux, auth *AuthService) {
+	if !auth.mfa.enabled {
+		return // AUTH_MFA_ENABLED is off: the routes 404
+	}
 	mux.Handle(mfaChallengePath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)

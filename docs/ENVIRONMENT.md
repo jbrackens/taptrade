@@ -167,8 +167,9 @@ Full knob set (all read via `envString(getenv,…)` / `envBool(getenv,…)` / `e
 | `AUTH_DEMO_USERNAME`/`_PASSWORD`, `AUTH_ADMIN_USERNAME`/`_PASSWORD`, `AUTH_DEMO_USER_ID` (default `u-1`), `AUTH_ADMIN_USER_ID` (default `user-admin`) | seeded defaults | Dev/demo bootstrap account overrides | — |
 | `TRUSTED_PROXY_CIDRS` | unset | Proxy trust for auth's own rate limiter | — |
 | `ENVIRONMENT` | unset | Same allowlist and production/staging gate as gateway | Unknown values are a boot error |
-| `AUTH_ADMIN_MFA_REQUIRED` | on in production/staging, off elsewhere | Admin accounts must sign in with an authenticator code (`internal/http/mfa.go`); `true` on the demo | Turning it off needs `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true` too, or boot fails |
-| `AUTH_MFA_ENCRYPTION_KEY` | unset (two-factor sign-in unavailable) | Base64 of 32 bytes; AES-256-GCM key for the stored TOTP secrets. Changing it makes every enrollment unreadable. Demo: `/var/lib/taptrade/mfa.key`, appended to `.env` by the deploy | Required while `AUTH_ADMIN_MFA_REQUIRED` is on (boot fails without it) |
+| `AUTH_MFA_ENABLED` | off | Master switch for two-factor sign-in (`internal/http/mfa.go`). Off: no codes at sign-in, even for enrolled accounts, and the `/api/v1/auth/login/mfa` and `/api/v1/auth/mfa*` routes 404. Off on the demo (owner, 2026-09-29) | — |
+| `AUTH_ADMIN_MFA_REQUIRED` | with the feature on: on in production/staging, off elsewhere | Admin accounts must sign in with an authenticator code | `true` without `AUTH_MFA_ENABLED=true` is a boot error; with the feature on in production/staging, turning it off needs `AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED=true` too |
+| `AUTH_MFA_ENCRYPTION_KEY` | unset | Base64 of 32 bytes; AES-256-GCM key for the stored TOTP secrets. Changing it makes every enrollment unreadable. Demo: `/var/lib/taptrade/mfa.key`, appended to `.env` by every deploy (ready for when the feature is turned on) | Required while staff two-factor is required (boot fails without it) |
 | `AUTH_MFA_ISSUER` | `TapTrade` | Account label shown in authenticator apps | — |
 | `{PROVIDER}_OAUTH_CLIENT_ID` + `_CLIENT_SECRET` + `_REDIRECT_URI` for `GOOGLE`, `FACEBOOK`, `DISCORD`, `TWITTER`, `REDDIT`; TikTok uses `TIKTOK_OAUTH_CLIENT_KEY` instead of `_CLIENT_ID` | each provider OFF until its client id is set | Social login; redirect URI defaults to `http://localhost:18081/api/v1/auth/oauth/<provider>/callback` | Google/Discord auto-link on verified email; Facebook is isolated (no verified-email claim); Twitter/TikTok/Reddit are always isolated (no email) |
 
@@ -198,6 +199,7 @@ standard `PG*` variables.
 | `NEXT_PUBLIC_FEATURE_LIMITS` | off | Deposit/stake/session limits tab |
 | `NEXT_PUBLIC_FEATURE_CHAT` | off | Chat entry points, pairs with `NEXT_PUBLIC_CHAT_PUBLIC_URL` |
 | `NEXT_PUBLIC_FEATURE_SOCIAL_AUTH` | off | Social login buttons (demo sets `true` at build time) |
+| `NEXT_PUBLIC_FEATURE_MFA` | off | The two-factor tab on `/account/security` and the `/auth/login?mfa=1` entry; pairs with auth's `AUTH_MFA_ENABLED` (both off on the demo) |
 | `NEXT_PUBLIC_FEATURE_LIVE_MARKETS` | off | `/live` route + nav entries |
 | `NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS` | off | **Demo only** — synthetic-walk chart fallback; never set on a real-money deploy |
 | `NEXT_PUBLIC_HERO_AMBIENT_VIDEO` | unset | Landing hero video asset path; empty = no video element |

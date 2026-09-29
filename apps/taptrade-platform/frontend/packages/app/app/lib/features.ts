@@ -134,3 +134,15 @@ export const HERO_AMBIENT_VIDEO =
  */
 export const FEATURE_CASHIER_UI =
   process.env.NEXT_PUBLIC_FEATURE_CASHIER_UI === "true";
+
+/**
+ * Two-factor sign-in settings (authenticator app). Off by default; pairs with
+ * the auth service's AUTH_MFA_ENABLED, which is also off by default
+ * (owner call, 2026-09-29: not needed yet).
+ *
+ * Currently gates: the "Two-factor sign-in" tab on /account/security, and the
+ * /auth/login?mfa=1 entry that social sign-in uses. The code step after a
+ * password is driven by the auth service, so it appears whenever that service
+ * asks for a code, whatever this flag says.
+ */
+export const FEATURE_MFA = process.env.NEXT_PUBLIC_FEATURE_MFA === "true";

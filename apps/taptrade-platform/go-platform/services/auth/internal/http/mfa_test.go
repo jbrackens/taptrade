@@ -25,6 +25,7 @@ var mfaTestClock = time.Unix(1_800_000_000, 0)
 
 func newMFATestServer(t *testing.T, adminRequired bool) (*AuthService, http.Handler) {
 	t.Helper()
+	t.Setenv("AUTH_MFA_ENABLED", "true")
 	t.Setenv("AUTH_MFA_ENCRYPTION_KEY", testMFAKey)
 	t.Setenv("AUTH_ADMIN_MFA_REQUIRED", fmt.Sprint(adminRequired))
 	t.Setenv("AUTH_DEMO_USERNAME", "player@test.dev")
@@ -288,22 +289,31 @@ func TestSignInFailsClosedWhenTheFactorCannotBeRead(t *testing.T) {
 }
 
 func TestLoadMFASettings(t *testing.T) {
+	on := func(vars map[string]string) map[string]string {
+		vars["AUTH_MFA_ENABLED"] = "true"
+		return vars
+	}
 	cases := []struct {
 		name     string
 		env      string
 		vars     map[string]string
+		enabled  bool
 		required bool
 		wantErr  string
 	}{
-		{name: "dev default is off", env: "", required: false},
-		{name: "production default needs the key", env: "production", wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
-		{name: "production with key is on", env: "production", vars: map[string]string{"AUTH_MFA_ENCRYPTION_KEY": testMFAKey}, required: true},
-		{name: "production off needs acknowledgement", env: "staging", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "false"}, wantErr: "AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED"},
-		{name: "production off acknowledged", env: "production", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "false", "AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED": "true"}, required: false},
-		{name: "demo turns it on", env: "", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "true", "AUTH_MFA_ENCRYPTION_KEY": testMFAKey}, required: true},
-		{name: "on without key", env: "", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "true"}, wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
-		{name: "not a boolean", env: "", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "yes please"}, wantErr: "not true or false"},
-		{name: "bad key", env: "", vars: map[string]string{"AUTH_MFA_ENCRYPTION_KEY": "short"}, wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
+		{name: "off by default, even in production", env: "production"},
+		{name: "off ignores a missing key", env: "", vars: map[string]string{"AUTH_MFA_ENCRYPTION_KEY": "short"}},
+		{name: "required without the feature", env: "", vars: map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "true"}, wantErr: "AUTH_MFA_ENABLED"},
+		{name: "enabled flag not a boolean", env: "", vars: map[string]string{"AUTH_MFA_ENABLED": "sure"}, wantErr: "not true or false"},
+		{name: "on in dev, staff optional", env: "", vars: on(map[string]string{}), enabled: true},
+		{name: "on in production needs the key", env: "production", vars: on(map[string]string{}), wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
+		{name: "on in production with key requires staff", env: "production", vars: on(map[string]string{"AUTH_MFA_ENCRYPTION_KEY": testMFAKey}), enabled: true, required: true},
+		{name: "on in production, staff off needs acknowledgement", env: "staging", vars: on(map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "false"}), wantErr: "AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED"},
+		{name: "on in production, staff off acknowledged", env: "production", vars: on(map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "false", "AUTH_ADMIN_MFA_OFF_ACKNOWLEDGED": "true"}), enabled: true},
+		{name: "on with staff required", env: "", vars: on(map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "true", "AUTH_MFA_ENCRYPTION_KEY": testMFAKey}), enabled: true, required: true},
+		{name: "staff required without key", env: "", vars: on(map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "true"}), wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
+		{name: "staff required not a boolean", env: "", vars: on(map[string]string{"AUTH_ADMIN_MFA_REQUIRED": "yes please"}), wantErr: "not true or false"},
+		{name: "bad key", env: "", vars: on(map[string]string{"AUTH_MFA_ENCRYPTION_KEY": "short"}), wantErr: "AUTH_MFA_ENCRYPTION_KEY"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -317,10 +327,39 @@ func TestLoadMFASettings(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if s.adminRequired != tc.required {
-				t.Fatalf("adminRequired = %v, want %v", s.adminRequired, tc.required)
+			if s.enabled != tc.enabled || s.adminRequired != tc.required {
+				t.Fatalf("enabled=%v adminRequired=%v, want %v and %v", s.enabled, s.adminRequired, tc.enabled, tc.required)
 			}
 		})
+	}
+}
+
+func TestTwoFactorOffByDefault(t *testing.T) {
+	t.Setenv("AUTH_MFA_ENCRYPTION_KEY", testMFAKey)
+	t.Setenv("AUTH_ADMIN_USERNAME", "staff@test.dev")
+	t.Setenv("AUTH_ADMIN_PASSWORD", "StaffPass1!")
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	h := httpx.Chain(mux, httpx.NormalizeTrailingSlash("/api/", "/auth/"), httpx.RequestID(), httpx.Recovery(nil))
+
+	// Staff sign in with the password alone.
+	res := mfaPost(t, h, "/api/v1/auth/login", loginCredentials("staff@test.dev", "StaffPass1!"))
+	if tokens := decodeInto[tokenResponse](t, res); tokens.AccessToken == "" {
+		t.Fatalf("expected a session without a code, got %s", res.Body.String())
+	}
+	// An enrollment left in the store is ignored while the feature is off.
+	_ = auth.mfa.store.SavePending(context.Background(), mfaKey{Directory: mfaDirectoryUsers, AccountID: "user-admin"}, "v1:x")
+	_, _ = auth.mfa.store.Activate(context.Background(), mfaKey{Directory: mfaDirectoryUsers, AccountID: "user-admin"}, "v1:x", 1)
+	res = mfaPost(t, h, "/api/v1/auth/login", loginCredentials("staff@test.dev", "StaffPass1!"))
+	if tokens := decodeInto[tokenResponse](t, res); tokens.AccessToken == "" {
+		t.Fatalf("an enrolled account still signs in without a code while off, got %s", res.Body.String())
+	}
+	// The routes are not mounted.
+	for _, path := range []string{mfaChallengePath, "/api/v1/auth/mfa", "/api/v1/auth/mfa/enroll"} {
+		if code := mfaPost(t, h, path, struct{}{}).Code; code != http.StatusNotFound {
+			t.Errorf("%s: %d, want 404", path, code)
+		}
 	}
 }
 

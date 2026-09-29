@@ -7,8 +7,9 @@
 > narratives → [`audit/`](audit/).
 > **Last verified:** 2026-09-29 at commit `4924a670` — every item was re-checked
 > against source (read or grep) in the 2026-09-29 review rather than copied from an audit.
-> Updated the same day by the hardening change that closed ten items (see
-> [Recently resolved](#recently-resolved)) and added TD-056 – TD-060.
+> Updated the same day by the hardening change that closed nine items (see
+> [Recently resolved](#recently-resolved)) and added TD-056 – TD-060. TD-005
+> stays open: two-factor sign-in was built, then switched off by the owner.
 > Candidate lists came from `audit/AUDIT_REPORT.md`, `audit/IMPROVEMENT_PLAN.md`,
 > `audit/SECURITY-REVIEW-2026-06-14.md`, `audit/ARCH-CLEANUP-2026-06-14.md`, the
 > archived `CURRENT_STATE.md` and `licensability-gaps.md`, the ADRs,
@@ -38,7 +39,8 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-009 | CMS and bonus admin routes check role only | `gateway/internal/http/content_handlers.go`, `bonus_handlers.go` use an inline `role == "admin"` check, not `requireAdminPermission` | Any admin can publish content or grant bonuses regardless of RBAC role | P3 | Gate with RBAC permissions like the other admin routes |
 | TD-010 | Player tokens are mirrored into `localStorage` | `player/app/lib/api/client.ts` (`taptrade_access_token`, `taptrade_refresh_token`) | A future XSS could steal a session | P2 | Rely on the HttpOnly cookie only |
 | TD-011 | Office proxy degrades open when the auth backend is unreachable | `office/proxy.ts` `validateSession` returns `null` on fetch error and the caller falls back to a token-presence check | A gateway outage or misconfigured URL lets any token-shaped cookie into the office shell (the gateway still enforces RBAC on data) | P2 | Fail closed in production |
-| TD-057 | A staff account's first two-factor enrollment trusts the password | `auth/internal/http/mfa.go` `challengeFor`: an admin with no active factor is enrolled inside the sign-in challenge, so whoever signs in first with the password registers the authenticator; `auth mfa-reset` returns an account to that state | Until each admin enrolls, their password alone still decides who holds the second factor | P2 | Enroll every admin right after enabling it; longer term, an operator-issued enrollment link instead of first-sign-in enrollment |
+| TD-005 | Staff two-factor sign-in is built but switched off | `auth/internal/http/mfa.go` is complete and tested, but `AUTH_MFA_ENABLED` defaults to off and the demo leaves it off (owner, 2026-09-29: "we don't need to worry about authenticator yet"); the player settings tab is behind `NEXT_PUBLIC_FEATURE_MFA` | Admin accounts are password-only | P1 | Turn on `AUTH_MFA_ENABLED` and `AUTH_ADMIN_MFA_REQUIRED`, then enroll every admin at once ([T-003](TASKS.md#recommended), TD-057) |
+| TD-057 | A staff account's first two-factor enrollment trusts the password | `auth/internal/http/mfa.go` `challengeFor`: an admin with no active factor is enrolled inside the sign-in challenge, so whoever signs in first with the password registers the authenticator; `auth mfa-reset` returns an account to that state | Once two-factor is turned on, until each admin enrolls, their password alone decides who holds the second factor | P2 | Enroll every admin right after enabling it; longer term, an operator-issued enrollment link instead of first-sign-in enrollment |
 | TD-056 | Two-factor sign-in has no recovery codes and no QR code | `auth/internal/http/mfa.go` returns a text setup key and an `otpauth://` link; a lost authenticator is cleared only by `auth mfa-reset` on the box | A player who loses their phone needs an operator; staff type the key by hand | P3 | One-time recovery codes; render the provisioning URI as a QR code |
 | TD-058 | Sessions of office-created staff cannot be refreshed | `auth/internal/http/handlers.go` `Refresh` re-reads the account with `lookupUser` (`auth_users` only), so a refresh for an `admin_users` session answers 500; the office never calls refresh, so staff sign in again (now with a code) every `AUTH_ACCESS_TTL_SECONDS` (15 minutes by default) | Short office sessions; a latent 500 | P3 | Look the account up by `session.Directory` in `Refresh` |
 | TD-012 | Rate limiters and login lockout fail open on Redis errors | `platform-mod/transport/httpx/ratelimit.go` `RedisRateLimiter.Allow`; `auth/internal/http/redis_rate_limiter.go` (limiter and `IsLocked`) | A Redis outage removes rate limiting and lockout | P3 | Decide the intended posture; alert on the error path at minimum |
@@ -126,10 +128,11 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 
 Fixed by the 2026-09-29 hardening change ([TASKS.md](TASKS.md#done-recently)):
 
-- TD-005 — staff two-factor sign-in: TOTP with AES-GCM-encrypted secrets
-  (`auth/internal/http/mfa.go`), required for admins while
-  `AUTH_ADMIN_MFA_REQUIRED` is on (default on in production/staging, on for the
-  demo), optional for players from Account → Security; the cosmetic toggle is gone.
+- (TD-005, partly) — staff two-factor sign-in was built: TOTP with
+  AES-GCM-encrypted secrets (`auth/internal/http/mfa.go`), required for admins
+  while `AUTH_ADMIN_MFA_REQUIRED` is on, optional for players. The cosmetic
+  toggle is gone. The owner then put it behind `AUTH_MFA_ENABLED` (off), so
+  TD-005 stays open.
 - TD-006 — KYC fails closed (`FailClosedKYCService`) when the Postgres store
   cannot start, or when a production/staging gateway has no DB.
 - TD-007 — gateway and auth refuse an unrecognised `ENVIRONMENT` at boot
@@ -182,5 +185,5 @@ redirect, the leaderboard page-size clamp, and the two-person withdrawal default
 
 ## Totals
 
-50 open items: 0 P0, 2 P1 (TD-001, TD-002), 18 P2, 30 P3.
+51 open items: 0 P0, 3 P1 (TD-001, TD-002, TD-005), 18 P2, 30 P3.
 Backlog, owners and blocking decisions: [TASKS.md](TASKS.md).

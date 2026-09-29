@@ -126,12 +126,13 @@ services:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
       JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
       LOG_LEVEL: "info"
-      # Staff sign in with a password and an authenticator code
-      # (services/auth/internal/http/mfa.go). The key that encrypts the
-      # enrolled secrets is generated once on the box (/var/lib/taptrade/mfa.key)
+      # Two-factor sign-in (services/auth/internal/http/mfa.go) is off: the
+      # owner deferred it on 2026-09-29, and AUTH_MFA_ENABLED defaults to off.
+      # To turn it on, set AUTH_MFA_ENABLED "true" (and AUTH_ADMIN_MFA_REQUIRED
+      # "true" for staff) here and NEXT_PUBLIC_FEATURE_MFA for the player build.
+      # The key is already generated once on the box (/var/lib/taptrade/mfa.key)
       # and appended to .env by every deploy; it must not change.
-      AUTH_ADMIN_MFA_REQUIRED: "true"
-      AUTH_MFA_ENCRYPTION_KEY: "${AUTH_MFA_ENCRYPTION_KEY:?the deploy writes AUTH_MFA_ENCRYPTION_KEY into .env}"
+      AUTH_MFA_ENCRYPTION_KEY: "${AUTH_MFA_ENCRYPTION_KEY:-}"
       # Social OAuth. Client id/secret come from /opt/phoenix/.env (written each
       # deploy from GitHub Actions secrets); a provider stays OFF until its id is
       # set (start returns "not configured"). Redirect URIs are public + fixed
