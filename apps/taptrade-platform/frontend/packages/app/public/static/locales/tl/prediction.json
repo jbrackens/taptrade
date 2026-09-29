@@ -382,5 +382,13 @@
   "SOCIAL_ACTIVITY_SETTLEMENT": "Na-settle ang market na hawak nila",
   "SOCIAL_ACTIVITY_REWARD": "Nakakuha ng reward",
   "SOCIAL_ACTIVITY_LEADERBOARD": "Napabilang sa leaderboard",
-  "SOCIAL_ACTIVITY_COMMENT": "Nagkomento"
+  "SOCIAL_ACTIVITY_COMMENT": "Nagkomento",
+  "RULES_TITLE": "Mga patakaran",
+  "READ_MORE": "Magbasa pa",
+  "SHOW_LESS": "Ipakita nang mas kaunti",
+  "ADD_TO_WATCHLIST": "Idagdag sa watchlist",
+  "REMOVE_FROM_WATCHLIST": "Alisin sa watchlist",
+  "WATCHLIST_SIGN_IN": "Mag-sign in para mag-save ng markets",
+  "WATCHLIST_SIGN_IN_BODY": "Mag-log in at i-tap ang star para buuin ang watchlist mo.",
+  "WATCHLIST_UPDATE_FAILED": "Hindi na-update ang watchlist"
 }

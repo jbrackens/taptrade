@@ -59,5 +59,6 @@
   "NOTIFICATIONS_EMPTY": "Belum ada — hasil penyelesaian muncul di sini.",
   "SETTLEMENT_TOAST_PAID_TITLE": "Selesai {{result}} — +{{points}} Clout dibayarkan",
   "SETTLEMENT_TOAST_CLOSED_TITLE": "Selesai {{result}} — posisi ditutup di 0 Clout",
-  "SETTLEMENT_TOAST_VOIDED_TITLE": "Pasar dibatalkan — {{points}} Clout dikembalikan"
+  "SETTLEMENT_TOAST_VOIDED_TITLE": "Pasar dibatalkan — {{points}} Clout dikembalikan",
+  "BACK": "Kembali"
 }

@@ -380,5 +380,13 @@
   "SOCIAL_ACTIVITY_SETTLEMENT": "其持有的市場已結算",
   "SOCIAL_ACTIVITY_REWARD": "獲得了獎勵",
   "SOCIAL_ACTIVITY_LEADERBOARD": "登上了排行榜",
-  "SOCIAL_ACTIVITY_COMMENT": "發表了評論"
+  "SOCIAL_ACTIVITY_COMMENT": "發表了評論",
+  "RULES_TITLE": "規則",
+  "READ_MORE": "閱讀更多",
+  "SHOW_LESS": "收起",
+  "ADD_TO_WATCHLIST": "加入關注列表",
+  "REMOVE_FROM_WATCHLIST": "從關注列表移除",
+  "WATCHLIST_SIGN_IN": "登入後即可收藏市場",
+  "WATCHLIST_SIGN_IN_BODY": "登入後點星號即可建立你的關注列表。",
+  "WATCHLIST_UPDATE_FAILED": "關注列表未更新"
 }

@@ -26,6 +26,8 @@ import { CURRENCY_NAME, formatPointsAmount } from "../../lib/points";
 import { ListIcon as MenuLines } from "@phosphor-icons/react/dist/csr/List";
 import { GearSixIcon as Settings } from "@phosphor-icons/react/dist/csr/GearSix";
 import { TrendUpIcon as TrendingUp } from "@phosphor-icons/react/dist/csr/TrendUp";
+import { CaretLeftIcon as CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
@@ -49,8 +51,62 @@ import { NotificationsBell } from "./NotificationsBell";
 import { LanguageSelector } from "../i18n/LanguageSelector";
 import { localizedMarket } from "./market-content";
 import { FEATURE_LIVE_MARKETS } from "../../lib/features";
+import { hasInAppHistory, useMobileTopBarConfig } from "./MobileTopBarContext";
 
 const api = createPredictionClient();
+
+/**
+ * The balance chip: a pink flame and the figure (compact from 100K), the
+ * exact amount in its label and title. It deep-links into the Clout Store,
+ * where people go when they want more. Shown on every route (the 2026-09-29
+ * redesign added it to the board and market pages) and in a page's phone
+ * header.
+ */
+function BalanceChip({
+  balance,
+  t,
+}: {
+  balance: number | undefined;
+  t: TFunction<"header">;
+}) {
+  return (
+    <Link
+      href="/store"
+      className={TOP_BAR_BALANCE_CLASS}
+      aria-label={
+        typeof balance === "number"
+          ? `${formatPointsAmount(balance)} ${CURRENCY_NAME} · ${t("OPEN_POINT_STORE", "Get more Clout")}`
+          : t("OPEN_POINT_STORE", "Get more Clout")
+      }
+      title={typeof balance === "number" ? `${formatPointsAmount(balance)} ${CURRENCY_NAME}` : undefined}
+    >
+      <span className={TOP_BAR_BALANCE_LABEL_CLASS} aria-hidden="true">
+        <Flame size={16} weight="fill" />
+      </span>
+      <span>
+        {/*
+          Render a placeholder when the balance is undefined
+          (still loading) instead of "0 pts". The literal zero
+          was misleading: on every page navigation, between the
+          initial render and the point-balance API resolving (~300ms-3s
+          in dev), the user saw "BAL 0 pts" - easy to read as
+          "your account is empty" and panic. A neutral "—"
+          reads as "loading" without claiming a value.
+        */}
+        {typeof balance === "number" ? (
+          <>
+            {/* Large balances read as 1.5M; the exact figure is
+                in the chip's label and on Account. */}
+            <PointsFlow value={balance} compact={balance >= 100_000} />
+            <span className="sr-only">&nbsp;{CURRENCY_NAME}</span>
+          </>
+        ) : (
+          "—"
+        )}
+      </span>
+    </Link>
+  );
+}
 
 // Top-level nav. `requiresAuth` items are hidden from logged-out visitors —
 // they would either land on a sign-in wall (Portfolio) or render with an
@@ -192,6 +248,14 @@ const TOP_BAR_MENU_TRIGGER_CLASS =
   "inline-flex h-11 cursor-pointer items-center gap-2 rounded-[var(--r-pill)] border border-[var(--border-2)] bg-[var(--surface-1)] py-1 pl-3 pr-1 text-[var(--t1)] transition-[border-color,box-shadow] duration-150 hover:border-[var(--t3)] hover:shadow-[var(--shadow-card-hover)] aria-expanded:border-[var(--t3)] aria-expanded:shadow-[var(--shadow-card-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[359px]:pl-1";
 const TOP_BAR_AVATAR_CLASS =
   "grid size-8 place-items-center rounded-full bg-[var(--accent)] text-[13px] font-bold text-[var(--ticket-cta-text)]";
+
+// A page's own phone header (MobileTopBarContext): back, title, actions.
+const TOP_BAR_CONTEXT_CLASS =
+  "flex h-16 items-center gap-1 px-2 min-[1024px]:hidden";
+const TOP_BAR_BACK_CLASS =
+  "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--t1)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
+const TOP_BAR_CONTEXT_TITLE_CLASS =
+  "min-w-0 flex-1 truncate text-[15px] font-semibold text-[var(--t1)]";
 
 const TOP_BAR_AUTH_CTA_SIZING =
   "min-h-11 px-4 text-[13px] no-underline max-[480px]:px-2.5";
@@ -363,6 +427,11 @@ export function TopBar() {
     .charAt(0)
     .toUpperCase();
   const isTerminalRoute = isPredictionTerminalRoute(pathname);
+  const mobileContext = useMobileTopBarConfig();
+  const goBack = useCallback(() => {
+    if (hasInAppHistory()) router.back();
+    else if (mobileContext) router.push(mobileContext.fallbackHref);
+  }, [mobileContext, router]);
   const visibleNavLinks = isTerminalRoute ? TERMINAL_NAV_LINKS : NAV_LINKS;
 
   // FEED2-001 → REDESIGN-S4: ⌘K on terminal routes opens the command
@@ -408,9 +477,9 @@ export function TopBar() {
       className={isTerminalRoute ? TERMINAL_TOP_BAR_CLASS : TOP_BAR_CLASS}
     >
       <div
-        className={
+        className={`${
           isTerminalRoute ? TERMINAL_TOP_BAR_INNER_CLASS : TOP_BAR_INNER_CLASS
-        }
+        } ${mobileContext ? "max-[1023px]:hidden" : ""}`}
       >
         {/* Inside the app the logo returns to the board; "/" is the
             landing page for new visitors. */}
@@ -616,63 +685,25 @@ export function TopBar() {
               <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
             </span>
           )}
+          {isAuthenticated && <BalanceChip balance={balance} t={t} />}
           {!isTerminalRoute && isAuthenticated && (
-            <>
-              {/* The balance chip deep-links into the Point Store — the
-                  pill is where users look when they want more points. */}
-              <Link
-                href="/store"
-                className={TOP_BAR_BALANCE_CLASS}
-                aria-label={
-                  typeof balance === "number"
-                    ? `${formatPointsAmount(balance)} ${CURRENCY_NAME} · ${t("OPEN_POINT_STORE", "Get more Clout")}`
-                    : t("OPEN_POINT_STORE", "Get more Clout")
-                }
-                title={typeof balance === "number" ? `${formatPointsAmount(balance)} ${CURRENCY_NAME}` : undefined}
-              >
-                <span className={TOP_BAR_BALANCE_LABEL_CLASS} aria-hidden="true">
-                  <Flame size={16} weight="fill" />
-                </span>
-                <span>
-                  {/*
-                    Render a placeholder when the balance is undefined
-                    (still loading) instead of "0 pts". The literal zero
-                    was misleading: on every page navigation, between the
-                    initial render and the point-balance API resolving (~300ms-3s
-                    in dev), the user saw "BAL 0 pts" - easy to read as
-                    "your account is empty" and panic. A neutral "—"
-                    reads as "loading" without claiming a value.
-                  */}
-                  {typeof balance === "number" ? (
-                    <>
-                      {/* Large balances read as 1.5M; the exact figure is
-                          in the chip's label and on Account. */}
-                      <PointsFlow value={balance} compact={balance >= 100_000} />
-                      <span className="sr-only">&nbsp;{CURRENCY_NAME}</span>
-                    </>
-                  ) : (
-                    "—"
-                  )}
-                </span>
-              </Link>
-              <Button
-                variant="primary"
-                size="none"
-                className={`${TOP_BAR_ADD_POINTS_SIZING} max-[419px]:hidden`}
-                render={
-                  <Link
-                    href="/store"
-                    data-testid="add-points-topbar"
-                    aria-label={t("ADD_POINTS", "Get Clout")}
-                  />
-                }
-              >
-                <Plus size={14} aria-hidden="true" />
-                <span className="max-[1359px]:hidden">
-                  {t("ADD_POINTS", "Get Clout")}
-                </span>
-              </Button>
-            </>
+            <Button
+              variant="primary"
+              size="none"
+              className={`${TOP_BAR_ADD_POINTS_SIZING} max-[419px]:hidden`}
+              render={
+                <Link
+                  href="/store"
+                  data-testid="add-points-topbar"
+                  aria-label={t("ADD_POINTS", "Get Clout")}
+                />
+              }
+            >
+              <Plus size={14} aria-hidden="true" />
+              <span className="max-[1359px]:hidden">
+                {t("ADD_POINTS", "Get Clout")}
+              </span>
+            </Button>
           )}
 
           {isAuthenticated && user?.id && (
@@ -785,6 +816,38 @@ export function TopBar() {
           )}
         </div>
       </div>
+      {mobileContext && (
+        <div className={TOP_BAR_CONTEXT_CLASS}>
+          <button
+            type="button"
+            onClick={goBack}
+            className={TOP_BAR_BACK_CLASS}
+            aria-label={t("BACK", "Back")}
+          >
+            <CaretLeft size={22} weight="bold" aria-hidden="true" />
+          </button>
+          <span className={TOP_BAR_CONTEXT_TITLE_CLASS}>
+            {mobileContext.title}
+          </span>
+          <div className="flex shrink-0 items-center gap-1">
+            {mobileContext.actions}
+            {isLoading ? null : isAuthenticated ? (
+              <span className="ml-1 inline-flex">
+                <BalanceChip balance={balance} t={t} />
+              </span>
+            ) : (
+              <Button
+                variant="primary"
+                size="none"
+                className={`${TOP_BAR_AUTH_CTA_SIZING} ml-1`}
+                render={<Link href="/auth/register" />}
+              >
+                {t("SIGN_UP")}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       {isTerminalRoute && (
         <CommandPalette
           open={paletteOpen}

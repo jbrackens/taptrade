@@ -380,5 +380,13 @@
   "SOCIAL_ACTIVITY_SETTLEMENT": "其持有的市场已结算",
   "SOCIAL_ACTIVITY_REWARD": "获得了奖励",
   "SOCIAL_ACTIVITY_LEADERBOARD": "登上了排行榜",
-  "SOCIAL_ACTIVITY_COMMENT": "发表了评论"
+  "SOCIAL_ACTIVITY_COMMENT": "发表了评论",
+  "RULES_TITLE": "规则",
+  "READ_MORE": "阅读更多",
+  "SHOW_LESS": "收起",
+  "ADD_TO_WATCHLIST": "加入关注列表",
+  "REMOVE_FROM_WATCHLIST": "从关注列表移除",
+  "WATCHLIST_SIGN_IN": "登录后即可收藏市场",
+  "WATCHLIST_SIGN_IN_BODY": "登录后点星标即可建立你的关注列表。",
+  "WATCHLIST_UPDATE_FAILED": "关注列表未更新"
 }

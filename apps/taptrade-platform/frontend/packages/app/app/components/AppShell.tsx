@@ -25,6 +25,7 @@ import { BackendStatusBanner } from "./BackendStatusBanner";
 import MobileTabBar from "./MobileTabBar";
 import { ChatSidebar } from "./chat/ChatSidebar";
 import { isPredictionTerminalRoute } from "../lib/prediction-terminal";
+import { MobileTopBarProvider } from "./prediction/MobileTopBarContext";
 
 const AUTH_LAYOUT_CLASS = "min-h-screen overflow-y-auto bg-transparent";
 
@@ -77,6 +78,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <ToastProvider>
             <AuthProvider>
+              <MobileTopBarProvider>
               {isAuthRoute ? (
                 <div className={AUTH_LAYOUT_CLASS}>{children}</div>
               ) : isMarketingRoute ? (
@@ -119,6 +121,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <MobileTabBar />
                 </div>
               )}
+              </MobileTopBarProvider>
             </AuthProvider>
           </ToastProvider>
         </I18nProvider>

@@ -88,17 +88,19 @@ const MarketChartCanvas = dynamic(() => import("./MarketChartCanvas"), {
 });
 
 const CHART_CARD_CLASS = "";
-// The range switcher is a row of quiet text tabs under the plot; the
-// current range sits on a soft raised chip (Robinhood / Kalshi pattern).
-const CHART_SWITCHER_CLASS = "mt-3 flex items-center gap-1";
+// The range switcher is a segmented control (2026-09-29 redesign): a raised
+// track with capsule segments. Desktop: compact, the current range in ink.
+// Phones: full width and 44px tall, the current range on a white segment.
+const CHART_SWITCHER_CLASS =
+  "mt-3 inline-flex items-center gap-0.5 rounded-[var(--r-pill)] bg-[var(--surface-2)] p-[3px] max-[1023px]:flex max-[1023px]:w-full";
 const CHART_BUTTON_BASE_CLASS =
-  "cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:min-w-11 text-[12px] font-semibold tabular-nums transition-[background-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
+  "h-7 min-w-10 cursor-pointer rounded-[var(--r-pill)] border-0 px-3 text-[12px] font-semibold tabular-nums transition-[background-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)] max-[1023px]:h-11 max-[1023px]:flex-1 max-[1023px]:text-[13px] pointer-coarse:h-11";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--surface-2)] text-[var(--t1)]"
-      : "text-[var(--t3)] hover:text-[var(--t1)]"
+      ? "bg-[var(--accent)] text-[var(--on-ink)] max-[1023px]:bg-[var(--surface-1)] max-[1023px]:text-[var(--t1)] max-[1023px]:shadow-[0_1px_2px_rgba(17,17,20,0.08)]"
+      : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
 

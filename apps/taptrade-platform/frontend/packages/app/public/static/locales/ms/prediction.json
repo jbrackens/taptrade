@@ -380,5 +380,13 @@
   "SOCIAL_ACTIVITY_SETTLEMENT": "Pasaran yang dipegang telah diselesaikan",
   "SOCIAL_ACTIVITY_REWARD": "Memperoleh ganjaran",
   "SOCIAL_ACTIVITY_LEADERBOARD": "Tersenarai di papan pendahulu",
-  "SOCIAL_ACTIVITY_COMMENT": "Mengulas"
+  "SOCIAL_ACTIVITY_COMMENT": "Mengulas",
+  "RULES_TITLE": "Peraturan",
+  "READ_MORE": "Baca lagi",
+  "SHOW_LESS": "Tunjuk kurang",
+  "ADD_TO_WATCHLIST": "Tambah ke senarai pantau",
+  "REMOVE_FROM_WATCHLIST": "Buang dari senarai pantau",
+  "WATCHLIST_SIGN_IN": "Log masuk untuk menyimpan pasaran",
+  "WATCHLIST_SIGN_IN_BODY": "Log masuk dan ketik bintang untuk membina senarai pantau anda.",
+  "WATCHLIST_UPDATE_FAILED": "Senarai pantau tidak dikemas kini"
 }

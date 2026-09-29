@@ -158,11 +158,19 @@ together.
   Buy Yes/Buy No, and its real price chart; beside it a ranked Trending
   list of the next five.
 - **MarketChart:** the selected side's line in its direction colour over a
-  soft area, the complement muted; hour ticks on intraday ranges; range
-  tabs with the current range on a soft chip. No "live data" caption;
+  soft area, on a vertical range fitted to the data (5-point steps, at least
+  10 points tall) with % labels on dotted guides; hour ticks on intraday
+  ranges; the range picker is a segmented control (ink selection on
+  desktop, a white segment full width on phones). No "live data" caption;
   synthetic demo series wear the "Simulated data" badge.
 - **MarketHead:** image, status · category · closes-in line, question, then
-  the chance figure with a Yes/No price legend.
+  the chance figure with a Yes/No price legend; share and watch beside the
+  title on desktop.
+- **Market page on phones:** the page's own header (back · category ·
+  share · star · balance, via `MobileTopBarContext`) replaces the logo bar;
+  chart and Volume / Liquidity / Closes share one card; a "Rules" card
+  shows three lines and "Read more"; Yes and No sit pinned above the tab
+  bar and open the trade sheet on that side.
 - **WelcomeStrip:** one card above the board for signed-out visitors —
   headline, one line of pitch, the points-only line (inline English, never
   a locale string), ink "Start free" + "How it works".

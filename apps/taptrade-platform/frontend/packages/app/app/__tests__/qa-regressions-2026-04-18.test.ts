@@ -1028,20 +1028,24 @@ describe("Navigation pill active colors", () => {
     }
   });
 
-  it("renders the market chart range switcher as quiet text tabs", () => {
-    // The 2026-09-24 redesign swapped the ink underline for a soft raised
-    // chip under the active range — still a quiet text tab, never a
-    // segmented direction fill.
+  it("renders the market chart range switcher as a segmented control", () => {
+    // 2026-09-29 redesign (approved mockups): a raised track with capsule
+    // segments — the active range in ink on desktop, on a white segment on
+    // phones. Selection is ink or neutral, never a Yes/No direction fill.
     const rangeClass = functionBody(marketChartSource, "rangeButtonClass");
     assert.ok(
-      rangeClass.includes("bg-[var(--surface-2)]") &&
-        rangeClass.includes("text-[var(--t1)]"),
-      "the active chart range should sit on a soft raised chip",
+      marketChartSource.includes("rounded-[var(--r-pill)] bg-[var(--surface-2)] p-[3px]"),
+      "the range switcher should sit on a raised segmented track",
+    );
+    assert.ok(
+      rangeClass.includes("bg-[var(--accent)] text-[var(--on-ink)]") &&
+        rangeClass.includes("max-[1023px]:bg-[var(--surface-1)]"),
+      "the active range should be ink on desktop and a white segment on phones",
     );
     assert.ok(
       !rangeClass.includes("bg-[var(--yes)]") &&
-        !rangeClass.includes("bg-[var(--accent)]"),
-      "chart range tabs should not use segmented fills",
+        !rangeClass.includes("bg-[var(--no)]"),
+      "chart range segments must not use a direction token as a selection colour",
     );
   });
 

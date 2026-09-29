@@ -14,7 +14,7 @@
  * "closes in …" string.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
 import { categoryLabel, localizedMarket } from "./market-content";
@@ -24,6 +24,9 @@ import { MarketThumb } from "./MarketThumb";
 interface MarketHeadProps {
   market: PredictionMarket;
   categoryName?: string;
+  /** Share / watch buttons beside the title on desktop; on phones they
+   * live in the page's own header (MobileTopBarContext). */
+  actions?: ReactNode;
 }
 
 function formatCountdown(
@@ -83,7 +86,11 @@ const MARKET_HEAD_LEGEND_CLASS =
   "flex items-center gap-5 pb-1 text-[14px] text-[var(--t2)]";
 const MARKET_HEAD_SIDE_DOT_CLASS = "h-2 w-2 shrink-0 rounded-full";
 
-export default function MarketHead({ market, categoryName }: MarketHeadProps) {
+export default function MarketHead({
+  market,
+  categoryName,
+  actions,
+}: MarketHeadProps) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
   const displayMarket = localizedMarket(contentT, market);
@@ -150,7 +157,7 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
   return (
     <section className={MARKET_HEAD_CLASS}>
       <div className="flex items-start gap-4">
-        <span className="flex shrink-0 flex-col items-center gap-1 max-[720px]:hidden">
+        <span className="flex shrink-0 flex-col items-center gap-1">
           <MarketThumb
             categorySlug={displayMarket.categorySlug}
             imageUrl={displayMarket.imagePath || displayMarket.imageUrl || displayMarket.image_url}
@@ -182,11 +189,12 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
             {isSettled && settledLabel && (
               <span className={MARKET_HEAD_SETTLED_CLASS}>{settledLabel}</span>
             )}
+            {/* Phones show the category in the page header instead. */}
             {displayCategory && (
-              <>
+              <span className="contents max-[1023px]:hidden">
                 <span aria-hidden="true">·</span>
                 <span>{displayCategory}</span>
-              </>
+              </span>
             )}
             {/* Settled markets already carry their status above; other
                 non-live statuses (halted/closed/…) show the lifecycle
@@ -205,6 +213,11 @@ export default function MarketHead({ market, categoryName }: MarketHeadProps) {
           </p>
           <h1 className={MARKET_HEAD_TITLE_CLASS}>{displayMarket.title}</h1>
         </div>
+        {actions && (
+          <div className="flex shrink-0 items-center gap-2 max-[1023px]:hidden">
+            {actions}
+          </div>
+        )}
       </div>
 
       {/* biome-ignore lint/a11y/useSemanticElements: labeled control group; fieldset/legend swap is queued for the P2 primitives pass */}

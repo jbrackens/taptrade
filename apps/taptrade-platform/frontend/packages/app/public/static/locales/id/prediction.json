@@ -380,5 +380,13 @@
   "SOCIAL_ACTIVITY_SETTLEMENT": "Market yang mereka pegang telah selesai",
   "SOCIAL_ACTIVITY_REWARD": "Mendapatkan hadiah",
   "SOCIAL_ACTIVITY_LEADERBOARD": "Masuk papan peringkat",
-  "SOCIAL_ACTIVITY_COMMENT": "Berkomentar"
+  "SOCIAL_ACTIVITY_COMMENT": "Berkomentar",
+  "RULES_TITLE": "Aturan",
+  "READ_MORE": "Baca selengkapnya",
+  "SHOW_LESS": "Tampilkan lebih sedikit",
+  "ADD_TO_WATCHLIST": "Tambahkan ke daftar pantau",
+  "REMOVE_FROM_WATCHLIST": "Hapus dari daftar pantau",
+  "WATCHLIST_SIGN_IN": "Masuk untuk menyimpan market",
+  "WATCHLIST_SIGN_IN_BODY": "Masuk dan ketuk bintang untuk membuat daftar pantau Anda.",
+  "WATCHLIST_UPDATE_FAILED": "Daftar pantau tidak diperbarui"
 }

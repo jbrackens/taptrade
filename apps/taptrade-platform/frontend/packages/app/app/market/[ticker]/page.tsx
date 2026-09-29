@@ -24,9 +24,12 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { ArrowLeftIcon as ArrowLeft } from "@phosphor-icons/react/dist/csr/ArrowLeft";
 import { ShareNetworkIcon as ShareNetwork } from "@phosphor-icons/react/dist/csr/ShareNetwork";
+import { StarIcon as Star } from "@phosphor-icons/react/dist/csr/Star";
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import MarketDiscussion from "../../components/prediction/MarketDiscussion";
+import { useMobileTopBar } from "../../components/prediction/MobileTopBarContext";
+import { useMarketWatch } from "../../components/prediction/useMarketWatch";
 import { Button, Input } from "../../components/ui";
 import {
   Dialog,
@@ -93,9 +96,14 @@ const MARKET_WRAP_CLASS =
 const MARKET_HERO_AREA_CLASS =
   "col-start-1 row-start-1 mx-auto w-full min-w-0 max-w-[920px] px-8 pb-0 pt-6 max-[1279px]:px-6 max-[1023px]:order-1 max-[1023px]:px-4 max-[1023px]:pt-4";
 const MARKET_CONTENT_CLASS =
-  "col-start-1 row-start-2 mx-auto flex w-full min-w-0 max-w-[920px] flex-col gap-4 px-8 pb-12 pt-4 max-[1279px]:px-6 max-[1023px]:order-3 max-[1023px]:px-4 max-[1023px]:pb-8";
+  "col-start-1 row-start-2 mx-auto flex w-full min-w-0 max-w-[920px] flex-col gap-4 px-8 pb-12 pt-4 max-[1279px]:px-6 max-[1023px]:order-3 max-[1023px]:px-4 max-[1023px]:pb-[96px]";
+// Phones get the page's own header (back · category · share · star) instead.
 const MARKET_CRUMB_CLASS =
-  "mb-4 flex min-h-8 flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
+  "mb-4 flex min-h-8 flex-wrap items-center gap-2 text-[13px] text-[var(--t3)] max-[1023px]:hidden";
+// Share and watch: bordered squares beside the title on desktop, plain
+// 44px icon buttons in the phone header.
+const MARKET_ICON_BUTTON_CLASS =
+  "grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--t1)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-[1024px]:size-10 min-[1024px]:rounded-[var(--r-rh-md)] min-[1024px]:border min-[1024px]:border-solid min-[1024px]:border-[var(--border-1)] min-[1024px]:bg-[var(--surface-1)]";
 const MARKET_CRUMB_LINK_CLASS =
   "inline-flex min-h-8 pointer-coarse:min-h-11 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
@@ -120,8 +128,15 @@ const MARKET_TICKET_BAR_CLASS =
   "mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]";
 const MARKET_TICKET_SOURCE_CLASS =
   "mb-5 text-[12.5px] leading-[1.5] text-[var(--t3)]";
+// Phones: Yes and No pinned above the tab bar (2026-09-29 redesign); each
+// opens the trade sheet on its side. Settled and voided markets get one
+// "See the result" button instead. 900–1023px has no tab bar.
+const MARKET_MOBILE_ACTION_BAR_CLASS =
+  "fixed inset-x-0 bottom-[calc(58px+max(6px,env(safe-area-inset-bottom)))] z-[80] hidden gap-3 border-t border-[var(--border-1)] bg-[var(--surface-1)] px-4 py-3 max-[1023px]:grid max-[1023px]:grid-cols-2 min-[900px]:bottom-0 min-[900px]:pb-[max(12px,env(safe-area-inset-bottom))]";
+const MARKET_MOBILE_SIDE_BUTTON_CLASS =
+  "inline-flex min-h-12 cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-3 text-[15px] font-semibold text-[var(--on-ink)] tabular-nums transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]";
 const MARKET_MOBILE_TRADE_LINK_CLASS =
-  "fixed inset-x-4 bottom-[76px] z-[80] hidden min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--ticket-cta-text)] no-underline shadow-[var(--shadow-pop)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px max-[1023px]:flex min-[900px]:bottom-4";
+  "col-span-2 flex min-h-12 items-center justify-between rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--ticket-cta-text)] no-underline transition-[background-color,transform] duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] active:translate-y-px";
 const MARKET_DATA_ROW_CLASS =
   "grid grid-cols-2 gap-4 pt-4 max-[720px]:grid-cols-1";
 const MARKET_DEPTH_DISCLOSURE_CLASS =
@@ -172,22 +187,21 @@ const AMM_QUOTE_LABEL_CLASS =
   "min-w-0 text-[12px] font-medium text-[var(--t1)]";
 const AMM_QUOTE_VALUE_CLASS =
   "font-mono text-[11px] text-[var(--t2)] [font-variant-numeric:tabular-nums]";
-// One card: header, then the chart full width, then the stats row.
+// The header sits on the page ground; one card holds the chart and the
+// stats row (2026-09-29 redesign).
 const MARKET_HERO_CLASS =
-  "overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
-const MARKET_HERO_GRID_CLASS = "flex flex-col";
-const MARKET_HEAD_PANEL_CLASS = "min-w-0 px-6 pt-6 max-[720px]:px-4 max-[720px]:pt-5";
+  "mt-5 overflow-hidden rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] shadow-[var(--shadow-card)]";
 const MARKET_CHART_PANEL_CLASS =
-  "min-w-0 px-6 pb-5 pt-4 max-[720px]:px-4";
+  "min-w-0 px-6 pb-5 pt-5 max-[720px]:px-4 max-[720px]:pt-4";
 // Stats are cells on one hairline row, not boxes inside the box.
 const MARKET_STATS_CLASS =
-  "grid grid-cols-4 border-t border-[var(--border-1)] max-[640px]:grid-cols-2";
+  "grid grid-cols-3 border-t border-[var(--border-1)]";
 const MARKET_STAT_CLASS =
-  "min-w-0 border-r border-[var(--border-1)] px-6 py-4 last:border-r-0 max-[720px]:px-4 max-[640px]:[&:nth-child(2)]:border-r-0 max-[640px]:[&:nth-child(-n+2)]:border-b";
+  "min-w-0 border-r border-[var(--border-1)] px-6 py-4 last:border-r-0 max-[720px]:px-3 max-[720px]:py-3";
 const MARKET_STAT_LABEL_CLASS =
   "mb-1 text-[12px] font-medium text-[var(--t3)]";
 const MARKET_STAT_VALUE_CLASS =
-  "truncate text-[15px] font-semibold text-[var(--t1)] tabular-nums";
+  "truncate text-[15px] font-semibold text-[var(--t1)] tabular-nums max-[720px]:text-[14px]";
 const MARKET_DETAILS_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 shadow-[var(--shadow-card)] max-[720px]:px-4";
 const MARKET_DETAILS_TITLE_CLASS =
@@ -198,9 +212,9 @@ const MARKET_RULES_CLASS =
   "mt-[14px] flex list-none flex-col gap-2 border-t border-[var(--border-1)] p-0 pt-[14px]";
 const MARKET_RULE_CLASS =
   "relative pl-[18px] text-[13px] leading-[1.5] text-[var(--t2)] before:absolute before:left-1 before:top-2 before:h-1.5 before:w-1.5 before:rounded-full before:bg-[var(--accent)] before:content-['']";
-const MARKET_SHARE_ROW_CLASS =
-  "mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-1)] pt-4";
-const MARKET_SHARE_STATUS_CLASS = "text-xs text-[var(--t3)]";
+const MARKET_RULES_TOGGLE_CLASS =
+  "mt-1 inline-flex min-h-11 cursor-pointer items-center border-0 bg-transparent p-0 text-sm font-semibold text-[var(--t1)] underline underline-offset-4 hover:text-[var(--t2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
+const MARKET_SHARE_STATUS_CLASS = "mt-2 text-xs text-[var(--t3)]";
 const RELATED_CARD_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 shadow-[var(--shadow-card)] max-[720px]:px-4";
 const RELATED_TITLE_CLASS =
@@ -1191,6 +1205,49 @@ export default function MarketDetailPage() {
     }
   }
 
+  const { watched, toggle: toggleWatch } = useMarketWatch(
+    market?.id,
+    isAuthenticated,
+  );
+  const [rulesOpen, setRulesOpen] = useState(false);
+  // One set of actions, rendered beside the title on desktop and in the
+  // phone header; only the desktop copy carries the smoke-test ids.
+  const renderMarketActions = (placement: "inline" | "header") => (
+    <>
+      <button
+        type="button"
+        onClick={handleShareMarket}
+        data-testid={placement === "inline" ? "share-market" : undefined}
+        aria-label={t("SHARE_MARKET", "Share market")}
+        className={MARKET_ICON_BUTTON_CLASS}
+      >
+        <ShareNetwork size={20} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        onClick={toggleWatch}
+        aria-pressed={watched}
+        aria-label={
+          watched
+            ? t("REMOVE_FROM_WATCHLIST", "Remove from watchlist")
+            : t("ADD_TO_WATCHLIST", "Add to watchlist")
+        }
+        className={MARKET_ICON_BUTTON_CLASS}
+      >
+        <Star size={20} weight={watched ? "fill" : "regular"} aria-hidden="true" />
+      </button>
+    </>
+  );
+  useMobileTopBar(
+    market
+      ? {
+          fallbackHref: category ? `/category/${category.slug}` : "/predict",
+          title: displayCategory || t("NAV_MARKETS_CRUMB", "Markets"),
+          actions: renderMarketActions("header"),
+        }
+      : null,
+  );
+
   if (loading) {
     return (
       <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>
@@ -1222,6 +1279,16 @@ export default function MarketDetailPage() {
     isSettledMarket && settledFinalYes !== null
       ? 100 - settledFinalYes
       : (market?.noPricePoints ?? 0);
+  // Settled and voided markets can't be traded: their one sheet button
+  // says so ("See the result") instead of offering Yes / No.
+  const resultSheetLabel =
+    isSettledMarket || market.status === "voided"
+      ? t("SETTLED_SHEET_LABEL", "See the result")
+      : null;
+  const openSheetOn = (side: OrderSide) => {
+    setSelectedSide(side);
+    setTicketSheetOpen(true);
+  };
 
   // The trade workspace renders once: in the desktop aside, or inside
   // the vaul Sheet on the <=1023px band (never both — a second mounted
@@ -1365,14 +1432,19 @@ export default function MarketDetailPage() {
           )}
         </nav>
 
+        <MarketHead
+          market={displayMarket ?? market}
+          categoryName={displayCategory}
+          actions={renderMarketActions("inline")}
+        />
+        {shareMessage && (
+          <p role="status" className={MARKET_SHARE_STATUS_CLASS}>
+            {shareMessage}
+          </p>
+        )}
+
         <section className={MARKET_HERO_CLASS}>
-          <div className={MARKET_HERO_GRID_CLASS}>
-            <div className={MARKET_HEAD_PANEL_CLASS}>
-              <MarketHead
-                market={displayMarket ?? market}
-                categoryName={displayCategory}
-              />
-            </div>
+          <div className="flex flex-col">
             <div className={MARKET_CHART_PANEL_CLASS}>
               {/* No "live data" caption: the chart can be flat, empty or
                   (demo boxes only) simulated, and says so itself. */}
@@ -1394,10 +1466,6 @@ export default function MarketDetailPage() {
               {
                 label: t("LIQUIDITY", "Liquidity"),
                 value: formatCompactPoints(market.liquidityPoints),
-              },
-              {
-                label: t("OPEN_INTEREST", "Open interest"),
-                value: formatCompactPoints(market.openInterestPoints),
               },
               {
                 // Step 3 / UAT-006: a settled market showing a FUTURE
@@ -1434,26 +1502,45 @@ export default function MarketDetailPage() {
          * the payout band, not a ticket. Settled markets show the FINAL
          * side price (the rail's derivation, not the stale snapshot);
          * voided markets show no price at all — theirs means nothing. */}
-        <button
-          type="button"
-          data-testid="open-trade-sheet"
-          onClick={() => setTicketSheetOpen(true)}
-          className={`${MARKET_MOBILE_TRADE_LINK_CLASS} cursor-pointer border-0`}
-        >
-          <span>
-            {isSettledMarket || market.status === "voided"
-              ? t("SETTLED_SHEET_LABEL", "See the result")
-              : t("TRADE_MARKET", "Trade market")}
-          </span>
-          {market.status !== "voided" && (
-            <span className="tabular-nums">
-              {selectedSide === "yes" ? t("YES") : t("NO")}{" "}
-              {t("PTS_COUNT", {
-                count: selectedSide === "yes" ? railYes : railNo,
-              })}
-            </span>
+        <div className={MARKET_MOBILE_ACTION_BAR_CLASS}>
+          {resultSheetLabel ? (
+            <button
+              type="button"
+              data-testid="open-trade-sheet"
+              onClick={() => setTicketSheetOpen(true)}
+              className={`${MARKET_MOBILE_TRADE_LINK_CLASS} cursor-pointer border-0`}
+            >
+              <span>{resultSheetLabel}</span>
+              {market.status !== "voided" && (
+                <span className="tabular-nums">
+                  {selectedSide === "yes" ? t("YES") : t("NO")}{" "}
+                  {t("PTS_COUNT", {
+                    count: selectedSide === "yes" ? railYes : railNo,
+                  })}
+                </span>
+              )}
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                data-testid="open-trade-sheet"
+                onClick={() => openSheetOn("yes")}
+                className={`${MARKET_MOBILE_SIDE_BUTTON_CLASS} bg-[var(--yes)]`}
+              >
+                {t("YES")} {t("PTS_COUNT", { count: railYes })}
+              </button>
+              <button
+                type="button"
+                data-testid="open-trade-sheet-no"
+                onClick={() => openSheetOn("no")}
+                className={`${MARKET_MOBILE_SIDE_BUTTON_CLASS} bg-[var(--no)]`}
+              >
+                {t("NO")} {t("PTS_COUNT", { count: railNo })}
+              </button>
+            </>
           )}
-        </button>
+        </div>
       </div>
 
       {!isTicketBand && (
@@ -1476,60 +1563,66 @@ export default function MarketDetailPage() {
       )}
 
       <div className={MARKET_CONTENT_CLASS}>
+        {/* Rules (2026-09-29 redesign): the first lines of the market's
+            terms, the rest behind "Read more". */}
         <section className={MARKET_DETAILS_CLASS}>
           <h2 className={MARKET_DETAILS_TITLE_CLASS}>
-            {t("MARKET_DETAILS_RESOLUTION")}
+            {t("RULES_TITLE", "Rules")}
           </h2>
           {displayMarket?.description && (
-            <p className={MARKET_DETAILS_COPY_CLASS}>
+            <p
+              className={`${MARKET_DETAILS_COPY_CLASS} ${rulesOpen ? "" : "line-clamp-3"}`}
+            >
               {displayMarket.description}
             </p>
           )}
-          {humanSettlementRule &&
-            humanSettlementRule !== displayMarket?.description && (
-              <p className={MARKET_DETAILS_COPY_CLASS}>{humanSettlementRule}</p>
-            )}
-          <dl className="m-0 mt-4 grid grid-cols-2 gap-x-6 border-t border-[var(--border-1)] pt-4 max-[640px]:grid-cols-1 max-[640px]:gap-y-3">
-            <div>
-              <dt className={MARKET_STAT_LABEL_CLASS}>
-                {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
-              </dt>
-              <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
-                {formatSourceLabel(market.settlementSourceKey)}
-              </dd>
-            </div>
-            <div>
-              <dt className={MARKET_STAT_LABEL_CLASS}>
-                {t("MARKET_STATUS_LABEL", "Market status")}
-              </dt>
-              <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
-                {marketStatusLabel(market.status, t)}
-              </dd>
-            </div>
-          </dl>
-          <ul className={MARKET_RULES_CLASS}>
-            <li className={MARKET_RULE_CLASS}>
-              {isOpenMarketStatus(market.status)
-                ? t("CLOSES_AT_UTC", {
-                    date: new Date(market.closeAt).toUTCString().slice(5, -4),
-                  })
-                : t("MARKET_CURRENT_STATUS", {
-                    status: marketStatusLabel(market.status, t),
-                  })}
-            </li>
-          </ul>
-          <div className={MARKET_SHARE_ROW_CLASS}>
-            <Button
-              className="gap-2"
-              onClick={handleShareMarket}
-              data-testid="share-market"
-            >
-              <ShareNetwork size={16} aria-hidden="true" />
-              {t("SHARE_MARKET", "Share market")}
-            </Button>
-            {shareMessage && (
-              <span className={MARKET_SHARE_STATUS_CLASS}>{shareMessage}</span>
-            )}
+          {rulesOpen && (
+            <>
+              {humanSettlementRule &&
+                humanSettlementRule !== displayMarket?.description && (
+                  <p className={MARKET_DETAILS_COPY_CLASS}>
+                    {humanSettlementRule}
+                  </p>
+                )}
+              <dl className="m-0 mt-4 grid grid-cols-2 gap-x-6 border-t border-[var(--border-1)] pt-4 max-[640px]:grid-cols-1 max-[640px]:gap-y-3">
+                <div>
+                  <dt className={MARKET_STAT_LABEL_CLASS}>
+                    {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
+                  </dt>
+                  <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
+                    {formatSourceLabel(market.settlementSourceKey)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={MARKET_STAT_LABEL_CLASS}>
+                    {t("MARKET_STATUS_LABEL", "Market status")}
+                  </dt>
+                  <dd className="m-0 text-sm font-semibold text-[var(--t1)]">
+                    {marketStatusLabel(market.status, t)}
+                  </dd>
+                </div>
+              </dl>
+              <ul className={MARKET_RULES_CLASS}>
+                <li className={MARKET_RULE_CLASS}>
+                  {isOpenMarketStatus(market.status)
+                    ? t("CLOSES_AT_UTC", {
+                        date: new Date(market.closeAt).toUTCString().slice(5, -4),
+                      })
+                    : t("MARKET_CURRENT_STATUS", {
+                        status: marketStatusLabel(market.status, t),
+                      })}
+                </li>
+              </ul>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => setRulesOpen((open) => !open)}
+            aria-expanded={rulesOpen}
+            className={MARKET_RULES_TOGGLE_CLASS}
+          >
+            {rulesOpen ? t("SHOW_LESS", "Show less") : t("READ_MORE", "Read more")}
+          </button>
             <Dialog open={shareOpen} onOpenChange={setShareOpen}>
               <DialogContent data-testid="share-dialog">
                 <DialogTitle>{t("SHARE_MARKET", "Share market")}</DialogTitle>
@@ -1561,7 +1654,6 @@ export default function MarketDetailPage() {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
         </section>
 
         {/* Liquidity honesty (2026-06 audit locks): real depth or the
