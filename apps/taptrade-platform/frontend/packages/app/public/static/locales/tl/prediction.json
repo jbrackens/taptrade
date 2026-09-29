@@ -390,5 +390,9 @@
   "REMOVE_FROM_WATCHLIST": "Alisin sa watchlist",
   "WATCHLIST_SIGN_IN": "Mag-sign in para mag-save ng markets",
   "WATCHLIST_SIGN_IN_BODY": "Mag-log in at i-tap ang star para buuin ang watchlist mo.",
-  "WATCHLIST_UPDATE_FAILED": "Hindi na-update ang watchlist"
+  "WATCHLIST_UPDATE_FAILED": "Hindi na-update ang watchlist",
+  "ALL_MARKETS": "Lahat ng market",
+  "SEE_ALL": "Tingnan lahat",
+  "MOST_ACTIVE": "Pinakaaktibo",
+  "YOU_HOLD_COUNT": "May hawak kang {{quantity}} {{side}}"
 }

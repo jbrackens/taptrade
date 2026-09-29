@@ -39,6 +39,8 @@ export interface MarketChartCanvasProps {
   height?: number;
   /** Line colour: the side's direction colour, or ink (default). */
   tone?: "yes" | "no" | "ink";
+  /** % labels and dotted guides (default true); off for a sparkline. */
+  axis?: boolean;
 }
 
 function cssVar(el: HTMLElement, name: string): string {
@@ -62,11 +64,12 @@ export default function MarketChartCanvas({
   ariaLabel,
   height = 300,
   tone = "ink",
+  axis = true,
 }: MarketChartCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const [readout, setReadout] = useState<string | null>(null);
-  const [axis, setAxis] = useState<{ price: number; y: number }[]>([]);
+  const [axisTicks, setAxisTicks] = useState<{ price: number; y: number }[]>([]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: height is a re-layout signal — the % labels are placed from the plot's height
   useEffect(() => {
@@ -113,6 +116,8 @@ export default function MarketChartCanvas({
       },
       leftPriceScale: { visible: false },
       timeScale: {
+        // A sparkline has no axes at all.
+        visible: axis,
         borderVisible: false,
         // Intraday ranges label ticks with the hour; day boundaries still
         // print the date, so 1W/ALL read as dates.
@@ -166,7 +171,7 @@ export default function MarketChartCanvas({
 
     // Dotted guides on the axis ticks; their labels are placed once the
     // chart has laid out (priceToCoordinate is null before the first paint).
-    const ticks = chartAxisTicks(domain);
+    const ticks = axis ? chartAxisTicks(domain) : [];
     for (const price of ticks) {
       main.createPriceLine({
         price,
@@ -177,7 +182,7 @@ export default function MarketChartCanvas({
       });
     }
     const placeAxis = requestAnimationFrame(() => {
-      setAxis(
+      setAxisTicks(
         ticks.flatMap((price) => {
           const y = main.priceToCoordinate(price);
           return y == null ? [] : [{ price, y }];
@@ -227,13 +232,16 @@ export default function MarketChartCanvas({
       chartRef.current = null;
       chart.remove();
     };
-  }, [values, times, tone, height]);
+  }, [values, times, tone, height, axis]);
 
   return (
     <div className="relative w-full" style={{ height }} aria-label={ariaLabel} role="img">
-      <div ref={containerRef} className="absolute inset-y-0 left-0 right-10" />
+      <div
+        ref={containerRef}
+        className={axis ? "absolute inset-y-0 left-0 right-10" : "absolute inset-0"}
+      />
       <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10">
-        {axis.map((tick) => (
+        {axisTicks.map((tick) => (
           <span
             key={tick.price}
             className="absolute right-0 -translate-y-1/2 text-[11px] font-medium text-[var(--t3)] tabular-nums"

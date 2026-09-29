@@ -388,5 +388,9 @@
   "REMOVE_FROM_WATCHLIST": "Buang dari senarai pantau",
   "WATCHLIST_SIGN_IN": "Log masuk untuk menyimpan pasaran",
   "WATCHLIST_SIGN_IN_BODY": "Log masuk dan ketik bintang untuk membina senarai pantau anda.",
-  "WATCHLIST_UPDATE_FAILED": "Senarai pantau tidak dikemas kini"
+  "WATCHLIST_UPDATE_FAILED": "Senarai pantau tidak dikemas kini",
+  "ALL_MARKETS": "Semua pasaran",
+  "SEE_ALL": "Lihat semua",
+  "MOST_ACTIVE": "Paling aktif",
+  "YOU_HOLD_COUNT": "Anda pegang {{quantity}} {{side}}"
 }

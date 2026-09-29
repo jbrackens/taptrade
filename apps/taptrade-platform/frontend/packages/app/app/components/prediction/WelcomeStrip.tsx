@@ -21,41 +21,43 @@ export function WelcomeStrip() {
   // Signed-in users (and the brief auth check) go straight to the board.
   if (isLoading || isAuthenticated) return null;
 
+  // One slim line under the topic chips (2026-09-29 redesign): the pitch,
+  // the points-only line and "Start free", then the markets.
   return (
     <section
       aria-labelledby="welcome-strip-title"
       data-testid="welcome-strip"
-      className="mb-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-6 py-5 shadow-[var(--shadow-card)] max-[640px]:px-4 max-[640px]:py-4"
+      className="mb-5 flex items-center justify-between gap-4 rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-3 shadow-[var(--shadow-card)] max-[640px]:mb-4 max-[640px]:px-4"
     >
       <div className="min-w-0">
         <h2
           id="welcome-strip-title"
-          className="m-0 text-[22px] font-semibold leading-tight tracking-[-0.025em] text-[var(--t1)] max-[640px]:text-[19px]"
+          className="m-0 text-[15px] font-semibold leading-snug text-[var(--t1)]"
         >
-          {t("HOME_WELCOME_TITLE", "Call what happens next.")}
+          {t("HOME_WELCOME_TITLE", "Call what happens next.")}{" "}
+          <span className="font-normal text-[var(--t2)] max-[900px]:hidden">
+            {t(
+              "HOME_WELCOME_BODY",
+              "Pick Yes or No on the moments everyone's talking about. Free to play with Clout.",
+            )}
+          </span>
         </h2>
-        <p className="m-0 mt-1 text-[14px] text-[var(--t2)]">
-          {t(
-            "HOME_WELCOME_BODY",
-            "Pick Yes or No on the moments everyone's talking about. Free to play with Clout.",
-          )}
-        </p>
-        <p className="m-0 mt-1 text-[12px] text-[var(--t3)]">
+        <p className="m-0 mt-0.5 text-[12px] text-[var(--t3)]">
           {WELCOME_FINE_LEGAL}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-2 max-[640px]:w-full">
-        <Link
-          href="/auth/register"
-          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-[14px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
-        >
-          {t("HOME_WELCOME_CTA", "Start free")}
-        </Link>
+      <div className="flex shrink-0 items-center gap-2">
         <Link
           href="/#how-it-works"
-          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 text-[14px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
+          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] px-3 text-[14px] font-semibold text-[var(--t2)] no-underline transition-colors duration-150 hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:hidden"
         >
           {t("HOME_WELCOME_HOW", "How it works")}
+        </Link>
+        <Link
+          href="/auth/register"
+          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-[14px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2"
+        >
+          {t("HOME_WELCOME_CTA", "Start free")}
         </Link>
       </div>
     </section>

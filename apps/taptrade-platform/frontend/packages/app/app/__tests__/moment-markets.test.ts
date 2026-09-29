@@ -14,11 +14,10 @@ const grid = readFileSync(
 );
 
 describe("Predict Moments market directory", () => {
-  it("uses the established search, sort, and closing-window filter bar", () => {
+  it("uses the sort and closing-window filter bar; search is the header's", () => {
+    // 2026-09-29 redesign: one search box on the board (the header's).
     assert.match(moments, /data-testid="moment-filter-bar"/);
-    assert.match(moments, /type="search"/);
-    assert.match(moments, /SEARCH_MARKETS_PLACEHOLDER/);
-    assert.match(moments, /aria-label=\{headerT\("SEARCH_MARKETS"\)\}/);
+    assert.doesNotMatch(moments, /type="search"/);
     assert.match(
       moments,
       /"activity"[\s\S]*"closing_soon"[\s\S]*"newest"/,
@@ -44,7 +43,7 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /const TRENDING_LIST_COUNT = 5/);
     assert.match(
       moments,
-      /const requestParams = useMemo\([\s\S]*categoryId,[\s\S]*closeBefore: dateWindowToCloseBefore\(dateWindow\),[\s\S]*q: query\.trim\(\) \|\| undefined,[\s\S]*sort: sortBy/,
+      /const requestParams = useMemo\([\s\S]*categoryId,[\s\S]*closeBefore: dateWindowToCloseBefore\(dateWindow\),[\s\S]*sort: sortBy/,
     );
     assert.match(
       moments,
@@ -86,13 +85,12 @@ describe("Predict Moments market directory", () => {
     assert.match(moments, /export function MomentMarketsSection\(\{ categoryId \}/);
     assert.match(
       moments,
-      /\[categoryId, dateWindow, query, sortBy, reloadNonce\]/,
+      /\[categoryId, dateWindow, sortBy, reloadNonce\]/,
     );
     assert.match(moments, /\[reloadNonce, requestParams\]/);
     assert.match(moments, /setMarkets\(\[\]\)/);
     assert.match(moments, /setPage\(1\)/);
     assert.match(moments, /setHasNext\(false\)/);
-    assert.match(moments, /setQuery\(""\)/);
     assert.match(moments, /setSortBy\("activity"\)/);
     assert.match(moments, /setDateWindow\("all"\)/);
     assert.match(moments, /COULD_NOT_LOAD_MORE_MARKETS/);

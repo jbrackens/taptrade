@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPredictionClient } from "@taptrade-ui/api-client/src/prediction-client";
 import type { PredictionMarket } from "@taptrade-ui/api-client/src/prediction-types";
-import { Button, Input } from "../ui";
+import { Button } from "../ui";
 import { FeaturedMarket, pickFeatured } from "./FeaturedMarket";
 import { MARKET_GRID_CLASS, MarketGrid } from "./MarketGrid";
 import { eventCardCount } from "./event-groups";
@@ -64,10 +64,10 @@ const TIME_PILLS: readonly {
   { value: "30d", label: "1M" },
 ];
 
-// Segmented controls: a recessed track with the selected segment raised
-// in white, the iOS pattern.
+// Segmented controls: a recessed track with the selected segment in ink
+// (2026-09-29 redesign, matching the chart's range picker).
 const FILTER_GROUP_CLASS =
-  "inline-flex shrink-0 gap-0.5 rounded-[10px] bg-[var(--surface-2)] p-[3px] max-[640px]:max-w-full max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden";
+  "inline-flex shrink-0 gap-0.5 rounded-[var(--r-pill)] bg-[var(--surface-2)] p-[3px] max-[640px]:max-w-full max-[640px]:overflow-x-auto max-[640px]:[scrollbar-width:none] max-[640px]:[&::-webkit-scrollbar]:hidden";
 
 function dateWindowToCloseBefore(window: DateWindow): string | undefined {
   if (window === "all") return undefined;
@@ -76,9 +76,9 @@ function dateWindowToCloseBefore(window: DateWindow): string | undefined {
 }
 
 function filterPillClass(active: boolean): string {
-  return `h-8 pointer-coarse:h-11 pointer-coarse:min-w-11 cursor-pointer whitespace-nowrap rounded-[8px] border-0 px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[640px]:h-9 ${
+  return `h-8 pointer-coarse:h-11 pointer-coarse:min-w-11 cursor-pointer whitespace-nowrap rounded-[var(--r-pill)] border-0 px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[640px]:h-9 ${
     active
-      ? "bg-[var(--surface-1)] font-semibold text-[var(--t1)] shadow-[0_1px_2px_rgba(17,17,20,0.08),0_0_0_0.5px_rgba(17,17,20,0.06)]"
+      ? "bg-[var(--accent)] font-semibold text-[var(--on-ink)]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 }
@@ -110,7 +110,6 @@ function GridSkeleton() {
 
 export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
   const { t } = useTranslation("prediction");
-  const { t: headerT } = useTranslation("header");
   const { t: contentT } = useTranslation("market-content");
   const [quickTrade, setQuickTrade] = useState<QuickTradeTarget | null>(null);
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -120,7 +119,6 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
-  const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<MarketSort>("activity");
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
   const loadMoreRequestRef = useRef(0);
@@ -130,12 +128,11 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
       status: "open" as const,
       categoryId,
       closeBefore: dateWindowToCloseBefore(dateWindow),
-      q: query.trim() || undefined,
       sort: sortBy,
     }),
     // Recalculate a selected closing window when the user retries, rather
     // than reusing a stale "next 1D / 1W / 1M" cutoff.
-    [categoryId, dateWindow, query, sortBy, reloadNonce],
+    [categoryId, dateWindow, sortBy, reloadNonce],
   );
 
   // A filter change starts a fresh 3×3 result set and invalidates an older
@@ -211,7 +208,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
           activeSort?.fallback ?? "Trending markets",
         );
   const hasFilters =
-    Boolean(query.trim()) || dateWindow !== "all" || sortBy !== "activity";
+    dateWindow !== "all" || sortBy !== "activity";
 
   // The hero needs the featured market plus a full trending list.
   const showHero = !hasFilters && markets.length > TRENDING_LIST_COUNT;
@@ -251,76 +248,71 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
       {/* Proof of life: real fills and movers, only when there are any. */}
       {!hasFilters && <ActivityRail />}
 
-      <div className="flex items-center justify-between gap-4">
+      {/* 2026-09-29 redesign: one search box (the header's). Desktop:
+          "All markets" with the sort and closing-window controls; phones:
+          the sorted list's name and "See all" (the filters live on
+          /discover there). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2
           id="moments-market-heading"
-          className="m-0 text-[20px] font-semibold tracking-[-0.02em] text-[var(--t1)]"
+          className="m-0 text-[20px] font-semibold tracking-[-0.02em] text-[var(--t1)] max-[640px]:text-[17px]"
         >
-          {heading}
+          <span className="max-[640px]:hidden">
+            {t("ALL_MARKETS", "All markets")}
+          </span>
+          <span className="min-[641px]:hidden">{heading}</span>
         </h2>
         <Link
           href="/discover"
-          className="shrink-0 text-[13px] font-medium text-[var(--t2)] no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+          className="shrink-0 text-[15px] font-medium text-[var(--t1)] no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center transition-colors hover:text-[var(--t2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] min-[641px]:hidden"
         >
-          {t("VIEW_ALL_MOMENTS", "View all moments")} →
+          {t("SEE_ALL", "See all")}
         </Link>
-      </div>
 
-      <div
-        className="mt-4 flex flex-wrap items-center gap-3 max-[640px]:items-stretch"
-        data-testid="moment-filter-bar"
-      >
-        <Input
-          type="search"
-          className="h-[38px] min-h-0 min-w-[240px] flex-1 basis-[280px] rounded-[10px] border border-[var(--border-1)] bg-[var(--surface-1)] text-[14px] max-[640px]:h-10 max-[640px]:min-w-0 max-[640px]:basis-full"
-          placeholder={t(
-            "SEARCH_MARKETS_PLACEHOLDER",
-            headerT("SEARCH_MARKETS_PLACEHOLDER"),
-          )}
-          aria-label={headerT("SEARCH_MARKETS")}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+        <div
+          className="flex flex-wrap items-center gap-3 max-[640px]:hidden"
+          data-testid="moment-filter-bar"
+        >
+          <fieldset className={`${FILTER_GROUP_CLASS} m-0 min-w-0`}>
+            <legend className="sr-only">{t("SORT_MARKETS", "Sort markets")}</legend>
+            {SORT_PILLS.map((pill) => {
+              const active = sortBy === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  aria-pressed={active}
+                  data-testid={`market-sort-${pill.value}`}
+                  className={filterPillClass(active)}
+                  onClick={() => setSortBy(pill.value)}
+                >
+                  {t(pill.labelKey, pill.fallback)}
+                </button>
+              );
+            })}
+          </fieldset>
 
-        <fieldset className={`${FILTER_GROUP_CLASS} m-0 min-w-0`}>
-          <legend className="sr-only">{t("SORT_MARKETS", "Sort markets")}</legend>
-          {SORT_PILLS.map((pill) => {
-            const active = sortBy === pill.value;
-            return (
-              <button
-                key={pill.value}
-                type="button"
-                aria-pressed={active}
-                data-testid={`market-sort-${pill.value}`}
-                className={filterPillClass(active)}
-                onClick={() => setSortBy(pill.value)}
-              >
-                {t(pill.labelKey, pill.fallback)}
-              </button>
-            );
-          })}
-        </fieldset>
-
-        <fieldset className={`${FILTER_GROUP_CLASS} m-0 min-w-0`}>
-          <legend className="sr-only">
-            {t("FILTER_BY_CLOSING_WINDOW", "Filter by closing window")}
-          </legend>
-          {TIME_PILLS.map((pill) => {
-            const active = dateWindow === pill.value;
-            return (
-              <button
-                key={pill.value}
-                type="button"
-                aria-pressed={active}
-                data-testid={`market-window-${pill.value}`}
-                className={filterPillClass(active)}
-                onClick={() => setDateWindow(pill.value)}
-              >
-                {pill.labelKey ? t(pill.labelKey) : pill.label}
-              </button>
-            );
-          })}
-        </fieldset>
+          <fieldset className={`${FILTER_GROUP_CLASS} m-0 min-w-0`}>
+            <legend className="sr-only">
+              {t("FILTER_BY_CLOSING_WINDOW", "Filter by closing window")}
+            </legend>
+            {TIME_PILLS.map((pill) => {
+              const active = dateWindow === pill.value;
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  aria-pressed={active}
+                  data-testid={`market-window-${pill.value}`}
+                  className={filterPillClass(active)}
+                  onClick={() => setDateWindow(pill.value)}
+                >
+                  {pill.labelKey ? t(pill.labelKey) : pill.label}
+                </button>
+              );
+            })}
+          </fieldset>
+        </div>
       </div>
 
       <div className="mt-5">
@@ -363,7 +355,6 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
                 size="sm"
                 className="mt-3"
                 onClick={() => {
-                  setQuery("");
                   setSortBy("activity");
                   setDateWindow("all");
                 }}

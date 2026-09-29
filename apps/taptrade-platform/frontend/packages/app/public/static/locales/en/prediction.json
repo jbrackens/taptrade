@@ -411,5 +411,9 @@
   "REMOVE_FROM_WATCHLIST": "Remove from watchlist",
   "WATCHLIST_SIGN_IN": "Sign in to save markets",
   "WATCHLIST_SIGN_IN_BODY": "Log in and tap the star to build your watchlist.",
-  "WATCHLIST_UPDATE_FAILED": "Watchlist not updated"
+  "WATCHLIST_UPDATE_FAILED": "Watchlist not updated",
+  "ALL_MARKETS": "All markets",
+  "SEE_ALL": "See all",
+  "MOST_ACTIVE": "Most active",
+  "YOU_HOLD_COUNT": "You hold {{quantity}} {{side}}"
 }

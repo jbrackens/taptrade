@@ -53,17 +53,17 @@ test.describe("/predict — discovery landing", () => {
     // The approved discovery card shows both live market sides as
     // percentage actions, not as a dense single-column price table.
     await expect(
-      page.getByRole("button", { name: /\d+% buy yes/i }).first(),
+      page.getByRole("button", { name: /buy yes · \d+ clout/i }).first(),
     ).toBeVisible({
       timeout: 10_000,
     });
     await expect(
-      page.getByRole("button", { name: /\d+% buy no/i }).first(),
+      page.getByRole("button", { name: /buy no · \d+ clout/i }).first(),
     ).toBeVisible();
 
     // YES/NO open the quick-trade panel in place (Dialog on desktop, vaul
     // Sheet on the <=1023px band) instead of leaving the list.
-    await page.getByRole("button", { name: /\d+% buy no/i }).first().click();
+    await page.getByRole("button", { name: /buy no · \d+ clout/i }).first().click();
     const quickTrade = page.getByRole("dialog");
     await expect(quickTrade).toBeVisible();
     await expect(quickTrade.getByText(/quick trade/i).first()).toBeVisible();
@@ -73,13 +73,6 @@ test.describe("/predict — discovery landing", () => {
     await page.keyboard.press("Escape");
     await expect(quickTrade).toHaveCount(0);
     await expect(page).toHaveURL(/\/predict\/?(\?.*)?$/);
-
-    const search = page.getByRole("searchbox", {
-      name: /search markets/i,
-    });
-    await expect(search).toBeVisible();
-    await search.fill("candidate");
-    await expect(search).toHaveValue("candidate");
 
     const closingSoon = page.getByTestId("market-sort-closing_soon");
     await expect(closingSoon).toHaveAttribute("aria-pressed", "false");

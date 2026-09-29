@@ -96,11 +96,11 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
         <MarketThumb categorySlug={lead.categorySlug} imageUrl={photo} size={40} />
         <span className="flex min-w-0 flex-1 flex-col">
           {category && (
-            <span className="mb-0.5 truncate text-[10.5px] font-semibold uppercase leading-[1.3] tracking-[0.06em] text-[var(--t3)]">
+            <span className="mb-0.5 truncate text-[12px] font-medium leading-[1.3] text-[var(--t3)]">
               {category}
             </span>
           )}
-          <h3 className="m-0 line-clamp-2 min-w-0 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
+          <h3 className="m-0 line-clamp-2 min-w-0 text-[15px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
             {title}
           </h3>
         </span>

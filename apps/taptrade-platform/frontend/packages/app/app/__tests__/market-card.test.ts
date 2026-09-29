@@ -25,11 +25,11 @@ describe("Market Discovery Card", () => {
   it("keeps the card anatomy: thumb, clamped question, corner, chance and volume", () => {
     // The 2026-09-24 redesign dropped the ranked/mixed anatomy for a
     // uniform card: MarketThumb + a line-clamped question, then a quiet
-    // volume footer line. Since 2026-09-27 the chance lives on the Yes/No
-    // actions and the corner shows the player's holding or the time left.
+    // volume footer line. Since 2026-09-29 (approved mockups) the corner
+    // shows the chance and the caption the time left or the holding.
     assert.match(card, /<MarketThumb categorySlug=\{categorySlug\} imageUrl=\{photo\}/);
     assert.match(card, /line-clamp-3/);
-    assert.match(card, /\{percentage\}%/);
+    assert.match(card, /\{yesPercentage\}%/);
     assert.match(card, /t\("TIME_LEFT", "left"\)/);
     assert.match(card, /formatCompactPoints\(volumePoints\)/);
     assert.match(card, /t\("VOL_SHORT", "vol"\)/);
@@ -42,11 +42,11 @@ describe("Market Discovery Card", () => {
     assert.doesNotMatch(card, /rankLabel|t\("TRENDING"/);
   });
 
-  it("renders the two live market sides as soft percentage chips", () => {
+  it("renders the two live market sides as soft chips priced in Clout", () => {
     assert.match(card, /\(\["yes", "no"\] as const\)\.map/);
     assert.match(card, /bg-\[var\(--yes-soft\)\] text-\[var\(--yes-text\)\] hover:bg-\[var\(--yes\)\]/);
     assert.match(card, /bg-\[var\(--no-soft\)\] text-\[var\(--no-text\)\] hover:bg-\[var\(--no\)\]/);
-    assert.match(card, /`\$\{percentage\}% \$\{t\("BUY_YES", "Yes"\)\}`/);
+    assert.match(card, /t\("PTS_COUNT", \{ count: price \}\)/);
     assert.doesNotMatch(card, /¢/);
   });
 

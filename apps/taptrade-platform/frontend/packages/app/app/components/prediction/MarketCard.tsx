@@ -3,14 +3,13 @@
 /**
  * MarketCard — one binary market in the discovery grid.
  *
- * Anatomy (the Kalshi / Polymarket card): the market's image tile, a
- * small-caps eyebrow naming its event (or its category when it has no event
- * of its own) and the question on top, the two direction buttons carrying
- * each side's chance (the points price is the same number; the trade panel
- * shows it), then a hairline and one quiet line of volume. The top-right
- * corner never repeats the chance: it shows what the player holds in this
- * market, otherwise the time left (pink in the last 24 hours). Everything is
- * a single typeface; numbers use tabular figures.
+ * Anatomy (2026-09-29 redesign, the Kalshi / Polymarket card): the market's
+ * image tile, a sentence-case eyebrow naming its event (or its category when
+ * it has no event of its own), the question, and the chance in the top-right
+ * corner; then Yes / No priced in Clout ("Yes 57 Clout"), and a hairline
+ * caption: volume and time left (pink in the last 24 hours), or what the
+ * player holds. Everything is a single typeface; numbers use tabular
+ * figures.
  */
 
 import Link from "next/link";
@@ -116,22 +115,19 @@ export function MarketCard({
       ? t("YES", "Yes")
       : t("NO", "No")
     : "";
-  const corner = held
-    ? {
-        value: HELD_FORMAT.format(held.quantity),
-        label: t("YOU_HOLD_SIDE", {
-          side: heldSide,
-          defaultValue: `you hold ${heldSide}`,
-        }),
-        tone: held.side === "yes" ? "text-[var(--yes-text)]" : "text-[var(--no-text)]",
-      }
-    : left
-      ? {
-          value: left.value,
-          label: t("TIME_LEFT", "left"),
-          tone: left.urgent ? "text-[var(--live-text)]" : "text-[var(--t1)]",
-        }
-      : null;
+  const leftTone = left?.urgent ? "text-[var(--live-text)]" : "";
+  const heldText = held
+    ? t("YOU_HOLD_COUNT", {
+        quantity: HELD_FORMAT.format(held.quantity),
+        side: heldSide,
+        defaultValue: `You hold ${HELD_FORMAT.format(held.quantity)} ${heldSide}`,
+      })
+    : "";
+  const heldTone = held
+    ? held.side === "yes"
+      ? "font-semibold text-[var(--yes-text)]"
+      : "font-semibold text-[var(--no-text)]"
+    : "";
   // The eyebrow names the event this market belongs to ("Chiefs vs.
   // Dolphins" over "Spread: Chiefs (-10.5)"); a market with no event of its
   // own shows its category there instead.
@@ -140,9 +136,9 @@ export function MarketCard({
   // there ("New York Mets vs. Washington Nationals" twice); it shows its
   // category instead.
   const eyebrow = eventEyebrow && !repeatsTitle(eventEyebrow, title) ? eventEyebrow : categoryLabel ?? "";
-  // The close date moves up into the corner as time left; the footer keeps
-  // it only when the corner is showing something else.
-  const footerMeta = held || !left ? closingLabel : "";
+  // The caption's right side: what the player holds, else the status of a
+  // closed market (open markets show time left beside the volume).
+  const footerMeta = held ? heldText : !left ? closingLabel : "";
 
   return (
     <article
@@ -152,49 +148,39 @@ export function MarketCard({
       <Link
         href={`/market/${ticker}`}
         className="flex items-start gap-2.5 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
-        aria-label={corner ? `${title} · ${corner.value} ${corner.label}` : title}
+        aria-label={`${title} · ${yesPercentage}% ${t("CHANCE", "chance")}`}
       >
         <MarketThumb categorySlug={categorySlug} imageUrl={photo} size={40} />
         <span className="flex min-w-0 flex-1 flex-col">
           {eyebrow && (
-            <span className="mb-0.5 truncate text-[10.5px] font-semibold uppercase leading-[1.3] tracking-[0.06em] text-[var(--t3)]">
+            <span className="mb-0.5 truncate text-[12px] font-medium leading-[1.3] text-[var(--t3)]">
               {eyebrow}
             </span>
           )}
-          <h3 className="m-0 line-clamp-3 min-w-0 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
+          <h3 className="m-0 line-clamp-3 min-w-0 text-[15px] font-semibold leading-[1.3] tracking-[-0.011em] text-[var(--t1)] group-hover:underline group-hover:decoration-[var(--border-2)] group-hover:underline-offset-2">
             {title}
           </h3>
         </span>
-        {corner && (
-          <span
-            className="flex shrink-0 flex-col items-end pl-1"
-            title={held ? undefined : closingLabel}
-          >
-            <span
-              className={`text-[20px] font-semibold leading-none tracking-[-0.02em] tabular-nums ${corner.tone}`}
-            >
-              {corner.value}
-            </span>
-            <span className="mt-1 whitespace-nowrap text-[11px] font-medium text-[var(--t3)]">
-              {corner.label}
-            </span>
+        <span className="flex shrink-0 flex-col items-end pl-1">
+          <span className="text-[17px] font-semibold leading-none tracking-[-0.02em] tabular-nums text-[var(--t1)]">
+            {yesPercentage}%
           </span>
-        )}
+          <span className="mt-1 whitespace-nowrap text-[11px] font-medium text-[var(--t3)]">
+            {t("CHANCE", "chance")}
+          </span>
+        </span>
       </Link>
 
       <div className="mt-auto grid grid-cols-2 gap-2 pt-3.5">
         {(["yes", "no"] as const).map((side) => {
-          const percentage = side === "yes" ? yesPercentage : noPercentage;
+          const price = side === "yes" ? yesPercentage : noPercentage;
           const className = `${SIDE_BUTTON_CLASS} ${SIDE_TONE[side]}`;
-          const ariaLabel =
-            side === "yes"
-              ? `${percentage}% ${t("BUY_YES", "Yes")}`
-              : `${percentage}% ${t("BUY_NO", "No")}`;
+          const ariaLabel = `${side === "yes" ? t("BUY_YES", "Buy Yes") : t("BUY_NO", "Buy No")} · ${t("PTS_COUNT", { count: price })}`;
           const content = (
             <>
               <span>{side === "yes" ? t("YES") : t("NO")}</span>
-              <span className="text-[13px] font-medium tabular-nums opacity-80">
-                {percentage}%
+              <span className="tabular-nums">
+                {t("PTS_COUNT", { count: price })}
               </span>
             </>
           );
@@ -225,9 +211,17 @@ export function MarketCard({
       <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--border-1)] pt-2.5 text-[12px] text-[var(--t3)]">
         <span className="truncate tabular-nums">
           {formatCompactPoints(volumePoints)} {t("VOL_SHORT", "vol")}
+          {left && !held && (
+            <span className={leftTone} title={closingLabel}>
+              {" · "}
+              {left.value} {t("TIME_LEFT", "left")}
+            </span>
+          )}
         </span>
         <span className="flex min-w-0 items-center gap-1">
-          {footerMeta && <span className="truncate text-right">{footerMeta}</span>}
+          {footerMeta && (
+            <span className={`truncate text-right ${heldTone}`}>{footerMeta}</span>
+          )}
           {/* Save to watchlist — shown wherever the host wires watchlist
               state (the catalog view). */}
           {onToggleWatchlist && (

@@ -388,5 +388,9 @@
   "REMOVE_FROM_WATCHLIST": "从关注列表移除",
   "WATCHLIST_SIGN_IN": "登录后即可收藏市场",
   "WATCHLIST_SIGN_IN_BODY": "登录后点星标即可建立你的关注列表。",
-  "WATCHLIST_UPDATE_FAILED": "关注列表未更新"
+  "WATCHLIST_UPDATE_FAILED": "关注列表未更新",
+  "ALL_MARKETS": "全部市场",
+  "SEE_ALL": "查看全部",
+  "MOST_ACTIVE": "最活跃",
+  "YOU_HOLD_COUNT": "持有 {{quantity}} 份{{side}}"
 }

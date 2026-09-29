@@ -16,7 +16,6 @@ import { SquaresFourIcon as LayoutGrid } from "@phosphor-icons/react/dist/csr/Sq
 import { ChartPieSliceIcon as PieChart } from "@phosphor-icons/react/dist/csr/ChartPieSlice";
 import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
 import { GiftIcon as Gift } from "@phosphor-icons/react/dist/csr/Gift";
-import { UserIcon as User } from "@phosphor-icons/react/dist/csr/User";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -72,32 +71,9 @@ const TABS: TabDef[] = [
   },
 ];
 
-const TERMINAL_TABS: TabDef[] = [
-  {
-    href: "/predict",
-    labelKey: "NAV_MARKETS",
-    Icon: LayoutGrid,
-    matchPrefixes: ["/predict", "/category/", "/market/"],
-  },
-  {
-    href: "/discover",
-    labelKey: "NAV_TRENDING",
-    Icon: Activity,
-    matchPrefixes: ["/discover"],
-  },
-  {
-    href: "/portfolio",
-    labelKey: "NAV_PORTFOLIO",
-    Icon: PieChart,
-    requiresAuth: true,
-  },
-  {
-    href: "/account",
-    labelKey: "NAV_ACCOUNT",
-    Icon: User,
-    requiresAuth: true,
-  },
-];
+// The board and market pages use the same five tabs as the rest of the app
+// (2026-09-29 redesign); Account stays in the header's menu.
+const TERMINAL_TABS: TabDef[] = TABS;
 
 const MOBILE_TAB_BAR_CLASS =
   "fixed inset-x-0 bottom-0 z-[90] grid max-w-full overflow-hidden border-x-0 border-b-0 border-t border-[var(--border-1)] bg-[var(--surface-1)] px-2 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))]";

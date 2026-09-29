@@ -143,20 +143,24 @@ together.
 - **Buttons** (`ui/Button`): primary = ink fill, white label; secondary =
   white on a strong hairline; ghost; danger = `--danger`; `cta` = full-width
   ink commit button. Semibold labels, 8px radius, 1px press drop.
-- **Segmented controls** (sort, window, market/limit): a recessed
-  `--surface-2` track, the selected segment raised in white.
+- **Segmented controls** (sort, window, chart range): a recessed
+  `--surface-2` capsule track, the selected segment filled ink (on phones
+  the chart range uses a raised white segment instead).
 - **YES/NO buttons:** soft (`--yes-soft`/`--no-soft` + side text) at rest,
   filled on hover/press; the featured market uses filled buttons. Labelled
-  "Yes"/"No" with the price; aria-label `"{n}% Buy Yes"`.
+  "Yes"/"No" with the price in Clout; aria-label `"Buy Yes · {n} Clout"`.
 - **Inputs** (`ui/Input`): white on a hairline, ink focus, `aria-invalid` →
   `--danger` (never NO colour).
-- **MarketCard:** image tile + question (up to 3 lines) + YES chance at the
-  right, Yes/No buttons, one quiet line of volume · category · close date.
+- **MarketCard:** image tile, a sentence-case eyebrow (event or category),
+  the question (up to 3 lines) and the Yes chance top right ("57% chance");
+  soft Yes/No buttons priced in Clout ("Yes 57 Clout"); a hairline caption
+  of volume · time left (pink under 24h), or what the player holds.
   Uniform size; the grid is 3 columns (2 ≤1020px, 1 ≤640px).
 - **FeaturedMarket:** the most-traded contested market (10–90) on the first
   page, with image, question, big chance figure, outcome rows, filled
-  Buy Yes/Buy No, and its real price chart; beside it a ranked Trending
-  list of the next five.
+  "Buy Yes 41 Clout" / "Buy No 59 Clout", and its real price chart; beside
+  it a ranked "Most active" list of the next five. Phones: chance, a
+  sparkline (no axes), "Yes 41 Clout" / "No 59 Clout", caption; no list.
 - **MarketChart:** the selected side's line in its direction colour over a
   soft area, on a vertical range fitted to the data (5-point steps, at least
   10 points tall) with % labels on dotted guides; hour ticks on intraday
@@ -171,9 +175,10 @@ together.
   chart and Volume / Liquidity / Closes share one card; a "Rules" card
   shows three lines and "Read more"; Yes and No sit pinned above the tab
   bar and open the trade sheet on that side.
-- **WelcomeStrip:** one card above the board for signed-out visitors —
-  headline, one line of pitch, the points-only line (inline English, never
-  a locale string), ink "Start free" + "How it works".
+- **WelcomeStrip:** one slim line under the topic strip for signed-out
+  visitors — headline (+ pitch on wide screens), the points-only line
+  (inline English, never a locale string), ink "Start free" (+ "How it
+  works" above 640px). Markets follow straight after.
 - **ThisWeekRail:** photo-led tiles for featured moments (events flagged in
   the back office): one large tile + four, a swipeable row on phones. Each
   tile shows the moment title, its lead market question and a "N% Yes"
@@ -185,7 +190,11 @@ together.
 - **Chrome:** TopBar and MobileTabBar are white with a hairline; wordmark =
   brand name + pink period; avatar = ink disc. Discovery pages
   (`/predict`, `/discover`) carry `CategoryTabs`, a sticky text-tab strip
-  with an ink underline on the current topic. No left rail.
+  with an ink underline on the current topic (phones: capsule chips, the
+  current one filled ink). No left rail. The board has one search: the
+  header's (a search button opens the command palette on phones). Board
+  sections: "All markets" with ink capsule sort / window segments on
+  desktop; "Trending markets" + "See all" on phones.
 - **Selection** everywhere = ink (underline, pill or wash), never pink.
 
 ## 7. Trade ticket doctrine (unchanged)

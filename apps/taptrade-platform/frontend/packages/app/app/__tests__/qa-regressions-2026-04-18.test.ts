@@ -769,22 +769,24 @@ describe("MarketCard: Tailwind styling outside Link", () => {
 describe("MarketCard composition", () => {
   const cardSource = read("components/prediction/MarketCard.tsx");
 
-  it("shows each side's chance once, from the live price, never a sentiment sentence", () => {
+  it("shows the chance in the corner and prices the actions in Clout, never a sentiment sentence", () => {
+    // 2026-09-29 redesign (approved mockups): "57% chance" top right,
+    // "Yes 57 Clout" / "No 43 Clout" actions, time left or holdings below.
     assert.ok(
       cardSource.includes("clampPercentage(yesPricePoints)") &&
-        cardSource.includes("{percentage}%"),
-      "the Yes/No actions carry the chance as a percentage",
+        cardSource.includes("{yesPercentage}%") &&
+        cardSource.includes('t("CHANCE", "chance")'),
+      "the corner shows the live Yes chance",
     );
     assert.ok(
-      !cardSource.includes('t("CHANCE", "chance")') &&
-        !cardSource.includes("{yesPercentage}%"),
-      "the corner must not repeat the Yes chance",
+      cardSource.includes('t("PTS_COUNT", { count: price })'),
+      "the Yes/No actions carry the price in Clout",
     );
     assert.ok(
       cardSource.includes("timeLeft(closeAt)") &&
         cardSource.includes('t("TIME_LEFT", "left")') &&
-        cardSource.includes('t("YOU_HOLD_SIDE"'),
-      "the corner shows the player's holding, otherwise the time left",
+        cardSource.includes('t("YOU_HOLD_COUNT"'),
+      "the caption shows the time left, or the player's holding",
     );
     assert.ok(
       !cardSource.includes("calculateMarketSentiment") &&
@@ -795,7 +797,7 @@ describe("MarketCard composition", () => {
 
   it("ships the card strings in every prediction locale", () => {
     const locales = ["en", "id", "ms", "tl", "zh-Hans", "zh-Hant"];
-    const keys = ["TIME_LEFT", "YOU_HOLD_SIDE", "VOL_SHORT", "PTS_COUNT_one", "PTS_COUNT_other"];
+    const keys = ["TIME_LEFT", "YOU_HOLD_COUNT", "CHANCE", "VOL_SHORT", "PTS_COUNT_one", "PTS_COUNT_other"];
 
     for (const locale of locales) {
       const predictionLocale = read(
@@ -816,8 +818,8 @@ describe("MarketCard composition", () => {
       "side actions are 36px on desktop and 44px on phones",
     );
     assert.ok(
-      cardSource.includes("{percentage}%"),
-      "side actions show each side's chance (the points price is the same number)",
+      cardSource.includes('t("PTS_COUNT", { count: price })'),
+      "side actions show each side's price in Clout",
     );
     assert.ok(!/¢|cents?\b/.test(cardSource), "never cents");
   });
@@ -1112,16 +1114,15 @@ describe("Predict discovery controls", () => {
     );
     assert.ok(
       momentMarketsSource.includes('data-testid="moment-filter-bar"') &&
-        momentMarketsSource.includes('type="search"') &&
+        !momentMarketsSource.includes('type="search"') &&
         momentMarketsSource.includes("market-sort-${pill.value}") &&
         momentMarketsSource.includes("market-window-${pill.value}") &&
-        momentMarketsSource.includes("q: query.trim() || undefined") &&
         momentMarketsSource.includes(
           "closeBefore: dateWindowToCloseBefore(dateWindow)",
         ) &&
         momentMarketsSource.includes("sort: sortBy") &&
         !momentMarketsSource.includes("DISCOVER_RANKING_SECTIONS"),
-      "The established search, sort, and closing-window controls should filter in place",
+      "The sort and closing-window controls should filter in place (search is the header's)",
     );
     // 2026-09-24: PAGE_SIZE moved to 18 and the "mixed" wide/standard grid
     // (LeadMoment) was deleted in favour of one FeaturedMarket hero beside

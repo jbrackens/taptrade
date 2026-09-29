@@ -48,7 +48,6 @@ describe("prediction terminal backend wiring", () => {
     assert.ok(moments.includes('data-testid="moment-filter-bar"'));
     assert.ok(moments.includes("market-sort-${pill.value}"));
     assert.ok(moments.includes("market-window-${pill.value}"));
-    assert.ok(moments.includes("q: query.trim() || undefined"));
     assert.ok(moments.includes("closeBefore: dateWindowToCloseBefore(dateWindow)"));
     assert.ok(moments.includes("sort: sortBy"));
     assert.ok(!moments.includes("DISCOVER_RANKING_SECTIONS"));

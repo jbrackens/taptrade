@@ -1,8 +1,7 @@
 /**
- * Market card corner (2026-09-27): the Yes/No actions carry the chance, so
- * the corner shows what the player holds in the market, otherwise the time
- * left — pink in the last 24 hours. Featured markets price their actions
- * the same way.
+ * Market card corner and caption (2026-09-29 redesign): the corner shows
+ * the chance; the caption shows the time left (pink in the last 24 hours)
+ * or what the player holds. Card and featured actions are priced in Clout.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -48,15 +47,15 @@ describe("market card corner wiring", () => {
   const hooks = read("lib/query/position-hooks.ts");
   const panel = read("components/prediction/QuickTradePanel.tsx");
 
-  it("prefers the player's holding, then time left, and hides for closed markets", () => {
+  it("shows the chance in the corner, and time left or holdings in the caption", () => {
     assert.match(card, /const left = isOpen \? timeLeft\(closeAt\) : null;/);
-    assert.match(card, /const corner = held\s*\?/);
-    assert.match(card, /left\.urgent \? "text-\[var\(--live-text\)\]"/);
-    assert.match(card, /\{corner && \(/);
+    assert.match(card, /\{yesPercentage\}%/);
+    assert.match(card, /left\?\.urgent \? "text-\[var\(--live-text\)\]"/);
+    assert.match(card, /const heldText = held/);
   });
 
-  it("moves the close date out of the footer only while the corner shows it", () => {
-    assert.match(card, /const footerMeta = held \|\| !left \? closingLabel : "";/);
+  it("keeps the close status for closed markets and names the event up top", () => {
+    assert.match(card, /const footerMeta = held \? heldText : !left \? closingLabel : "";/);
     // The category moved up into the eyebrow (2026-09-27 density pass); a
     // real event's title takes its place there.
     assert.match(card, /const eventEyebrow = eventTitle && !eventSynthetic \? eventTitle\.trim\(\) : "";/);
@@ -74,9 +73,10 @@ describe("market card corner wiring", () => {
     assert.match(panel, /invalidateQueries\(\{ queryKey: positionQueryKeys\.all \}\)/);
   });
 
-  it("prices featured actions as chance, not points", () => {
+  it("prices featured actions in Clout and keeps the chance on its rows", () => {
     const featured = read("components/prediction/FeaturedMarket.tsx");
     const landing = read("components/welcome/WelcomeSections.tsx");
+    assert.match(featured, /t\("PTS_COUNT", \{ count: price \}\)/);
     assert.match(featured, /\{side === "yes" \? yes : no\}%/);
     assert.match(landing, /\{side === "yes" \? yes : 100 - yes\}%/);
   });

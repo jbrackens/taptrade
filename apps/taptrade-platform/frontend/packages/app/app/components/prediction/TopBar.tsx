@@ -685,6 +685,18 @@ export function TopBar() {
               <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
             </span>
           )}
+          {/* Phones: the search field is hidden, so a search button opens
+              the same command palette (2026-09-29 redesign). */}
+          {isTerminalRoute && (
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              aria-label={t("SEARCH_MARKETS")}
+              className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[var(--t1)] transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] min-[901px]:hidden"
+            >
+              <Search size={20} aria-hidden="true" />
+            </button>
+          )}
           {isAuthenticated && <BalanceChip balance={balance} t={t} />}
           {!isTerminalRoute && isAuthenticated && (
             <Button
@@ -712,7 +724,10 @@ export function TopBar() {
             // bell now IS the inbox, on every route.
             <NotificationsBell
               userId={user.id}
-              className={isTerminalRoute ? "ml-auto" : ""}
+              // Phones on the board/market: search, balance and menu fill
+              // the bar; the bell hides but stays mounted, so settlement
+              // toasts still arrive.
+              className={isTerminalRoute ? "max-[480px]:hidden" : ""}
             />
           )}
 
