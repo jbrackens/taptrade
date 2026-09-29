@@ -1,3 +1,9 @@
+> **Status (2026-09-29):** shipped (Phases A–D); kept here as the design
+> record and build log because code comments cite it. What exists today:
+> [SPEC_CURRENT.md](../SPEC_CURRENT.md) and [INTEGRATIONS.md](../INTEGRATIONS.md).
+> What is still open: TD-046 in [TECH_DEBT.md](../TECH_DEBT.md) and D-9 in
+> [TASKS.md](../TASKS.md).
+
 # AI Market Drafting — Implementation Plan (v3.1)
 
 **Status:** Shipped 2026-05-24 (Phases A–D). All three §13 decisions are resolved — see §16 (items 2 and 3, locked) and §19 (item 1). This file is an append-only build log; read §18 last, it supersedes the earlier "not started" and "required before live" notes.

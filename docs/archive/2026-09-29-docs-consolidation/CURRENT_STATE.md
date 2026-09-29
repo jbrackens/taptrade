@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly root `CURRENT_STATE.md`. Replaced by [SPEC_CURRENT.md](../../SPEC_CURRENT.md) (what is live and what is off) and [TASKS.md](../../TASKS.md) (open items and parked decisions). Historical record only — do not treat as current.
+
 # Current state — 2026-09-06
 
 Written against `main` at `f89b5a8b`, then reconciled with the 2026-09-06 hold commits

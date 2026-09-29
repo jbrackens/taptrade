@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `office/app/INTEGRATION_GUIDE.md`. Replaced by nothing — already a retired pointer. Historical record only — do not treat as current.
+
 # Retired Office Prototype Notes
 
 The old integration guide described beta-hidden prototype surfaces and static

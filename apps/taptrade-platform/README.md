@@ -108,18 +108,21 @@ go run ./cmd/seed
 ```
 
 Alpha cashier is disabled by default. To exercise the closed Alpha USDC rail,
-run the gateway with the `ALPHA_CASHIER_*` variables documented in
-[the cashier plan](../../docs/archive/cashier/CUSTODIAL_USDC_ALPHA_PLAN.md), then apply
-`go-platform/services/gateway/migrations/030_alpha_cashier.sql`. Live-chain
-setup still requires a reviewed RPC URL, verified USDC token contract, and
-Tap Trade-controlled treasury address; do not use the legacy `CRYPTO_*` rail for this
-path.
+run the gateway with the `ALPHA_CASHIER_*` variables listed in
+[ENVIRONMENT.md](../../docs/ENVIRONMENT.md) (it also needs
+`TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true`, and both are refused at boot in
+production/staging). Live-chain setup requires a reviewed RPC URL, a verified
+USDC token contract and a Tap Trade-controlled treasury address. The legacy
+`CRYPTO_*` rail was removed on 2026-09-29. Why the cashier is dark:
+[ADR-0012](../../docs/adr/0012-cashier-merged-dark-behind-flags.md).
 
 ## Documentation
 
-- [Architecture overview](./ARCHITECTURE.md)
-- [Deployment guide](./DEPLOYMENT.md)
-- [Developer setup](./DEVELOPMENT.md)
+The project documentation lives in [`docs/`](../../docs/README.md):
+[architecture](../../docs/ARCHITECTURE.md),
+[deployment](../../docs/DEPLOYMENT.md),
+[environment and commands](../../docs/ENVIRONMENT.md). Guides kept here:
+
 - [API examples](./API_EXAMPLES.md)
 - [Error and debugging guide](./ERRORS.md)
 - [Changelog](./CHANGELOG.md)

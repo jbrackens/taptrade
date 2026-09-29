@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/DEVELOPMENT.md`. Replaced by [ENVIRONMENT.md](../../ENVIRONMENT.md). Historical record only — do not treat as current.
+
 # Tap Trade Developer Setup
 
 This guide is the canonical local setup for the prediction-market stack.
@@ -165,7 +167,7 @@ Login through the player app at `http://localhost:3010/auth/login`, then test au
 
 ## Troubleshooting
 
-For concrete response shapes, common status codes, and request evidence to collect, see [Error and debugging guide](./ERRORS.md). For copy-paste API calls, see [API examples](./API_EXAMPLES.md).
+For concrete response shapes, common status codes, and request evidence to collect, see [Error and debugging guide](../../../apps/taptrade-platform/ERRORS.md). For copy-paste API calls, see [API examples](../../../apps/taptrade-platform/API_EXAMPLES.md).
 
 If `npm run dev` says the port is in use:
 

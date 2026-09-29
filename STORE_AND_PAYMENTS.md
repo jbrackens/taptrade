@@ -48,8 +48,9 @@ locale bundles, points-native API aliases) are kept green untouched.
   `price_usd_cents`) — deliberately cash-named per the migration-050
   precedent for genuine-money columns; never mixed into `*_points` fields.
 - No floating-point arithmetic anywhere in wallet/ledger/purchase paths.
-- UI: point balances render as points (`1,234 pts` style, mono font), never
-  with `$`; purchase prices render as USD (`$25.00`) formatted client-side
+- UI: point balances render in the play currency's display name, Clout
+  (`1,234 Clout`, tabular figures, since 2026-09-28 — `player/app/lib/points.ts`;
+  this line said `pts` until 2026-09-29), never with `$`; purchase prices render as USD (`$25.00`) formatted client-side
   from `priceUsdCents` via `Intl.NumberFormat` — never stored in locale
   bundles (the 6-language locale scanner bans `$`/payment wording there).
 

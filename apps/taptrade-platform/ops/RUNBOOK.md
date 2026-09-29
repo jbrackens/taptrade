@@ -1,3 +1,11 @@
+> **Warning (2026-09-29): some SQL below uses pre-migration-050 column names.**
+> Migration `050_points_unit_model.sql` renamed the prediction and wallet
+> `*_cents` columns to `*_points` (for example `collateral_pool_cents` →
+> `collateral_pool_points`, `total_cost_cents` → `total_cost_points`,
+> `amount_cents` → `amount_points`). Substitute the current names from
+> [`docs/DATA_MODEL.md`](../../../docs/DATA_MODEL.md) before running a query.
+> Tracked as TD-021 in [`docs/TECH_DEBT.md`](../../../docs/TECH_DEBT.md).
+
 # Tap Trade exchange — on-call runbook
 
 You're on-call. Something tripped. This page is for the first 15 minutes.

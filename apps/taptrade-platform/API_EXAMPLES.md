@@ -1,3 +1,9 @@
+> **Partly stale (checked 2026-09-29).** Some request and response examples predate migration 050
+> and still show `*Cents` wire fields; the API uses `*Points` (for example
+> `yesPricePoints`, `notionalCapPoints`). Current endpoints and fields:
+> [`docs/SPEC_CURRENT.md`](../../docs/SPEC_CURRENT.md). Rewrite tracked as T-026 in
+> [`docs/TASKS.md`](../../docs/TASKS.md).
+
 # API Examples
 
 Concrete calls for the local Tap Trade gateway. Start the backend stack first:

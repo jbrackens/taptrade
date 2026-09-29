@@ -1,3 +1,9 @@
+> **Partly stale (checked 2026-09-29).** Some field names and commands in this guide predate migration 050
+> and still show `*Cents` wire fields; the API uses `*Points` (for example
+> `yesPricePoints`, `notionalCapPoints`). Current endpoints and fields:
+> [`docs/SPEC_CURRENT.md`](../../docs/SPEC_CURRENT.md). Rewrite tracked as T-026 in
+> [`docs/TASKS.md`](../../docs/TASKS.md).
+
 # Upgrade Guide
 
 Use this guide when moving an existing local or preview environment to a newer Tap Trade build.

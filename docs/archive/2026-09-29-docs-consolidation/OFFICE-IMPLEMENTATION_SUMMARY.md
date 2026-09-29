@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `office/app/IMPLEMENTATION_SUMMARY.md`. Replaced by nothing — already a retired pointer. Historical record only — do not treat as current.
+
 # Retired Office Prototype Notes
 
 The previous implementation summary documented prototype-only surfaces that are

@@ -75,3 +75,14 @@ Option A trades a bounded **payout latency** for **integrity and the elimination
 6. [ ] Office **dispute-review queue** (dual-control with ADR-0003); decision = uphold/settle/void with reason + attestation.
 7. [ ] Notifications on proposed-result, dispute filed, and finalize.
 8. [ ] Tests: FSM transitions, finalize idempotency, "open dispute blocks finalize," challenge-window expiry auto-finalize.
+
+## Status update (2026-09-29)
+
+Every action item above is implemented, although the checkboxes were never
+ticked: the FSM states (`gateway/internal/prediction/lifecycle.go`), migration
+023, the split propose/finalize path with payouts held until finalize, the
+dispute API (`POST /api/v1/disputes`, `POST /api/v1/admin/disputes/{id}/resolve`),
+dual control (finalizer and dispute reviewer must differ from the proposer,
+`gateway/internal/prediction/settlement.go`), and the office review queue
+(`office/app/(dashboard)/disputes/`). The default challenge window is one hour
+(`prediction.DefaultChallengeWindow`); per-category windows were never set.

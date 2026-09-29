@@ -23,13 +23,16 @@ Log the `requestId` when reporting a backend issue. It is the quickest way to co
 
 | Status | Typical code | Meaning | First checks |
 | --- | --- | --- | --- |
-| `400` | `bad_request` | The request body or query params are invalid. | Validate enum casing, required fields, quantity, price, and `notionalCapCents` for market buys. |
+| `400` | `bad_request` | The request body or query params are invalid. | Validate enum casing, required fields, quantity, price, and `notionalCapPoints` for market buys. Domain validation failures (market status, price bounds, balance, execution mode) also return `400`. |
 | `401` | `unauthorized` | No valid session or bearer token. | Re-login, clear stale cookies, verify auth service is running. |
 | `403` | `forbidden` | Authenticated user lacks permission. | Use the admin demo user for admin routes. |
 | `404` | `not_found` | Ticker, market ID, order ID, or route does not exist. | Re-fetch discovery data instead of hardcoding tickers. |
 | `409` | `conflict` | Duplicate idempotency key, lifecycle race, or incompatible state. | Use a fresh idempotency key and reload the market state. |
-| `422` | `validation_failed` | Domain validation failed. | Check market status, price bounds, position size, balance, and execution mode. |
-| `500` | `internal` | Unexpected gateway/service error. | Capture `requestId`, gateway logs, and the exact request body. |
+| `405` | `method_not_allowed` | Wrong HTTP method for the route. | Check the method in [SPEC_CURRENT.md](../../docs/SPEC_CURRENT.md). |
+| `429` | `too_many_requests` | Rate limit hit (IP-keyed public reads, per-user social/dispute writes, per-key bot calls). | Back off; locally, raise `GATEWAY_RATELIMIT_RPM`. |
+| `500` | `internal_error` | Unexpected gateway/service error. | Capture `requestId`, gateway logs, and the exact request body. |
+
+Codes are defined in `go-platform/modules/platform/transport/httpx/errors.go`. There is no `422`/`validation_failed` (an earlier version of this table listed one; corrected 2026-09-29).
 
 ## Useful Local Commands
 

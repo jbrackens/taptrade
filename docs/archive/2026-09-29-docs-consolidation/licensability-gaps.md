@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `docs/licensability-gaps.md`. Replaced by [TECH_DEBT.md](../../TECH_DEBT.md) (TD-005, TD-006, TD-007, TD-013 – TD-016), which re-verified each gap on 2026-09-29. Historical record only — do not treat as current.
+
 # Licensability gaps — what the PAM branch built that `main` still lacks
 
 **Verified 2026-09-06 against `main` @ `3e331818`.** This is a live document about the *current*

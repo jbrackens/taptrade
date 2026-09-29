@@ -8,9 +8,15 @@ Read:
 
 - [README.md](./README.md)
 - [CLAUDE.md](./CLAUDE.md)
-- [CURRENT_STATE.md](./CURRENT_STATE.md)
-- [Developer setup](./apps/taptrade-platform/DEVELOPMENT.md)
-- [Migration guide](./apps/taptrade-platform/MIGRATION.md)
+- [The documentation map](./docs/README.md), then [what exists today](./docs/SPEC_CURRENT.md)
+- [Environment and commands](./docs/ENVIRONMENT.md)
+- [Migration guide](./apps/taptrade-platform/MIGRATION.md) (sportsbook → prediction vocabulary)
+
+**Documentation is part of the change.** A change to behaviour, architecture,
+schema, an integration or setup updates the authoritative document in `docs/`
+in the same pull request; a significant architectural decision adds or
+supersedes an ADR. The rules are in
+[docs/README.md](./docs/README.md#how-to-maintain-these-documents).
 
 ## Local Checks
 

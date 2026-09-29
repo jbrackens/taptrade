@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/frontend/PHASE_A_COMPLETE.md`. Replaced by nothing — a 2026-04-02 completion note from before the prediction-market migration. Historical record only — do not treat as current.
+
 # Phase A: Demo-Unblocked — Complete
 
 **Date:** 2026-04-02 **Status:** ALL 3 ITEMS COMPLETE

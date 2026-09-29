@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/ARCHITECTURE.md`. Replaced by [ARCHITECTURE.md](../../ARCHITECTURE.md). Historical record only — do not treat as current.
+
 # Tap Trade — Platform Architecture
 
 Prediction-market platform: binary YES/NO contracts priced 1–99 Points (price =
@@ -19,7 +21,7 @@ and `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true` is refused at boot when
 > topology) was retired in the P2-04 / ARCH-01 cleanup; those trees were deleted
 > from the working tree and survive only in git history (commit `3ec79f0a`).
 > The real deployment is a single Hetzner box running docker-compose behind
-> Caddy — see [DEPLOYMENT.md](DEPLOYMENT.md).
+> Caddy — see [DEPLOYMENT.md](../../DEPLOYMENT.md).
 
 ## Surfaces
 
@@ -175,5 +177,5 @@ claim was never true of the prediction gateway).
 - `docs/audit/AUDIT_REPORT.md` — full system audit (workstreams A–G), the
   authoritative description of what is solid vs. what has gaps.
 - `docs/audit/IMPROVEMENT_PLAN.md` — the sequenced remediation plan.
-- [DEPLOYMENT.md](DEPLOYMENT.md), [RUNBOOKS.md](RUNBOOKS.md).
+- [DEPLOYMENT.md](../../DEPLOYMENT.md), [RUNBOOKS.md](../../../apps/taptrade-platform/RUNBOOKS.md).
 - `../../CLAUDE.md` — developer setup, env vars, domain model.

@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/frontend/E2E_TEST_SUITE_SUMMARY.md`. Replaced by [ENVIRONMENT.md](../../ENVIRONMENT.md#4-commands) for the current test suites. Historical record only — do not treat as current.
+
 # E2E Test Suite Implementation Summary
 
 > Historical sportsbook-era note: this document describes the sportsbook-era

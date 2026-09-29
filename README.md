@@ -122,22 +122,17 @@ go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 
 ## Docs
 
-- [Project instructions](./CLAUDE.md) — architecture, conventions, agent rules
-- [Current state](./CURRENT_STATE.md) — what is live, what is off, what is open
-- [Design system](./DESIGN.md) — mirrors `globals.css`; the CSS wins
-- [Point store and payments](./STORE_AND_PAYMENTS.md)
-- [Product user journeys](./PRODUCT-USER-JOURNEYS.md)
-- [Combined app README](./apps/taptrade-platform/README.md)
-- [Developer setup](./apps/taptrade-platform/DEVELOPMENT.md)
-- [API examples](./apps/taptrade-platform/API_EXAMPLES.md)
-- [Error and debugging guide](./apps/taptrade-platform/ERRORS.md)
-- [Changelog](./apps/taptrade-platform/CHANGELOG.md)
-- [Migration guide](./apps/taptrade-platform/MIGRATION.md)
-- [Upgrade guide](./apps/taptrade-platform/UPGRADE.md)
-- [Developer experience scorecard](./apps/taptrade-platform/DX.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Support](./SUPPORT.md)
-- [Security](./SECURITY.md)
+**Start at [`docs/README.md`](./docs/README.md)** — the documentation map. It
+says which document is authoritative for each topic and how to keep them
+current. The core set:
+
+- [Architecture](./docs/ARCHITECTURE.md) · [Data model](./docs/DATA_MODEL.md) · [Current spec](./docs/SPEC_CURRENT.md) · [Integrations](./docs/INTEGRATIONS.md)
+- [Environment and commands](./docs/ENVIRONMENT.md) · [Deployment](./docs/DEPLOYMENT.md)
+- [Tech debt](./docs/TECH_DEBT.md) · [Tasks](./docs/TASKS.md) · [Decisions (ADRs)](./docs/DECISIONS.md)
+
+Also: [agent instructions](./CLAUDE.md), [design system](./DESIGN.md) (mirrors
+`globals.css`; the CSS wins), [point store](./STORE_AND_PAYMENTS.md),
+[contributing](./CONTRIBUTING.md), [support](./SUPPORT.md), [security](./SECURITY.md).
 - [Code of conduct](./CODE_OF_CONDUCT.md)
 - [Archived documentation](./docs/archive/) — historical records; none of it describes
   the current system

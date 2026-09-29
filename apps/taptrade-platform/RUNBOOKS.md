@@ -82,9 +82,11 @@ investigate before the next settlement batch.
 ## 6. WebSocket / realtime incident
 
 Symptom: clients not receiving live price/portfolio updates.
-- The hub is **per-instance** — if >1 gateway replica is running, realtime is
-  broken by design (ARCH-01); run a single gateway until the Redis backbone
-  (P2-07) lands.
+- The hub is **per-instance** by default. With `WS_BACKBONE=redis` and a
+  valid `REDIS_URL`, broadcasts also fan out across replicas
+  (`go-platform/services/gateway/internal/ws/backbone.go`); without them, run a
+  single gateway replica. `/readyz` reports `ws_backbone: ok | degraded`.
+  (Corrected 2026-09-29 — this section used to say the backbone had not landed.)
 - A slow client is now dropped + disconnected (it resyncs on reconnect); check the
   `ws_dropped_messages_total` / `ws_slow_clients_disconnected_total` counters.
 - Auth failures at upgrade return 401 before the socket opens; check the auth
@@ -103,7 +105,7 @@ Symptom: clients not receiving live price/portfolio updates.
 
 The gateway fails closed on missing compliance config. The boot error names the
 exact missing variable (geo gate, allowlist, edge secret, KYC ack, etc.) — set it
-per [DEPLOYMENT.md](DEPLOYMENT.md) "Required production/staging configuration".
+per [DEPLOYMENT.md](../../docs/DEPLOYMENT.md#required-productionstaging-configuration).
 This is intentional: a gateway that can't prove its jurisdiction posture must not
 serve traffic.
 

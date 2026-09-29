@@ -11,9 +11,11 @@ Translations should sound like normal product UI copy on ecommerce, fintech, or 
 | Outcome | One possible result inside a market. |
 | Yes | Positive outcome label. Keep short and scannable. |
 | No | Negative outcome label. Keep short and scannable. |
-| Points / pts | The in-app unit. Not money, not redeemable. Prices run 1–99 Points per contract; a correct contract settles at 100 Points. Keep "Points" as a product term — do not translate it into a local word for money or currency. |
+| Clout | The name players see for the in-app unit since 2026-09-28 ("44 Clout"). Not money, not redeemable. Prices run 1–99 Clout per contract; a correct contract settles at 100. Keep "Clout" untranslated as a product name — never render it as a local word for money or currency, and never write "pts". |
+| Points (internal) | The same unit as it is named in the API, the ledger and code (`*Points` fields, `unit: "PTS"`). Not a player-facing word. |
+| XP | Loyalty progress. Never Clout. |
 | Contract | One unit of a Yes or No position. Shipped copy also says "share". |
-| Liquidity | Depth available to trade against in a market, measured in Points. |
+| Liquidity | Depth available to trade against in a market, measured in Clout. |
 | Volume | Total trading activity. |
 | Position | A user's holding or exposure in a market. |
 | Portfolio | A user's collection of positions and activity. |
@@ -21,13 +23,13 @@ Translations should sound like normal product UI copy on ecommerce, fintech, or 
 | Resolve | To determine the final market outcome. |
 | Resolution | The final decision/result of a market. |
 | Oracle | Source or mechanism used to determine the result. |
-| Balance | The user's available Points. The account surface labels this section "Points and Inventory". |
+| Balance | The user's available Clout. |
 | Creator | User or system that created a market. |
 | Settlement | Final accounting after a market resolves. |
 | Active | Market or item is currently available. |
 | Resolved | Market has a final outcome. |
 | Closed | Market is no longer accepting new trades/orders. |
-| Voided | Market was cancelled; Points spent are returned. |
+| Voided | Market was cancelled; Clout spent is returned. |
 
 ## Terms that are not in this product
 

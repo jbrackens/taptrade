@@ -1,3 +1,9 @@
+> **Partly stale (checked 2026-09-29).** Some field names in this guide predate migration 050
+> and still show `*Cents` wire fields; the API uses `*Points` (for example
+> `yesPricePoints`, `notionalCapPoints`). Current endpoints and fields:
+> [`docs/SPEC_CURRENT.md`](../../docs/SPEC_CURRENT.md). Rewrite tracked as T-026 in
+> [`docs/TASKS.md`](../../docs/TASKS.md).
+
 # Migration Guide: Sportsbook To Predict
 
 This repository is now Tap Trade. The old sportsbook code remains in places for reference, but new work should use the prediction-market model.

@@ -165,3 +165,16 @@ a backstop — heavier per-query but structurally safe.
       other priorities. Foundation (step 1) is ready to land on request.
 - [ ] When executing: do step 3 package-by-package behind RLS (step 4) so a
       missed predicate fails closed, not open.
+
+## Status update (2026-09-29)
+
+Step 2 landed as plumbing on 2026-06-13 (`2d927739`, "P3-01 epic step 2 —
+request-scoped tenant context"): `gateway/internal/tenant` provides
+`With`/`From`/`Middleware`. `gateway/cmd/gateway/main.go` lists
+`tenant.Middleware` only in the auth-disabled (dev) middleware chain; the
+auth-enabled chain every deployment uses does not include it
+([TD-055](../TECH_DEBT.md#f-gateway-api-and-real-time)). It always resolves the
+default tenant (`hula`) and does not yet read the authenticated principal or a
+trusted edge signal; nothing calls `tenant.From`. Steps 1b, 3, 4, 5 and 6 have not started: no migration after 037 adds
+`tenant_id` elsewhere, no query filters by tenant, and there is no RLS policy.
+The decision stands; nothing here changes behaviour for the single live tenant.

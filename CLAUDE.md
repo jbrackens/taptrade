@@ -1,5 +1,13 @@
 # Tap Trade — CLAUDE.md
 
+> **Documentation:** the project's knowledge base is [`docs/`](docs/README.md) —
+> architecture, data model, current spec, integrations, environment, deployment,
+> tech debt, tasks and ADRs, each the single home for its topic. This file keeps
+> the rules and procedures agents must follow and links to `docs/` for reference
+> detail. A change to behaviour, architecture, schema, an integration or setup
+> updates the authoritative doc in the same change
+> ([rules](docs/README.md#how-to-maintain-these-documents)).
+
 ## Project Overview
 
 **Tap Trade** is a prediction event market platform in the shape of Polymarket and Kalshi. Users trade binary YES/NO contracts on real-world outcomes: politics, esports, sports, entertainment, tech, economics.
@@ -45,11 +53,10 @@ taptrade/
 ├── contracts/                             ← Solidity interfaces — dormant, see launch boundary
 ├── packages/cashier-sdk/                  ← dormant, see launch boundary
 ├── services/                              ← cashier-api, bridge-watcher, relayer — dormant, see launch boundary
-├── docs/                                  ← docs, ADRs, and docs/archive/ (historical records only)
+├── docs/                                  ← the documentation: start at docs/README.md (ADRs, audits, archive inside)
 ├── scripts/                               ← agent-preflight.sh, cashier guard scripts
 ├── Makefile                               ← one target: `make cashier-check` (validates the dormant trees)
 ├── CLAUDE.md                              ← this file
-├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
 └── DESIGN.md                              ← design system (Kilig palette: ink + white, Kilig pink, blue/orange YES/NO; Inter); mirrors the code
 ```
 
@@ -159,19 +166,30 @@ Prices are **Points, 1–99** — enforced by CHECK constraints and the invarian
 
 ### Prediction pages
 
-The app ships 37 pages (plus one API route) under `app/`. The ones that matter:
+The app ships 38 pages (plus one API route) under `app/`. Every page with its
+status is in [docs/SPEC_CURRENT.md §3](docs/SPEC_CURRENT.md#3-player-app-pages);
+board, event-card, featured-rail, quick-trade and landing behaviour in §3.1;
+market covers in [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md#market-covers).
+Rules to keep in mind:
 
-- Trading surface: `app/predict/page.tsx` (discovery — featured, trending, closingSoon, recent), `app/market/[ticker]/page.tsx` (market detail + trade ticket; its breadcrumb links to the market's event), `app/portfolio/page.tsx` (Positions / Orders / History tabs + accuracy), `app/category/[slug]/page.tsx`, `app/event/[id]/page.tsx` (every market of one event + aggregate exposure, beside `InspectorPanel`)
-- **Quick trade:** every `MarketGrid` hosts one `QuickTradePanel` — a card's YES/NO opens `InspectorPanel` (the real `ConnectedTradeTicket`, side preselected, plus a link to the full market) in a Dialog above 1023px or the vaul Sheet at or below it. Closed markets keep the `/market/<ticker>?side=` deep link.
-- **Retired:** the 2026-08-12 Floor redesign trial (`/floor`, `/book`, `/standing`, `components/floor/`) was removed on 2026-09-23 in favour of the surface above. `next.config.js` redirects those routes to `/predict`, `/portfolio` and `/leaderboards`; `app/__tests__/floor-retirement.test.ts` keeps them gone. The Event page, `InspectorPanel`, `RowMarketV2` and the ⌘K `CommandPalette` survived and now live in `components/prediction/`. Discovery pages use `CategoryTabs` (topic strip) — the old left `TerminalCategoryRail` is gone.
-- Imports keep their upstream event: promotion creates one `prediction_events` row per upstream event (deterministic id from `upstream-event-<source>:<group>`, `metadata.eventGroup`, `is_synthetic=false`; migration 059 stores the event title on `imported_markets`), and only imports with no event fall into the per-category catch-alls. Markets carry `eventSynthetic` and `eventOpenMarkets` so the board's `MarketGrid` (`groupEvents`) folds a real event's markets into one `EventCard`; because the activity ranking keeps an event's siblings apart, a lone market whose event has 2+ open markets still becomes an event card that fetches its rows (`GET /api/v1/markets?eventId=…&sort=activity&pageSize=3`). Public read routes must be listed in `gatewayPublicPrefixes()` (cmd/gateway/main.go) or they 401. Event-card rows use the source's short label (`outcomeLabel`: Polymarket `groupItemTitle`, Kalshi `yes_sub_title`; migration 061), else the words the rows don't share; they show the likeliest outcomes and skip 1–2% / 98–99% rows while livelier ones exist.
-- Market thumbnails (`/images/markets/*`) are served by Caddy straight from the `market_images` volume, not by the player: Next.js serves `public/` from a file list taken at startup, so covers written by the sync after a player restart 404'd.
-- Cover resolver (migrations 060, 062, 063, 064, `internal/discover/covers.go`): an import with no usable source image gets a matchup tile (sports/esports "A vs B"), else an image for a subject its title names ("France", "Fed" → Federal Reserve System, "Bad Bunny", "OpenAI"), resolved through Wikidata only — the top search result whose label (or a 5+ character alias) is exactly that name, of a known class that fits the market's category (a band can't illustrate a tech market) — then that class's image on Commons under a free licence: flag (P41) for countries and US states, photo (P18) for people (3+ sitelinks), physical products, places. Companies, brands and software get a mark that reads at 40px: small icon (P8972/P2910), else a logo/seal/monogram (P154/P158/P1543) only when roughly square (aspect ≤ 1.6), else their photo — a wide wordmark is never used (any entity with a logo counts as a brand; a small icon alone does not). App Store icons are the **last resort only**: when no free image exists for any subject of the title (nor Openverse), a named company's own most-rated app icon stands in (developer name must name the company, 5,000+ ratings; credited as the developer's trademark with a store link; `cover_lookups.app_name` remembers the candidate). Free-text Wikipedia/Commons search was tried and dropped (it matched namesakes). Openverse only with `OPENVERSE_API_TOKEN`. Every sync also backfills bare open imports board-first (contested, then 24h volume), each tried once per 30 days (`cover_checked_at`), with half of each run's lookups held back from the fetched rows for it; clearing `cover_checked_at` on a resolver cover (as 063 did) re-resolves it or removes it, whatever the market's status (settled and voided markets included since 2026-09-29; open markets go first). Resolver covers are always written under a fresh content-named file (`<row id>-<hash>.<ext>`) and the row's older files removed: reusing the plain `<row id>.<ext>` put a swept source image back under a new credit, and the CDN caches covers for a day; `COVER_ENTITY_LOOKUPS_PER_RUN` (60), `COVER_BACKFILL_PER_RUN` (200), `MARKET_COVER_RESOLVER=false` disables. The shared-image sweep and the wide-graphic sweep (`cover_shape.go`: a source cover wider than 1.25:1 that is a flat graphic — mostly transparent or on one flat colour — and would lose >10% of its marks to the thumbnail's centre crop, e.g. the "UEFA NATIONS LEAGUE" wordmark; wide photos and centred logos stay) only judge upstream images and mark what they drop `swept` so a sync never re-applies it; the backfill then resolves those rows in the same run. Credits ship on the market payload (`imageCredit`), the market page and `/attributions`. Back office **Market Images** (`GET /api/v1/admin/markets/images`, `PATCH /api/v1/admin/market-images/{id}`) replaces or removes a cover; `image_origin='manual'` is never overwritten. Before changing the resolver, run `COVER_LIVE_TEST=titles.json go test ./internal/discover -run Live` against real board titles and review the picks.
-- Proof of life: `GET /api/v1/activity/recent` (public, documented) returns real fills on open markets and 24h movers (first→last traded Yes price; No fills mapped to Yes) from `prediction_trades`; the board's `ActivityRail` polls it every 30s on the default view and renders nothing when both lists are empty. Cards: `MarketCard` carries a small-caps eyebrow (the real event's title, else the category) and a hairline footer; `EventCard` rules its rows.
-- Home: `/` is the landing page (see Landing below). The market board is `/predict`, with a welcome strip for signed-out visitors and the curated "This week in the Philippines" photo rail (`ThisWeekRail`), which appears once at least 4 events are flagged featured with an open market. Curate it in the back office under **Featured Moments** (`PATCH /api/v1/admin/events/{id}`: featured flag + cover photo, migration 057). Licensed topic covers live in `public/images/covers/` (credits in `CREDITS.md`); the approved Q4 2026 Philippine slate is `docs/content/2026-q4-ph-market-slate.md`.
-- Landing: `/` (`app/page.tsx` → `components/welcome/WelcomePage.tsx`) is the landing page for new visitors, ads and social, and the target of the board's "How it works" link (`/#how-it-works`): light, photo-led, built on live data — a real market card in the hero, live topic counts, trending markets. It renders full-bleed (AppShell `isMarketingRoute`), its "Markets" links go to `/predict`, and its money-word legal lines are inline English constants in `components/welcome/WelcomeSections.tsx`. `/welcome` (its first address) redirects to `/`. Inside the app, the TopBar logo returns to `/predict`.
-- Other product surfaces: `/discover`, `/live`, `/series/[slug]`, `/leaderboards` + `/leaderboards/[id]`, `/users/[userId]`, `/activity`, `/rewards`, `/store`, `/profile`, `/account/*`, `/auth/*`
-- Components: `app/components/prediction/` — MarketCard, MarketThumb, FeaturedMarket, CategoryTabs, TradeTicket, ConnectedTradeTicket, PredictionWorkspace, OrderBook, MarketChart, TopBar, and more
+- The trading surface is `/predict` (board), `/market/[ticker]`, `/event/[id]`
+  and `/portfolio`; the components live in `app/components/prediction/`.
+- **Retired:** the 2026-08-12 Floor redesign trial (`/floor`, `/book`,
+  `/standing`, `components/floor/`) was removed on 2026-09-23. `next.config.js`
+  redirects those routes and `app/__tests__/floor-retirement.test.ts` keeps them
+  gone. Discovery pages use `CategoryTabs`; the old `TerminalCategoryRail` is gone.
+- Public read routes must be listed in `gatewayPublicPrefixes()`
+  (`cmd/gateway/main.go`) or they 401.
+- Market thumbnails (`/images/markets/*`) are served by Caddy from the
+  `market_images` volume, not by Next.js (which only serves `public/` files
+  present at start-up).
+- Before changing the cover resolver, run
+  `COVER_LIVE_TEST=titles.json go test ./internal/discover -run Live` against
+  real board titles and review the picks. `image_origin='manual'` covers are
+  never overwritten.
+- The `/` landing page's money-word legal lines are inline English constants in
+  `components/welcome/WelcomeSections.tsx`, not locale strings (the locale
+  scanner bans that vocabulary).
 
 ### Redux slices
 
@@ -189,45 +207,25 @@ The app ships 37 pages (plus one API route) under `app/`. The ones that matter:
 
 ### Admin routes
 
-All under `app/(dashboard)/`: `access-control`, `audit-logs`, `campaigns`, `content`, `dashboard`, `disputes`, `leaderboards`, `loyalty`, `prediction-admin`, `reports`, `risk-management`, `social-moderation`, `users`. Of those, `campaigns` and `reports` are retired shells that redirect to `/dashboard`, and `risk-management` redirects to `/prediction-admin/risk`.
-
-Prediction admin is `app/(dashboard)/prediction-admin/` with sub-routes `activity`, `markets`, `reward-clusters`, `risk`, `settlements`, `store-packs`, `taxonomy`:
-
-- `.../prediction-admin/markets/page.tsx` — market list, create, lifecycle transitions (open/halt/close)
-- `.../prediction-admin/settlements/page.tsx` — settlement queue, manual resolve with attestation
-- Containers: `containers/prediction-markets/`, `containers/prediction-settlements/`, `containers/prediction-taxonomy/`
+All under `app/(dashboard)/`; the full list with status is in
+[docs/SPEC_CURRENT.md §5](docs/SPEC_CURRENT.md#5-back-office). `campaigns` and
+`reports` are retired shells that redirect to `/dashboard`, and
+`risk-management` redirects to `/prediction-admin/risk` — don't build on them.
 
 ## Back-office RBAC (Access Control)
 
-Staff authorization for the back-office, distinct from `punters` (customers) and
-the auth service's `auth_users` (player login). Schema in migration
-`027_rbac_admin.sql`: `admin_users` (gateway-owned staff directory, bcrypt
-password), `roles`, `permissions`, and the `user_roles` / `role_permissions`
-join tables. Seeded roles: Super Admin, Operations Manager, Customer Support;
-granular permissions like `users:read/write`, `roles:read/write`,
-`markets:read/edit`, `settlements:resolve`, `finances:view`.
+Staff authorization is separate from players: `admin_users`, `roles`,
+`permissions`, `user_roles`, `role_permissions` (migration 027 and later), bound
+to the session by email. Roles, permissions, the enforcement functions and the
+safety invariants are in [docs/SPEC_CURRENT.md §6](docs/SPEC_CURRENT.md#6-permissions).
+Code: `internal/rbac/`, `internal/http/rbac_admin_handlers.go`; UI:
+`office/app/(dashboard)/access-control/`.
 
-- **UI:** `office/app/(dashboard)/access-control/` → `office/app/components/access-control/`
-  (User Management tab: table, Create User, Edit Roles, suspend/activate,
-  reset password, delete; Role Matrix tab: Create Role + a roles × permissions
-  checkbox grid).
-- **API:** `/api/v1/admin/users` (GET/POST), `/api/v1/admin/users/{id}/{roles,status,password}` (PUT),
-  `/api/v1/admin/users/{id}` (DELETE), `/api/v1/admin/roles` (GET),
-  `/api/v1/admin/roles/{id}/permissions` (PUT). Code: `internal/rbac/` +
-  `internal/http/rbac_admin_handlers.go`.
-- **Enforcement:** every endpoint runs `requireAdminRole` (session role==admin)
-  then `requireRBACPermission`, which resolves the caller's email →
-  `admin_users` → roles → permissions (active users only; suspended/unknown get
-  none). Dev bypass: `GATEWAY_ALLOW_ADMIN_ANON=true` (refused at boot in
-  prod/staging).
-- **Login:** the auth service `Login` falls back to authenticating against
-  `admin_users` (active, role=admin), so a staff member created via Create User
-  signs in with their temporary password — no separate `auth_users` row needed
-  (`services/auth/internal/http/handlers.go` `lookupAdminUser`).
-- **Safety invariants:** the `super-admin` role is immutable via the API; an
-  actor can only assign roles / grant permissions within their own set; the last
-  active super-admin cannot be role-stripped, suspended, or deleted; an actor
-  cannot suspend or delete their own account.
+- **Enforce at the gateway.** New admin routes use `requireAdminPermission`
+  with a specific permission — never a header, and never only the office UI.
+- **Login:** the auth service `Login` falls back to `admin_users` (active,
+  role=admin), so staff created in the office sign in with their temporary
+  password (`services/auth/internal/http/handlers.go` `lookupAdminUser`).
 - **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
   `admin@taptrade.local` (Super Admin), `ops@taptrade.local` (Operations Manager),
   `support@taptrade.local` (Customer Support) — all password `admin123`.
@@ -244,15 +242,15 @@ granular permissions like `users:read/write`, `roles:read/write`,
 - **DB:** PostgreSQL 16 via `lib/pq`, migrations via `pressly/goose/v3`
 - **Redis:** not a read cache — there is no read cache in the gateway. `REDIS_URL` backs (a) the HTTP rate limiter, which degrades to in-process counters that are not shared across replicas when unset, and (b) the optional cross-replica WebSocket backbone, enabled with `WS_BACKBONE=redis`. Redis also backs auth sessions and the auth rate limiter in the auth service.
 - **WebSocket:** hub with typed notifiers (see `internal/ws/notifier.go` and `internal/ws/hub.go`)
-- **Auth:** JWT cookies via auth service proxy; `httpx.Auth` middleware checks `gatewayPublicPrefixes()` in `cmd/gateway/main.go`
+- **Auth:** opaque session tokens issued by the auth service (HttpOnly cookies or bearer), validated by `httpx.Auth` against the auth service; `gatewayPublicPrefixes()` in `cmd/gateway/main.go` lists the routes that skip it. `JWT_SECRET` in the compose files is read by no code
 - **Matching:** the binary exchange (`internal/prediction/exchange.go`) is the live execution path — a central limit order book with limit + market orders, partial fills, complementary issuance, sells from existing positions, and wallet reservations. Matching runs at READ COMMITTED under `pg_advisory_xact_lock` per market; the engine is pure and `SQLRepository.PersistMatchAtomic` does the writing.
 - **AMM:** LMSR in `internal/prediction/amm.go` — cost function `C(q) = b * ln(e^(q_yes/b) + e^(q_no/b))`. **Execution against the AMM is retired (P2-09).** `PlaceOrder` rejects markets with `execution_mode='amm'`; the engine survives only to quote legacy AMM market detail. New markets default to `execution_mode='order_book'` (migration 019).
-- **Background workers** (wired in `internal/http/handlers.go`, all in `internal/prediction/workers/`):
-  - `MarketCloser` — 30s, closes markets past `close_at`
-  - `AutoSettler` — 60s, auto-settles with feed adapters
-  - `RestingOrderExpirer` — 60s, expires resting orders and releases their reservations
-  - `Reconciler` — 15m, ledger-consistency check
-  - `SMM` — synthetic market maker, 30s default tick, off unless `SMM_ENABLED=true`, configured by `NewSMMFromEnv`
+- **Background workers** are wired in `internal/http/handlers.go` (most in
+  `internal/prediction/workers/`); every worker, its interval, flag and failure
+  handling: [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md#background-workers-and-scheduled-jobs).
+- **Middleware order:** `httpx.Chain` makes the *first* listed middleware the
+  outermost — the opposite of what the comments in `cmd/gateway/main.go` assume
+  ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), TD-055).
 
 ### Key files to know
 
@@ -278,105 +276,22 @@ granular permissions like `users:read/write`, `roles:read/write`,
 
 ### Other backend subsystems
 
-`internal/` holds 23 packages. Beyond `prediction`, `wallet`, `http`, `ws`, `rbac` and `compliance`:
-
-| Package | Surface |
-|---|---|
-| `store` | Point store — `/api/v1/store/*`, migration 051, gated by `STORE_ENABLED` |
-| `loyalty` | Tiers, standing, ledger — `/api/v1/loyalty/*`, migrations 015/021 |
-| `leaderboards` | `/api/v1/leaderboards` (public) + `/api/v1/me/leaderboards` |
-| `discover` | Imported/curated market catalog from external venues — `/api/v1/discover` |
-| `livemarkets` | Live/in-play feed — `/api/v1/live-markets` |
-| `content` | CMS pages and banners — `/api/v1/content/*`, `/api/v1/banners` |
-| `bonus` | Bonuses and campaigns — `/api/v1/bonuses/*` |
-| `notify` | Notifications — `/api/v1/notifications`, migration 055 |
-| `tenant` | Multi-tenant scaffolding (ADR-0005) |
-| `markettranslate` | Market copy translation |
-| `webhooks` | Outbound webhook endpoints (admin-managed) |
-| `tracing` | OpenTelemetry setup |
-| `payments`, `alphacashier` | Dormant — see the launch boundary section |
-| `webhookauth` | The one inbound webhook signature check (HMAC-SHA256 over the raw body, 5-minute window on the signed body's timestamp), used by the store and payments webhooks |
-| `approval` | Two-person rule for admin actions over a Points threshold. Not wired yet: waiting on a decision about which admin actions (large credits, manual settlement) should need a second admin |
-
-Social (comments, follows, moderation) lives in `internal/http/market_social_handlers.go` under `/api/v1/social/*` (migrations 044/049/054); the watchlist is `/api/v1/watchlist/*` (migration 045); disputes are `/api/v1/disputes`.
+`internal/` holds 23 packages; the package map (domain, platform, dormant) is in
+[docs/ARCHITECTURE.md §2](docs/ARCHITECTURE.md#2-gateway-internals). Dormant:
+`payments`, `alphacashier` (see the launch boundary). Built but not wired:
+`approval` (the two-person rule, waiting on a decision about which admin actions
+need a second admin). `webhookauth` is the one inbound webhook signature check.
 
 ## Local Development
 
-### One-time setup
-
-```bash
-cd /Users/john/Sandbox/taptrade-workspace/taptrade/apps/taptrade-platform
-
-# Start Postgres (port 5434 to avoid colliding with any sportsbook container)
-docker compose up -d postgres redis
-
-# Run migrations
-cd go-platform/services/gateway
-export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable"
-export MIGRATIONS_DIR="$(pwd)/migrations"
-go run ./cmd/migrate up
-
-# Seed base data (categories, series, events, markets, 4 test punters + wallets)
-make seed
-```
-
-Three seed modes (targets live in the **gateway** Makefile, not the platform one):
-
-- `make seed` / `go run ./cmd/seed` (default `-mode base`) — categories, series, events, markets, users, wallets only. Empty order books on `execution_mode=order_book` markets. The exact row counts move with the seed file; run it and count rather than trusting a number in this doc.
-- `make demo-data` (`-mode demo`) — base seed + demo state for clickable demos. Phases 0, 1, 2, 4, 5, 5b, 6 (3 is intentionally skipped — charts are client-side):
-  1. **Phase 0** — cancels stale `pending` orders, removes any prior demo rows
-  2. **Wallet top-up** — demo user / alice / bob / charlie and the bot get demo balances
-  3. **Phase 1** — market-maker book: multi-level YES + NO bids on every order_book market via `user-bot`. Fixes "no matching liquidity" for taker market orders.
-  4. **Phase 2** — synthetic taker volume from alice/bob/charlie, backdated
-  5. **Phase 4** — demo user (u-1) opens positions across categories with varied PnL
-  6. **Phase 5** — settles the markets listed in `cmd/seed/demo_phase5_settle.go` `phase5Plan` (10 named tickers plus IMP-* extras) so History + Leaderboards populate
-  7. **Phase 5b** — leaderboard snapshots
-  8. **Phase 6** — backoffice `audit_logs` + `loyalty_accounts`
-- `make wipe-demo` (`-mode wipe`) — removes only the rows demo phases wrote (idempotency_key LIKE 'demo:%', attestation_source='demo', trade_kind='demo_history'). Base seed rows untouched. Re-runnable.
-
-All demo writes go through `Service.PlaceOrder` and `Service.ResolveMarket` — same path as live HTTP requests — so the ledger stays consistent and the reconciler reads clean.
-
-### Running services
-
-```bash
-# Gateway (port 18080 by default; override with PORT)
-GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
-WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
-WALLET_STORE_MODE=db \
-go run ./cmd/gateway
-
-# Auth service (port 18081) — needed for authenticated endpoints
-cd ../auth
-AUTH_STORE_MODE=db \
-AUTH_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
-AUTH_COOKIE_SECURE=false \
-go run ./cmd/auth
-
-# Frontends — install once at the workspace root
-cd ../../../frontend
-yarn install --frozen-lockfile
-
-# Player app (local dev port 3010 — 3000 is occupied by an unrelated local project)
-cd packages/app
-NEXT_PUBLIC_API_URL=http://localhost:18080 npx next dev --webpack -p 3010
-
-# Backoffice (port 3001) — office has no `dev` script of its own
-cd ../office
-npx next dev --webpack -p 3001
-```
-
-`packages/office` exposes `run-local:dev`, not `dev`, and it does not pin a port — the port comes from the runner, which is why the command above passes `-p 3001` (the same thing `.claude/launch.json` does). From `frontend/` you can also run `yarn dev` / `yarn dev:office`, which drive the same scripts through lerna alongside the mock server.
-
-### Ports
-
-| Service | Port | Notes |
-|---------|------|-------|
-| Player app (Next.js) | 3010 | 3000 is occupied by an unrelated local project; root `.claude/launch.json` pins 3010. Only `docker-compose.demo.yml` containerizes it |
-| Backoffice (Next.js) | 3001 | set by the dev runner, not by package.json |
-| Go Gateway | 18080 | default in code; `PORT` overrides |
-| Go Auth Service | 18081 | default in code; `PORT` overrides |
-| PostgreSQL (Docker) | 5434 | 5432 is the sportsbook container, 5433 is swarmqa |
-| Redis (Docker) | 6380 | 6379 is the sportsbook container |
+Setup, running each service, ports, seed modes and commands are in
+[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md). The essentials: Postgres on 5434,
+Redis on 6380, gateway 18080, auth 18081, player 3010, office 3001. Install the
+front ends with `yarn install --frozen-lockfile` **from `apps/taptrade-platform/frontend/`**
+(never `npm install` in a package — it hangs). Seed modes (`make seed`,
+`make demo-data`, `make wipe-demo`) live in the **gateway** Makefile. Demo data
+is written through `Service.PlaceOrder` and `Service.ResolveMarket`, the same
+paths as live requests, so the ledger stays consistent.
 
 ### Test credentials
 
@@ -399,130 +314,25 @@ In DB mode (`AUTH_STORE_MODE=db`) and outside production/staging, the auth servi
 
 Seeded wallets carry `currency_code = 'PTS'`. The `make demo-data` phases top these balances up further.
 
-### Known macOS Issue — Brotli
-
-If a frontend install crashes with `libbrotlicommon.1.dylib` code signature error:
-```bash
-codesign --force --sign - /opt/homebrew/lib/libbrotlicommon.1.dylib
-codesign --force --sign - /opt/homebrew/lib/libbrotlidec.1.dylib
-codesign --force --sign - /opt/homebrew/lib/libbrotlienc.1.dylib
-```
-On Intel Macs: check `/usr/local/lib/` instead of `/opt/homebrew/lib/`.
-
-### Use yarn at the workspace root
-
-The `frontend/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { node: ">=20", yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `frontend/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
-
-Older notes recommended `npm install --legacy-peer-deps` from the app sub-directory; that path hangs in CI for hours because npm doesn't detect the workspace declaration up-tree. Yarn install at the workspace root completes in seconds.
+A macOS brotli code-signature crash during install has a fix in
+[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md#known-macos-issue--brotli).
 
 ## Environment Variables
 
-```
-# Frontend
-NEXT_PUBLIC_API_URL=http://localhost:18080
-NEXT_PUBLIC_AUTH_URL=http://localhost:18081
-NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
-
-# Frontend feature flags (see app/lib/features.ts) — default off, set "true" to enable
-NEXT_PUBLIC_FEATURE_RG=          # responsible-gambling pages (rg-history, self-exclude, /responsible-gaming/)
-NEXT_PUBLIC_FEATURE_KYC=         # KYC / identity verification surface on /profile/
-NEXT_PUBLIC_FEATURE_LIMITS=      # user-set deposit/stake/session limits — Limits tab on /profile/
-NEXT_PUBLIC_FEATURE_CHAT=        # chat entry points; pairs with NEXT_PUBLIC_CHAT_PUBLIC_URL
-NEXT_PUBLIC_CHAT_PUBLIC_URL=
-NEXT_PUBLIC_FEATURE_SOCIAL_AUTH= # social login buttons (demo sets this true at build time)
-NEXT_PUBLIC_FEATURE_LIVE_MARKETS=# /live route content + Live nav entries
-NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS= # demo boxes ONLY: synthetic-walk chart fallback while loading/error/flat
-NEXT_PUBLIC_HERO_AMBIENT_VIDEO=  # public asset path for the landing hero video; empty = no video element
-NEXT_PUBLIC_FEATURE_CASHIER_UI=  # /cashier crypto deposit card; 404 when unset. Never set on the demo (CI-enforced)
-
-# Gateway
-GATEWAY_DB_DSN=postgres://...
-WALLET_DB_DSN=postgres://...    # same DB, separate env (wallet service reads its own)
-WALLET_STORE_MODE=db            # 'db' | 'memory' (default: memory)
-PORT=18080                      # gateway/auth both read PORT; GATEWAY_PORT/AUTH_PORT are NOT read
-GATEWAY_DB_DRIVER=postgres      # read by cmd/migrate
-MIGRATIONS_DIR=                 # read by cmd/migrate; auto-detected if unset
-REDIS_URL=redis://localhost:6380/0   # HTTP rate limiter + (with WS_BACKBONE=redis) WS fan-out
-WS_BACKBONE=                    # 'redis' fans WebSocket broadcasts across gateway replicas over REDIS_URL
-GATEWAY_RATELIMIT_RPM=120
-GATEWAY_TRUSTED_PROXY_CIDRS=    # enables per-client rate-limit keying behind a proxy
-AUTH_SERVICE_URL=http://localhost:18081
-AUTH_COOKIE_SECURE=false        # required for localhost HTTP
-GATEWAY_ALLOW_ADMIN_ANON=       # dev-only admin/RBAC bypass; refused at boot in prod/staging
-GATEWAY_AUTH_ENABLED=           # 'false' is a dev-only kill switch; refused at boot in prod/staging
-GATEWAY_READ_REPO_MODE=         # appears in docker-compose/CI but no Go code reads it — inert
-
-# Gateway — activation knobs (all default OFF / fail-closed; the commented
-# block in docker-compose.demo.yml is the canonical reference)
-SMM_ENABLED=true                # synthetic market maker (also SMM_USER_ID, SMM_TICK_INTERVAL, SMM_DEPTH_CENTS, SMM_HALF_SPREAD_CENTS, SMM_MAX_DRIFT_CENTS — env names kept, values are Points)
-STARTER_GRANT_CENTS=            # >0 enables the play-money faucet (one grant/user); Points, despite the name
-DAILY_CLAIM_CENTS=              # >0 enables the daily claim; Points, despite the name
-STORE_ENABLED=                  # 'true' mounts /api/v1/store/*; needs STORE_WEBHOOK_SECRET in prod/staging
-KYC_IDV_PROVIDER=               # ''/'manual' = back-office review; else a vendor (needs KYC_IDV_API_KEY)
-KYC_ENFORCEMENT=                # withdrawal-side KYC gate — only reachable when the legacy money routes are on
-KYC_REQUIRED_FOR_TRADING=       # 'true' requires verified identity to trade
-# Deny-by-default boot policy (ENVIRONMENT=production/staging, not acked-permissive):
-# boot REQUIRES GEO_GATE_ENABLED=true + non-empty GEO_ALLOWED_COUNTRIES (allowlist
-# mode mandatory) and each KYC flag above either 'true' or explicitly acked off:
-KYC_ENFORCEMENT_ACK_DISABLED=          # 'true' = deliberately run without the withdrawal KYC gate
-KYC_REQUIRED_FOR_TRADING_ACK_DISABLED= # 'true' = deliberately run without trading KYC
-# BETA_COMPLIANCE_MODE=permissive is INVALID in production (boot error); staging/demo
-# only, with COMPLIANCE_STARTUP_ACK=true.
-GEO_GATE_ENABLED=               # 'true' enforces jurisdiction on the trading path (needs an edge country header, e.g. CF-IPCountry)
-GEO_ALLOWED_COUNTRIES=          # comma-separated ISO-3166 allowlist; required in prod/staging
-GEO_BLOCKED_COUNTRIES=          # denylist, evaluated by internal/compliance/geo_gate.go
-GEO_TRUSTED_PROXY_MODE=         # 'require' = edge always sets the header; missing-signal denials log Error + counter
-EDGE_SHARED_SECRET=             # anti-spoof (SEC-03): with TRUSTED_PROXY_MODE=require, guarded requests must carry this secret (stamped by Caddy as X-Edge-Auth) or be denied. REQUIRED in prod/staging when require-mode is on (boot fails otherwise). Bind gateway :18080 to loopback so only the edge can reach it.
-PROVIDER_OPS_AUDIT_STORE_MODE=db # must be DB-backed in prod/staging (boot error otherwise)
-SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
-
-# Gateway — launch boundary (see the Points-only section; all boot-refused in prod/staging)
-TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=  # mounts deposit/withdraw/cashier/crypto/provider-callback routes
-ALPHA_CASHIER_ENABLED=                 # alpha crypto cashier; also requires the flag above
-ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED= # watch the treasury for USDC transfers and credit matching open deposit intents
-ALPHA_CASHIER_PAYOUT_ADDRESS=          # hot wallet withdrawals are paid from; completion is verified against it (default: treasury)
-PAYMENTS_WEBHOOK_SECRET=               # only validated when the legacy money routes are enabled
-CRYPTO_RPC_URL=                        # MUST be unset — any value refuses boot in production/staging
-CRYPTO_ASSET_CONTRACT=                 # MUST be unset
-CRYPTO_DEPOSIT_ADDRESS_SOURCE=         # MUST be unset
-
-# Auth service — Social OAuth (full reference: go-platform/services/auth/.env.example).
-# Each provider is OFF until its CLIENT_ID (TikTok: CLIENT_KEY) is set. Google /
-# Discord assert a verified email (auto-link enabled); Facebook returns an email but
-# no verified claim, so it is treated as unverified (isolated account, no auto-link);
-# X / TikTok / Reddit return no email (isolated identity accounts). Each *_REDIRECT_URI must be
-# registered in the provider console and be same-origin with the player app so the
-# session cookies land on the right origin.
-AUTH_FRONTEND_URL=http://localhost:3000   # where OAuth callbacks send the user post-login.
-                                          # This is the code default (handlers.go). Local dev
-                                          # runs the player app on 3010 — set it to :3010 there,
-                                          # or OAuth returns the user to a dead port.
-GOOGLE_OAUTH_CLIENT_ID=         # + GOOGLE_OAUTH_CLIENT_SECRET / GOOGLE_OAUTH_REDIRECT_URI
-FACEBOOK_OAUTH_CLIENT_ID=       # + FACEBOOK_OAUTH_CLIENT_SECRET / FACEBOOK_OAUTH_REDIRECT_URI
-DISCORD_OAUTH_CLIENT_ID=        # + DISCORD_OAUTH_CLIENT_SECRET / DISCORD_OAUTH_REDIRECT_URI
-TWITTER_OAUTH_CLIENT_ID=        # X (Twitter), PKCE: + TWITTER_OAUTH_CLIENT_SECRET / TWITTER_OAUTH_REDIRECT_URI
-TIKTOK_OAUTH_CLIENT_KEY=        # TikTok: + TIKTOK_OAUTH_CLIENT_SECRET / TIKTOK_OAUTH_REDIRECT_URI
-REDDIT_OAUTH_CLIENT_ID=         # + REDDIT_OAUTH_CLIENT_SECRET / REDDIT_OAUTH_REDIRECT_URI
-```
+Every variable the code reads — gateway, auth, player, office — with defaults
+and production/staging constraints is in
+[docs/ENVIRONMENT.md §3](docs/ENVIRONMENT.md#3-environment-variables); the
+production boot rules are in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#required-productionstaging-configuration).
+The launch-boundary variables are summarised in the section above. Never set a
+money flag in the demo compose file or deploy workflow — CI fails if you do.
 
 ## Public API Prefixes
 
-Unauthenticated endpoints, from `gatewayPublicPrefixes()` in `cmd/gateway/main.go`. That function is the authority — re-read it rather than trusting this copy.
-
-- `/healthz`, `/readyz`, `/metrics`, `/api/v1/status`
-- `/api/v1/auth/`, `/auth/` (login/register/refresh proxy)
-- `/ws` (WebSocket has its own auth)
-- `/api/v1/content/`, `/api/v1/banners` (CMS)
-- `/api/v1/discover`, `/api/v1/discovery`, `/api/v1/live-markets`, `/api/v1/categories`, `/api/v1/series`, `/api/v1/tags`, `/api/v1/events`, `/api/v1/markets`
-- `/api/v1/leaderboards` (board list + entries; the per-user `/api/v1/me/leaderboards` still needs a session)
-- `/api/v1/bot/` (bot API has its own API-key auth via `prediction.BotAuthMiddleware`)
-
-Two conditional groups are appended only when their gate is on:
-
-- `/api/v1/payments/webhook` and `/v1/provider-callbacks/` when `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED=true`
-- `/api/v1/store/webhook` when `STORE_ENABLED=true` (the handler verifies its own HMAC; every other `/api/v1/store/*` route stays session-authenticated)
-
-Everything else requires a valid session cookie.
+`gatewayPublicPrefixes()` in `cmd/gateway/main.go` is the authority for which
+routes skip session auth; a summary is in
+[docs/SPEC_CURRENT.md §6](docs/SPEC_CURRENT.md#6-permissions). A new public read
+route must be added there or it 401s. Everything else requires a valid session.
 
 ## Key Patterns
 
@@ -547,53 +357,19 @@ logger.error('Auth', 'Session check failed', err);
 logger.info('WebSocket', 'Subscribed to channel', channelId);
 ```
 
-### WalletAdapter pattern (Go)
+### WalletAdapter, idempotency keys, lifecycle, seed ids
 
-The `prediction` package never imports `wallet` directly. Instead it depends on the `WalletAdapter` interface in `internal/prediction/wallet_adapter.go`:
-
-```go
-type WalletAdapter interface {
-    Debit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error
-    Credit(ctx context.Context, userID string, amountPoints int64, idempotencyKey, reason string) error
-    Balance(ctx context.Context, userID string) int64
-}
-```
-
-Two extensions live in the same file: `TxWalletAdapter` adds `BeginTx` / `DebitWithTx` / `CreditWithTx`, and `ExchangeWalletAdapter` adds the reservation primitives the matching engine needs (`BeginExchangeTx` at READ COMMITTED, `HoldWithTx`, `CaptureReservationWithTx`, `ReleaseReservationWithTx`). `NoopWallet` is the do-nothing implementation used in tests.
-
-The concrete bridge lives in `internal/http/prediction_wallet_adapter.go`. Tests use `fakeWallet` (see `internal/prediction/wallet_wiring_test.go`). This keeps the prediction domain replaceable.
-
-### Idempotency keys for wallet ops
-
-Every wallet mutation is keyed so retries are safe:
-
-- Order funds are **reserved**, not debited up front: `refType="prediction_order"`, `refID=<order id>` (idempotent on that pair)
-- Fill capture: `prediction_fill:<tradeID>`
-- Settlement credit: `prediction_payout:<marketID>:<positionID>`
-- Void refund: `prediction_void:<marketID>:<positionID>`
-
-This makes re-running a settle operation (or retrying a failed order) safe.
-
-### Market lifecycle state machine
-
-`internal/prediction/lifecycle.go` enforces valid transitions:
-
-```
-unopened             → open | voided
-open                 → halted | closed | voided
-halted               → open | closed | voided
-closed               → proposed_resolution | settled | voided
-proposed_resolution  → settled | disputed | voided
-disputed             → settled | voided
-settled              → (terminal)
-voided               → (terminal)
-```
-
-Event status has a parallel FSM. Use `prediction.TransitionMarket()` / `CanTransition()`; `DescribeTapTradeMarketLifecycle()` produces the action list the back-office renders.
-
-### Deterministic seed UUIDs
-
-Seed data uses `md5(slug)::uuid` so `'series-mlbb-esports'` always maps to the same UUID. This makes re-running seeds safe (`ON CONFLICT DO NOTHING`) and lets integration tests reference markets by slug.
+- `prediction` never imports `wallet`; it depends on the interfaces in
+  `internal/prediction/wallet_adapter.go`, bridged by
+  `internal/http/prediction_wallet_adapter.go`
+  ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#prediction--wallet-boundary--the-walletadapter-pattern)).
+- Every wallet mutation carries an idempotency key; order funds are reserved,
+  not debited ([docs/ARCHITECTURE.md §3](docs/ARCHITECTURE.md#3-core-patterns),
+  [docs/DATA_MODEL.md](docs/DATA_MODEL.md#idempotency-keys-exactly-once)).
+- Market and event status changes go through `prediction.TransitionMarket()` /
+  `CanTransition()` in `internal/prediction/lifecycle.go` (state diagram:
+  [docs/DATA_MODEL.md](docs/DATA_MODEL.md#marketevent-lifecycle-state-machines)).
+- Seed data uses `md5(slug)::uuid` ids so re-running seeds is safe.
 
 ## Quality Standards
 

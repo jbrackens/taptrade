@@ -68,7 +68,7 @@ go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 
 Re-run the DX checklist when a change touches:
 
-- `README.md`, `DEVELOPMENT.md`, `API_EXAMPLES.md`, `ERRORS.md`, `CHANGELOG.md`, `MIGRATION.md`, or `UPGRADE.md`
+- `README.md`, [`docs/ENVIRONMENT.md`](../../docs/ENVIRONMENT.md), `API_EXAMPLES.md`, `ERRORS.md`, `CHANGELOG.md`, `MIGRATION.md`, or `UPGRADE.md`
 - `docker-compose.yml`
 - `frontend/packages/app/package.json`
 - `frontend/packages/api-client`

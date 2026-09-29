@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `docs/DEMO_DEPLOYMENT.md`. Replaced by [DEPLOYMENT.md](../../DEPLOYMENT.md). Historical record only — do not treat as current.
+
 # Demo deployment
 
 ## Current live branch

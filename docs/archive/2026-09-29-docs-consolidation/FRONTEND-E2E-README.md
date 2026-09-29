@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly `apps/taptrade-platform/frontend/e2e/README.md`. Replaced by [ENVIRONMENT.md](../../ENVIRONMENT.md#4-commands); the live suite is `frontend/e2e/prediction/` run by `playwright.prediction.config.ts`. Historical record only — do not treat as current.
+
 # Sportsbook-Era E2E Test Suites
 
 > Historical sportsbook-era note: these suites and selectors document the

@@ -1,3 +1,5 @@
+> **Archived 2026-09-29.** Formerly root `PRODUCT-USER-JOURNEYS.md`. Replaced by [SPEC_CURRENT.md](../../SPEC_CURRENT.md) for the flows that exist. This was persona research written for a cent-priced, cash-deposit product with a crypto category; none of that is the current product. Historical record only — do not treat as current.
+
 # Prediction Market Consumer Journeys — 50 Complete Journeys
 
 Each scenario is mapped as a real journey: 10 canonical stages, and at every stage what the user **does**, what they're **thinking/feeling**, and the **friction → fork** (where they break or progress). Personas/categories are only navigation; the substance is the stage-by-stage walk.
