@@ -109,10 +109,11 @@ const MARKET_CRUMB_LINK_CLASS =
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
 // <=1023px the workspace lives in the vaul Sheet (P3) — the aside is
 // desktop-only and the old in-flow card styles are retired.
+// 2026-09-29 redesign: the desktop rail is a white card on the page ground.
 const MARKET_SIDE_CLASS =
-  "col-start-2 row-start-1 row-span-2 min-w-0 border-l border-[var(--border-1)] bg-[var(--surface-1)] max-[1023px]:hidden";
+  "col-start-2 row-start-1 row-span-2 min-w-0 max-[1023px]:hidden";
 const MARKET_TICKET_STICKY_CLASS =
-  "terminal-scrollbar sticky top-16 max-h-[calc(100vh-64px)] overflow-y-auto px-5 py-6 max-[1023px]:static max-[1023px]:max-h-none max-[1023px]:overflow-visible";
+  "terminal-scrollbar sticky top-[88px] mr-6 mt-6 max-h-[calc(100vh-112px)] overflow-y-auto rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] px-5 py-5 shadow-[var(--shadow-card)] max-[1279px]:mr-4";
 const MARKET_TICKET_CONTEXT_CLASS =
   "mb-5 border-b border-[var(--border-1)] pb-5";
 const MARKET_TICKET_EYEBROW_CLASS =
@@ -1296,7 +1297,9 @@ export default function MarketDetailPage() {
   const renderTradeWorkspace = (inSheet: boolean) => (
     <>
         <div className={inSheet ? "" : MARKET_TICKET_STICKY_CLASS}>
-          <div className={MARKET_TICKET_CONTEXT_CLASS}>
+          {/* Desktop: the market column beside the rail already names the
+              market, so the rail card starts at "Trade". */}
+          <div className={inSheet ? MARKET_TICKET_CONTEXT_CLASS : "hidden"}>
             <p className={MARKET_TICKET_EYEBROW_CLASS}>
               {displayCategory || t("PREDICTION_MARKET", "Prediction market")}
             </p>
@@ -1334,7 +1337,7 @@ export default function MarketDetailPage() {
               aria-label={t("YES_NO_PRICES", {
                 yes: railYes,
                 no: railNo,
-                defaultValue: `Yes ${railYes} points, No ${railNo} points`,
+                defaultValue: `Yes ${railYes} Clout, No ${railNo} Clout`,
               })}
             >
               {/* Step 3: probability bars are the pale direction fill —
@@ -1349,25 +1352,13 @@ export default function MarketDetailPage() {
             )}
           </div>
 
-          {inSheet && (
-          <div className={MARKET_TICKET_SOURCE_CLASS}>
-            <div className="mb-1 text-[12px] font-medium text-[var(--t3)]">
-              {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
-            </div>
-            <div className="font-semibold text-[var(--t1)]">
-              {formatSourceLabel(market.settlementSourceKey)}
-            </div>
-            {resolutionCopy && (
-              <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
-            )}
-          </div>
-          )}
-
           <TradeTicket
             variant="terminal"
             market={market}
             balance={typeof balance === "number" ? balance : undefined}
-            defaultSide={initialSide}
+            // In the sheet, start on the side the player tapped (the pinned
+            // Yes / No buttons); the desktop rail follows ?side=.
+            defaultSide={inSheet ? selectedSide : initialSide}
             defaultAmount={initialAmount}
             onSideChange={setSelectedSide}
             isAuthenticated={isAuthenticated}
@@ -1394,6 +1385,23 @@ export default function MarketDetailPage() {
             onPreview={canPreviewOrders ? handlePreview : undefined}
             onSubmit={handleSubmit}
           />
+
+          {/* Sheet: the terms come after the ticket, so a Yes / No tap lands
+              on the trade, not on a page of rules. */}
+          {inSheet && (
+          <div className={`${MARKET_TICKET_SOURCE_CLASS} mt-5 border-t border-[var(--border-1)] pt-4`}>
+            <div className="mb-1 text-[12px] font-medium text-[var(--t3)]">
+              {t("RESOLUTION_SOURCE_LABEL", "Resolution source")}
+            </div>
+            <div className="font-semibold text-[var(--t1)]">
+              {formatSourceLabel(market.settlementSourceKey)}
+            </div>
+            {resolutionCopy && (
+              <p className="mb-0 mt-2 text-[var(--t2)]">{resolutionCopy}</p>
+            )}
+          </div>
+          )}
+
         </div>
     </>
   );

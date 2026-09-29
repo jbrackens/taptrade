@@ -139,13 +139,14 @@ const TICKET_HEAD_CLASS = "mb-3 flex items-center justify-between";
 // The ticket head is a quiet sentence-case label beside the order-type
 // segmented control.
 const TICKET_TITLE_CLASS =
-  "text-[14px] font-semibold text-[var(--t1)]";
+  "text-[18px] font-semibold tracking-[-0.015em] text-[var(--t1)]";
+// 2026-09-29 redesign: capsule segments, the selected one in ink.
 const TICKET_MODE_CLASS =
-  "inline-flex gap-0.5 rounded-[10px] bg-[var(--surface-2)] p-[3px]";
+  "inline-flex gap-0.5 rounded-[var(--r-pill)] bg-[var(--surface-2)] p-[3px]";
 const TICKET_MODE_BUTTON_BASE_CLASS =
   // Step 3: 38px — THE documented hit-target exception (44px inside a
   // 3px-padded track forces the track to 50px and dominates the ticket).
-  "min-h-[32px] cursor-pointer rounded-[8px] border-0 px-3 [font-family:inherit] text-[12.5px] font-semibold transition-[background-color,border-color,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "min-h-[32px] cursor-pointer rounded-[var(--r-pill)] border-0 px-3.5 [font-family:inherit] text-[12.5px] font-semibold transition-[background-color,border-color,color,transform] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 // FEED2-006: sides are the composed price cells (label + live price),
 // superseding the P9.2 underline tabs. Selection uses the purple/lavender
 // action channel; direction color stays on the side's own text only.
@@ -162,8 +163,9 @@ const TICKET_ROW_LABEL_CLASS = "text-[13px] font-medium text-[var(--t2)]";
 const TICKET_ROW_VALUE_CLASS = "font-semibold tabular-nums text-[var(--t1)]";
 const TICKET_ROW_SUB_CLASS =
   "mt-0.5 text-right text-[11.5px] font-normal tabular-nums text-[var(--t3)]";
+// Full-width amount field with the unit inside it (2026-09-29 redesign).
 const TICKET_INPUT_CLASS =
-  "font-mono w-[128px] rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2 text-right text-[14px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  "font-mono w-full rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] py-2.5 pl-3 pr-16 text-left text-[16px] font-semibold text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-[120ms] [font-variant-numeric:tabular-nums] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 const TICKET_NOTE_CLASS =
   "mt-2.5 text-center text-xs leading-[1.45] text-[var(--t2)]";
 // Mobile quick controls (≤1023px): 44px touch targets per DESIGN.md §8.
@@ -194,22 +196,22 @@ const PREVIEW_DEBOUNCE_MS = 250;
 function ticketModeButtonClass(active: boolean): string {
   return `${TICKET_MODE_BUTTON_BASE_CLASS} ${
     active
-      ? "bg-[var(--surface-1)] text-[var(--t1)] ring-1 ring-[var(--border-2)]"
+      ? "bg-[var(--accent)] text-[var(--on-ink)]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)] active:translate-y-px"
   }`;
 }
 
 function ticketSideTabClass(side: OrderSide, selected: boolean): string {
-  // Unselected sides still carry their direction colour; selection adds
-  // the side's stroke and soft wash (never the ink/brand voice).
+  // Unselected sides carry their direction colour on white; the selected
+  // side fills solid in its direction colour (2026-09-29 redesign).
   if (!selected) {
     return side === "yes"
       ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--yes-text)] hover:border-[var(--yes-border)] active:translate-y-px`
       : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--border-1)] bg-[var(--surface-1)] text-[var(--no-text)] hover:border-[var(--no-border)] active:translate-y-px`;
   }
   return side === "yes"
-    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--yes)] bg-[var(--yes-soft)] text-[var(--yes-text)]`
-    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--no)] bg-[var(--no-soft)] text-[var(--no-text)]`;
+    ? `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--yes)] bg-[var(--yes)] text-[var(--on-ink)]`
+    : `${TICKET_SIDE_TAB_BASE_CLASS} border-[var(--no)] bg-[var(--no)] text-[var(--on-ink)]`;
 }
 
 // Points are whole units of play value —
@@ -1039,13 +1041,29 @@ export function TradeTicket({
 
           <div className={TICKET_ROWS_CLASS}>
             <div>
-              <div className={TICKET_ROW_CLASS}>
+              <div className="mb-1.5 flex items-baseline justify-between gap-3">
                 <label
                   className={TICKET_ROW_LABEL_CLASS}
                   htmlFor="ticket-amount"
                 >
-                  {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
+                  {action === "sell"
+                    ? t("SHARES_TO_SELL")
+                    : t("AMOUNT_LABEL", "Amount")}
                 </label>
+                <span className="text-[12px] font-normal tabular-nums text-[var(--t3)]">
+                  {action === "sell"
+                    ? t("AVAILABLE_SHARES", { quantity: availableShares })
+                    : t("BALANCE_AMOUNT", {
+                        // Bare grouped number: the locale template appends
+                        // the unit ("Balance {{amount}} Clout").
+                        amount:
+                          typeof balance === "number"
+                            ? Math.round(balance).toLocaleString()
+                            : "—",
+                      })}
+                </span>
+              </div>
+              <div className="relative">
                 <input
                   id="ticket-amount"
                   type="number"
@@ -1058,9 +1076,17 @@ export function TradeTicket({
                   }}
                   className={TICKET_INPUT_CLASS}
                   aria-label={
-                    action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")
+                    action === "sell"
+                      ? t("SHARES_TO_SELL")
+                      : t("AMOUNT_LABEL", "Amount")
                   }
                 />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[var(--t3)]"
+                >
+                  {action === "sell" ? t("SHARES") : t("PTS", "Clout")}
+                </span>
               </div>
               {/* Mobile quick controls (≤1023px, buy only): steppers +
                   quick amounts at 44px touch size. Desktop keeps the bare
@@ -1109,19 +1135,6 @@ export function TradeTicket({
                   </button>
                 </div>
               )}
-              <p className={TICKET_ROW_SUB_CLASS}>
-                {action === "sell"
-                  ? t("AVAILABLE_SHARES", { quantity: availableShares })
-                  : t("BALANCE_AMOUNT", {
-                      // Bare grouped number: the locale template appends the
-                      // unit ("Balance {{amount}} Clout") — formatPointAmount
-                      // here doubled it ("1,000 Clout Clout").
-                      amount:
-                        typeof balance === "number"
-                          ? Math.round(balance).toLocaleString()
-                          : "—",
-                    })}
-              </p>
               {/* QA fix ISSUE-017 (2026-07-26): amounts below one share
                   used to disable the CTA with zero explanation
                   (AMOUNT_TOO_SMALL only fired on click, which the
@@ -1137,23 +1150,22 @@ export function TradeTicket({
               )}
             </div>
 
-            <div>
-              <div className={TICKET_ROW_CLASS}>
-                <span className={TICKET_ROW_LABEL_CLASS}>{t("PRICE")}</span>
-                {/* §3-03: the price no longer swaps to "Loading…" text —
-                 * the frozen figure holds and the pending dot on the
-                 * total row carries the in-flight signal. */}
-                <span className={TICKET_ROW_VALUE_CLASS}>
-                  {displayPrice} Clout
-                </span>
-              </div>
-              <p className={TICKET_ROW_SUB_CLASS}>
-                {t("IMPLIED_PROB")} {displayPrice}% ·{" "}
-                {t("SHARES_COUNT", {
-                  count: Math.floor(displayShares),
-                  quantity: Math.floor(displayShares),
-                })}
-              </p>
+            <div className={TICKET_ROW_CLASS}>
+              <span className={TICKET_ROW_LABEL_CLASS}>{t("PRICE")}</span>
+              {/* §3-03: the price no longer swaps to "Loading…" text —
+               * the frozen figure holds and the pending dot on the
+               * total row carries the in-flight signal. */}
+              <span className={TICKET_ROW_VALUE_CLASS}>
+                {displayPrice} Clout
+              </span>
+            </div>
+
+            {/* The implied probability lives in the trust note below. */}
+            <div className={TICKET_ROW_CLASS}>
+              <span className={TICKET_ROW_LABEL_CLASS}>{t("SHARES")}</span>
+              <span className={TICKET_ROW_VALUE_CLASS}>
+                {Math.floor(displayShares).toLocaleString()}
+              </span>
             </div>
 
             <div className={TICKET_ROW_CLASS}>

@@ -143,7 +143,7 @@ together.
 - **Buttons** (`ui/Button`): primary = ink fill, white label; secondary =
   white on a strong hairline; ghost; danger = `--danger`; `cta` = full-width
   ink commit button. Semibold labels, 8px radius, 1px press drop.
-- **Segmented controls** (sort, window, chart range): a recessed
+- **Segmented controls** (sort, window, chart range, market/limit): a recessed
   `--surface-2` capsule track, the selected segment filled ink (on phones
   the chart range uses a raised white segment instead).
 - **YES/NO buttons:** soft (`--yes-soft`/`--no-soft` + side text) at rest,
@@ -197,11 +197,19 @@ together.
   desktop; "Trending markets" + "See all" on phones.
 - **Selection** everywhere = ink (underline, pill or wash), never pink.
 
-## 7. Trade ticket doctrine (unchanged)
+## 7. Trade ticket doctrine
 
 The quote rows are the review surface; the CTA is **press-and-hold**. No confirm
 modal. A partial fill states the remainder in the card body; a rejected order
-states that no points were taken. Amounts and payouts are in points.
+states that no Clout was taken. Amounts and payouts are in Clout.
+
+Layout (2026-09-29 redesign): "Trade" with the Market/Limit segments; the two
+side buttons, the selected one filled solid in its direction colour; a
+full-width Amount field with "Clout" inside it and the balance beside its
+label; rows Price · Shares · Est. cost · Clout if correct; the ink hold
+button; the trust note. On desktop the ticket is a white card on the page
+ground beside the market column; on phones it opens in the sheet on the side
+the player tapped, with the market's terms below the ticket.
 
 ## 8. Layout
 
@@ -209,7 +217,7 @@ states that no points were taken. Amounts and payouts are in points.
 - `/predict` (the board): topic tabs, then a 1280px column: welcome
   strip (signed-out only) → "This week in the Philippines" rail (curated
   featured moments; shown only when ≥4 are live) → FeaturedMarket +
-  Trending list → section title + search/sort/window → 3-column card grid.
+  "Most active" list → "All markets" + sort/window → 3-column card grid.
   A topic tab drops the rail; filters drop the hero and show the grid only.
 - `/` (landing for new visitors, ads, social and "How it works"; `/welcome`
   redirects here): full-bleed, its own header and footer; its Markets

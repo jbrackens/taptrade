@@ -415,5 +415,6 @@
   "ALL_MARKETS": "All markets",
   "SEE_ALL": "See all",
   "MOST_ACTIVE": "Most active",
-  "YOU_HOLD_COUNT": "You hold {{quantity}} {{side}}"
+  "YOU_HOLD_COUNT": "You hold {{quantity}} {{side}}",
+  "AMOUNT_LABEL": "Amount"
 }

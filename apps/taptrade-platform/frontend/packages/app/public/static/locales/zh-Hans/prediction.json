@@ -392,5 +392,6 @@
   "ALL_MARKETS": "全部市场",
   "SEE_ALL": "查看全部",
   "MOST_ACTIVE": "最活跃",
-  "YOU_HOLD_COUNT": "持有 {{quantity}} 份{{side}}"
+  "YOU_HOLD_COUNT": "持有 {{quantity}} 份{{side}}",
+  "AMOUNT_LABEL": "数量"
 }
