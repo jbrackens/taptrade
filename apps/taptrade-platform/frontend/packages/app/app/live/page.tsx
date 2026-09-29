@@ -1,6 +1,8 @@
 "use client";
 
-import { Activity, Radio, RotateCw } from "lucide-react";
+import { PulseIcon as Activity } from "@phosphor-icons/react/dist/csr/Pulse";
+import { BroadcastIcon as Radio } from "@phosphor-icons/react/dist/csr/Broadcast";
+import { ArrowClockwiseIcon as RotateCw } from "@phosphor-icons/react/dist/csr/ArrowClockwise";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

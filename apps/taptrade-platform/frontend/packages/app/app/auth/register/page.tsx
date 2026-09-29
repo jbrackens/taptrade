@@ -371,7 +371,7 @@ export default function RegisterPage() {
             {submitting
               ? "Processing…"
               : step === TOTAL_STEPS
-                ? "Create account"
+                ? "Sign up"
                 : "Continue"}
           </Button>
         </div>

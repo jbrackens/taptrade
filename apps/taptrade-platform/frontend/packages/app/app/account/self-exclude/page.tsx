@@ -4,15 +4,13 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  AlertTriangle,
-  Ban,
-  Lock,
-  Clock,
-  Coins,
-  ShieldCheck,
-  CheckCircle2,
-} from "lucide-react";
+import { WarningIcon as AlertTriangle } from "@phosphor-icons/react/dist/csr/Warning";
+import { ProhibitIcon as Ban } from "@phosphor-icons/react/dist/csr/Prohibit";
+import { LockIcon as Lock } from "@phosphor-icons/react/dist/csr/Lock";
+import { ClockIcon as Clock } from "@phosphor-icons/react/dist/csr/Clock";
+import { CoinsIcon as Coins } from "@phosphor-icons/react/dist/csr/Coins";
+import { ShieldCheckIcon as ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { CheckCircleIcon as CheckCircle2 } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button, Textarea } from "../../components/ui";
@@ -138,7 +136,6 @@ function SelfExcludePageContent() {
           <div className="mb-4 text-center">
             <AlertTriangle
               size={40}
-              strokeWidth={1.5}
               className="mx-auto text-[var(--t2)]"
               aria-hidden="true"
             />
@@ -154,22 +151,22 @@ function SelfExcludePageContent() {
 
             <div className="flex flex-col gap-3">
               <Consequence
-                icon={<Ban size={20} strokeWidth={1.75} />}
+                icon={<Ban size={20} />}
                 title="Account closure"
                 desc="Your account will be completely blocked and cannot be reopened"
               />
               <Consequence
-                icon={<Coins size={20} strokeWidth={1.75} />}
+                icon={<Coins size={20} />}
                 title="Point handling"
                 desc="Any remaining gameplay points will be locked or cleared according to our policy"
               />
               <Consequence
-                icon={<Lock size={20} strokeWidth={1.75} />}
+                icon={<Lock size={20} />}
                 title="No access"
                 desc="You will not be able to place orders or use any account features"
               />
               <Consequence
-                icon={<Clock size={20} strokeWidth={1.75} />}
+                icon={<Clock size={20} />}
                 title={
                   duration === "lifetime"
                     ? "Permanent exclusion"
@@ -325,7 +322,6 @@ function SelfExcludePageContent() {
           <div className="mb-4">
             <ShieldCheck
               size={40}
-              strokeWidth={1.5}
               className="mx-auto text-[var(--t2)]"
               aria-hidden="true"
             />
@@ -344,7 +340,7 @@ function SelfExcludePageContent() {
             <div className="flex items-center gap-2 rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-2)] px-4 py-3 text-left text-[13px] font-semibold text-[var(--t1)]">
               <AlertTriangle
                 size={16}
-                strokeWidth={2}
+                weight="bold"
                 className="shrink-0 text-[var(--t2)]"
                 aria-hidden="true"
               />
@@ -383,7 +379,6 @@ function SelfExcludePageContent() {
           <div className="mb-4">
             <CheckCircle2
               size={44}
-              strokeWidth={1.5}
               className="mx-auto text-[var(--accent)]"
               aria-hidden="true"
             />

@@ -166,7 +166,7 @@ export default function EventWorkspacePage() {
               onClick={() => setReloadNonce((n) => n + 1)}
               className="mt-2.5 inline-flex min-h-9 cursor-pointer items-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3.5 text-[12px] font-semibold text-[var(--t1)] transition-colors hover:border-[var(--t3)]"
             >
-              {t("RETRY", "Retry")}
+              {t("RETRY", "Try again")}
             </button>
           </div>
         ) : event ? (

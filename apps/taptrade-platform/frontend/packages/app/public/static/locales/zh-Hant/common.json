@@ -10,5 +10,6 @@
   "ERROR_MESSAGE": "Error: {{message}}",
   "PREVIOUS": "Previous",
   "NEXT": "Next",
-  "PAGE_OF": "Page {{current}} of {{total}}"
+  "PAGE_OF": "Page {{current}} of {{total}}",
+  "CLOSE": "關閉"
 }

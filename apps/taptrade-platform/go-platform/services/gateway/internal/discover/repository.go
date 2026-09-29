@@ -699,9 +699,12 @@ type BareImport struct {
 
 // ListBareOpenImports returns open promoted imports without an image that
 // the resolver has not tried in the last 30 days, plus resolver covers
-// marked for another look (cover_checked_at cleared, migration 063), the
-// ones the board is likeliest to show first: contested prices, then 24h
-// and lifetime volume.
+// marked for another look (cover_checked_at cleared, migrations 063/064)
+// whatever the market's status: a settled or voided market still shows its
+// cover on its page and in portfolio history, and 064's requeue of
+// plain-named covers left 146 of them waiting behind the open-only filter
+// (2026-09-29). Open markets come first, then the ones the board is
+// likeliest to show: contested prices, then 24h and lifetime volume.
 func (r *Repository) ListBareOpenImports(ctx context.Context, limit int) ([]BareImport, error) {
 	if limit <= 0 {
 		return nil, nil
@@ -713,12 +716,13 @@ func (r *Repository) ListBareOpenImports(ctx context.Context, limit int) ([]Bare
 		  JOIN prediction_markets pm ON pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))
 		  LEFT JOIN prediction_events pe ON pe.id = pm.event_id
 		  LEFT JOIN prediction_categories pc ON pc.id = pe.category_id
-		 WHERE pm.status = 'open'
-		   AND COALESCE(im.image_origin, '') <> 'manual'
-		   AND ((im.image_path IS NULL
+		 WHERE COALESCE(im.image_origin, '') <> 'manual'
+		   AND ((pm.status = 'open'
+		         AND im.image_path IS NULL
 		         AND (im.cover_checked_at IS NULL OR im.cover_checked_at < now() - interval '30 days'))
 		        OR (im.image_origin = 'entity' AND im.cover_checked_at IS NULL))
-		 ORDER BY (pm.yes_price_points BETWEEN 5 AND 95) DESC,
+		 ORDER BY (pm.status = 'open') DESC,
+		          (pm.yes_price_points BETWEEN 5 AND 95) DESC,
 		          COALESCE(im.volume_24h, 0) DESC,
 		          pm.volume_points DESC,
 		          im.id

@@ -654,7 +654,7 @@ function CatalogAllMarketsSection({ categories }: Pick<Props, "categories">) {
             className="mt-3.5"
             onClick={() => setReloadNonce((n) => n + 1)}
           >
-            {t("RETRY", "Retry")}
+            {t("RETRY", "Try again")}
           </Button>
         </div>
       ) : !loading && markets.length === 0 ? (

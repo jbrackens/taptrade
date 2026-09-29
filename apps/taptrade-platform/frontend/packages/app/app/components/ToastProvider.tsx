@@ -13,7 +13,10 @@
 import type React from "react";
 import { createContext, useContext, useMemo } from "react";
 import { Toaster, toast as sonnerToast } from "sonner";
-import { Check, X, Info, AlertTriangle } from "lucide-react";
+import { CheckIcon as Check } from "@phosphor-icons/react/dist/csr/Check";
+import { XIcon as X } from "@phosphor-icons/react/dist/csr/X";
+import { InfoIcon as Info } from "@phosphor-icons/react/dist/csr/Info";
+import { WarningIcon as AlertTriangle } from "@phosphor-icons/react/dist/csr/Warning";
 
 // ── Types (public API, unchanged) ──
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -52,10 +55,10 @@ export const useToast = (): ToastContextValue => {
 
 // ── Icons ──
 const icons: Record<ToastType, React.ReactNode> = {
-  success: <Check size={14} strokeWidth={2} />,
-  error: <X size={14} strokeWidth={2} />,
-  info: <Info size={14} strokeWidth={2} />,
-  warning: <AlertTriangle size={14} strokeWidth={2} />,
+  success: <Check size={14} weight="bold" />,
+  error: <X size={14} weight="bold" />,
+  info: <Info size={14} weight="bold" />,
+  warning: <AlertTriangle size={14} weight="bold" />,
 };
 
 // Toasts are system cards, not tinted glass — white --surface-1 card,

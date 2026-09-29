@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageCircle, X } from "lucide-react";
+import { ChatCircleIcon as MessageCircle } from "@phosphor-icons/react/dist/csr/ChatCircle";
+import { XIcon as X } from "@phosphor-icons/react/dist/csr/X";
 import { FEATURE_CHAT } from "../../lib/features";
 
 const STORAGE_KEY = "taptrade_chat_collapsed";

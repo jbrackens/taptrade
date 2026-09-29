@@ -331,7 +331,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
               className="mt-3"
               onClick={() => setReloadNonce((nonce) => nonce + 1)}
             >
-              {t("RETRY", "Retry")}
+              {t("RETRY", "Try again")}
             </Button>
           </div>
         ) : loading && markets.length === 0 ? (
@@ -378,7 +378,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
             )}
           </p>
           <Button variant="secondary" size="sm" onClick={fetchNextPage}>
-            {t("RETRY", "Retry")}
+            {t("RETRY", "Try again")}
           </Button>
         </div>
       )}

@@ -539,7 +539,7 @@ export default function DiscoverPage() {
  className="mt-3.5"
  onClick={() => setReloadNonce((value) => value + 1)}
  >
- {t("RETRY", "Retry")}
+ {t("RETRY", "Try again")}
  </Button>
  </Card>
  ) : activeRanking ? (

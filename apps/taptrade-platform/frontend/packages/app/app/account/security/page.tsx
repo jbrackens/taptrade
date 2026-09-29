@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
+import { LockIcon as Lock } from "@phosphor-icons/react/dist/csr/Lock";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { Button, Input } from "../../components/ui";
@@ -261,7 +261,6 @@ export default function SecurityPage() {
             <div className="flex flex-1 items-start gap-3">
               <Lock
                 size={20}
-                strokeWidth={1.75}
                 className="mt-0.5 shrink-0 text-[var(--t2)]"
                 aria-hidden="true"
               />

@@ -80,7 +80,7 @@ export function BackendStatusBanner() {
         onClick={() => setDismissed(true)}
         className="shrink-0 cursor-pointer rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-transparent px-2 py-0.5 text-[11px] font-semibold text-[var(--t2)] transition-colors duration-150 hover:border-[var(--t3)] hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
       >
-        {t("DISMISS", { defaultValue: "Dismiss" })}
+        {t("CLOSE", { defaultValue: "Close" })}
       </button>
     </div>
   );

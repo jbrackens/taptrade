@@ -422,8 +422,9 @@ func resolveCover(ctx context.Context, repo *Repository, covers *CoverResolver, 
 }
 
 // backfillCovers resolves covers for up to limit bare open imports, and
-// re-resolves resolver covers marked for another look, stopping when the
-// run's lookup budget is spent. Returns how many covers it wrote.
+// re-resolves resolver covers marked for another look (any market status),
+// stopping when the run's lookup budget is spent. Returns how many covers
+// it wrote.
 func backfillCovers(ctx context.Context, repo *Repository, covers *CoverResolver, limit int) int {
 	rows, err := repo.ListBareOpenImports(ctx, limit)
 	if err != nil {

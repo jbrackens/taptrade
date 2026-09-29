@@ -171,6 +171,26 @@ func TestSQLCoverBackfill(t *testing.T) {
 		t.Fatalf("a bare row is listed without HasCover: %+v %v", b, ok)
 	}
 
+	// A closed market's queued resolver cover is still backfill work (its
+	// page and portfolio history show it); a closed market with no cover
+	// is not (2026-09-29).
+	closeMarket := func(id string) {
+		if _, err := db.ExecContext(ctx, `
+			UPDATE prediction_markets pm SET status = 'voided'
+			  FROM imported_markets im
+			 WHERE im.id = $1 AND pm.ticker = 'IMP-' || upper(substr(im.external_hash, 1, 8))`, id); err != nil {
+			t.Fatalf("close market: %v", err)
+		}
+	}
+	closeMarket(busy)
+	closeMarket(quiet)
+	if b, ok := inList(busy); !ok || !b.HasCover {
+		t.Fatalf("a queued resolver cover on a closed market must be listed: %+v %v", b, ok)
+	}
+	if _, ok := inList(quiet); ok {
+		t.Fatalf("a closed market with no cover is not backfill work")
+	}
+
 	// Nothing fits under the new rules: the cover goes, the row is checked.
 	if err := repo.ClearResolverCover(ctx, busy); err != nil {
 		t.Fatalf("clear: %v", err)
