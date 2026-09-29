@@ -5,7 +5,7 @@
 > **Authoritative for:** which ADR governs a topic and the supersession chain.
 > **Not for:** the content of each decision → follow the links; open decisions
 > that block work → [TASKS.md](TASKS.md#needs-a-decision).
-> **Last verified:** 2026-09-29 at commit `4924a670` — ADRs 0001–0013, the
+> **Last verified:** 2026-09-29 at commit `4924a670` — ADRs 0001–0013 (0014 added later that day), the
 > archived cashier ADRs, and the status claims of 0001–0006 against the code.
 
 ## Index
@@ -24,6 +24,7 @@
 | [0010](adr/0010-points-only-non-redeemable-launch-boundary.md) | Points-only, non-redeemable launch boundary | Accepted — live 2026-07-07 | 2026-07-07 (supersession note 2026-09-06) | **Supersedes** the archived cashier ADR-001..004 (custodial/non-custodial launch postures) | ADR-0009, ADR-0012, `docs/compliance/geofencing-kyc.md` |
 | [0011](adr/0011-deployment-topology-single-branch-hetzner-compose.md) | Single `main` branch deploys the demo; docker-compose on one Hetzner box | Accepted — executed 2026-06-13/14 | 2026-06-13 (P2-04), 2026-06-14 (P2-06) | — | ADR-0012, [DEPLOYMENT.md](DEPLOYMENT.md) |
 | [0012](adr/0012-cashier-merged-dark-behind-flags.md) | Merge `feat/hula-na-cashier` to `main`, keep it dark behind flags | Accepted — implemented 2026-09-29 | 2026-09-29 | — | ADR-0010, ADR-0011 |
+| [0014](adr/0014-remove-sportsbook-residue.md) | Sportsbook and gambling-only code is removed, not completed | Accepted — implemented 2026-09-29 | 2026-09-29 | Narrows ADR-0007's "shared infrastructure preserved" | ADR-0007, ADR-0010, migration 067 |
 | [0013](adr/0013-market-cover-sourcing-and-serving.md) | Market cover sourcing (Wikidata-only) and serving (Caddy from a volume) | Accepted — most recently revised 2026-09-28 | 2026-05-18 / 2026-09-28 | — | `CLAUDE.md` cover-resolver section |
 | [cashier/ADR-001](archive/cashier/adrs/ADR-001-non-custodial-cashier-boundary.md) | Non-Custodial Cashier Boundary | **Superseded** 2026-09-06 (archived) | 2026-05-25 | Superseded by the 2026-05-27 custodial decision, then by ADR-0010 | `docs/archive/cashier/README.md` |
 | [cashier/ADR-002](archive/cashier/adrs/ADR-002-tron-deposit-provider-shortlist.md) | Tron Deposit Provider Shortlist | **Superseded** 2026-09-06 (archived) — no provider ever selected | 2026-05-25 | Superseded by ADR-0010 | — |

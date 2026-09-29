@@ -194,9 +194,7 @@ standard `PG*` variables.
 | `NEXT_PUBLIC_API_URL` | `http://localhost:18080` (`app/lib/api/client.ts`, `next.config.js`) | Gateway origin |
 | `NEXT_PUBLIC_AUTH_URL` | `http://localhost:18081` (`app/api/auth/login/route.ts`) | Auth service origin |
 | `NEXT_PUBLIC_WS_URL` | `ws://localhost:18080/ws` in dev, empty in prod build unless set | WebSocket origin |
-| `NEXT_PUBLIC_FEATURE_RG` | off | Responsible-gambling pages |
 | `NEXT_PUBLIC_FEATURE_KYC` | off | KYC surface on `/profile` |
-| `NEXT_PUBLIC_FEATURE_LIMITS` | off | Deposit/stake/session limits tab |
 | `NEXT_PUBLIC_FEATURE_CHAT` | off | Chat entry points, pairs with `NEXT_PUBLIC_CHAT_PUBLIC_URL` |
 | `NEXT_PUBLIC_FEATURE_SOCIAL_AUTH` | off | Social login buttons (demo sets `true` at build time) |
 | `NEXT_PUBLIC_FEATURE_MFA` | off | The two-factor tab on `/account/security` and the `/auth/login?mfa=1` entry; pairs with auth's `AUTH_MFA_ENABLED` (both off on the demo) |
@@ -240,10 +238,10 @@ None of the office vars above are documented in CLAUDE.md, `office/README.md`, o
 | Gateway format check | `gofmt -l .` | `gateway/` | **Verified 2026-09-29** — flags `internal/prediction/types.go` (pre-existing, not fixed) |
 | Frontend lint (Biome) | `yarn lint:biome` (root `biome check .`) | `frontend/` | **Unverified** on 2026-09-29; app-scoped variant (`npx @biomejs/biome check packages/app/app`) is what CI actually runs in `frontend-tests` — the root `lint:biome` also covers `packages/office`, which has its own pending burn-down |
 | Player typecheck | `yarn typecheck` (scoped, `scripts/typecheck-scoped.sh`) / `yarn typecheck:full` (`tsc --noEmit`) | `player/` | **Verified 2026-09-29** — `tsc --noEmit` clean |
-| Player unit tests | `yarn test` (`tsx --test app/__tests__/*.test.ts`) | `player/` | **Verified 2026-09-29** — 600 pass / 0 fail |
+| Player unit tests | `yarn test` (`tsx --test app/__tests__/*.test.ts`) | `player/` | **Verified 2026-09-29** — 583 pass / 0 fail after the sportsbook-residue removal (600 before it) |
 | Player Playwright smoke | `yarn test:smoke` (`playwright test --config=./playwright.config.ts`, `testDir: tests/smoke`) | `player/` | **Unverified** — needs a running stack (docker compose + gateway + auth + `next dev -p 3010`), per the config's own prereq comment |
 | Player Playwright visual | `npx playwright test --project=visual-desktop --project=visual-mobile[-authed]` (same config, `testDir: tests/visual`) | `player/` | **Unverified** — no dedicated `yarn` script; darwin-local, deliberately not run in CI (snapshots are platform-suffixed) |
-| Repo-wide Playwright e2e | `npx playwright test` (`testDir: ./e2e`, projects `player-app`/`backoffice`) | `frontend/` | **Unverified** |
+| Repo-wide Playwright e2e | Removed 2026-09-29 with the legacy sportsbook `playwright.config.ts`, `e2e/` specs and the mock server; the prediction suite below is the only repo-level one | `frontend/` | — |
 | Prediction-only e2e | `PREDICT_BASE_URL=http://localhost:8080 npx playwright test --config playwright.prediction.config.ts` (`testDir: ./e2e/prediction`) | `frontend/` | **Unverified** — default base URL is `:8080` (a Caddy-fronted local target), distinct from the raw gateway's `:18080` |
 | Office tests | `test` = `vitest run`; `test:jest` = legacy Jest suite | `office/` | **Unverified** |
 | `player/gate.sh` — 9 gates | see below | `player/` | **Verified 2026-09-29** — 8/9 pass, **Gate 5 (feature manifest) FAILS**: `FEATURE_MANIFEST.json` has 3 STUBBED entries |
@@ -257,7 +255,7 @@ None of the office vars above are documented in CLAUDE.md, `office/README.md`, o
 ### `player/gate.sh` — the 9 gates
 
 1. **TypeScript zero errors** — `npx tsc --noEmit --pretty`
-2. **No phantom imports** — no `@taptrade-ui/design-system` under `app/` (webpack-hang risk)
+2. **No phantom imports** — no `@taptrade-ui/design-system` under `app/` (the package was deleted 2026-09-29; the gate keeps it out)
 3. **No mock classes in production code** — no `class Mock*` under `app/components/`, `app/lib/`
 4. **No TODO/FIXME in critical paths** — informational only, never fails the gate
 5. **Feature manifest coverage** — parses `FEATURE_MANIFEST.json`; fails if any entry is `STUBBED` or `MISSING`. **Failing on 2026-09-29**: 3 STUBBED entries ([TD-042](TECH_DEBT.md#g-player-app))

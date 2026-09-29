@@ -9,7 +9,9 @@
 > [TECH_DEBT.md](TECH_DEBT.md), the ADRs, the archived `CURRENT_STATE.md` and
 > AI-drafting plan, and `git log --since=2026-09-15`. Updated the same day
 > when the hardening change closed T-004 – T-006, T-008 – T-010, T-021 and T-029
-> and built T-003, which the owner then switched off.
+> and built T-003, which the owner then switched off; and again when the
+> sportsbook-residue removal deleted T-012's wagering half, T-015 and T-030
+> instead of doing them ([ADR-0014](adr/0014-remove-sportsbook-residue.md)).
 
 When a task is finished, move it to [Done recently](#done-recently) with its
 commit, and close the matching TECH_DEBT entry. When one becomes obsolete, delete
@@ -35,12 +37,10 @@ priority, then effort.
 | T-003 | Turn on two-factor sign-in: `AUTH_MFA_ENABLED` and `AUTH_ADMIN_MFA_REQUIRED` on auth, `NEXT_PUBLIC_FEATURE_MFA` on the player build, then enroll every admin straight away | [TD-005, TD-057](TECH_DEBT.md#b-authentication-and-access-control) | Deferred by the owner on 2026-09-29 ("we don't need to worry about authenticator yet"). The code is built and tested; done when admins sign in with a code |
 | T-007 | Send the demo's backups offsite, with a copy of the two-factor key kept apart from them | [TD-020](TECH_DEBT.md#d-delivery-and-operations) | Blocked on [D-13](#needs-a-decision). `BACKUP_OFFSITE_CMD` set on the demo and one dump restored from the offsite copy (the on-box drill passed on 2026-09-29) |
 | T-011 | Harden front-end session handling: office proxy fails closed; stop mirroring tokens to `localStorage` | [TD-010, TD-011](TECH_DEBT.md#b-authentication-and-access-control) | No token readable from JS; an auth-backend outage keeps the office locked |
-| T-012 | Cap `GrantBonus` and wire wagering contributions | [TD-003](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Grants respect campaign budget and an absolute cap; a real order moves wagering progress |
 | T-013 | Make loyalty tier edits take effect, or make the settings page read-only | [TD-004](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Office edits and runtime accrual agree |
 | T-014 | Build the KYC review queue | [TD-013](TECH_DEBT.md#c-compliance-and-licensability) | Operators see pending submissions and decide them in the office |
-| T-015 | Persist and enforce session-duration limits, or remove the endpoint and the copy | [TD-016](TECH_DEBT.md#c-compliance-and-licensability) | The responsible-gaming page describes only what is enforced |
-| T-030 | Make responsible-gaming limits fail closed when their store cannot start | [TD-059](TECH_DEBT.md#c-compliance-and-licensability) | A production/staging gateway with a broken RG store refuses trades instead of skipping limits |
 | T-031 | Two-factor follow-ups: recovery codes, a QR code, operator-issued staff enrollment, and refresh for office-created staff | [TD-056 – TD-058](TECH_DEBT.md#b-authentication-and-access-control) | A lost phone doesn't need an operator; a new admin can't be enrolled by whoever learns the temporary password; office sessions refresh |
+| T-032 | Cap admin bonus grants with an absolute policy ceiling | [TD-003](TECH_DEBT.md#a-admin-controls-and-points-integrity) | Blocked on [D-1](#needs-a-decision): a grant above the ceiling needs a second admin |
 | T-016 | Move the trade compliance gate into middleware | [TD-033](TECH_DEBT.md#f-gateway-api-and-real-time) | New trade routes are covered without handler changes |
 | T-017 | Server-render `/predict`, `/market/[ticker]`, `/category/[slug]` | [TD-040](TECH_DEBT.md#g-player-app) | Market content is in the initial HTML |
 | T-018 | Make `gate.sh` pass: resolve the three stubs and rebuild `FEATURE_MANIFEST.json` `pages[]` from the real routes | [TD-042](TECH_DEBT.md#g-player-app) | `./gate.sh` exits 0 |
@@ -52,7 +52,7 @@ priority, then effort.
 | T-025 | Data-model cleanup migration and keyset pagination | [TD-031, TD-032](TECH_DEBT.md#e-ledger-data-model-and-tenancy) | Dead columns and tables dropped after a reader check; hot lists use keyset |
 | T-026 | Rewrite `stack/API_EXAMPLES.md`, `MIGRATION.md`, `UPGRADE.md` for Points wire fields | [TD-054](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Examples round-trip against a local gateway |
 | T-027 | RBAC-gate CMS and bonus admin routes; decide the fail-open posture of rate limiters and lockout; stand up metrics or drop the dashboards | [TD-009, TD-012](TECH_DEBT.md#b-authentication-and-access-control), [TD-023](TECH_DEBT.md#d-delivery-and-operations) | Each decided and implemented |
-| T-028 | Remove legacy residue: sportsbook-shaped seed JSON, the mock server and old Playwright config, and the locale namespaces nothing renders | [TD-051, TD-052, TD-060](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Removed as one change after confirming nothing uses them |
+| T-028 | Remove the last legacy residue: the sportsbook-shaped bits of the seed SQL, the locale namespaces nothing renders, and (separately) the sportsbook-era loyalty service | [TD-051 → done, TD-060, TD-061](TECH_DEBT.md#j-legacy-residue-and-hygiene) | Removed after confirming nothing uses them; `loyalty.Service` retired in favour of `PredictService` |
 
 ## Needs a decision
 
@@ -78,6 +78,13 @@ Each names what would resolve it.
 
 From `git log --since=2026-09-15` on `main`, grouped:
 
+- **Sportsbook residue removed (2026-09-29)** — responsible-gambling
+  limits, cool-off, self-exclusion and the session-limit stub; bonus wagering;
+  the canonical fixture/odds/settlement packages; betslip and odds helpers;
+  the design-system package, mock server, legacy Playwright config and sport
+  art; the RG player pages and cool-off sign-in check; the dead `wallets` /
+  `ledger_entries` tables (migration 067). T-015 and T-030 deleted rather than
+  done; T-012 reduced to T-032. See [ADR-0014](adr/0014-remove-sportsbook-residue.md).
 - **Hardening (2026-09-29)** — two-factor sign-in built, then switched off
   behind `AUTH_MFA_ENABLED` / `NEXT_PUBLIC_FEATURE_MFA` at the owner's request
   (T-003 stays open); KYC fails closed (T-004); the deploy waits for CI (T-005); release

@@ -133,7 +133,6 @@ const DIVIDE_BY_100 = /\/\s*100(?!\d)/;
 const POINTS_SURFACES = [
   "../rewards/page.tsx",
   "../rewards/ActiveBonusesControl.tsx",
-  "../components/WageringProgress.tsx",
   "../portfolio/page.tsx",
   "../account/page.tsx",
   "../leaderboards/page.tsx",

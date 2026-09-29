@@ -158,9 +158,10 @@
   },
   "activeBonuses": {
     "title": "进行中的 Clout 加成",
-    "body": "查看推广 Clout 及其进度。",
+    "body": "推广 Clout 记入您的账户。",
     "fallbackName": "Clout 加成",
     "status": "状态：{{status}}",
+    "expires": "{{date}} 到期",
     "remaining": "点剩余"
   }
 }

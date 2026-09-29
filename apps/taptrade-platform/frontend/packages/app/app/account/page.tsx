@@ -17,7 +17,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BellRingingIcon as Bell } from "@phosphor-icons/react/dist/csr/BellRinging";
-import { HandHeartIcon as HeartHandshake } from "@phosphor-icons/react/dist/csr/HandHeart";
 import { ShieldCheckIcon as Lock } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { PencilSimpleIcon as Pencil } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { ReceiptIcon as ReceiptText } from "@phosphor-icons/react/dist/csr/Receipt";
@@ -38,7 +37,6 @@ import { getBalance } from "../lib/api/wallet-client";
 import type { Balance } from "../lib/api/wallet-client";
 import { getProfile } from "../lib/api/user-client";
 import type { UserProfile } from "../lib/api/user-client";
-import { FEATURE_RG } from "../lib/features";
 import { formatPoints } from "../lib/points";
 import { IconTile } from "../components/account/IconTile";
 import { ProfileAvatar } from "../components/account/ProfileAvatar";
@@ -222,14 +220,6 @@ export default function AccountPage() {
             title={t("actions.alerts.title", "Alerts")}
             desc={t("actions.alerts.desc", "Control market and account notifications")}
           />
-          {FEATURE_RG && (
-            <SettingsLink
-              href="/responsible-gaming"
-              icon={HeartHandshake}
-              title={t("actions.responsible.title", "Play responsibly")}
-              desc={t("actions.responsible.desc", "Play limits, cool-offs, and self-exclusion")}
-            />
-          )}
         </div>
       </section>
     </div>

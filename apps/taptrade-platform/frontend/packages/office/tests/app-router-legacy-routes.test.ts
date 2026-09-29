@@ -293,47 +293,60 @@ describe("retired App Router sportsbook and prototype surfaces", () => {
     expect(header).not.toContain("DollarCircleOutlined");
     expect(header).not.toContain("ACTION_TRANSACTION");
 
-    const retiredBetCancel = read("components/users/bets/cancel/index.tsx");
-    expect(retiredBetCancel).toContain("UserPredictionOrderCancel");
-    expect(retiredBetCancel).not.toContain("admin/bets");
-    expect(retiredBetCancel).not.toContain("page-bets");
-    expect(retiredBetCancel).not.toContain("useApi");
-    expect(retiredBetCancel).not.toContain("cancellationReason");
+    // The RG/limits/cool-off admin surfaces (point-use limits, limits
+    // history, cool-offs history, the bet-cancel widget, ModifyPunterModal,
+    // the legacy users list) were deleted in the 2026-09-29
+    // sportsbook-vocabulary sweep, alongside the gateway's
+    // /api/v1/compliance/rg/* routes. Pin their absence instead of reading
+    // their (now-gone) source.
+    const deletedUserSurfaces = [
+      "components/users/bets/cancel/index.tsx",
+      "components/users/bets/index.tsx",
+      "components/users/limits/index.tsx",
+      "components/users/limits/update.tsx",
+      "components/users/limits-history/index.tsx",
+      "components/users/cool-offs-history/index.tsx",
+      "components/users/lifecycle/cool-off/index.tsx",
+      "components/users/lifecycle/cool-off/utils.ts",
+      "components/ModifyPunterModal/index.tsx",
+      "components/users/list/index.tsx",
+    ];
+    for (const rel of deletedUserSurfaces) {
+      expect(exists(rel), `${rel} should stay deleted`).toBe(false);
+    }
 
-    const limitsUpdate = read("components/users/limits/update.tsx");
-    const limitsHistory = read("components/users/limits-history/index.tsx");
     const punterTypes = read("types/punters.ts");
-    expect(limitsUpdate).toContain('unit="pts"');
-    expect(limitsUpdate).toContain("unitAsPrefix={false}");
-    expect(limitsUpdate).toContain('"pointAdd"');
-    expect(limitsUpdate).toContain('"pointUse"');
-    expect(limitsUpdate).toContain("values.pointAdd");
-    expect(limitsUpdate).toContain("values.pointUse");
-    expect(limitsUpdate).toContain("[OfficePunterLimitsTypesEnum.POINT_ADD]");
-    expect(limitsUpdate).toContain("[OfficePunterLimitsTypesEnum.POINT_USE]");
-    expect(limitsUpdate).not.toContain('unit="$"');
-    expect(limitsUpdate).not.toContain("editables.deposits");
-    expect(limitsUpdate).not.toContain("values.deposits");
-    expect(limitsUpdate).not.toContain("HEADER_CARD_LIMITS_DEPOSIT");
-    expect(limitsUpdate).not.toContain("editables.stake");
-    expect(limitsUpdate).not.toContain("values.losses");
-    expect(limitsUpdate).not.toContain('field="losses"');
-    expect(limitsUpdate).not.toContain("OfficePunterLimitsTypesEnum.STAKE");
-    expect(limitsUpdate).not.toContain("HEADER_CARD_LIMITS_STAKE");
-    expect(limitsUpdate).not.toContain("HEADER_CARD_LIMITS_LOSS");
-    expect(punterTypes).toContain('POINT_ADD = "deposits"');
-    expect(punterTypes).toContain('POINT_USE = "stake"');
-    expect(punterTypes).toContain('POINT_ADD_AMOUNT = "DEPOSIT_AMOUNT"');
-    expect(punterTypes).toContain('PREDICTION_POINT_AMOUNT = "STAKE_AMOUNT"');
-    expect(punterTypes).not.toContain("DEPOSITS =");
-    expect(punterTypes).not.toContain("STAKE =");
-    expect(punterTypes).not.toContain("DEPOSIT_AMOUNT =");
-    expect(punterTypes).not.toContain("STAKE_AMOUNT =");
-    expect(punterTypes).not.toContain("OfficePunterLimitsTypesEnum.STAKE");
-    expect(limitsHistory).toContain("limitTypeTranslationKey");
-    expect(limitsHistory).toContain("LIMIT_TYPE_POINT_ADD_AMOUNT");
-    expect(limitsHistory).toContain("LIMIT_TYPE_PREDICTION_POINT_AMOUNT");
-    expect(limitsHistory).not.toContain("page-users-details:${limitType}");
+    for (const retired of [
+      "OfficePunterLimitsTypesEnum",
+      "OfficePunterLimitsScope",
+      "OfficePunterLimits ",
+      "PeriodEnum",
+      "LimitTypeEnum",
+      "LimitsHistoryData",
+      "CoolOffCauseEnum",
+      "CoolOffsHistoryData",
+    ]) {
+      expect(
+        punterTypes,
+        `types/punters.ts should not export retired RG/limits token ${retired}`,
+      ).not.toContain(retired);
+    }
+
+    const usersDetailsSliceSource = read("lib/slices/usersDetailsSlice.ts");
+    for (const retired of [
+      "limitsHistory",
+      "coolOffsHistory",
+      "getUserLimitsHistory",
+      "getUserCoolOffsHistory",
+      "selectLimitsHistoryData",
+      "selectCoolOffsHistoryData",
+    ]) {
+      expect(
+        usersDetailsSliceSource,
+        `usersDetailsSlice.ts should not export retired RG/limits token ${retired}`,
+      ).not.toContain(retired);
+    }
+
     expect(userDetailsCopy).toContain(
       'HEADER_CARD_FINANCIAL_SUMMARY_LIFETIME_POINTS_ADDED: "Lifetime Points Added"',
     );

@@ -77,37 +77,6 @@ func (s *stubPaymentService) HandleWebhook(_ context.Context, payload WebhookPay
 	return nil
 }
 
-func TestRegisterPaymentRoutes_DepositBlocksOnComplianceDenial(t *testing.T) {
-	checker := compliance.NewMockResponsibleGamblingService()
-	if err := checker.SetDepositLimit(context.Background(), "u-1", "daily", 1000); err != nil {
-		t.Fatalf("SetDepositLimit returned error: %v", err)
-	}
-	if err := checker.RecordDeposit(context.Background(), "u-1", 100); err != nil {
-		t.Fatalf("RecordDeposit returned error: %v", err)
-	}
-
-	DepositComplianceChecker = checker
-	t.Cleanup(func() { DepositComplianceChecker = nil })
-
-	service := &stubPaymentService{}
-	mux := http.NewServeMux()
-	RegisterPaymentRoutes(mux, service)
-
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{"userId":"u-1","amountCents":901,"paymentMethod":"card"}`))
-	req.Header.Set("Content-Type", "application/json")
-	req = req.WithContext(httpx.WithTestUser(req.Context(), "u-1", "u-1", "player"))
-	rec := httptest.NewRecorder()
-
-	mux.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusForbidden {
-		t.Fatalf("expected 403 when compliance denies deposit, got %d with body %s", rec.Code, rec.Body.String())
-	}
-	if service.depositCalls != 0 {
-		t.Fatalf("expected payment service not to run when deposit is denied, got %d calls", service.depositCalls)
-	}
-}
-
 func TestRegisterPaymentRoutes_DepositBindsToAuthenticatedSession(t *testing.T) {
 	service := &stubPaymentService{}
 	mux := http.NewServeMux()

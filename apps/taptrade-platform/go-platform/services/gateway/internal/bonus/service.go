@@ -12,32 +12,13 @@ import (
 	"taptrade/gateway/internal/wallet"
 )
 
-// Bonus point / multiplier bounds. These are deliberately conservative
-// guardrails so an admin-supplied multiplier or override amount cannot overflow
-// int64 (turning a point-play requirement negative) or mint an absurd bonus.
+// Bonus point bounds. A deliberately conservative guardrail so an
+// admin-supplied override amount cannot mint an absurd bonus.
 const (
-	// maxWageringMultiplier caps the internal point-play multiplier an admin
-	// can configure. Existing storage still uses the old rule name.
-	maxWageringMultiplier = 100.0
 	// maxBonusAmountPoints is the absolute ceiling on any single bonus/reward
-	// amount in point-cents. It also bounds point-play required amount
-	// (<= 1e8 * 100 = 1e10) far below int64 max, so the multiply cannot overflow.
+	// amount in Points.
 	maxBonusAmountPoints int64 = 100_000_000
 )
-
-// computeWageringRequired derives the point-play requirement from a (validated)
-// bonus amount and multiplier. The multiplier is clamped to [0, maxWageringMultiplier]
-// and the amount is assumed already bounded by maxBonusAmountPoints, so the
-// product cannot overflow int64.
-func computeWageringRequired(amountPoints int64, multiplier float64) int64 {
-	if multiplier <= 0 || amountPoints <= 0 {
-		return 0
-	}
-	if multiplier > maxWageringMultiplier {
-		multiplier = maxWageringMultiplier
-	}
-	return int64(float64(amountPoints) * multiplier)
-}
 
 func bonusGrantedEventPayload(userID string, bonusID, campaignID, amountPoints int64, expiresAt *time.Time, adminGrant bool) map[string]any {
 	payload := map[string]any{
@@ -192,14 +173,6 @@ func (s *Service) CreateCampaign(ctx context.Context, req CreateCampaignRequest)
 			if rc.MatchPct < 0 || rc.MatchPct > 10000 {
 				return Campaign{}, fmt.Errorf("reward match_pct out of range")
 			}
-		case "wagering":
-			var wc WageringConfig
-			if err := json.Unmarshal(rule.RuleConfig, &wc); err != nil {
-				return Campaign{}, fmt.Errorf("invalid point-play rule config: %w", err)
-			}
-			if wc.Multiplier < 0 || wc.Multiplier > maxWageringMultiplier {
-				return Campaign{}, fmt.Errorf("point-play multiplier must be in [0, %g]", maxWageringMultiplier)
-			}
 		}
 	}
 
@@ -303,9 +276,8 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		return PlayerBonus{}, fmt.Errorf("campaign is not within its active window")
 	}
 
-	// Evaluate rules. eligibility/trigger are parsed here as well as reward/wagering.
+	// Evaluate rules. eligibility/trigger are parsed here as well as reward.
 	var rewardCfg RewardConfig
-	var wageringCfg WageringConfig
 	var eligibilityCfg EligibilityConfig
 	var triggerCfg TriggerConfig
 	var hasTrigger bool
@@ -313,8 +285,6 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		switch rule.RuleType {
 		case "reward":
 			_ = json.Unmarshal(rule.RuleConfig, &rewardCfg)
-		case "wagering":
-			_ = json.Unmarshal(rule.RuleConfig, &wageringCfg)
 		case "eligibility":
 			_ = json.Unmarshal(rule.RuleConfig, &eligibilityCfg)
 		case "trigger":
@@ -361,9 +331,6 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		return PlayerBonus{}, fmt.Errorf("campaign reward points exceed maximum point amount")
 	}
 
-	// Calculate wagering requirement (bounded multiplier; cannot overflow).
-	wageringRequired := computeWageringRequired(bonusAmount, wageringCfg.Multiplier)
-
 	// Atomically reserve a claim slot + budget. This is the race-safe
 	// replacement for the read-then-increment of claim_count/spent_points:
 	// concurrent claims can no longer exceed max_claims or budget_points.
@@ -386,20 +353,18 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		"campaign_name":     campaign.Name,
 		"campaign_type":     campaign.CampaignType,
 		"reward_config":     rewardCfg,
-		"wagering_config":   wageringCfg,
 		"trigger_reference": req.TriggerReference,
 	})
 
 	pb := PlayerBonus{
-		UserID:                 req.UserID,
-		CampaignID:             &req.CampaignID,
-		BonusType:              campaign.CampaignType,
-		Status:                 "active",
-		GrantedAmountPoints:    bonusAmount,
-		RemainingAmountPoints:  bonusAmount,
-		WageringRequiredPoints: wageringRequired,
-		ExpiresAt:              expiresAt,
-		Metadata:               metadata,
+		UserID:                req.UserID,
+		CampaignID:            &req.CampaignID,
+		BonusType:             campaign.CampaignType,
+		Status:                "active",
+		GrantedAmountPoints:   bonusAmount,
+		RemainingAmountPoints: bonusAmount,
+		ExpiresAt:             expiresAt,
+		Metadata:              metadata,
 	}
 
 	created, err := s.repo.CreatePlayerBonus(ctx, pb)
@@ -505,13 +470,9 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	}
 
 	var rewardCfg RewardConfig
-	var wageringCfg WageringConfig
 	for _, rule := range rules {
-		switch rule.RuleType {
-		case "reward":
+		if rule.RuleType == "reward" {
 			_ = json.Unmarshal(rule.RuleConfig, &rewardCfg)
-		case "wagering":
-			_ = json.Unmarshal(rule.RuleConfig, &wageringCfg)
 		}
 	}
 
@@ -545,9 +506,6 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 		bonusAmount = maxBonusAmountPoints
 	}
 
-	// Bounded wagering requirement (cannot overflow int64).
-	wageringRequired := computeWageringRequired(bonusAmount, wageringCfg.Multiplier)
-
 	// Atomically enforce campaign budget + max-claims for the admin grant too,
 	// reserving the slot before we mint the bonus. ReserveClaim only succeeds
 	// while the campaign is active and has headroom.
@@ -572,15 +530,14 @@ func (s *Service) GrantBonus(ctx context.Context, req GrantBonusRequest) (Player
 	})
 
 	pb := PlayerBonus{
-		UserID:                 req.UserID,
-		CampaignID:             &req.CampaignID,
-		BonusType:              campaign.CampaignType,
-		Status:                 "active",
-		GrantedAmountPoints:    bonusAmount,
-		RemainingAmountPoints:  bonusAmount,
-		WageringRequiredPoints: wageringRequired,
-		ExpiresAt:              expiresAt,
-		Metadata:               metadata,
+		UserID:                req.UserID,
+		CampaignID:            &req.CampaignID,
+		BonusType:             campaign.CampaignType,
+		Status:                "active",
+		GrantedAmountPoints:   bonusAmount,
+		RemainingAmountPoints: bonusAmount,
+		ExpiresAt:             expiresAt,
+		Metadata:              metadata,
 	}
 
 	created, err := s.repo.CreatePlayerBonus(ctx, pb)

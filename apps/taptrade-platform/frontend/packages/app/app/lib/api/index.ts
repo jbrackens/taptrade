@@ -81,24 +81,5 @@ export {
   type PredictBoardWindow,
 } from "./leaderboards-client";
 
-// Compliance client
-export {
-  setPointUseLimits,
-  setPredictionLimits,
-  setSessionLimits,
-  coolOff,
-  selfExclude,
-  getLimitsHistory,
-  type SetPointUseLimitsRequest,
-  type SetPredictionLimitsRequest,
-  type SetSessionLimitsRequest,
-  type CoolOffRequest,
-  type SelfExcludeRequest,
-  type PointUseLimits,
-  type PredictionLimits,
-  type SessionLimits,
-  type CoolOffResponse,
-  type SelfExcludeResponse,
-  type GetLimitsHistoryResponse,
-  type LimitHistoryItem,
-} from "./compliance-client";
+// Compliance client (KYC)
+export { uploadKycDocument, verifyIdentity } from "./compliance-client";

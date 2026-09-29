@@ -44,7 +44,7 @@ Do not introduce these when translating, and flag them if you find them in sourc
 - Navigation and buttons should be concise.
 - Empty states should be helpful and conversational.
 - Error messages should be clear, calm, and actionable.
-- Points, balance, and responsible-play language should remain precise and should never imply cash value.
+- Points and balance language should remain precise and should never imply cash value. There is no responsible-gambling copy: those controls were removed on 2026-09-29.
 - Tagalog, Malay, and Indonesian translations may use common English loanwords where that is the normal consumer-web phrasing.
 
 Locale files live at `apps/taptrade-platform/frontend/packages/app/public/static/locales/<locale>/<namespace>.json`. See `docs/i18n-implementation-notes.md`.

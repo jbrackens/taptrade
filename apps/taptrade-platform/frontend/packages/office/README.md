@@ -18,6 +18,11 @@ Install from the yarn workspace root (`frontend/`), not from this package.
 
 ## Scripts
 
+Run these via `yarn workspace @taptrade-ui/office <script>` from the frontend
+root, or `cd` into this package first. The old root-level `dev:office` /
+`run-local:dev:office` aliases that also started the retired mock-server
+package are gone — point `NEXT_PUBLIC_API_URL` at a running gateway instead.
+
 - `run-local:dev` — dev server with hot reload plus the translation watcher
 - `build` — regenerates locales, then `next build --webpack`
 - `test` — `vitest run`; `test:watch` and `test:coverage` are the vitest
@@ -81,4 +86,4 @@ at `/auth/login` and the guard will accept the gateway's token.
 
 ### Other scripts
 
-See core [README.md](../../README.md#scripts)
+Every command is listed in [docs/ENVIRONMENT.md §4](../../../../../docs/ENVIRONMENT.md#4-commands)

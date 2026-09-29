@@ -9,9 +9,9 @@
 > endpoint contracts → [SPEC_CURRENT.md](SPEC_CURRENT.md); point-store/payments
 > detail → [../STORE_AND_PAYMENTS.md](../STORE_AND_PAYMENTS.md); UI/visual
 > design → [../DESIGN.md](../DESIGN.md).
-> **Last verified:** 2026-09-29 at commit `4924a670`; the middleware order and
-> two-factor sign-in (built, off by default) were updated the same day with the
-> hardening change. Read against
+> **Last verified:** 2026-09-29 at commit `4924a670`; the middleware order,
+> two-factor sign-in (built, off by default) and the sportsbook-residue removal
+> (compliance, store, canonical) were updated the same day. Read against
 > `gateway/cmd/gateway/main.go`, `gateway/internal/http/handlers.go`,
 > `gateway/internal/prediction/{wallet_adapter,exchange,settlement,sql_exchange_repository}.go`,
 > `gateway/internal/ws/README.md`, `gateway/internal/discover/{sync,promote}.go`,
@@ -51,7 +51,7 @@ deployed, unreachable from any launch surface (see [§9](#9-boundaries--invarian
 resolution/dispute, reconciliation, workers), `wallet` (points ledger,
 idempotent + reserved), `http` (routes, handlers, worker wiring, launch
 gating), `ws` (hub, channels, backbone), `rbac` (staff RBAC, migration 027),
-`compliance` (geo gate, KYC, responsible gambling), `store` (point store,
+`compliance` (geo gate, KYC), `store` (point store,
 `STORE_ENABLED`), `loyalty` (tiers/ledger), `leaderboards`, `discover`
 (external catalog import, §4d), `livemarkets` (live/in-play feed), `content`
 (CMS pages/banners), `bonus` (campaigns), `notify` (out-of-band
@@ -173,9 +173,7 @@ the reconciler's phase-2 check and by resolution finalize/dispute filing,
 `sql_resolution_store.go`); per-user cashier lock (`hashtext(userID)`, a
 **session-level** `pg_advisory_lock` in `alphacashier/sql_repository.go`'s
 `LockUser` — the same key the dormant payments rail's withdrawal path uses,
-so deposit/withdrawal on either rail for one user never race);
-responsible-gambling gate (`hashtext(userID)`, `compliance/rg_postgres.go`,
-serializes concurrent same-user orders against the stake limit).
+so deposit/withdrawal on either rail for one user never race).
 
 **Fail-closed flags** — refused outright in `production`/`staging`:
 `TAPTRADE_LEGACY_MONEY_ROUTES_ENABLED`, `ALPHA_CASHIER_ENABLED`,
@@ -290,8 +288,7 @@ settlement is engine-agnostic.
 2. Provider webhook → `POST /api/v1/store/webhook` (public, HMAC-verified via
    `internal/webhookauth`) → purchase marked paid → Points credited through
    the same ledger as every other credit (idempotent).
-3. Purchases are jurisdiction-gated like deposits and count against
-   responsible-play limits (`store.ComplianceGate`, `store.RGLimits`).
+3. Purchases are jurisdiction-gated like deposits (`store.ComplianceGate`).
 
 ## 5. Background workers
 
@@ -357,7 +354,7 @@ under `public/static/locales/<locale>/`. WS client:
 `@taptrade-ui/api-client` (`prediction-client.ts`, `PredictionApiClient`),
 shared with `office`. Tailwind v4 + inline styles against `globals.css`
 custom properties; the legacy `@taptrade-ui/design-system` (styled-components)
-package is **not** used here ([§9](#9-boundaries--invariants)).
+package was deleted on 2026-09-29 ([§9](#9-boundaries--invariants)).
 
 **Back office** — Next.js App Router only (Pages Router removed — never
 hydrated under Next 16 + React 19). Ant Design v5 (CSS-in-JS, no
@@ -439,8 +436,12 @@ Full deploy pipeline: [DEPLOYMENT.md](DEPLOYMENT.md).
   `scripts/check-conventions.sh` (G-01) fails on sportsbook concepts
   (`fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`,
   `odds_boosts`, `match_tracker`) in prediction Go and the player app.
-- **No `@taptrade-ui/design-system` in the player app** — styled-components
-  causes webpack hangs in `app/`; use Tailwind/inline components.
+- **No `@taptrade-ui/design-system`** — the styled-components kit hung
+  webpack in `app/` and was deleted on 2026-09-29; the gate still bans the
+  import. Use Tailwind/inline components.
+- **No sportsbook or gambling-only code** — limits, cool-off, self-exclusion,
+  wagering and the like are removed when found, not completed
+  ([ADR-0014](adr/0014-remove-sportsbook-residue.md)).
 - **Ledger is single-entry, not double-entry.** ADR-0006 proposes
   double-entry; status **Proposed — awaiting owner decision**, not
   implemented.

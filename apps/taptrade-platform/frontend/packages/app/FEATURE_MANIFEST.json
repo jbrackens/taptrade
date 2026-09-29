@@ -40,8 +40,8 @@
       "legacy_path": "pages/account/rg-history",
       "legacy_route": "/account/rg-history",
       "app_equivalent": "app/account/rg-history/page.tsx",
-      "status": "REAL",
-      "notes": "RG history wired to getLimitsHistory() from compliance-client"
+      "status": "RETIRED",
+      "notes": "Deleted with the gateway's /api/v1/compliance/rg/* routes (2026-09-29 sportsbook-vocabulary sweep)."
     },
     {
       "legacy_path": "pages/account/security",
@@ -68,15 +68,15 @@
       "legacy_path": "pages/account/responsible-gaming",
       "legacy_route": "/account/responsible-gaming",
       "app_equivalent": "app/responsible-gaming/page.tsx",
-      "status": "REAL",
-      "notes": "Static info page"
+      "status": "RETIRED",
+      "notes": "Deleted with the gateway's /api/v1/compliance/rg/* routes (2026-09-29 sportsbook-vocabulary sweep)."
     },
     {
       "legacy_path": "pages/account/responsible-gaming/self-exclude",
       "legacy_route": "/account/responsible-gaming/self-exclude",
       "app_equivalent": "app/account/self-exclude/page.tsx",
-      "status": "REAL",
-      "notes": "Self-exclusion wizard wired to selfExclude() from compliance-client"
+      "status": "RETIRED",
+      "notes": "Deleted with the gateway's /api/v1/compliance/rg/* routes (2026-09-29 sportsbook-vocabulary sweep)."
     },
     {
       "legacy_path": "pages/bonus-rules",
@@ -173,7 +173,7 @@
       "route": "/promotions (active bonuses section)",
       "status": "REAL",
       "module": "bonus",
-      "notes": "ActiveBonusesSection with WageringProgress"
+      "notes": "ActiveBonusesControl lists campaign bonuses (name, status, points, expiry) — the WageringProgress bar was retired 2026-09-29"
     },
     {
       "route": "/store",
@@ -528,15 +528,15 @@
     },
     {
       "name": "WageringProgress",
-      "status": "REAL",
+      "status": "RETIRED",
       "module": "bonus",
-      "notes": "Progress bar toward bonus completion"
+      "notes": "Play-progress bar toward bonus completion — deleted with the gateway's GET /api/v1/bonuses/*/progress wagering fields (2026-09-29 sportsbook-vocabulary sweep). ActiveBonusesControl keeps name, status, points and expiry only."
     },
     {
       "name": "BonusBadge",
-      "status": "REAL",
+      "status": "RETIRED",
       "module": "bonus",
-      "notes": "Freebet/bonus indicator on bet cards"
+      "notes": "Freebet/bonus indicator on bet cards — sportsbook bet-card concept, zero importers in app/."
     },
     {
       "name": "BannerCarousel",

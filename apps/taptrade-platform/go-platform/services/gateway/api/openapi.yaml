@@ -9,7 +9,7 @@ info:
     Points are gameplay-only units with no external value path.
 
     Coverage: this spec documents the core public, trading, portfolio,
-    responsible-play, reward, loyalty, social, leaderboard, bot, auth proxy,
+    reward, loyalty, social, leaderboard, bot, auth proxy,
     admin account-review, admin discovery taxonomy, admin market operations,
     and admin market-lifecycle surfaces verified against the live handlers and
     DTOs as of 2026-06. CMS and remaining compatibility surfaces are
@@ -373,7 +373,7 @@ components:
         id: { type: string }
         email: { type: string }
         username: { type: string, nullable: true }
-        status: { type: string, enum: [active, suspended, self_excluded, deactivated] }
+        status: { type: string, enum: [active, suspended, deactivated] }
         countryCode: { type: string, nullable: true }
         createdAt: { type: string }
         lastLoginAt: { type: string, nullable: true }
@@ -475,7 +475,7 @@ components:
     AdminPunterStatusUpdateRequest:
       type: object
       properties:
-        status: { type: string, enum: [active, suspended, self_excluded, deactivated] }
+        status: { type: string, enum: [active, suspended, deactivated] }
       required: [status]
     AdminPunterNote:
       type: object
@@ -1057,29 +1057,12 @@ components:
         grantedAt: { type: string, format: date-time }
         grantedPoints: { type: integer, format: int64 }
         remainingPoints: { type: integer, format: int64 }
-        playRequiredPoints: { type: integer, format: int64 }
-        playCompletedPoints: { type: integer, format: int64 }
-        playProgressPct: { type: number, format: double }
     PlayerBonusListResponse:
       type: object
       properties:
         bonuses:
           type: array
           items: { $ref: "#/components/schemas/PlayerBonus" }
-    PlayerBonusProgress:
-      type: object
-      properties:
-        unit: { type: string, enum: [PTS] }
-        bonus_id: { type: integer, format: int64 }
-        bonusId: { type: integer, format: int64 }
-        playRequiredPoints: { type: integer, format: int64 }
-        playCompletedPoints: { type: integer, format: int64 }
-        playProgressPct: { type: number, format: double }
-        recentContributions:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
     AdminCampaign:
       type: object
       properties:
@@ -1114,16 +1097,16 @@ components:
         pointRuleConfig:
           type: object
           additionalProperties: true
-          description: Sanitized point-rule config for launch docs and admin clients; play contribution caps use max_play_contribution_points.
+          description: Sanitized point-rule config for launch docs and admin clients.
         createdAt: { type: string, format: date-time }
     AdminCampaignRuleInput:
       type: object
       properties:
-        rule_type: { type: string, enum: [eligibility, trigger, reward, play] }
+        rule_type: { type: string, enum: [eligibility, trigger, reward] }
         point_rule_config:
           type: object
           additionalProperties: true
-          description: Point-native campaign rule config accepted by launch admin clients; play contribution caps use max_play_contribution_points.
+          description: Point-native campaign rule config accepted by launch admin clients.
       required: [rule_type, point_rule_config]
     AdminCampaignCreateRequest:
       type: object
@@ -1171,89 +1154,29 @@ components:
         status: { type: string, enum: [forfeited] }
         unit: { type: string, enum: [PTS] }
       required: [status, unit]
-    ResponsiblePlayLimitRequest:
+    KYCStatus:
       type: object
       properties:
         userId: { type: string }
-        period: { type: string, enum: [daily, weekly, monthly] }
-        amountPoints: { type: integer, format: int64, minimum: 1 }
-      required: [userId, period, amountPoints]
-    ResponsiblePlayLimit:
+        status: { type: string, enum: [unverified, pending, approved, declined, blocked] }
+        riskLevel: { type: string }
+        lastVerifiedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        documentsSubmitted: { type: array, items: { type: string } }
+        rejectionReasons: { type: array, items: { type: string } }
+    KYCDocument:
       type: object
       properties:
+        id: { type: string }
         userId: { type: string }
-        period: { type: string }
-        unit: { type: string, enum: [PTS] }
-        limitPoints: { type: integer, format: int64 }
-        remainingPoints: { type: integer, format: int64 }
-        usedPoints: { type: integer, format: int64 }
-        pendingLimitPoints: { type: integer, format: int64, nullable: true }
-        pendingActivatesAt: { type: string, format: date-time, nullable: true }
-        resetsAt: { type: string, format: date-time, nullable: true }
-        createdAt: { type: string, format: date-time, nullable: true }
-    ResponsiblePlayLimitSetResponse:
-      type: object
-      properties:
-        userId: { type: string }
-        period: { type: string }
-        unit: { type: string, enum: [PTS] }
-        requestedPoints: { type: integer, format: int64 }
-        requestedAmountPoints: { type: integer, format: int64 }
-        amountPoints: { type: integer, format: int64, nullable: true }
-        limitPoints: { type: integer, format: int64, nullable: true }
-        remainingPoints: { type: integer, format: int64, nullable: true }
-        usedPoints: { type: integer, format: int64, nullable: true }
-        deferred: { type: boolean, nullable: true }
-        pendingLimitPoints: { type: integer, format: int64, nullable: true }
-        pendingActivatesAt: { type: string, format: date-time, nullable: true }
-        effectiveState: { type: string, nullable: true }
-    ResponsiblePlayCheckResponse:
-      type: object
-      properties:
-        userId: { type: string }
-        unit: { type: string, enum: [PTS] }
-        amountPoints: { type: integer, format: int64 }
-        allowed: { type: boolean }
-        reason: { type: string }
-        reasonCode: { type: string, enum: [point_use_limit_exceeded, prediction_limit_exceeded], nullable: true }
-    ResponsiblePlayRestrictions:
-      type: object
-      properties:
-        userId: { type: string }
-        unit: { type: string, enum: [PTS] }
-        isBlocked: { type: boolean }
-        isOnCoolOff: { type: boolean }
-        coolOffUntil: { type: string, format: date-time, nullable: true }
-        isExcluded: { type: boolean }
-        exclusionType: { type: string, nullable: true }
-        excludedUntil: { type: string, format: date-time, nullable: true }
-        pointUseLimits:
-          type: array
-          items: { $ref: "#/components/schemas/ResponsiblePlayLimit" }
-        predictionLimits:
-          type: array
-          items: { $ref: "#/components/schemas/ResponsiblePlayLimit" }
-        lastUpdated: { type: string, format: date-time, nullable: true }
-    ResponsiblePlayCoolOffRequest:
-      type: object
-      properties:
-        userId: { type: string }
-        durationHours: { type: integer, minimum: 1 }
-      required: [userId, durationHours]
-    ResponsiblePlaySelfExcludeRequest:
-      type: object
-      properties:
-        userId: { type: string }
-        permanent: { type: boolean }
-      required: [userId]
-    ResponsiblePlayStatusResponse:
-      type: object
-      properties:
-        userId: { type: string }
-        status: { type: string }
-        coolOffUntil: { type: string, format: date-time, nullable: true }
-        excludedUntil: { type: string, format: date-time, nullable: true }
-        createdAt: { type: string, format: date-time }
+        type: { type: string }
+        documentId: { type: string }
+        issuingCountry: { type: string }
+        expiryDate: { type: string }
+        submittedAt: { type: string, format: date-time }
+        verifiedAt: { type: string, format: date-time }
+        status: { type: string, enum: [submitted, verifying, approved, rejected] }
+        rejectReason: { type: string }
     LoyaltyStanding:
       type: object
       properties:
@@ -2361,7 +2284,7 @@ paths:
   /api/v1/bonuses/active:
     get:
       summary: List active point-play bonuses for the caller
-      description: Returns only PTS unit fields and point-play progress aliases for the authenticated session user.
+      description: Returns only PTS unit fields for the authenticated session user.
       security: [{ SessionCookie: [] }]
       responses:
         "200":
@@ -2403,179 +2326,6 @@ paths:
               schema: { $ref: "#/components/schemas/PlayerBonus" }
         "403": { description: Bonus belongs to a different session user }
         "404": { description: Bonus not found }
-  /api/v1/bonuses/{id}/progress:
-    get:
-      summary: Read point-play progress for one bonus grant
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
-      responses:
-        "200":
-          description: Point-play progress detail
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/PlayerBonusProgress" }
-        "403": { description: Bonus belongs to a different session user }
-        "404": { description: Bonus not found }
-  /api/v1/compliance/rg/point-use-limit:
-    post:
-      summary: Set a point-use limit for the caller
-      description: Session-bound responsible-play mutation. The body userId must match the authenticated session user, and responses use PTS point aliases.
-      security: [{ SessionCookie: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ResponsiblePlayLimitRequest" }
-      responses:
-        "201":
-          description: Point-use limit result
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayLimitSetResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/point-use-limits:
-    get:
-      summary: List the caller's point-use limits
-      description: Session-bound responsible-play read with PTS point aliases.
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: userId, in: query, schema: { type: string } }
-      responses:
-        "200":
-          description: Point-use limits
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userId: { type: string }
-                  unit: { type: string, enum: [PTS] }
-                  limits:
-                    type: array
-                    items: { $ref: "#/components/schemas/ResponsiblePlayLimit" }
-                  total: { type: integer }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/prediction-limit:
-    post:
-      summary: Set a prediction-size limit for the caller
-      description: Session-bound responsible-play mutation for prediction orders. The body userId must match the authenticated session user, and responses use PTS point aliases.
-      security: [{ SessionCookie: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ResponsiblePlayLimitRequest" }
-      responses:
-        "201":
-          description: Prediction-size limit result
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayLimitSetResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/prediction-limits:
-    get:
-      summary: List the caller's prediction-size limits
-      description: Session-bound responsible-play read with PTS point aliases.
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: userId, in: query, schema: { type: string } }
-      responses:
-        "200":
-          description: Prediction-size limits
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userId: { type: string }
-                  unit: { type: string, enum: [PTS] }
-                  limits:
-                    type: array
-                    items: { $ref: "#/components/schemas/ResponsiblePlayLimit" }
-                  total: { type: integer }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/check-point-use:
-    get:
-      summary: Check a point-use amount against the caller's limits
-      description: Session-bound responsible-play decision payload. Denials use point_use_limit_exceeded and point-use wording.
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: userId, in: query, schema: { type: string } }
-        - { name: amountPoints, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
-      responses:
-        "200":
-          description: Point-use decision
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayCheckResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/check-prediction:
-    get:
-      summary: Check a prediction amount against the caller's limits
-      description: Session-bound responsible-play decision payload. Denials use prediction_limit_exceeded and prediction wording.
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: userId, in: query, schema: { type: string } }
-        - { name: amountPoints, in: query, required: true, schema: { type: integer, format: int64, minimum: 1 } }
-      responses:
-        "200":
-          description: Prediction-size decision
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayCheckResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/cool-off:
-    post:
-      summary: Start a caller-requested cool-off period
-      description: Session-bound responsible-play status change. Does not move points.
-      security: [{ SessionCookie: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ResponsiblePlayCoolOffRequest" }
-      responses:
-        "201":
-          description: Cool-off status
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayStatusResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/self-exclude:
-    post:
-      summary: Start caller-requested self-exclusion
-      description: Session-bound responsible-play status change. Does not move points.
-      security: [{ SessionCookie: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/ResponsiblePlaySelfExcludeRequest" }
-      responses:
-        "201":
-          description: Self-exclusion status
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/ResponsiblePlayStatusResponse" }
-        "403": { description: Requested a different user's responsible-play data }
-  /api/v1/compliance/rg/restrictions:
-    get:
-      summary: Read the caller's responsible-play restrictions
-      description: Session-bound responsible-play read. Returns point-use and prediction limits with PTS aliases plus cool-off and self-exclusion status.
-      security: [{ SessionCookie: [] }]
-      parameters:
-        - { name: userId, in: query, schema: { type: string } }
-      responses:
-        "200":
-          description: Responsible-play restrictions
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  restrictions: { $ref: "#/components/schemas/ResponsiblePlayRestrictions" }
-        "403": { description: Requested a different user's responsible-play data }
   /api/v1/loyalty:
     get:
       summary: Read the caller's XP and rank standing
@@ -2590,6 +2340,95 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/LoyaltyStanding" }
         "403": { description: Requested a different user's loyalty data }
+  /api/v1/compliance/geo/check:
+    get:
+      summary: Report whether a country (and optional state) is an approved jurisdiction
+      parameters:
+        - { name: country, in: query, required: true, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Approval decision for the location
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  country: { type: string }
+                  state: { type: string }
+                  approved: { type: boolean }
+  /api/v1/compliance/geo/approved-countries:
+    get:
+      summary: List the approved jurisdictions
+      responses:
+        "200":
+          description: ISO country codes the deployment allows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countries: { type: array, items: { type: string } }
+  /api/v1/compliance/kyc/status:
+    get:
+      summary: Read the caller's identity-verification status
+      description: Session-bound. A userId query is allowed only when it matches the session user.
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: userId, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Current KYC status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { $ref: "#/components/schemas/KYCStatus" }
+  /api/v1/compliance/kyc/submit-document:
+    post:
+      summary: Submit an identity document for review
+      description: Session-bound; the body's userId must match the session user. Stores document metadata, never the file.
+      security: [{ SessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, type]
+              properties:
+                userId: { type: string }
+                type: { type: string, description: passport, driver_license, id_card, … }
+                documentId: { type: string }
+                issuingCountry: { type: string }
+                expiryDate: { type: string }
+      responses:
+        "201":
+          description: Stored document metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document: { $ref: "#/components/schemas/KYCDocument" }
+  /api/v1/compliance/kyc/documents:
+    get:
+      summary: List the caller's submitted identity documents
+      security: [{ SessionCookie: [] }]
+      parameters:
+        - { name: userId, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Submitted documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId: { type: string }
+                  documents: { type: array, items: { $ref: "#/components/schemas/KYCDocument" } }
+                  total: { type: integer }
   /api/v1/loyalty/standing:
     get:
       summary: Read the caller's XP and rank standing alias
@@ -3503,7 +3342,7 @@ paths:
       description: Lists prediction-platform accounts with point-account and settled-result summary fields. This read-only review surface does not move points.
       security: [{ SessionCookie: [] }]
       parameters:
-        - { name: status, in: query, schema: { type: string, enum: [active, suspended, self_excluded, deactivated] } }
+        - { name: status, in: query, schema: { type: string, enum: [active, suspended, deactivated] } }
         - { name: search, in: query, schema: { type: string } }
         - { name: page, in: query, schema: { type: integer, minimum: 1 } }
         - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200 } }
@@ -3971,7 +3810,7 @@ paths:
   /api/v1/bot/orders:
     post:
       summary: Place an order via a partner API key (scope-gated, geo/KYC enforced)
-      description: Bot orders are automation surfaces only. They share session order validation for required fields, limit prices, exchange controls, and market-buy notional caps before market lookup, then use the same point-reservation and fill path as session orders. Responsible-play denials return point-native reasonCode details such as prediction_limit_exceeded.
+      description: Bot orders are automation surfaces only. They share session order validation for required fields, limit prices, exchange controls, and market-buy notional caps before market lookup, then use the same point-reservation and fill path as session orders.
       security: [{ BotApiKey: [] }]
       requestBody:
         required: true

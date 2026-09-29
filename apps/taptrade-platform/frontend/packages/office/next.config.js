@@ -11,7 +11,6 @@ module.exports = {
   // Transpile workspace packages that expose raw TypeScript source
   outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
-    "@taptrade-ui/design-system",
     "@taptrade-ui/utils",
     "@taptrade-ui/api-client",
     "@taptrade-api/client",

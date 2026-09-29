@@ -2,9 +2,9 @@
 
 > **Scope:** the Postgres schema behind the gateway (prediction exchange, wallet/points, store, loyalty, social, compliance, RBAC, content, notifications, webhooks, discover, alpha cashier, legacy payments), the separate auth-service tables, and the dormant Node cashier-api schema.
 > **Authoritative for:** table shapes, keys, constraints, state machines, table ownership, units. **Not for:** request/response payloads or route behaviour → [ARCHITECTURE.md](ARCHITECTURE.md), [SPEC_CURRENT.md](SPEC_CURRENT.md); store purchase flow detail → [STORE_AND_PAYMENTS.md](../STORE_AND_PAYMENTS.md).
-> **Last verified:** 2026-09-29 at commit `4924a670` — every file in `gateway/migrations/001`–`065` (066 and the auth two-factor tables added the same day with the hardening change), `gateway/migrations/README.md`, the code-created schemas (`internal/wallet/service.go`, `internal/compliance/*_postgres.go`, `internal/http/market_social_handlers.go`, `internal/http/market_watchlist_handlers.go`, `internal/http/provider_ops_audit_store.go`, `internal/http/ratelimit.go`, `internal/payments/db_service.go`), `auth/internal/http/handlers.go`, `gateway/seed-data/*.sql`, `gateway/cmd/seed/*.go`, `api-client/src/prediction-types.ts`, `services/cashier-api/migrations/001_cashier_core.sql` and `SCHEMA.md`.
+> **Last verified:** 2026-09-29 at commit `4924a670` — every file in `gateway/migrations/001`–`065` (066, 067 and the auth two-factor tables added the same day), `gateway/migrations/README.md`, the code-created schemas (`internal/wallet/service.go`, `internal/compliance/*_postgres.go`, `internal/http/market_social_handlers.go`, `internal/http/market_watchlist_handlers.go`, `internal/http/provider_ops_audit_store.go`, `internal/http/ratelimit.go`, `internal/payments/db_service.go`), `auth/internal/http/handlers.go`, `gateway/seed-data/*.sql`, `gateway/cmd/seed/*.go`, `api-client/src/prediction-types.ts`, `services/cashier-api/migrations/001_cashier_core.sql` and `SCHEMA.md`.
 
-Migrations are the schema source of truth — there is no separate schema dump. `gateway/` uses goose; each numbered file is applied in order and never edited after it ships (`gateway/migrations/README.md`). The highest migration is `066_settlement_override_actor.sql`; the next is `067`. (That README said 056 until the 2026-09-29 review corrected it.)
+Migrations are the schema source of truth — there is no separate schema dump. `gateway/` uses goose; each numbered file is applied in order and never edited after it ships (`gateway/migrations/README.md`). The highest migration is `067_remove_sportsbook_residue.sql`; the next is `068`. (That README said 056 until the 2026-09-29 review corrected it.)
 
 Several load-bearing tables are **not** created by goose at all — they are bootstrapped by a Go service's `ensureSchema()` on boot, guarded with `CREATE TABLE IF NOT EXISTS`. Migrations that touch these tables (032, 037, 048, 050) do so defensively (`DO $$ ... IF EXISTS ...`) because the table may not exist yet on a fresh database. Code-owned tables in this doc are marked **(code-owned)**.
 
@@ -25,7 +25,6 @@ punters (auth id ref, no FK) ──< wallet_balances (1:1) ──< wallet_ledger
                               ├──< store_purchases ──< store_payment_events
                               ├──< player_bonuses >── campaigns ──< campaign_rules
                               ├──< kyc_status (1:1) ──< kyc_documents
-                              ├──< player_restrictions (1:1), player_bet_limits, player_deposit_limits, player_activity_log
                               ├──< alpha_wallet_connections ──< alpha_deposit_intents ──< alpha_chain_transactions
                               ├──< alpha_withdrawal_requests
                               └──< admin_users (SEPARATE identity — back office, not a punter)
@@ -44,7 +43,6 @@ Renamed (now `*_points`, `BIGINT`/`NUMERIC`): `prediction_markets`, `prediction_
 **Deliberately NOT renamed** (migration 050's own scoping note) because the values are genuinely cash-denominated:
 - `alpha_deposit_intents.amount_cents` / `alpha_withdrawal_requests.amount_cents` — real USDC cents (paired with `amount_units NUMERIC(78,0)`, the raw on-chain base-unit amount at the token's actual decimals).
 - `payment_transactions.amount_cents` (legacy payments, code-owned) — real cash cents.
-- `ledger_entries.amount_cents` — orphaned legacy table (migration 050: "zero live code references" — confirmed still true, see Discrepancies).
 
 Env vars keep the historical `_CENTS` suffix but hold whole Points in the live economy: `STARTER_GRANT_CENTS`, `DAILY_CLAIM_CENTS`, the `MISSION_*_REWARD_CENTS` family, `POINT_PACK_*_CENTS`, `REWARD_DAILY_GRANT_LIMIT_CENTS`, `SMM_*_CENTS` (`internal/http/wallet_handlers.go` `starterGrantPoints()`, `dailyClaimPoints()` — read the env var and return it unscaled as Points). `KYC_WITHDRAWAL_THRESHOLD_CENTS` is the one cash-real exception — it gates `CrossRailWithdrawnCents` (`internal/payments/db_service.go:567`), genuine USD cents summed across `payment_transactions` and `alpha_withdrawal_requests`. `store_point_packs.price_usd_cents` is likewise genuine USD cents (the purchase price), never mixed with the pack's `base_points`/`bonus_points` columns.
 
@@ -78,8 +76,6 @@ Env vars keep the historical `_CENTS` suffix but hold whole Points in the live e
 | `wallet_ledger` **(code-owned)** | Append-only ledger of every credit/debit | PK `id` BIGSERIAL; `amount_points CHECK > 0`; **`UNIQUE(entry_type, user_id, idempotency_key)`** — the exactly-once key | `internal/wallet/service.go` |
 | `wallet_reservations` **(code-owned, also created defensively by migration 020)** | Hold → capture/release for in-flight orders/purchases | PK `id`; `status` CHECK `held,captured,released,expired`; **`UNIQUE(reference_type, reference_id)`**; `captured_amount_points CHECK 0..amount_points` | `internal/wallet/service.go` |
 | `wallet_reward_clusters` **(code-owned + migration 048)** | Hashed device/IP evidence for reward-abuse clustering (not a point movement) | PK `(window_date, signal_type, signal_hash, user_id)` | `internal/wallet/service.go` |
-| `wallets` **DEAD** | Legacy 1:1 wallet row (migration 006) | PK `id`, `punter_id` UNIQUE | No Go reader/writer except `cmd/seed` status count and `seed_backoffice_dashboard.sql` (see Discrepancies) |
-| `ledger_entries` **DEAD** | Legacy ledger (migration 006) | PK `id` | Migration 050 calls it "orphaned … zero live code references"; confirmed — only written by `seed_backoffice_dashboard.sql` |
 
 Correlation between `prediction_orders`/`store_purchases` and `wallet_reservations` is **by value**, not FK: the reservation's `(reference_type, reference_id)` matches the order/purchase id as text. `prediction_orders.wallet_reservation_id` is a `UUID` column (014) that cannot type-match `wallet_reservations.id` (`BIGSERIAL`); grep of `internal/prediction` finds no write path that ever sets it to a non-null value — it is read-only dead weight on every scan (`sql_repository.go:2158`).
 
@@ -111,10 +107,9 @@ Idempotency keys for the wallet credits: `PurchaseCreditKey(purchaseID) = "store
 | `content_pages` | CMS pages | PK `id`; `slug` UNIQUE; `status` CHECK `draft,published,archived` | `internal/content/service.go` |
 | `banners` | Homepage/promo banners | PK `id`; `position`, `active` | `internal/content/service.go` |
 | `content_blocks` | Structured page blocks | PK `id`; FK `page_id`; `block_type` CHECK 5 values | `internal/content/service.go` |
-| `campaigns` | Bonus campaign definitions | PK `id` BIGSERIAL; `campaign_type`/`status` CHECKs; `budget_points`/`spent_points` non-negative CHECKs (042) | `internal/bonus/repository.go` |
-| `campaign_rules` | Eligibility/trigger/reward/wagering rules per campaign | PK `id`; `rule_type` CHECK 4 values | `internal/bonus/repository.go` |
-| `player_bonuses` | Per-user bonus grant | PK `id`; **`UNIQUE(user_id, campaign_id)`**; `status` CHECK `active,completed,expired,forfeited`; 4 non-negative CHECKs (042) | `internal/wallet/bonus_ops.go`, `internal/bonus/repository.go` |
-| `wagering_contributions` | Per-bet contribution toward a bonus's wagering requirement | PK `id`; **`UNIQUE(player_bonus_id, bet_id)`** | `internal/wallet/wagering.go` |
+| `campaigns` | Bonus campaign definitions | PK `id` BIGSERIAL; `campaign_type` CHECK `point_grant,point_match,signup_bonus,reload_bonus,referral_bonus,custom` (067 mapped the sportsbook types and removed them); `status` CHECK; `budget_points`/`spent_points` non-negative CHECKs (042) | `internal/bonus/repository.go` |
+| `campaign_rules` | Eligibility/trigger/reward rules per campaign | PK `id`; `rule_type` CHECK `eligibility,trigger,reward` (067 dropped `wagering`) | `internal/bonus/repository.go` |
+| `player_bonuses` | Per-user Points grant with an expiry | PK `id`; **`UNIQUE(user_id, campaign_id)`**; `status` CHECK `active,completed,expired,forfeited`; non-negative CHECKs on the amounts (042; the `wagering_*` columns and their CHECKs went in 067) | `internal/wallet/bonus_ops.go`, `internal/bonus/repository.go` |
 
 ## Social / watchlist / disputes
 
@@ -129,19 +124,19 @@ Idempotency keys for the wallet credits: `PurchaseCreditKey(purchaseID) = "store
 | `prediction_resolution_proposals` | See Prediction table above | | `internal/prediction/sql_resolution_store.go` |
 | `prediction_disputes` | User dispute against a proposed resolution | PK `id`; `status` CHECK `open,upheld,rejected,withdrawn`; `bond_points`; partial unique index — **at most one OPEN dispute per (market, user)** | `internal/prediction/sql_resolution_store.go` |
 
-## Compliance (KYC, responsible-gambling limits, geo)
-
-All four RG tables are **code-owned** (`internal/compliance/rg_postgres.go` `ensureSchema()`), also defensively created by migration 050's `DO $$ IF EXISTS` guards for the rename.
+## Compliance (KYC, geo)
 
 | Table | Purpose | Keys | Owner |
 |---|---|---|---|
 | `kyc_status` **(code-owned)** | Current verification state, 1/user | PK `user_id`; `status` CHECK `unverified,pending,approved,declined,blocked` | `internal/compliance/kyc_postgres.go` |
 | `kyc_documents` **(code-owned)** | Submitted ID documents | PK `id`; `status` CHECK `submitted,verifying,approved,rejected` | same |
-| `player_bet_limits` / `player_deposit_limits` **(code-owned)** | Self-set caps | PK `(user_id, period)`; `period` CHECK `daily,weekly,monthly`; `limit_points CHECK > 0` | `internal/compliance/rg_postgres.go` |
-| `player_restrictions` **(code-owned)** | Self-exclusion / cool-off / block | PK `user_id` | same |
-| `player_activity_log` **(code-owned)** | Bet/deposit activity used to compute period usage against limits | PK `id` BIGSERIAL | same |
 
-KYC state transitions are enforced in `PostgresKYCService.AdminDecision` (`internal/compliance/kyc_postgres.go:129`) — an admin approve/decline call, not a self-service flow. Deposit/bet limit checks (`CheckBetAllowed`, `CheckDepositAllowed`, `internal/compliance/rg_postgres.go`) sum `player_activity_log` over the period window before allowing an action. The global geo allow/deny gate is code-only (`internal/compliance/geo_gate.go`, `internal/http/pretrade_gate.go`) — no table; per-market overrides live in `prediction_markets.jurisdiction_policy`. `KYC_WITHDRAWAL_THRESHOLD_CENTS` gates the cross-rail cash withdrawal total (see Units) — the only place compliance state touches real cash cents rather than Points.
+The four responsible-gambling tables that used to sit here
+(`player_bet_limits`, `player_deposit_limits`, `player_restrictions`,
+`player_activity_log`) were sportsbook residue; migration 067 drops them and
+the service that created them is gone ([ADR-0014](adr/0014-remove-sportsbook-residue.md)).
+
+KYC state transitions are enforced in `PostgresKYCService.AdminDecision` (`internal/compliance/kyc_postgres.go:129`) — an admin approve/decline call, not a self-service flow. The global geo allow/deny gate is code-only (`internal/compliance/geo_gate.go`, `internal/http/pretrade_gate.go`) — no table; per-market overrides live in `prediction_markets.jurisdiction_policy`. `KYC_WITHDRAWAL_THRESHOLD_CENTS` gates the cross-rail cash withdrawal total (see Units) — the only place compliance state touches real cash cents rather than Points.
 
 ## Auth (separate service)
 
@@ -292,8 +287,7 @@ settled, voided — terminal
 | File | Applied by | Contents |
 |---|---|---|
 | `seed_prediction.sql` | `-mode base` (default) and `-mode demo` | Test users (`user-001..003`, `user-bot`), taxonomy, series/events/markets with **deterministic `md5(slug)::uuid` ids** so re-running maps the same slug to the same row (e.g. `md5('series-mlbb-esports')::uuid`). Idempotent via `ON CONFLICT`; deletes and re-inserts a fixed set of legacy asset-price rows first. |
-| `seed.sql` | not wired into `cmd/seed`'s default path (legacy) | — not read by `main.go`'s `findSeedFile()` candidates list |
-| `seed_backoffice_dashboard.sql` | run manually (`psql -f`) | 24 synthetic users, 30 `payment_transactions`, 45 `prediction_trades` — 75 primary activity rows, idempotent via a `bo-seed-*` key prefix + delete-then-reinsert. Uses `CREATE TEMP TABLE bo_seed_users`/`bo_seed_market_specs` (dropped on commit, not persisted). **As of today** it no longer references `crypto_deposit_addresses` (that table's creator, `internal/payments/crypto_rail.go`, was deleted 2026-09-29) — but it still writes into the dead `wallets`/`ledger_entries` tables (see Discrepancies). |
+| `seed_backoffice_dashboard.sql` | run manually (`psql -f`) | 24 synthetic users, 30 `payment_transactions`, 45 `prediction_trades` — 75 primary activity rows, idempotent via a `bo-seed-*` key prefix + delete-then-reinsert. Uses `CREATE TEMP TABLE bo_seed_users`/`bo_seed_market_specs` (dropped on commit, not persisted). Since 2026-09-29 it writes only live tables: balances come from the last `wallet_ledger` row per user (the `wallets`/`ledger_entries` writes went with those tables). |
 
 `cmd/seed -mode demo` layers six phases on top of the base seed (`RunPhase1MarketMaker` books an order-book market maker, `RunPhase2Volume` generates historical trade volume, `RunPhase4DemoUser` places 12 BUY orders for the demo user, `RunPhase5Settle`/`RunPhase5BonusDemo`/`RunPhase5Leaderboards`/`RunPhase5RewardHistory` settle markets and backfill bonus/leaderboard/reward state, `RunPhase6Backoffice` writes the dashboard rows). `-mode wipe` removes only rows tagged with a `demo:` idempotency-key prefix or `trade_kind='demo_history'`, leaving the base seed untouched (`cmd/seed/cleanup.go`).
 
@@ -303,13 +297,12 @@ settled, voided — terminal
 
 ## Discrepancies found
 
-- **`gateway/migrations/README.md`** said the directory ran through `056`; it ran through `065`. Corrected in this review (now `066`).
-- **`wallets` / `ledger_entries` ownership contradiction across migrations.** `033_drop_dead_sportsbook_tables.sql` explicitly keeps these two "because [they're] still referenced by live prediction code." `050_points_unit_model.sql`, written five migrations later, calls `ledger_entries` "orphaned legacy table (zero live code references)." A grep of `internal/` and `cmd/` for `ledger_entries` and for `wallets` (excluding `wallet_*`) confirms **050 is the accurate read as of today**: no Go code selects, inserts, or updates either table except `cmd/seed/main.go`'s summary `SELECT COUNT(*) FROM wallets` and `seed-data/seed_backoffice_dashboard.sql`'s writes into both. The live wallet system is entirely `wallet_balances`/`wallet_ledger`/`wallet_reservations` (code-owned, `internal/wallet/service.go`).
+- **`gateway/migrations/README.md`** said the directory ran through `056`; it ran through `065`. Corrected in this review (now `067`).
+- **`wallets` / `ledger_entries` (resolved 2026-09-29).** `033_drop_dead_sportsbook_tables.sql` kept these two "because [they're] still referenced by live prediction code"; that was wrong — the live wallet is `wallet_balances`/`wallet_ledger`/`wallet_reservations` (code-owned, `internal/wallet/service.go`), as 050's header already said. Migration 067 drops both, and `cmd/seed`'s summary now counts `wallet_balances`.
 - **`prediction_orders.wallet_reservation_id` is a dead/mistyped column** ([TD-031](TECH_DEBT.md#e-ledger-data-model-and-tenancy)). Declared `UUID` in migration 014; `wallet_reservations.id` is `BIGSERIAL`, so it can never hold a real FK match. No write path in `internal/prediction` ever sets it to a non-null value (only a read/scan at `sql_repository.go:2158`); actual order↔reservation correlation goes through `wallet_reservations.(reference_type, reference_id)` matched by value against the order id as text.
 - **TS field naming drifts from DB column names** in `api-client/src/prediction-types.ts`: `Market.settlementPoolPoints` (line ~133) corresponds to DB column `settled_payout_pool_points`; `Position.realizedPoints` corresponds to `realized_pnl_points`. Both appear to be intentional API-shape renames rather than bugs, but they are not 1:1 with the column names, so do not assume the wire field name is the column name when tracing a bug.
 - **`loyalty_tier_config` (021) is admin-editable but not yet load-bearing at runtime** ([TD-004](TECH_DEBT.md#a-admin-controls-and-points-integrity)). The settings page reads/writes it; the actual points-accrual formula and tier-from-balance mapping still read Go constants in `internal/loyalty/tiers.go` (migration 021's own header flags this as a known follow-up, not yet done).
 - **`imported_markets` volume/liquidity 100× scaling bug**, fixed by two follow-up data-repair migrations (052, then 053 for catalog-drift escapees) — evidence this class of promote-path bug has recurred at least once; worth a regression test if none exists yet (not verified either way here).
-- **Back-office dashboard seed writes to dead tables.** `seed_backoffice_dashboard.sql` inserts into `wallets` and `ledger_entries` (see above) even though no runtime code reads them — likely vestigial from before the wallet service moved to `wallet_balances`/`wallet_ledger`. It correctly stopped inserting into `crypto_deposit_addresses` today, after `internal/payments/crypto_rail.go` (the table's only creator) was deleted; no migration ever created that table, so a stale seed script would have failed outright on a fresh DB.
 - **Two identity tables named similarly, no FK between them:** `admin_users` (gateway RBAC, back office) and `auth_users` (separate `auth` service). Enforcement binds them by matching email only (`027_rbac_admin.sql` header); a renamed or duplicated email on either side silently breaks the binding with no DB constraint to catch it.
 - **`tenants` / `tenant_id` is schema-complete but functionally dormant** ([ADR-0005](adr/0005-multi-tenancy-foundation.md), [TD-030](TECH_DEBT.md#e-ledger-data-model-and-tenancy)) — confirmed zero Go references to the `tenants` table itself; the `tenant_id` columns are populated (`DEFAULT 'hula'`) but nothing filters by them yet.
 

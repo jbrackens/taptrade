@@ -37,7 +37,6 @@ interface LoyaltyRule {
   multiplier: number;
   minQualifiedStakePoints: number;
   minQualifiedPoints?: number;
-  eligibleSportIds?: string[];
   eligibleBetTypes?: string[];
   eligiblePredictionTypes?: string[];
   maxPointsPerEvent?: number;

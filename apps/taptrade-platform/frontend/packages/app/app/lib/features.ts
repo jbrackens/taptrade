@@ -9,29 +9,18 @@
  * To set a flag, add it to `.env.local` / `.env.development` /
  * `.env.staging` / `.env.production` for that deploy:
  *
- *   NEXT_PUBLIC_FEATURE_RG=true
+ *   NEXT_PUBLIC_FEATURE_KYC=true
  *
  * Usage to gate a route (returns 404 when off):
  *
  *   import { notFound } from "next/navigation";
- *   import { FEATURE_RG } from "../../lib/features";
- *   if (!FEATURE_RG) notFound();
+ *   import { FEATURE_KYC } from "../../lib/features";
+ *   if (!FEATURE_KYC) notFound();
  *
  * Usage to hide a UI element (renders nothing when off):
  *
- *   {FEATURE_RG && <Link href="/responsible-gaming">Responsible Gaming</Link>}
+ *   {FEATURE_KYC && <Link href="/account/settings">Verify identity</Link>}
  */
-
-/**
- * Responsible-gambling features: self-exclusion, cool-off, RG history,
- * the /responsible-gaming/ informational page, and any UI entry point
- * that links to them. Off by default. Turn on for jurisdictional deploys
- * that legally require RG tooling (e.g. UK, regulated US sports-betting).
- *
- * Out of scope of this flag: KYC (FEATURE_KYC) and point-use/session
- * limits. Those are tracked separately.
- */
-export const FEATURE_RG = process.env.NEXT_PUBLIC_FEATURE_RG === "true";
 
 /**
  * KYC / identity verification surface. Off by default. Turn on for
@@ -42,28 +31,8 @@ export const FEATURE_RG = process.env.NEXT_PUBLIC_FEATURE_RG === "true";
  * Currently gates: the "Identity Verification (KYC)" row and "Complete
  * Verification" CTA on /profile/. Email and phone verification rows are
  * NOT gated — those are sensible regardless of jurisdiction.
- *
- * Out of scope of this flag: point-use/prediction/session limits (those are
- * user-set play caps that stand alone), responsible-play
- * tooling (FEATURE_RG).
  */
 export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
-
-/**
- * User-facing play-limit tooling: point-use / prediction / session limits
- * UI on /profile/'s Limits tab. Off by default. Turn on for jurisdictional
- * deploys that require self-imposed spending caps (UK, regulated US sports
- * + prediction markets like Kalshi). Off for offshore-style deploys
- * (Polymarket-style) where users trade without limit-setting tools.
- *
- * Currently gates: the "Limits" tab on /profile/ (filtered out of the
- * tab navigation when off) and its panel content.
- *
- * Out of scope of this flag:
- *   - getLimitsHistory called from /account/rg-history/ — that page is
- *     already gated by FEATURE_RG.
- */
-export const FEATURE_LIMITS = process.env.NEXT_PUBLIC_FEATURE_LIMITS === "true";
 
 /**
  * Community chat surface. Off by default until the Rocket.Chat feasibility

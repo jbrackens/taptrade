@@ -2,7 +2,6 @@ export * from "./services/api/api-service";
 export * from "./services/query-params/query-params-service";
 export * from "./services/token-store/token-store-service";
 export * from "./translations";
-export * from "./services/bet-store/bet-store-service";
 export * from "./services/user-preferences/user-preferences-service";
 export * from "./hooks/spy";
 export * from "./hooks/resize";

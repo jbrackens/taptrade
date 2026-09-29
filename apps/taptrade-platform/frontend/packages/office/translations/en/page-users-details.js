@@ -88,7 +88,6 @@ module.exports = {
   CELL_STATUS_ACTIVE: "Active",
   CELL_STATUS_SUSPENDED: "Suspended",
   CELL_STATUS_UNVERIFIED: "Unverified",
-  CELL_STATUS_SELF_EXCLUDED: "Self Excluded",
   CELL_STATUS_COOLING_OFF: "Cooling Off",
   CELL_STATUS_UNKNOWN: "Unknown",
   MODAL_LIMITS_HEADER: "Limits",

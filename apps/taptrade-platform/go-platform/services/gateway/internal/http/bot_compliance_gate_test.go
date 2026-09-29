@@ -2,38 +2,17 @@ package http
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"taptrade/gateway/internal/compliance"
 	"taptrade/gateway/internal/prediction"
 	"taptrade/platform/transport/httpx"
 )
 
-type botRouteComplianceDeny struct{}
-
-func (botRouteComplianceDeny) CheckBetAllowed(context.Context, string, int64) (bool, string, error) {
-	return false, "Prediction limit exceeded for daily period", errors.New("prediction limit exceeded")
-}
-
-func (botRouteComplianceDeny) RecordBet(context.Context, string, int64) error {
-	return nil
-}
-
-func (botRouteComplianceDeny) ReleaseBet(context.Context, string, int64, time.Time) error {
-	return nil
-}
-
-// TestBotOrderPathIsGeoGated is the regression guard for audit SEC-02: the
-// bot/partner order route must run the same jurisdiction gate as the session
-// order route. Before the fix, an API key (self-issuable by any player) could
-// place orders from a blocked country with no geo/KYC check.
 func TestBotOrderPathIsGeoGated(t *testing.T) {
 	// Mint a real API key so botAuth.Wrap (bcrypt verify) passes.
 	fullKey, prefix, hash, err := prediction.GenerateAPIKey()
@@ -90,76 +69,6 @@ func TestBotOrderPathIsGeoGated(t *testing.T) {
 	handler.ServeHTTP(allowedRec, allowed)
 	if allowedRec.Code == http.StatusForbidden {
 		t.Fatalf("allowed-country bot order was geo-blocked (403); gate should have passed. body=%s", allowedRec.Body.String())
-	}
-}
-
-func TestBotOrderPathUsesPointSafeOrderDenialContract(t *testing.T) {
-	fullKey, prefix, hash, err := prediction.GenerateAPIKey()
-	if err != nil {
-		t.Fatalf("generate api key: %v", err)
-	}
-	repo := newPredictionAdminRepo()
-	repo.apiKey = &prediction.APIKey{
-		ID:        "key-1",
-		UserID:    "bot-user-1",
-		Name:      "test",
-		KeyHash:   hash,
-		KeyPrefix: prefix,
-		Scopes:    []string{"read", "trade"},
-		Active:    true,
-	}
-	repo.markets["mkt-1"] = &prediction.Market{
-		ID:            "mkt-1",
-		Ticker:        "BOT-RG",
-		Title:         "Bot responsible-play proof",
-		Status:        prediction.MarketStatusOpen,
-		ExecutionMode: prediction.ExecutionModeOrderBook,
-	}
-
-	svc := prediction.NewService(repo, nil)
-	svc.SetComplianceChecker(botRouteComplianceDeny{})
-	mux := http.NewServeMux()
-	registerBotRoutes(mux, svc, repo, nil)
-	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
-
-	body, _ := json.Marshal(map[string]any{
-		"marketId":    "mkt-1",
-		"side":        prediction.OrderSideYes,
-		"action":      prediction.OrderActionBuy,
-		"orderType":   prediction.OrderTypeLimit,
-		"pricePoints": 50,
-		"quantity":    10,
-	})
-
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/bot/orders", bytes.NewReader(body))
-	req.Header.Set("Authorization", "Bearer "+fullKey)
-	rec := httptest.NewRecorder()
-	handler.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("expected prediction-limit bot order to return 400, got %d body=%s", rec.Code, rec.Body.String())
-	}
-	if repo.orderCreates != 0 {
-		t.Fatalf("blocked bot order must not persist, got %d created orders", repo.orderCreates)
-	}
-	var payload struct {
-		Error struct {
-			Code    string         `json:"code"`
-			Message string         `json:"message"`
-			Details map[string]any `json:"details"`
-		} `json:"error"`
-	}
-	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
-		t.Fatalf("decode error payload: %v body=%s", err, rec.Body.String())
-	}
-	if payload.Error.Code != "bad_request" {
-		t.Fatalf("expected bad_request code, got %+v", payload.Error)
-	}
-	if payload.Error.Details["reasonCode"] != "prediction_limit_exceeded" {
-		t.Fatalf("expected prediction_limit_exceeded details, got %+v", payload.Error.Details)
-	}
-	if strings.Contains(strings.ToLower(payload.Error.Message), "bet") {
-		t.Fatalf("bot denial message must avoid inherited bet wording, got %q", payload.Error.Message)
 	}
 }
 

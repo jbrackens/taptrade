@@ -332,42 +332,6 @@ func TestOrderPreviewRejectsRetiredRequestAliasesAtHTTPBoundary(t *testing.T) {
 	}
 }
 
-func TestOrderPlacementError_PredictionLimitDetails(t *testing.T) {
-	err := orderPlacementError(errors.New("Prediction limit exceeded for daily period"))
-	appErr := httpx.FromError(err)
-	if appErr == nil {
-		t.Fatal("expected app error")
-	}
-	if appErr.Status != stdhttp.StatusBadRequest {
-		t.Fatalf("status = %d, want %d", appErr.Status, stdhttp.StatusBadRequest)
-	}
-	if appErr.Message != "Prediction limit exceeded for daily period" {
-		t.Fatalf("message = %q", appErr.Message)
-	}
-	details, ok := appErr.Details.(map[string]any)
-	if !ok {
-		t.Fatalf("details should be a map, got %#v", appErr.Details)
-	}
-	if details["reasonCode"] != "prediction_limit_exceeded" {
-		t.Fatalf("reasonCode = %#v", details["reasonCode"])
-	}
-}
-
-func TestOrderPlacementError_ResponsiblePlayFallbackDetails(t *testing.T) {
-	err := orderPlacementError(errors.New("order blocked by responsible-play controls"))
-	appErr := httpx.FromError(err)
-	if appErr == nil {
-		t.Fatal("expected app error")
-	}
-	details, ok := appErr.Details.(map[string]any)
-	if !ok {
-		t.Fatalf("details should be a map, got %#v", appErr.Details)
-	}
-	if details["reasonCode"] != "responsible_play_blocked" {
-		t.Fatalf("reasonCode = %#v", details["reasonCode"])
-	}
-}
-
 func TestOrderPlacementError_GenericDetailsRemainEmpty(t *testing.T) {
 	err := orderPlacementError(errors.New("market is closed"))
 	appErr := httpx.FromError(err)

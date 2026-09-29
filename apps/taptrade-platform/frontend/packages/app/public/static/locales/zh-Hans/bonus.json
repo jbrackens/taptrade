@@ -5,8 +5,6 @@
   "wageringProgress": "Activity Progress",
   "wageringRequired": "{{completed}} of {{required}} completed",
   "wageringProgressPct": "{{pct}}% complete",
-  "expiresIn": "Expires in {{days}} days",
-  "expired": "Expired",
   "bonusFunds": "Bonus Points",
   "realMoney": "Base Points",
   "totalBalance": "Total Points",

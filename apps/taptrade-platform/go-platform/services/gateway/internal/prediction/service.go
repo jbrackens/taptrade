@@ -30,7 +30,6 @@ type Service struct {
 	metrics *Metrics
 	// Optional responsible-gambling gate. nil disables the check (tests and
 	// any deployment that has not wired RG). Wired in internal/http.
-	compliance ComplianceChecker
 }
 
 // ErrLaunchProhibitedCategory blocks inherited real-money/crypto taxonomy from
@@ -69,226 +68,6 @@ var launchProhibitedSettlementRules = map[string]struct{}{
 }
 
 var ErrLaunchProhibitedMarket = errors.New("market is not allowed in Tap Trade launch mode")
-
-// ComplianceChecker gates order placement against responsible-gambling
-// controls (self-exclusion, cool-off, deposit/bet stake limits). It is an
-// interface so the prediction package stays decoupled from internal/compliance
-// — same rationale as WalletAdapter (see CLAUDE.md "Keep the prediction Go
-// package decoupled from wallet"). A nil checker is a no-op.
-type ComplianceChecker interface {
-	// CheckBetAllowed reports whether userID may commit stakePoints on a new
-	// order. reason is a human-readable rejection message when allowed is false.
-	CheckBetAllowed(ctx context.Context, userID string, stakePoints int64) (allowed bool, reason string, err error)
-	// RecordBet records committed stake for cumulative period-limit tracking.
-	RecordBet(ctx context.Context, userID string, stakePoints int64) error
-	// ReleaseBet reverses previously-recorded committed stake when a
-	// reservation is freed without being spent (cancel / expire / the
-	// unfilled remainder of a partial or market order). committedAt is when
-	// the original RecordBet was made: a release MUST only reduce usage in
-	// the period that commit was counted in — a cross-period cancel must not
-	// offset unrelated bets in a later period (D-5 codex re-review round 3).
-	// Symmetric inverse of RecordBet; implementations must not let cumulative
-	// usage go negative. Best-effort, like RecordBet.
-	ReleaseBet(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) error
-}
-
-// AtomicBetGate is an OPTIONAL ComplianceChecker capability: it performs the
-// bet-limit check and the committed-stake record as one atomic per-user
-// operation. Separate CheckBetAllowed → RecordBet calls have a TOCTOU
-// (codex round-1 #4): N concurrent same-user orders can each pass the gate
-// before any RecordBet runs, so aggregate committed stake exceeds the
-// period bet-limit (bounded only by wallet balance). When the wired checker
-// implements this, the gate uses it and the committed stake is reconciled
-// (released down to realized) after execution instead of recorded then;
-// a checker that does NOT implement it falls back to the legacy (racy)
-// CheckBetAllowed-then-RecordBet path with no behavior change.
-type AtomicBetGate interface {
-	CheckAndRecordBet(ctx context.Context, userID string, stakePoints int64) (allowed bool, reason string, err error)
-}
-
-// SetComplianceChecker wires the responsible-gambling gate. Optional — pass
-// nil (or never call) to leave order placement ungated. Mirrors SetMetrics /
-// SetLoyaltyAdapter: wire after construction so tests can omit it.
-func (s *Service) SetComplianceChecker(c ComplianceChecker) {
-	s.compliance = c
-}
-
-// checkComplianceForOrder blocks an order before any market-state mutation or
-// wallet debit if responsible-play controls disallow it. Mirrors the
-// legacy bets.Service.checkComplianceForPlacement contract: fail-closed in
-// production/staging when the RG service errors, fail-open in development so
-// local testing isn't blocked by a misconfigured checker. nil checker = no-op.
-// Returns recorded=true iff the committed stake was atomically recorded by
-// an AtomicBetGate checker (codex-#4 TOCTOU fix) — the caller must then
-// reconcile (release committed−realized) after execution instead of
-// calling RecordBet. recorded=false means the legacy fall-back path is in
-// effect and the caller records as before. recorded is always false when
-// the order is blocked, when the checker errored (nothing was recorded),
-// for stakePoints<=0 (sells record no usage), and for a non-atomic checker.
-func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakePoints int64) (recorded bool, _ error) {
-	if s.compliance == nil {
-		return false, nil
-	}
-	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
-	atomicGate, atomic := s.compliance.(AtomicBetGate)
-	var (
-		allowed bool
-		reason  string
-		err     error
-	)
-	if atomic {
-		// Atomic check+record closes the check-then-record TOCTOU: a
-		// concurrent same-user order cannot pass the gate between this
-		// decision and the usage write — they are one critical section.
-		allowed, reason, err = atomicGate.CheckAndRecordBet(cctx, userID, stakePoints)
-	} else {
-		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakePoints)
-	}
-	// `allowed == false` is an authoritative RG denial (prediction limit /
-	// self-exclusion / cool-off). The wired RG service returns a sentinel
-	// error *alongside* allowed=false on a deliberate block — that is a
-	// decision, not an outage, so it MUST block regardless of environment.
-	// Treating that sentinel as an infra error and failing open in dev is
-	// exactly what let an over-limit order through (UAT 2026-05-16 LC-17).
-	if !allowed {
-		if strings.TrimSpace(reason) == "" {
-			reason = "order blocked by responsible-play controls"
-		} else {
-			reason = predictionComplianceReason(reason)
-		}
-		return false, fmt.Errorf("%s", reason)
-	}
-	// allowed == true but the checker still errored → it could not evaluate
-	// (genuine infra ambiguity). Fail closed in production/staging so an
-	// outage cannot silently disable the control; fail open in development
-	// so a locally-misconfigured RG backend doesn't block testing. Nothing
-	// was recorded in this branch (CheckAndRecordBet records only on a
-	// clean allow), so recorded stays false.
-	if err != nil {
-		env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-		if env == "production" || env == "staging" {
-			return false, fmt.Errorf("responsible-gambling check unavailable")
-		}
-		return false, nil // fail-open in development only
-	}
-	// Clean allow. The atomic gate recorded the committed stake iff it was
-	// positive (sells / zero-stake gate-only orders record nothing).
-	return atomic && stakePoints > 0, nil
-}
-
-// realizedStakePoints is the cash actually staked by a placed order, for
-// cumulative RG period-limit tracking. It must be the amount that really left
-// the wallet — never the reserved notional — or a thin/partial fill would
-// over-count and wrongly lock the user out for the rest of the period.
-//   - Nothing filled (rejected / cancelled-zero-fill / still-resting limit):
-//     0 — no stake consumed yet.
-//   - Order-book fill: CapturedCashPoints (realized; TotalCostPoints on this
-//     path is the reserved cap, not what was spent — UAT 2026-05-16 LC-17).
-//   - AMM fill: TotalCostPoints (the AMM path's realized executed cost;
-//     CapturedCashPoints is an exchange-engine-only field, 0 here).
-func realizedStakePoints(o *Order) int64 {
-	if o == nil || o.FilledQuantity <= 0 {
-		return 0
-	}
-	if o.CapturedCashPoints > 0 {
-		return o.CapturedCashPoints
-	}
-	return o.TotalCostPoints
-}
-
-// recordComplianceOrder records realized committed stake for cumulative
-// period-limit tracking. Best-effort: a tracking-write failure must not unwind
-// a committed order (the funds already moved), so the error is swallowed.
-// Skipped for zero/negative stake (sells reserve no cash) and nil checker.
-func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stakePoints int64) {
-	if s.compliance == nil || stakePoints <= 0 {
-		return
-	}
-	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-	_ = s.compliance.RecordBet(cctx, userID, stakePoints)
-}
-
-// releaseComplianceOrder reverses committed stake when a reservation is freed
-// without being spent (cancel / expire / unfilled remainder). Best-effort and
-// symmetric with recordComplianceOrder: skipped for zero/negative amounts and
-// a nil checker; a tracking-write failure must not unwind a committed cancel.
-func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountPoints int64, committedAt time.Time) {
-	if s.compliance == nil || amountPoints <= 0 {
-		return
-	}
-	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-	_ = s.compliance.ReleaseBet(cctx, userID, amountPoints, committedAt)
-}
-
-func predictionComplianceReason(reason string) string {
-	reason = strings.Replace(reason, "Bet limit", "Prediction limit", 1)
-	reason = strings.Replace(reason, "bet limit", "prediction limit", 1)
-	return reason
-}
-
-// isTerminalReservedStatus reports whether an order-book order has reached a
-// state where its wallet reservation's unfilled remainder is freed in the
-// same flow (so RG can reconcile committed→realized immediately). A resting
-// order (open/partial) is NOT terminal: its committed stake stays counted
-// until cancel/expire releases it. 'rejected' is handled by the caller (no
-// reservation was ever taken) and deliberately excluded here.
-func isTerminalReservedStatus(st OrderStatus) bool {
-	return st == OrderStatusFilled || st == OrderStatusCancelled || st == OrderStatusExpired
-}
-
-// rgPlacementAccounting is the reserve+reconcile decision for an order-book
-// placement (D-5 codex P1 #2). It always records the committed worst-case
-// stake — the value the gate evaluated and the wallet reserved — so a
-// resting limit order or a future maker fill cannot bypass the period limit
-// (the pre-fix code recorded only realizedStakePoints, which is 0 for a
-// resting order). If the order is already terminal (market/IOC taker,
-// immediate fill) its unfilled remainder is freed in the same flow, so it
-// also releases committed−realized: the net equals realized. A resting
-// order (open/partial) releases nothing here — its committed stays counted
-// until cancel/expire releases the remainder. A never-reserved reject (or a
-// zero committed) records nothing.
-func rgPlacementAccounting(committed int64, o *Order) (record, release int64) {
-	if o == nil || committed <= 0 || o.Status == OrderStatusRejected {
-		return 0, 0
-	}
-	record = committed
-	if isTerminalReservedStatus(o.Status) {
-		if rel := committed - realizedStakePoints(o); rel > 0 {
-			release = rel
-		}
-	}
-	return record, release
-}
-
-// rgReleaseAfterAtomicGate is the reconcile-only counterpart of
-// rgPlacementAccounting for the AtomicBetGate path: the committed worst-case
-// stake was ALREADY recorded atomically at the gate (closing the codex-#4
-// TOCTOU), so placement never records again — it only releases the portion
-// that did not become realized spend. A failed placement or a concurrent
-// idempotent replay releases the whole committed amount (the order did not
-// stand / the original request already counts it). A terminal order releases
-// committed−realized (the unfilled remainder). A resting order releases
-// nothing now: its full committed stays counted until cancel/expire frees
-// the remainder (preserves the D-5 resting-order invariant). A
-// never-reserved reject releases the whole committed (realized 0).
-func rgReleaseAfterAtomicGate(committed int64, o *Order, replayed, hadErr bool) int64 {
-	if committed <= 0 {
-		return 0
-	}
-	if hadErr || replayed || o == nil || o.Status == OrderStatusRejected {
-		return committed
-	}
-	if isTerminalReservedStatus(o.Status) {
-		if rel := committed - realizedStakePoints(o); rel > 0 {
-			return rel
-		}
-		return 0
-	}
-	return 0 // resting (open/partial): committed stays counted (D-5)
-}
 
 // SetMetrics enables domain-level Prometheus counter emission. Wire after
 // construction so tests that don't care about observability can pass nil.
@@ -823,51 +602,12 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("market %s is not open for trading", market.Ticker)
 	}
 
-	// Responsible-gambling gate — runs before any market-state mutation or
-	// wallet debit so a self-excluded / cool-off / over-limit user is stopped
-	// before money moves. worstCaseSpend is the cash committed (price×qty for
-	// limit buys, notional cap for market buys, 0 for sells). Sells still hit
-	// the gate (stake 0) so self-exclusion / cool-off block them too, while
-	// per-bet stake limits don't apply to position-closing sells.
-	committed := worstCaseSpend(req)
-	gateRecorded, err := s.checkComplianceForOrder(ctx, userID, committed)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	// Branch on execution mode. Markets created before migration 019 default to
 	// 'amm'; new markets default to 'order_book'. The exchange path supports
 	// limit + market orders, partial fills, complementary issuance, and sells
 	// from existing positions; the AMM path stays buy-only for back-compat.
 	if market.ExecutionMode == ExecutionModeOrderBook {
-		o, t, replayed, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
-		// Reserve+reconcile RG accounting (D-5 codex P1 #2). Recording only
-		// the realized taker fill let a user bypass the period limit two ways:
-		// (a) many resting limit orders each passed the gate independently
-		// because nothing was recorded until fill, and (b) a maker fill was
-		// never recorded at all. Instead the *committed* worst-case stake —
-		// the same value the gate evaluated and the wallet reserved — counts
-		// from placement so it covers a resting order; the unfilled remainder
-		// is reconciled (released) once the order is terminal.
-		if gateRecorded {
-			// codex-#4 path: the committed stake was recorded ATOMICALLY at
-			// the gate (no check-then-record TOCTOU). Never record again
-			// here — only release the portion that did not become realized
-			// spend. A failed placement or a concurrent idempotent replay
-			// (#3) releases the whole committed amount; a terminal order
-			// releases committed−realized; a resting order releases nothing
-			// (its committed stays counted until cancel/expire).
-			rel := rgReleaseAfterAtomicGate(committed, o, replayed, perr != nil)
-			s.releaseComplianceOrder(ctx, userID, rel, time.Now().UTC())
-		} else if perr == nil && !replayed {
-			// Legacy fall-back (non-atomic checker): record at placement
-			// then release the terminal remainder, exactly as before.
-			rec, rel := rgPlacementAccounting(committed, o)
-			s.recordComplianceOrder(ctx, userID, rec)
-			// committedAt = now: the record and this terminal release happen
-			// in the same call, so they are always the same RG period.
-			s.releaseComplianceOrder(ctx, userID, rel, time.Now().UTC())
-		}
+		o, t, _, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
 		return o, t, perr
 	}
 
@@ -876,11 +616,7 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 	// still carry execution_mode='amm'. New trades on such a market are refused;
 	// existing positions stay fully settleable and voidable because settlement is
 	// engine-agnostic (it pays 100c/contract from prediction_positions, never
-	// touching AMM state). Release any RG stake the gate atomically recorded,
-	// since no order is placed.
-	if gateRecorded {
-		s.releaseComplianceOrder(ctx, userID, committed, time.Now().UTC())
-	}
+	// touching AMM state).
 	return nil, nil, fmt.Errorf("market %s uses the retired AMM engine and is no longer tradeable; existing positions can still be settled", market.Ticker)
 }
 
@@ -1237,21 +973,20 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 // finalizeRestingExchangeOrder moves a resting exchange order to a terminal
 // state — OrderStatusCancelled (user cancel) or OrderStatusExpired (the
 // close/void sweep: the order's market is no longer tradeable) — in one tx
-// so the wallet reservation release commits with the status update, then
-// reconciles the RG committed stake (release reserved−captured, scoped to
-// the order's original commit period — D-5). Buy orders had cash held; sell
-// orders had shares reserved and those share locks are released here.
+// so the wallet reservation release commits with the status update. Buy
+// orders had cash held; sell orders had shares reserved and those share
+// locks are released here.
 func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order, terminal OrderStatus) error {
 	finalizer, ok := s.repo.(RestingOrderFinalizer)
 	if !ok {
 		return fmt.Errorf("exchange order finalizer unavailable")
 	}
-	reservedPoints, capturedPoints, placedAt, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
+	_, _, _, err := finalizer.FinalizeRestingOrderAtomic(ctx, exchangeWallet, order, terminal)
 	if errors.Is(err, ErrOrderAlreadyTerminal) {
 		// Lost the race to a concurrent fill/cancel/expiry: the winner's tx
-		// already settled reservations and RG accounting, and the finalize tx
-		// rolled back without touching them. Same idempotent no-op contract
-		// as cancelling an already-terminal order.
+		// already settled the reservations, and the finalize tx rolled back
+		// without touching them. Same idempotent no-op contract as cancelling
+		// an already-terminal order.
 		return nil
 	}
 	if err != nil {
@@ -1264,17 +999,6 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 		order.CancelledAt = &now
 	}
 	order.UpdatedAt = now
-
-	// Reserve+reconcile (D-5 codex P1 #2): the committed stake was recorded
-	// toward the RG period at placement. Cancelling frees the uncaptured
-	// remainder, so release exactly that — leaving net RG usage equal to the
-	// cash actually captured. Best-effort, post-commit (mirrors RecordBet).
-	// committedAt = the order's placement time: if the order has rested past
-	// a period boundary the RG service no-ops the release (the original
-	// commit already aged out of the current period, so reversing it now
-	// would wrongly free headroom for unrelated current-period bets —
-	// D-5 codex re-review round 3).
-	s.releaseComplianceOrder(ctx, order.UserID, reservedPoints-capturedPoints, placedAt)
 	return nil
 }
 
@@ -1282,10 +1006,9 @@ func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWall
 // whose market is no longer tradeable (closed/settled/voided). No market-
 // transition path (admin TransitionMarketStatus, the MarketCloser worker,
 // or SettlementEngine void) finalizes resting orders, so without this sweep
-// the order's RG committed stake stays counted toward the user's period
-// risk limit and its wallet point reservation stays held — indefinitely
+// the order's wallet point reservation stays held — indefinitely
 // (expired-order residual). Each order is finalized to OrderStatusExpired
-// via the same tx + RG-reconcile path as a user cancel. Best-effort: a
+// via the same tx path as a user cancel. Best-effort: a
 // per-order failure is counted and retried on the next tick; returns
 // (expired, failed). The worker logs.
 func (s *Service) SweepExpiredRestingOrders(ctx context.Context) (expired, failed int, err error) {

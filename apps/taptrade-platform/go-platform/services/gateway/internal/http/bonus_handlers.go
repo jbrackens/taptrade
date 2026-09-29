@@ -145,7 +145,7 @@ func playerBonusDetailHandler(svc playerBonusGetter) func(stdhttp.ResponseWriter
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		// Parse /api/v1/bonuses/{id} or /api/v1/bonuses/{id}/progress
+		// Parse /api/v1/bonuses/{id}
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/bonuses/")
 		parts := strings.SplitN(path, "/", 2)
 		id, err := strconv.ParseInt(parts[0], 10, 64)
@@ -162,10 +162,6 @@ func playerBonusDetailHandler(svc playerBonusGetter) func(stdhttp.ResponseWriter
 		userID := httpx.UserIDFromContext(r.Context())
 		if pb.UserID != userID {
 			return httpx.Forbidden("access denied")
-		}
-
-		if len(parts) == 2 && parts[1] == "progress" {
-			return httpx.WriteJSON(w, stdhttp.StatusOK, playerBonusProgressResponse(pb))
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, playerBonusResponse(pb, campaignNameFromBonus(pb)))
@@ -185,7 +181,6 @@ func campaignNameFromBonus(pb bonus.PlayerBonus) string {
 }
 
 func playerBonusResponse(pb bonus.PlayerBonus, campaignName string) map[string]any {
-	progressPct := pb.WageringProgressPct()
 	expiresAt := pb.ExpiresAt.Format("2006-01-02T15:04:05Z07:00")
 	grantedAt := pb.GrantedAt.Format("2006-01-02T15:04:05Z07:00")
 	bonusType := launchCampaignType(pb.BonusType)
@@ -206,26 +201,8 @@ func playerBonusResponse(pb bonus.PlayerBonus, campaignName string) map[string]a
 		"granted_at":    grantedAt,
 		"grantedAt":     grantedAt,
 
-		"grantedPoints":       pb.GrantedAmountPoints,
-		"remainingPoints":     pb.RemainingAmountPoints,
-		"playRequiredPoints":  pb.WageringRequiredPoints,
-		"playCompletedPoints": pb.WageringCompletedPoints,
-		"playProgressPct":     progressPct,
-	}
-}
-
-func playerBonusProgressResponse(pb bonus.PlayerBonus) map[string]any {
-	progressPct := pb.WageringProgressPct()
-	return map[string]any{
-		"unit": "PTS",
-
-		"bonus_id": pb.ID,
-		"bonusId":  pb.ID,
-
-		"playRequiredPoints":  pb.WageringRequiredPoints,
-		"playCompletedPoints": pb.WageringCompletedPoints,
-		"playProgressPct":     progressPct,
-		"recentContributions": []any{},
+		"grantedPoints":   pb.GrantedAmountPoints,
+		"remainingPoints": pb.RemainingAmountPoints,
 	}
 }
 
@@ -569,9 +546,6 @@ func campaignRuleResponse(rule bonus.CampaignRule) map[string]any {
 }
 
 func launchCampaignRuleType(ruleType string) string {
-	if ruleType == "wagering" {
-		return "play"
-	}
 	return ruleType
 }
 

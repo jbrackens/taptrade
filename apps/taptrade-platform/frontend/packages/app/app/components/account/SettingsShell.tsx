@@ -11,13 +11,11 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { BellRingingIcon as Bell } from "@phosphor-icons/react/dist/csr/BellRinging";
 import { CaretLeftIcon as ChevronLeft } from "@phosphor-icons/react/dist/csr/CaretLeft";
-import { HandHeartIcon as HeartHandshake } from "@phosphor-icons/react/dist/csr/HandHeart";
 import { ShieldCheckIcon as Lock } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { ReceiptIcon as ReceiptText } from "@phosphor-icons/react/dist/csr/Receipt";
 import { UserCircleIcon as UserRound } from "@phosphor-icons/react/dist/csr/UserCircle";
-import { FEATURE_RG } from "../../lib/features";
 
-export type SettingsSection = "profile" | "security" | "alerts" | "ledger" | "responsible";
+export type SettingsSection = "profile" | "security" | "alerts" | "ledger";
 
 const NAV: {
   id: SettingsSection;
@@ -31,14 +29,6 @@ const NAV: {
   { id: "security", href: "/account/security", icon: Lock, key: "nav.security", fallback: "Security" },
   { id: "alerts", href: "/account/notifications", icon: Bell, key: "nav.alerts", fallback: "Alerts" },
   { id: "ledger", href: "/account/transactions", icon: ReceiptText, key: "nav.ledger", fallback: "Clout history" },
-  {
-    id: "responsible",
-    href: "/responsible-gaming",
-    icon: HeartHandshake,
-    key: "nav.responsible",
-    fallback: "Play responsibly",
-    enabled: FEATURE_RG,
-  },
 ];
 
 // Each section's heading, so pages that predate the shell stay one-liners.
@@ -47,7 +37,6 @@ const SECTION_COPY: Record<SettingsSection, [string, string, string, string]> = 
   security: ["security.title", "Security", "security.subtitle", "Password, two-factor authentication and active sessions."],
   alerts: ["alerts.title", "Alerts", "alerts.subtitle", "Choose how you hear about markets and your account."],
   ledger: ["ledger.title", "Clout history", "ledger.subtitle", "Every bit of Clout in and out of your account."],
-  responsible: ["responsible.title", "Play responsibly", "responsible.subtitle", "Limits, cool-offs and self-exclusion."],
 };
 
 export function SettingsShell({

@@ -3,8 +3,6 @@ import {
   PunterDetails,
   Id,
   WalletHistoryActionElement,
-  PunterStandardLimitsScope,
-  PunterSessionLimitsScope,
   PaymentMethodTypeEnum,
 } from "@taptrade-ui/utils";
 
@@ -14,20 +12,6 @@ export type OfficePunter = PunterDetails & {
   twoFactorAuthEnabled: boolean;
   hasActiveSession: boolean;
 };
-
-export type OfficePunterLimitsScope =
-  | PunterStandardLimitsScope
-  | PunterSessionLimitsScope;
-
-export type OfficePunterLimits = {
-  [key in OfficePunterLimitsTypesEnum]?: OfficePunterLimitsScope;
-};
-
-export enum OfficePunterLimitsTypesEnum {
-  POINT_ADD = "deposits",
-  POINT_USE = "stake",
-  SESSION = "session",
-}
 
 export type OfficePunterWalletPaymentMethod = {
   type?: PaymentMethodTypeEnum;
@@ -114,47 +98,4 @@ export type OfficePunterNotesItem = {
   authorName: OfficePunterNotesAuthor;
   noteType: OfficePunterNotesType;
   text: string;
-};
-
-export enum PeriodEnum {
-  DAY = "DAY",
-  MONTH = "MONTH",
-  WEEK = "WEEK",
-}
-
-export type PeriodType = PeriodEnum.DAY | PeriodEnum.MONTH | PeriodEnum.WEEK;
-
-export enum LimitTypeEnum {
-  POINT_ADD_AMOUNT = "DEPOSIT_AMOUNT",
-  PREDICTION_POINT_AMOUNT = "STAKE_AMOUNT",
-  SESSION_TIME = "SESSION_TIME",
-}
-
-export type LimitType =
-  | LimitTypeEnum.POINT_ADD_AMOUNT
-  | LimitTypeEnum.PREDICTION_POINT_AMOUNT
-  | LimitTypeEnum.SESSION_TIME;
-
-export type LimitsHistoryData = {
-  period: PeriodType;
-  limit: string;
-  effectiveFrom: string;
-  limitType: LimitType;
-  requestedAt: string;
-};
-
-export enum CoolOffCauseEnum {
-  SELF_INITIATED = "SELF_INITIATED",
-  SESSION_LIMIT_BREACH = "SESSION_LIMIT_BREACH",
-}
-
-export type CoolOffCause =
-  | CoolOffCauseEnum.SELF_INITIATED
-  | CoolOffCauseEnum.SESSION_LIMIT_BREACH;
-
-export type CoolOffsHistoryData = {
-  punterId: string;
-  coolOffStart: string;
-  coolOffEnd: string;
-  coolOffCause: CoolOffCause;
 };

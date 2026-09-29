@@ -18,7 +18,6 @@ const PUBLIC_ROUTES = [
   "/market",
   "/category",
   // Informational pages
-  "/responsible-gaming",
   "/contact-us",
   "/about",
   "/tos",

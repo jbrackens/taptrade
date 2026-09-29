@@ -36,10 +36,7 @@ type Config struct {
 	// FirstPurchaseBonusBps optionally grants extra bonus points on a user's
 	// first completed-eligible checkout: basePoints * bps / 10000. 0 = off.
 	FirstPurchaseBonusBps int64
-	// DeployedEnv is true when ENVIRONMENT is production or staging. The
-	// responsible-play limit check fails CLOSED there (an unavailable checker
-	// blocks checkout) and fails open in dev, mirroring the legacy payments
-	// posture.
+	// DeployedEnv is true when ENVIRONMENT is production or staging.
 	DeployedEnv bool
 }
 

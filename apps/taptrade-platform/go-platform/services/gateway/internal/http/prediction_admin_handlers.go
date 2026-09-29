@@ -68,10 +68,9 @@ type adminPunterNotePayload struct {
 
 // allowedPunterAdminStatuses gates the status values the office can set.
 var allowedPunterAdminStatuses = map[string]struct{}{
-	"active":        {},
-	"suspended":     {},
-	"self_excluded": {},
-	"deactivated":   {},
+	"active":      {},
+	"suspended":   {},
+	"deactivated": {},
 }
 
 // registerPredictionAdminRoutes wires the prediction-native admin read APIs
@@ -163,7 +162,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			status := strings.TrimSpace(strings.ToLower(body.Status))
 			if _, ok := allowedPunterAdminStatuses[status]; !ok {
 				return httpx.BadRequest(
-					"status must be one of active, suspended, self_excluded, deactivated",
+					"status must be one of active, suspended, deactivated",
 					map[string]any{"field": "status", "value": body.Status},
 				)
 			}

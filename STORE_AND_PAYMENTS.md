@@ -295,30 +295,19 @@ free-grant reason set (`TestLedgerReasonsAreNotFreeGrantReasons`).
 - Secrets stay server-side; nothing new enters client bundles beyond the
   public store API responses.
 
-## 12. Responsible-play + jurisdiction integration (owner decision 2026-07-12)
+## 12. Jurisdiction integration (owner decision 2026-07-12; limits removed 2026-09-29)
 
-Point-pack purchases **count toward responsible-play deposit limits** and
-checkout is guarded by the jurisdiction gate on the deposit surface:
+Checkout is guarded by the jurisdiction gate on the deposit surface: the seam
+`store.ComplianceGate` (a nil-safe package var wired in
+`internal/http/handlers.go`) runs the same geo/KYC gate as trading before a
+purchase row or provider session exists.
 
-- Checkout creation checks `CheckDepositAllowed(user, priceUsdCents)` after
-  server-side pack resolution and **before any purchase row or provider
-  session exists** (in Stripe mode this is the last stop before real money
-  moves — a captured payment is never refused fulfillment for limit
-  reasons). Denials return 403 with the stable point-native reason code
-  `purchase_limit_reached`; raw checker wording (which may contain legacy
-  deposit/money vocabulary) never reaches launch clients.
-- The **first** successful fulfillment records the spend
-  (`RecordDeposit(user, priceUsdCents)`, best-effort); replays and
-  failed/canceled outcomes record nothing (proven by tests via limit math).
-- Amount semantics: the real-money price in integer cents (numerically equal
-  to base points under 1pt = 1¢); promotional bonus points consume no
-  headroom.
-- Checker outages fail **closed** in production/staging and open (warn) in
-  dev, mirroring the legacy payments posture.
-- Known small gap (accepted, demo-mode): several concurrently-open pending
-  checkouts each pass the limit check before any of them records.
-- Seams (`store.RGLimits`, `store.ComplianceGate`) are nil-safe package vars
-  wired in `internal/http/handlers.go`, matching the payments precedent.
+The responsible-play purchase limits that used to sit beside it
+(`CheckDepositAllowed` / `RecordDeposit` against per-period deposit limits,
+`store.RGLimits`, the `purchase_limit_reached` reason code) were sportsbook
+residue and were removed on 2026-09-29
+([ADR-0014](docs/adr/0014-remove-sportsbook-residue.md)). Nothing counts
+point-pack purchases against a limit.
 
 ## 13. Catalogue administration (owner decision 2026-07-12)
 

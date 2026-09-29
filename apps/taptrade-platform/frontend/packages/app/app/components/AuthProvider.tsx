@@ -18,7 +18,6 @@ import {
   MfaRequiredError,
   verifyLoginMfa,
 } from "../lib/api/auth-client";
-import { getCoolOffStatus } from "../lib/api/compliance-client";
 import { claimStarterGrant } from "../lib/api/wallet-client";
 import { IdleActivityMonitor } from "./IdleActivityMonitor";
 import { useToast } from "./ToastProvider";
@@ -253,7 +252,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   // completeLogin runs once the auth service has set the session cookies:
-  // it validates the session, applies the cool-off block, and stores the user.
+  // it validates the session and stores the user.
   const completeLogin = useCallback(
     async (opts?: { welcomeToast?: boolean }) => {
       try {
@@ -261,28 +260,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const session = await getSession();
         if (!session.authenticated) {
           throw new Error("Authenticated session could not be restored");
-        }
-
-        // Check cool-off status before completing login
-        const coolOff = await getCoolOffStatus(session.userId);
-        if (coolOff.status === "active" && coolOff.coolOffUntil) {
-          const coolOffEnd = new Date(coolOff.coolOffUntil);
-          if (coolOffEnd > new Date()) {
-            logger.warn("Auth", "Login blocked due to active cool-off period", {
-              userId: session.userId,
-              coolOffUntil: coolOff.coolOffUntil,
-            });
-            // Clear server-side cookies via logout endpoint
-            await fetch("/api/v1/auth/logout/", {
-              method: "POST",
-              credentials: "include",
-              headers: getCSRFHeaders(),
-            }).catch(() => {});
-            clearStoredUser();
-            throw new Error(
-              `Your account is under a cool-off period until ${coolOffEnd.toLocaleDateString()}. Please try again later.`,
-            );
-          }
         }
 
         const authenticatedUser = {

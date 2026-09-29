@@ -28,7 +28,6 @@ function read(rel: string): string {
 const account = read("account/page.tsx");
 const tabs = read("components/account/ProfileTabs.tsx");
 const avatar = read("components/account/ProfileAvatar.tsx");
-const shell = read("components/account/SettingsShell.tsx");
 const settings = read("account/settings/page.tsx");
 const publicProfile = read("users/[userId]/page.tsx");
 const nextConfig = read("../next.config.js");
@@ -84,11 +83,6 @@ describe("profile uses the board's card recipe", () => {
   it("links Profile to /account/settings and Security to /account/security", () => {
     assert.match(account, /href="\/account\/settings"[\s\S]{0,200}actions\.profile\.title/);
     assert.match(account, /href="\/account\/security"[\s\S]{0,200}actions\.security\.title/);
-  });
-
-  it("keeps Play responsibly flag-gated", () => {
-    assert.match(account, /\{FEATURE_RG && \(/);
-    assert.match(shell, /enabled: FEATURE_RG/);
   });
 });
 

@@ -13,9 +13,6 @@ export interface PlayerBonus {
   unit: string;
   grantedPoints: number;
   remainingPoints: number;
-  playRequiredPoints: number;
-  playCompletedPoints: number;
-  playProgressPct: number;
   expiresAt: string;
   grantedAt: string;
 }
@@ -25,25 +22,6 @@ export interface WalletBreakdown {
   bonusPoints: number;
   totalPoints: number;
   unit: string;
-}
-
-export interface PlayContribution {
-  betId: string;
-  betType: string;
-  playAmountPoints: number;
-  contributionPoints: number;
-  oddsDecimal: number;
-  legCount: number;
-  contributedAt: string;
-}
-
-export interface BonusProgress {
-  bonusId: number;
-  unit: string;
-  playRequiredPoints: number;
-  playCompletedPoints: number;
-  playProgressPct: number;
-  recentContributions: PlayContribution[];
 }
 
 interface BonusListResponse {
@@ -65,44 +43,10 @@ interface PlayerBonusResponse {
   remaining_amount_points?: number;
   remainingAmountPoints?: number;
   remainingPoints?: number;
-  wagering_required_points?: number;
-  wageringRequiredPoints?: number;
-  playRequiredPoints?: number;
-  wagering_completed_points?: number;
-  wageringCompletedPoints?: number;
-  playCompletedPoints?: number;
-  wagering_progress_pct?: number;
-  wageringProgressPct?: number;
-  playProgressPct?: number;
   expires_at?: string;
   expiresAt?: string;
   granted_at?: string;
   grantedAt?: string;
-}
-
-interface BonusProgressResponse {
-  unit?: string;
-  bonus_id?: number;
-  bonusId?: number;
-  wagering_required_points?: number;
-  wageringRequiredPoints?: number;
-  playRequiredPoints?: number;
-  wagering_completed_points?: number;
-  wageringCompletedPoints?: number;
-  playCompletedPoints?: number;
-  progressPct?: number;
-  playProgressPct?: number;
-  recentContributions?: LegacyPlayContributionResponse[];
-}
-
-interface LegacyPlayContributionResponse {
-  betId: string;
-  betType: string;
-  stakePoints?: number;
-  contributionPoints?: number;
-  oddsDecimal: number;
-  legCount: number;
-  contributedAt: string;
 }
 
 interface BreakdownResponse {
@@ -182,14 +126,6 @@ export async function claimBonus(
   return normalizePlayerBonus(result);
 }
 
-export async function getBonusProgress(
-  bonusId: number,
-): Promise<BonusProgress> {
-  return apiClient
-    .get<BonusProgressResponse>(`/api/v1/bonuses/${bonusId}/progress`)
-    .then(normalizeBonusProgress);
-}
-
 export async function getWalletBreakdown(
   userId: string,
 ): Promise<WalletBreakdown> {
@@ -245,21 +181,6 @@ function normalizePlayerBonus(raw: PlayerBonusResponse): PlayerBonus {
     raw.remainingAmountPoints ??
     raw.remaining_amount_points ??
     0;
-  const playRequiredPoints =
-    raw.playRequiredPoints ??
-    raw.wageringRequiredPoints ??
-    raw.wagering_required_points ??
-    0;
-  const playCompletedPoints =
-    raw.playCompletedPoints ??
-    raw.wageringCompletedPoints ??
-    raw.wagering_completed_points ??
-    0;
-  const playProgressPct =
-    raw.playProgressPct ??
-    raw.wageringProgressPct ??
-    raw.wagering_progress_pct ??
-    0;
 
   return {
     bonusId: raw.bonusId ?? raw.bonus_id ?? 0,
@@ -269,49 +190,7 @@ function normalizePlayerBonus(raw: PlayerBonusResponse): PlayerBonus {
     unit: raw.unit || "PTS",
     grantedPoints,
     remainingPoints,
-    playRequiredPoints,
-    playCompletedPoints,
-    playProgressPct,
     expiresAt: raw.expiresAt ?? raw.expires_at ?? "",
     grantedAt: raw.grantedAt ?? raw.granted_at ?? "",
-  };
-}
-
-function normalizeBonusProgress(raw: BonusProgressResponse): BonusProgress {
-  const playRequiredPoints =
-    raw.playRequiredPoints ??
-    raw.wageringRequiredPoints ??
-    raw.wagering_required_points ??
-    0;
-  const playCompletedPoints =
-    raw.playCompletedPoints ??
-    raw.wageringCompletedPoints ??
-    raw.wagering_completed_points ??
-    0;
-  const playProgressPct = raw.playProgressPct ?? raw.progressPct ?? 0;
-
-  return {
-    bonusId: raw.bonusId ?? raw.bonus_id ?? 0,
-    unit: raw.unit || "PTS",
-    playRequiredPoints,
-    playCompletedPoints,
-    playProgressPct,
-    recentContributions: (raw.recentContributions || []).map(
-      normalizePlayContribution,
-    ),
-  };
-}
-
-function normalizePlayContribution(
-  raw: LegacyPlayContributionResponse,
-): PlayContribution {
-  return {
-    betId: raw.betId,
-    betType: raw.betType,
-    playAmountPoints: raw.stakePoints ?? raw.stakePoints ?? 0,
-    contributionPoints: raw.contributionPoints ?? raw.contributionPoints ?? 0,
-    oddsDecimal: raw.oddsDecimal,
-    legCount: raw.legCount,
-    contributedAt: raw.contributedAt,
   };
 }

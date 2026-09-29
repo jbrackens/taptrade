@@ -872,13 +872,6 @@ func orderPlacementError(err error) error {
 	if err == nil {
 		return nil
 	}
-	message := err.Error()
-	if strings.Contains(message, "Prediction limit exceeded") || strings.Contains(message, "prediction limit exceeded") {
-		return serviceBadRequestError(err, map[string]any{"reasonCode": "prediction_limit_exceeded"})
-	}
-	if strings.Contains(message, "responsible-play controls") {
-		return serviceBadRequestError(err, map[string]any{"reasonCode": "responsible_play_blocked"})
-	}
 	return serviceBadRequestError(err, nil)
 }
 

@@ -158,9 +158,10 @@
   },
   "activeBonuses": {
     "title": "Bonus Clout yang aktif",
-    "body": "Pantau Clout promosi dan progresnya.",
+    "body": "Clout promosi dikreditkan ke akun Anda.",
     "fallbackName": "Bonus Clout",
     "status": "Status: {{status}}",
+    "expires": "Berakhir {{date}}",
     "remaining": "Clout tersisa"
   }
 }

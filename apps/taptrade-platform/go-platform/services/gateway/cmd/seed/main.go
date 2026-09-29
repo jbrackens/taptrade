@@ -142,7 +142,7 @@ func printSummary(db *sql.DB) {
 		{"Positions", "SELECT COUNT(*) FROM prediction_positions"},
 		{"Trades", "SELECT COUNT(*) FROM prediction_trades"},
 		{"Users", "SELECT COUNT(*) FROM punters"},
-		{"Wallets", "SELECT COUNT(*) FROM wallets"},
+		{"Wallets", "SELECT COUNT(*) FROM wallet_balances"},
 	}
 
 	for _, t := range tables {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { WageringProgress } from "../components/WageringProgress";
 import type { PlayerBonus } from "../lib/api/bonus-client";
 import { formatPointsAmount } from "../lib/points";
 
@@ -16,7 +15,19 @@ const PACK_NAME_CLASS = "m-0 text-[14px] font-semibold text-[var(--t1)]";
 const PACK_DESC_CLASS = "m-0 mt-1 text-[13px] leading-[1.45] text-[var(--t3)]";
 const PACK_AMOUNT_CLASS =
   "whitespace-nowrap text-[14px] font-semibold tabular-nums text-[var(--reward-text)]";
-const MISSION_PROGRESS_CLASS = "mt-0.5 text-[12px] text-[var(--t3)]";
+const META_CLASS = "mt-0.5 text-[12px] text-[var(--t3)]";
+
+function formatExpiry(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
   const { t } = useTranslation("rewards");
@@ -29,7 +40,7 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
       <p className={CLAIM_BODY_CLASS}>
         {t(
           "activeBonuses.body",
-          "Track promotional Clout and its progress.",
+          "Promotional Clout credited to your account.",
         )}
       </p>
       <div className={PACKS_LIST_CLASS}>
@@ -45,20 +56,17 @@ export function ActiveBonusesControl({ bonuses }: { bonuses: PlayerBonus[] }) {
                   status: bonus.status,
                 })}
               </p>
-              <div className="mt-2">
-                <WageringProgress
-                  requiredPoints={bonus.playRequiredPoints}
-                  completedPoints={bonus.playCompletedPoints}
-                  progressPct={bonus.playProgressPct}
-                  expiresAt={bonus.expiresAt}
-                />
-              </div>
+              <p className={META_CLASS}>
+                {t("activeBonuses.expires", "Expires {{date}}", {
+                  date: formatExpiry(bonus.expiresAt),
+                })}
+              </p>
             </div>
             <div className="text-right">
               <div className={PACK_AMOUNT_CLASS}>
                 {formatPointsAmount(bonus.remainingPoints)}
               </div>
-              <div className={MISSION_PROGRESS_CLASS}>
+              <div className={META_CLASS}>
                 {t("activeBonuses.remaining", "Clout remaining")}
               </div>
             </div>

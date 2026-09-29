@@ -18,10 +18,6 @@ export const resolveStatus = (status: PunterStatus) => {
       color = "red";
       tKey = "CELL_STATUS_SUSPENDED";
       break;
-    case PunterStatusEnum.SELF_EXCLUDED:
-      color = "red";
-      tKey = "CELL_STATUS_SELF_EXCLUDED";
-      break;
     case PunterStatusEnum.UNVERIFIED:
       color = "blue";
       tKey = "CELL_STATUS_UNVERIFIED";

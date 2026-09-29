@@ -16,13 +16,18 @@ NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
 ```
 
 Feature flags default off and are read in `app/lib/features.ts`:
-`NEXT_PUBLIC_FEATURE_RG`, `NEXT_PUBLIC_FEATURE_KYC`,
-`NEXT_PUBLIC_FEATURE_LIMITS`, `NEXT_PUBLIC_FEATURE_CHAT`,
+`NEXT_PUBLIC_FEATURE_KYC`, `NEXT_PUBLIC_FEATURE_CHAT`,
 `NEXT_PUBLIC_FEATURE_LIVE_MARKETS`, `NEXT_PUBLIC_FEATURE_SOCIAL_AUTH`.
 
 Install from the yarn workspace root (`frontend/`), not from this package.
 
 ## Scripts
+
+Run these via `yarn workspace @taptrade-ui/app <script>` from the frontend
+root, or `cd` into this package first. The old root-level `dev` /
+`run-local:dev` aliases that also started the retired mock-server package are
+gone — there is no live backend to fake against; point `NEXT_PUBLIC_API_URL`
+at a running gateway instead.
 
 - `dev` — `next dev --webpack` on port 3000
 - `run-local:dev` — the same dev server plus the translation watcher
@@ -79,4 +84,4 @@ chat, live-markets, market-social, market-watchlist — over the shared
 
 ### Other scripts
 
-See core [README.md](../../README.md#scripts)
+Every command is listed in [docs/ENVIRONMENT.md §4](../../../../../docs/ENVIRONMENT.md#4-commands)

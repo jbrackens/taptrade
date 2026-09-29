@@ -16,10 +16,6 @@
     "yarn": ">=1.22.22 <2"
   },
   "scripts": {
-    "dev": "concurrently --kill-others 'yarn run-local:dev'",
-    "dev:office": "concurrently --kill-others 'yarn run-local:dev:office'",
-    "run-local:dev": "lerna run --scope @taptrade-ui/app --scope @taptrade-ui/mock-server --parallel run-local:dev",
-    "run-local:dev:office": "lerna run --scope @taptrade-ui/office --scope @taptrade-ui/mock-server --parallel run-local:dev",
     "run-docker:app:dev": "yarn dockerize:app    && docker run --rm -p 3000:3000 --env-file packages/app/.env.development     taptrade-ui/app",
     "run-docker:app:stage": "yarn dockerize:app    && docker run --rm -p 3000:3000 --env-file packages/app/.env.staging         taptrade-ui/app",
     "run-docker:office:dev": "yarn dockerize:office && docker run --rm -p 3000:3000 --env-file packages/office/.env.development  taptrade-ui/office",

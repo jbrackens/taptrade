@@ -17,10 +17,6 @@ import (
 	"taptrade/platform/transport/httpx"
 )
 
-// DepositComplianceChecker is an optional interface for deposit limit checks.
-// If set, deposits are validated against responsible gaming limits before processing.
-var DepositComplianceChecker compliance.ResponsibleGamblingService
-
 // KYCGate is the optional KYC just-in-time gate for withdrawals (LC-22/D-8).
 // If set AND KYC_ENFORCEMENT is enabled, a withdrawal that would push the
 // user's cumulative cash-out past KYC_WITHDRAWAL_THRESHOLD_CENTS requires a
@@ -160,26 +156,6 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("paymentMethod is required", map[string]any{"field": "paymentMethod"})
 		}
 
-		// Check deposit limits before processing
-		if DepositComplianceChecker != nil {
-			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-			defer cancel()
-			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, userID, req.Amount)
-			if err != nil {
-				if errors.Is(err, compliance.ErrDepositLimitExceeded) || errors.Is(err, compliance.ErrUserExcluded) || errors.Is(err, compliance.ErrUserBlocked) {
-					return httpx.Forbidden("deposit not allowed: " + reason)
-				}
-				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-				if env == "production" || env == "staging" {
-					slog.Error("deposit compliance check failed", "user_id", userID, "env", env, "error", err)
-					return httpx.Forbidden("deposit compliance check unavailable")
-				}
-				slog.Warn("deposit compliance check failed, allowing deposit in dev mode", "user_id", userID, "error", err)
-			} else if !allowed {
-				return httpx.Forbidden("deposit not allowed: " + reason)
-			}
-		}
-
 		ctx := r.Context()
 		if key := r.Header.Get("Idempotency-Key"); strings.TrimSpace(key) != "" {
 			if len(key) > 128 {
@@ -190,15 +166,6 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 		result, err := service.InitiateDeposit(ctx, userID, req.Amount, req.PaymentMethod)
 		if err != nil {
 			return mapPaymentError(err)
-		}
-
-		// Record deposit for limit tracking
-		if DepositComplianceChecker != nil {
-			ctx2, cancel2 := context.WithTimeout(r.Context(), 2*time.Second)
-			defer cancel2()
-			if err := DepositComplianceChecker.RecordDeposit(ctx2, userID, req.Amount); err != nil {
-				slog.Warn("failed to record deposit for compliance tracking", "user_id", userID, "error", err)
-			}
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{

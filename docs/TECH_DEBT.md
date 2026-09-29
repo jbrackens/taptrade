@@ -8,8 +8,10 @@
 > **Last verified:** 2026-09-29 at commit `4924a670` — every item was re-checked
 > against source (read or grep) in the 2026-09-29 review rather than copied from an audit.
 > Updated the same day by the hardening change that closed nine items (see
-> [Recently resolved](#recently-resolved)) and added TD-056 – TD-060. TD-005
-> stays open: two-factor sign-in was built, then switched off by the owner.
+> [Recently resolved](#recently-resolved)) and added TD-056 – TD-060, and by
+> the sportsbook-residue removal (four items removed rather than fixed;
+> TD-061 – TD-062 added). TD-005 stays open: two-factor sign-in was built,
+> then switched off by the owner.
 > Candidate lists came from `audit/AUDIT_REPORT.md`, `audit/IMPROVEMENT_PLAN.md`,
 > `audit/SECURITY-REVIEW-2026-06-14.md`, `audit/ARCH-CLEANUP-2026-06-14.md`, the
 > archived `CURRENT_STATE.md` and `licensability-gaps.md`, the ADRs,
@@ -29,7 +31,7 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 |---|---|---|---|---|---|
 | TD-001 | Admin wallet credit/debit is single-admin and uncapped | `gateway/internal/http/admin_handlers.go` (`adminCreditPath`, `finances:write` only; amount only checked `> 0` in `wallet_handlers.go` `decodeWalletMutationRequest`) | One admin, or one compromised admin account, can create unlimited Points | P1 | Wire `gateway/internal/approval` above a threshold — blocked on [D-1](TASKS.md#needs-a-decision) |
 | TD-002 | Manual settlement is single-admin | `gateway/internal/http/prediction_handlers.go` `/api/v1/admin/settlements/` (`settlements:resolve` only); proposal→finalize enforces two people, the direct resolve does not | One admin can settle and pay out a market alone | P1 | Same as TD-001 |
-| TD-003 | `GrantBonus` has no ceiling; wagering enforcement is dead code | `gateway/internal/bonus/service.go` `GrantBonus` (no budget/status/window check on the override amount); `gateway/internal/wallet/wagering.go` `RecordWageringContribution` has no non-test caller | An admin override can over-grant; the wagering gate exists only on paper | P2 | Enforce campaign budget, status, window and an absolute cap; wire wagering into the order/settlement path |
+| TD-003 | `GrantBonus` has no absolute ceiling | `gateway/internal/bonus/service.go` `GrantBonus` caps the override at the campaign reward and `maxBonusAmountPoints` (1e8) but not at a policy ceiling; the wagering enforcement that used to sit beside it was sportsbook residue and was removed on 2026-09-29 | An admin override can over-grant up to the campaign reward | P2 | Enforce campaign budget, status, window and an absolute cap ([D-1](TASKS.md#needs-a-decision)) |
 | TD-004 | Loyalty tier edits in the office do not change accrual | `gateway/migrations/021_*` header; runtime reads Go constants in `gateway/internal/loyalty/tiers.go` (`PredictTierForPoints`, `PredictAccrualPoints`), not `loyalty_tier_config` | Operators can edit tiers that have no effect | P2 | Read tier config from the table at runtime, or make the settings page read-only |
 
 ## B. Authentication and access control
@@ -52,8 +54,6 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 | TD-013 | KYC review has no operator surface | `POST /api/v1/admin/kyc/decision` exists; no pending-review list route, no office KYC page; `kyc_documents` stores metadata, not files | Review is a curl-level operation | P2 | Build the review queue and document storage |
 | TD-014 | No market-integrity surveillance | No wash/self-trade/spoofing detection in `gateway/internal/` | No manipulation monitoring on an order-book exchange | P2 | Scope to what a points market needs |
 | TD-015 | No duplicate-account detection | No email-normalisation collision check (plus-addressing, dots, aliases) | Multi-accounting is the main abuse path for a faucet-funded economy | P2 | Add normalised-email uniqueness at signup |
-| TD-016 | Session-duration limit is accepted but neither stored nor enforced | `gateway/internal/compliance/handlers.go` `/api/v1/compliance/rg/session-limit` validates and echoes; no table, no enforcement; `player/app/responsible-gaming/page.tsx` says session limits work | Users could believe a limit is active when it is not (page is behind `NEXT_PUBLIC_FEATURE_RG`, off by default) | P2 | Persist and enforce, or remove the endpoint and the copy |
-| TD-059 | Responsible-gaming limits fall back to a mock | `gateway/internal/http/handlers.go` wires `compliance.NewMockResponsibleGamblingService()` when the Postgres RG store fails to start or no DB is wired, in every environment (the KYC equivalent, TD-006, was fixed to fail closed) | A DB fault silently stops enforcing deposit, stake and loss limits and self-exclusion checks on the trading path | P2 | Fail closed in production/staging, as `selectKYCService` does |
 | TD-017 | Mock GPS geo service is mounted in every environment | `gateway/internal/http/handlers.go` wires `compliance.NewMockGeoComplianceServiceFromEnv()` behind `POST /api/v1/compliance/geo/verify`, which takes `userId` from the body; `FailClosedGeoComplianceService` has no caller; the player client for it (`player/app/lib/services/geocomply.ts`) has no importer | A reachable mock with no effect today (the real gate uses `CF-IPCountry`); a trap if anything starts trusting it | P3 | Remove the route and client, or back it with the fail-closed service |
 
 ## D. Delivery and operations
@@ -74,7 +74,7 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 |---|---|---|---|---|---|
 | TD-029 | Single-entry ledger | `gateway/internal/wallet/service.go`, `wallet_ledger`; conservation is checked after the fact by the reconciler | Money creation is detected, not structurally prevented | P2 | Owner decision on [ADR-0006](adr/0006-ledger-accounting-model.md) first ([D-2](TASKS.md#needs-a-decision)) |
 | TD-030 | Multi-tenancy is plumbing only | Migration 037 columns and `gateway/internal/tenant` exist; no query filters by tenant; the middleware always resolves the default tenant and is not in the auth-enabled chain (TD-055) | A second operator needs a fork | P2 | [ADR-0005](adr/0005-multi-tenancy-foundation.md) epic, blocked on [D-3](TASKS.md#needs-a-decision) |
-| TD-031 | Dead schema | `prediction_orders.wallet_reservation_id` is `UUID` while `wallet_reservations.id` is `BIGSERIAL` and nothing writes it; `wallets` and `ledger_entries` have no runtime reader, yet `seed-data/seed_backoffice_dashboard.sql` still writes them | Confusion when tracing money flows | P3 | Drop in a new migration after confirming no reader |
+| TD-031 | Dead schema | `prediction_orders.wallet_reservation_id` is `UUID` while `wallet_reservations.id` is `BIGSERIAL` and nothing writes iter, yet `seed-data/seed_backoffice_dashboard.sql` still writes them | Confusion when tracing money flows | P3 | Drop in a new migration after confirming no reader |
 | TD-032 | OFFSET pagination on list queries | `gateway/internal/prediction/sql_repository.go` (four `LIMIT … OFFSET …` sites) | Deep pages scan; fine at current scale | P3 | Keyset pagination on hot lists |
 
 ## F. Gateway API and real-time
@@ -118,13 +118,25 @@ or drift with moderate impact. **P3** hygiene, cosmetic, or dormant surface.
 
 | ID | Title | Evidence | Impact | P | Remediation |
 |---|---|---|---|---|---|
-| TD-051 | Seed JSON still frames markets as sports | `gateway/seed-data.json` (`sportKey` on every market) | Sportsbook residue in seed content | P3 | Re-theme the seed (content decision) |
-| TD-052 | Dead mock server and legacy Playwright config | `frontend/packages/mock-server/`, `frontend/playwright.config.ts` alongside the live `playwright.prediction.config.ts` | "Which e2e do I run?" | P3 | Remove as one unit after confirming no user |
 | TD-053 | `gofmt` flags one file | `gateway/internal/prediction/types.go` (alignment only) | Cosmetic | P3 | `gofmt -w` |
-| TD-060 | Locale files nothing renders still say "Points" | `footer`, `account-status-bar` and `api-errors` are registered in `player/app/lib/i18n/config.ts` but no component reads them; `transaction-history`, `win-loss-statistics`, `page-esports-bets`, `communication-settings` and `rg-history` are not loaded at all; `rewards.json` `STAT_BALANCE` and the `bonus.json` balance keys have no reader | Translators maintain dead strings, and the currency-name check has to skip them | P3 | Delete the unused namespaces and keys in all six locales |
+| TD-060 | Locale files nothing renders still say "Points" | `footer`, `account-status-bar` and `api-errors` are registered in `player/app/lib/i18n/config.ts` but no component reads them; `transaction-history` and `communication-settings` are not loaded at all; `rewards.json` `STAT_BALANCE` and the `bonus.json` balance keys have no reader (the sportsbook ones — `win-loss-statistics`, `page-esports-bets`, `rg-history`, `limits`, `responsible-gaming`, `self-exclude`, `idle-activity`, `session-timer`, `page-bonus-rules` — went on 2026-09-29) | Translators maintain dead strings, and the currency-name check has to skip them | P3 | Delete the unused namespaces and keys in all six locales |
+| TD-061 | The sportsbook-era in-memory loyalty service still backs the legacy loyalty routes | `gateway/internal/loyalty/service.go` (its own comments call it "the in-memory sportsbook service … will be removed once un-orphaning completes") is registered by `registerLoyaltyRoutes` in `gateway/internal/http/handlers.go` beside `PredictService`; `EligibleBetTypes` and the `bet_settlement` ledger source survive as names | Two loyalty implementations, one of them sportsbook-shaped, serve overlapping admin routes; the office loyalty settings page writes to it | P3 | Retire `loyalty.Service` in favour of `PredictService`, rename the fields, and re-point the office page ([ADR-0014](adr/0014-remove-sportsbook-residue.md)) |
+| TD-062 | Sportsbook words survive as identifiers | `punters` table and `Punter*` types across gateway and office; `campaigns` trigger-event aliases `bet`/`wager`/`wagering`/`stake` → `prediction_order` (`gateway/internal/http/bonus_handlers.go` `launchCampaignTriggerEvent`); `LoyaltyLedgerSourceBetSettlement` | Confusing names on live prediction-market code; no behaviour impact | P3 | Rename opportunistically; drop the trigger aliases once the office sends `prediction_order` |
 | TD-054 | App-level guides drifted | `stack/ERRORS.md` (fixed 2026-09-29: 500 is `internal_error`, and there is no 422 `validation_failed`); `stack/API_EXAMPLES.md`, `stack/MIGRATION.md`, `stack/UPGRADE.md` still show `*Cents` wire fields | Examples that no longer match the API | P3 | Rewrite against [SPEC_CURRENT.md](SPEC_CURRENT.md) (warning banners added 2026-09-29) |
 
 ## Recently resolved
+
+Removed by the 2026-09-29 sportsbook-residue pass ([ADR-0014](adr/0014-remove-sportsbook-residue.md)):
+
+- TD-016 (session-duration limit stub) and TD-059 (responsible-gambling
+  fallback) — the whole responsible-gambling service, its routes, its tables
+  and its checks on orders and store purchases are gone, not fixed.
+- TD-051 — the sportsbook `seed-data.json` is deleted (nothing loaded it).
+- TD-052 — the mock server, the legacy Playwright config and its specs are
+  deleted; `playwright.prediction.config.ts` is the only repo-level suite.
+- The bonus wagering machinery (TD-003's dead half), the sportsbook canonical
+  packages, the betslip/odds helpers, the `@taptrade-ui/design-system`
+  package, the RG player pages and the cool-off check at sign-in.
 
 Fixed by the 2026-09-29 hardening change ([TASKS.md](TASKS.md#done-recently)):
 
@@ -185,5 +197,5 @@ redirect, the leaderboard page-size clamp, and the two-person withdrawal default
 
 ## Totals
 
-51 open items: 0 P0, 3 P1 (TD-001, TD-002, TD-005), 18 P2, 30 P3.
+49 open items: 0 P0, 3 P1 (TD-001, TD-002, TD-005), 16 P2, 30 P3.
 Backlog, owners and blocking decisions: [TASKS.md](TASKS.md).

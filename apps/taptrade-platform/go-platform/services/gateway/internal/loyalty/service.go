@@ -71,7 +71,6 @@ type RuleUpdateRequest struct {
 	Active                  bool
 	Multiplier              float64
 	MinQualifiedStakePoints int64
-	EligibleSportIDs        []string
 	EligibleBetTypes        []string
 	MaxPointsPerEvent       int64
 	EffectiveFrom           *time.Time
@@ -84,7 +83,6 @@ type RuleCreateRequest struct {
 	Active                  bool
 	Multiplier              float64
 	MinQualifiedStakePoints int64
-	EligibleSportIDs        []string
 	EligibleBetTypes        []string
 	MaxPointsPerEvent       int64
 	EffectiveFrom           *time.Time
@@ -418,7 +416,6 @@ func (s *Service) UpdateRule(request RuleUpdateRequest) ([]canonicalv1.LoyaltyAc
 		s.rules[i].Active = request.Active
 		s.rules[i].Multiplier = request.Multiplier
 		s.rules[i].MinQualifiedStakePoints = request.MinQualifiedStakePoints
-		s.rules[i].EligibleSportIDs = append([]string(nil), request.EligibleSportIDs...)
 		s.rules[i].EligibleBetTypes = append([]string(nil), request.EligibleBetTypes...)
 		s.rules[i].MaxPointsPerEvent = request.MaxPointsPerEvent
 		s.rules[i].EffectiveFrom = cloneTime(request.EffectiveFrom)
@@ -452,7 +449,6 @@ func (s *Service) CreateRule(request RuleCreateRequest) ([]canonicalv1.LoyaltyAc
 		Active:                  request.Active,
 		Multiplier:              request.Multiplier,
 		MinQualifiedStakePoints: request.MinQualifiedStakePoints,
-		EligibleSportIDs:        append([]string(nil), request.EligibleSportIDs...),
 		EligibleBetTypes:        append([]string(nil), request.EligibleBetTypes...),
 		MaxPointsPerEvent:       request.MaxPointsPerEvent,
 		EffectiveFrom:           cloneTime(request.EffectiveFrom),

@@ -3,51 +3,12 @@ package bonus
 import (
 	"context"
 	"encoding/json"
-	"math"
 	"os"
 	"strings"
 	"taptrade/gateway/internal/events"
 	"testing"
 	"time"
 )
-
-func TestComputeWageringRequired_ZeroMultiplier(t *testing.T) {
-	if got := computeWageringRequired(10000, 0); got != 0 {
-		t.Fatalf("expected 0 wagering for zero multiplier, got %d", got)
-	}
-	if got := computeWageringRequired(10000, -5); got != 0 {
-		t.Fatalf("expected 0 wagering for negative multiplier, got %d", got)
-	}
-}
-
-func TestComputeWageringRequired_Normal(t *testing.T) {
-	if got := computeWageringRequired(10000, 10); got != 100000 {
-		t.Fatalf("expected 100000 (10x of 10000), got %d", got)
-	}
-}
-
-func TestComputeWageringRequired_ClampsAbsurdMultiplier(t *testing.T) {
-	// A caller-supplied multiplier above the ceiling must clamp, not overflow.
-	got := computeWageringRequired(maxBonusAmountPoints, math.MaxFloat64)
-	if got < 0 {
-		t.Fatalf("wagering requirement overflowed to negative: %d", got)
-	}
-	want := maxBonusAmountPoints * int64(maxWageringMultiplier)
-	if got != want {
-		t.Fatalf("expected clamp to %d, got %d", want, got)
-	}
-}
-
-func TestComputeWageringRequired_NoInt64Overflow(t *testing.T) {
-	// Max bounded amount * max bounded multiplier must stay well within int64.
-	got := computeWageringRequired(maxBonusAmountPoints, maxWageringMultiplier)
-	if got <= 0 {
-		t.Fatalf("expected positive bounded wagering requirement, got %d", got)
-	}
-	if got > math.MaxInt64/2 {
-		t.Fatalf("bounded wagering requirement unexpectedly large: %d", got)
-	}
-}
 
 func TestBonusGrantedEventPayloadUsesPointNativeAmount(t *testing.T) {
 	expiresAt := time.Date(2026, 6, 27, 12, 0, 0, 0, time.UTC)
@@ -502,36 +463,6 @@ func baseCampaignReq() CreateCampaignRequest {
 // sufficient to exercise the rejection paths.
 func newValidationOnlyService() *Service {
 	return NewService(NewRepository(nil), nil, nil)
-}
-
-func TestCreateCampaign_RejectsAbsurdMultiplier(t *testing.T) {
-	svc := newValidationOnlyService()
-	req := baseCampaignReq()
-	req.Rules = []RuleInput{
-		{RuleType: "wagering", RuleConfig: mustRuleConfig(t, map[string]any{"multiplier": 1e12})},
-	}
-	_, err := svc.CreateCampaign(context.Background(), req)
-	if err == nil {
-		t.Fatal("expected rejection of out-of-range wagering multiplier")
-	}
-	if err.Error() != "point-play multiplier must be in [0, 100]" {
-		t.Fatalf("expected point-play validation message, got %q", err.Error())
-	}
-}
-
-func TestCreateCampaign_RejectsNegativeMultiplier(t *testing.T) {
-	svc := newValidationOnlyService()
-	req := baseCampaignReq()
-	req.Rules = []RuleInput{
-		{RuleType: "wagering", RuleConfig: mustRuleConfig(t, map[string]any{"multiplier": -1})},
-	}
-	_, err := svc.CreateCampaign(context.Background(), req)
-	if err == nil {
-		t.Fatal("expected rejection of negative wagering multiplier")
-	}
-	if err.Error() != "point-play multiplier must be in [0, 100]" {
-		t.Fatalf("expected point-play validation message, got %q", err.Error())
-	}
 }
 
 func TestCreateCampaign_RejectsNegativeReward(t *testing.T) {

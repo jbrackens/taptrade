@@ -486,7 +486,6 @@ export function WelcomeFooter() {
     { href: "/about", label: t("LANDING_FOOTER_ABOUT", "About") },
     { href: "/terms", label: t("LANDING_FOOTER_TERMS", "Terms") },
     { href: "/privacy", label: t("LANDING_FOOTER_PRIVACY", "Privacy") },
-    { href: "/responsible-gaming", label: t("LANDING_FOOTER_RESPONSIBLE", "Responsible play") },
     { href: "/attributions", label: t("LANDING_FOOTER_CREDITS", "Photo credits") },
   ];
   return (

@@ -8,7 +8,6 @@
  *   Language & region  display language + timezone, saved on change
  *   Privacy            appear anonymously on leaderboards
  *   Verification       real KYC status (FEATURE_KYC)
- *   Play limits        point-use and order-size limits (FEATURE_LIMITS)
  * Password, sessions and two-factor live under Security.
  */
 
@@ -19,14 +18,13 @@ import { getProfile, updateProfile } from "../../lib/api/user-client";
 import type { UpdateProfileRequest, UserProfile } from "../../lib/api/user-client";
 import { getPrivacy, updatePrivacy } from "../../lib/api/privacy-client";
 import { verifyIdentity } from "../../lib/api/compliance-client";
-import { FEATURE_KYC, FEATURE_LIMITS } from "../../lib/features";
+import { FEATURE_KYC } from "../../lib/features";
 import { normalizeLocale, supportedLocales } from "../../lib/i18n/locales";
 import { logger } from "../../lib/logger";
 import { Button, Input } from "../../components/ui";
 import { useToast } from "../../components/ToastProvider";
 import { getStoredLocale, persistLocale } from "../../components/i18n/LanguageSelector";
 import { ProfileAvatar } from "../../components/account/ProfileAvatar";
-import { PlayLimitsCard } from "../../components/account/PlayLimitsCard";
 import { SettingsCard, SettingsShell } from "../../components/account/SettingsShell";
 
 const TIMEZONE_KEY = "taptrade_timezone";
@@ -219,7 +217,6 @@ export default function SettingsPage() {
       {FEATURE_KYC && user?.id && (
         <VerificationCard userId={user.id} status={profile?.kycStatus} onChanged={setProfile} />
       )}
-      {FEATURE_LIMITS && user?.id && <PlayLimitsCard userId={user.id} />}
     </SettingsShell>
   );
 }

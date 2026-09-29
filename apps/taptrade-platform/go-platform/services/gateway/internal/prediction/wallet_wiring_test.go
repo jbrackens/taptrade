@@ -1171,7 +1171,7 @@ func TestPlaceOrder_OrderBookBuyYes_InsufficientPointsRejectsBeforeCapture(t *te
 	}
 }
 
-func TestCancelOrder_OrderBookRestingBuy_ReleasesHeldPointsAndRGCommit(t *testing.T) {
+func TestCancelOrder_OrderBookRestingBuy_ReleasesHeldPoints(t *testing.T) {
 	repo := newExchangeMemRepo()
 	seedOrderBookMarket(t, repo)
 	placedAt := time.Now().UTC().Add(-time.Minute)
@@ -1194,9 +1194,7 @@ func TestCancelOrder_OrderBookRestingBuy_ReleasesHeldPointsAndRGCommit(t *testin
 	}
 	repo.orders[order.ID] = cloneOrder(order)
 	wallet := newExchangeFakeWallet(0)
-	rg := &fakeCompliance{}
 	svc := NewService(repo, wallet)
-	svc.SetComplianceChecker(rg)
 
 	if err := svc.CancelOrder(context.Background(), order.ID, "user1"); err != nil {
 		t.Fatalf("CancelOrder failed: %v", err)
@@ -1207,9 +1205,6 @@ func TestCancelOrder_OrderBookRestingBuy_ReleasesHeldPointsAndRGCommit(t *testin
 	}
 	if len(wallet.releases) != 1 || wallet.releases[0].ID != order.ID {
 		t.Fatalf("expected wallet reservation release for cancelled order, got %+v", wallet.releases)
-	}
-	if len(rg.releaseCalls) != 1 || rg.releaseCalls[0] != 600 {
-		t.Fatalf("expected responsible-play release of 600 points, got %+v", rg.releaseCalls)
 	}
 }
 

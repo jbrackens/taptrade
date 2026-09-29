@@ -158,9 +158,10 @@
   },
   "activeBonuses": {
     "title": "Active Clout bonuses",
-    "body": "Track promotional Clout and its progress.",
+    "body": "Promotional Clout credited to your account.",
     "fallbackName": "Clout bonus",
     "status": "Status: {{status}}",
+    "expires": "Expires {{date}}",
     "remaining": "Clout remaining"
   }
 }

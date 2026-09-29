@@ -161,14 +161,8 @@ WHERE user_id LIKE 'bo-seed-user-%' OR txn_id LIKE 'bo-seed-%';
 DELETE FROM wallet_ledger
 WHERE user_id LIKE 'bo-seed-user-%' OR idempotency_key LIKE 'bo-seed:%';
 
-DELETE FROM ledger_entries
-WHERE punter_id LIKE 'bo-seed-user-%' OR id LIKE 'bo-seed-%';
-
 DELETE FROM wallet_balances
 WHERE user_id LIKE 'bo-seed-user-%';
-
-DELETE FROM wallets
-WHERE punter_id LIKE 'bo-seed-user-%' OR id LIKE 'bo-seed-wallet-%';
 
 DELETE FROM punters
 WHERE id LIKE 'bo-seed-user-%' OR email LIKE '%@example.test';
@@ -213,24 +207,6 @@ SELECT
   false
 FROM bo_seed_users;
 
-INSERT INTO wallets (
-  id,
-  punter_id,
-  balance_points,
-  bonus_balance_points,
-  currency_code,
-  created_at,
-  updated_at
-)
-SELECT
-  format('bo-seed-wallet-%s', lpad(seq::text, 2, '0')),
-  format('bo-seed-user-%s', lpad(seq::text, 2, '0')),
-  100000 + (seq * 13750),
-  CASE WHEN seq % 5 = 0 THEN 2500 ELSE 0 END,
-  'USD',
-  date_trunc('minute', now() - interval '30 days' + (seq - 1) * interval '30 hours'),
-  now()
-FROM bo_seed_users;
 
 INSERT INTO prediction_series (
   id,
@@ -421,38 +397,6 @@ SELECT
 FROM bo_seed_payment_activity
 WHERE status = 'completed';
 
-INSERT INTO ledger_entries (
-  id,
-  wallet_id,
-  punter_id,
-  transaction_type,
-  amount_points,
-  bonus_amount_points,
-  balance_before_points,
-  balance_after_points,
-  reference_type,
-  reference_id,
-  description,
-  created_at
-)
-SELECT
-  format('bo-seed-ledger-payment-%s', lpad(activity.n::text, 2, '0')),
-  format('bo-seed-wallet-%s', substr(activity.user_id, length('bo-seed-user-') + 1)),
-  activity.user_id,
-  activity.txn_type,
-  CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_points ELSE -activity.amount_points END,
-  0,
-  (100000 + (activity.n * 2500)) - CASE WHEN activity.txn_type = 'deposit' THEN activity.amount_points ELSE -activity.amount_points END,
-  100000 + (activity.n * 2500),
-  'payment_transaction',
-  format('bo-seed-payment-%s', lpad(activity.n::text, 2, '0')),
-  CASE
-    WHEN activity.txn_type = 'deposit' THEN 'Synthetic USDC deposit'
-    ELSE 'Synthetic USDC withdrawal'
-  END,
-  activity.created_at + interval '18 minutes'
-FROM bo_seed_payment_activity activity
-WHERE activity.status = 'completed';
 
 INSERT INTO prediction_orders (
   id,
@@ -569,41 +513,6 @@ SELECT
   created_at + interval '2 minutes'
 FROM bo_seed_trade_activity;
 
-INSERT INTO ledger_entries (
-  id,
-  wallet_id,
-  punter_id,
-  transaction_type,
-  amount_points,
-  bonus_amount_points,
-  balance_before_points,
-  balance_after_points,
-  reference_type,
-  reference_id,
-  description,
-  created_at
-)
-SELECT
-  format('bo-seed-ledger-trade-%s', lpad(n::text, 2, '0')),
-  format('bo-seed-wallet-%s', substr(actor_user_id, length('bo-seed-user-') + 1)),
-  actor_user_id,
-  'prediction_trade_' || action,
-  CASE WHEN action = 'buy' THEN -(price_points * quantity) ELSE price_points * quantity END,
-  0,
-  (125000 + (n * 1750)) - CASE WHEN action = 'buy' THEN -(price_points * quantity) ELSE price_points * quantity END,
-  125000 + (n * 1750),
-  'prediction_trade',
-  md5('bo-seed-trade-' || n)::text,
-  format(
-    'Synthetic %s %s shares on %s: %s shares at %s cents/share',
-    action,
-    upper(side),
-    market_ticker,
-    quantity,
-    price_points
-  ),
-  created_at + interval '2 minutes'
-FROM bo_seed_trade_activity;
 
 UPDATE prediction_markets markets
 SET
@@ -623,31 +532,11 @@ FROM (
 ) activity
 WHERE markets.id = activity.market_id;
 
-UPDATE wallets wallets
-SET
-  balance_points = balances.balance_points,
-  updated_at = now()
-FROM (
-  SELECT
-    users.id AS user_id,
-    100000
-      + COALESCE(SUM(
-          CASE
-            WHEN entries.amount_points IS NULL THEN 0
-            ELSE entries.amount_points
-          END
-        ), 0)::bigint AS balance_points
-  FROM punters users
-  LEFT JOIN ledger_entries entries ON entries.punter_id = users.id
-  WHERE users.id LIKE 'bo-seed-user-%'
-  GROUP BY users.id
-) balances
-WHERE wallets.punter_id = balances.user_id;
-
 INSERT INTO wallet_balances (user_id, balance_points, bonus_balance_points, updated_at)
-SELECT punter_id, balance_points, bonus_balance_points, now()
-FROM wallets
-WHERE punter_id LIKE 'bo-seed-user-%'
+SELECT DISTINCT ON (user_id) user_id, balance_points, 0, now()
+FROM wallet_ledger
+WHERE user_id LIKE 'bo-seed-user-%'
+ORDER BY user_id, transaction_time DESC
 ON CONFLICT (user_id) DO UPDATE SET
   balance_points = EXCLUDED.balance_points,
   bonus_balance_points = EXCLUDED.bonus_balance_points,

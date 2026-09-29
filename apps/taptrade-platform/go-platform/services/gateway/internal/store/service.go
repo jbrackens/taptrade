@@ -129,13 +129,6 @@ func (s *Service) CreateCheckout(ctx context.Context, userID, packID, clientKey 
 		return nil, nil, false, ErrPackUnavailable
 	}
 
-	// Responsible-play limits count point-pack purchases (owner decision
-	// 2026-07-12): the real-money price is checked before any purchase row
-	// or provider session exists. See compliance.go.
-	if err := s.checkPurchaseAllowed(ctx, userID, pack.PriceUsdCents); err != nil {
-		return nil, nil, false, err
-	}
-
 	bonusPoints := pack.BonusPoints
 	if firstPurchase && s.cfg.FirstPurchaseBonusBps > 0 {
 		bonusPoints += pack.BasePoints * s.cfg.FirstPurchaseBonusBps / 10000
@@ -398,12 +391,6 @@ func (s *Service) applyOutcomeWithPayload(ctx context.Context, purchaseID string
 	})
 	if err != nil {
 		return nil, false, err
-	}
-	if result.Outcome == OutcomeCompleted && !alreadyFulfilled && updated != nil {
-		// First-time fulfillment consumes responsible-play limit headroom;
-		// replays and failed/canceled outcomes never do. Best-effort by
-		// design — the credit already committed.
-		recordPurchaseSpend(ctx, updated.UserID, updated.PriceUsdCents)
 	}
 	return updated, alreadyFulfilled, nil
 }

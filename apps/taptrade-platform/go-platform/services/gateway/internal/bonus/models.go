@@ -49,42 +49,28 @@ type Campaign struct {
 type CampaignRule struct {
 	ID         int64           `json:"id"`
 	CampaignID int64           `json:"campaignId"`
-	RuleType   string          `json:"ruleType"` // eligibility, trigger, reward, wagering (internal point-play rule)
+	RuleType   string          `json:"ruleType"` // eligibility, trigger, reward
 	RuleConfig json.RawMessage `json:"ruleConfig"`
 	CreatedAt  time.Time       `json:"createdAt"`
 }
 
 // PlayerBonus tracks a single bonus instance for a player.
 type PlayerBonus struct {
-	ID                      int64           `json:"id"`
-	UserID                  string          `json:"userId"`
-	CampaignID              *int64          `json:"campaignId,omitempty"`
-	BonusType               string          `json:"bonusType"`
-	Status                  string          `json:"status"` // active, completed, expired, forfeited
-	GrantedAmountPoints     int64           `json:"grantedAmountPoints"`
-	RemainingAmountPoints   int64           `json:"remainingAmountPoints"`
-	WageringRequiredPoints  int64           `json:"wageringRequiredPoints"`
-	WageringCompletedPoints int64           `json:"wageringCompletedPoints"`
-	ExpiresAt               time.Time       `json:"expiresAt"`
-	GrantedAt               time.Time       `json:"grantedAt"`
-	CompletedAt             *time.Time      `json:"completedAt,omitempty"`
-	ForfeitedAt             *time.Time      `json:"forfeitedAt,omitempty"`
-	ForfeitedBy             string          `json:"forfeitedBy,omitempty"`
-	Metadata                json.RawMessage `json:"metadata,omitempty"`
-	CreatedAt               time.Time       `json:"createdAt"`
-	UpdatedAt               time.Time       `json:"updatedAt"`
-}
-
-// WageringProgressPct returns the completion percentage (0–100).
-func (pb *PlayerBonus) WageringProgressPct() float64 {
-	if pb.WageringRequiredPoints <= 0 {
-		return 100.0
-	}
-	pct := float64(pb.WageringCompletedPoints) / float64(pb.WageringRequiredPoints) * 100.0
-	if pct > 100.0 {
-		return 100.0
-	}
-	return pct
+	ID                    int64           `json:"id"`
+	UserID                string          `json:"userId"`
+	CampaignID            *int64          `json:"campaignId,omitempty"`
+	BonusType             string          `json:"bonusType"`
+	Status                string          `json:"status"` // active, completed, expired, forfeited
+	GrantedAmountPoints   int64           `json:"grantedAmountPoints"`
+	RemainingAmountPoints int64           `json:"remainingAmountPoints"`
+	ExpiresAt             time.Time       `json:"expiresAt"`
+	GrantedAt             time.Time       `json:"grantedAt"`
+	CompletedAt           *time.Time      `json:"completedAt,omitempty"`
+	ForfeitedAt           *time.Time      `json:"forfeitedAt,omitempty"`
+	ForfeitedBy           string          `json:"forfeitedBy,omitempty"`
+	Metadata              json.RawMessage `json:"metadata,omitempty"`
+	CreatedAt             time.Time       `json:"createdAt"`
+	UpdatedAt             time.Time       `json:"updatedAt"`
 }
 
 // CreateCampaignRequest is the input for creating a new campaign.
@@ -209,9 +195,6 @@ func pointCampaignType(campaignType string) string {
 // NormalizePointAliases maps preferred point-rule config keys into the legacy
 // internal keys used by the existing bonus service.
 func (r *RuleInput) NormalizePointAliases() {
-	if r.RuleType == "play" {
-		r.RuleType = "wagering"
-	}
 	raw := r.rawConfig()
 	if len(raw) == 0 {
 		return
@@ -338,15 +321,6 @@ func jsonValuesEqual(a any, b any) bool {
 // The cents-era override alias died with the 2026-07-07 Points unit-model
 // correction — override_points is the single field; nothing to normalize.
 func (r *GrantBonusRequest) NormalizePointAliases() {}
-
-// WageringConfig holds the internal point-play requirement rules parsed from campaign_rules JSONB.
-type WageringConfig struct {
-	Multiplier           float64  `json:"multiplier"`        // e.g., 10 means 10x point play
-	MinOddsDecimal       float64  `json:"min_odds_decimal"`  // e.g., 1.5
-	ParlayMultiplier     float64  `json:"parlay_multiplier"` // e.g., 1.5 for 1.5x contribution
-	ExcludedSports       []string `json:"excluded_sports"`
-	MaxStakeContribution *int64   `json:"max_stake_contribution_points"`
-}
 
 // RewardConfig holds the reward definition parsed from campaign_rules JSONB.
 type RewardConfig struct {

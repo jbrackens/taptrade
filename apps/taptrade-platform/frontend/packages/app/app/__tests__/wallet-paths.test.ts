@@ -24,10 +24,10 @@ const walletBreakdownPath = resolve(
   __dirname,
   "../components/WalletBreakdown.tsx",
 );
-const wageringProgressPath = resolve(
-  __dirname,
-  "../components/WageringProgress.tsx",
-);
+// WageringProgress.tsx + the bonus play-progress fields (playRequiredPoints /
+// playCompletedPoints / playProgressPct / recentContributions) were removed
+// in the sportsbook-vocabulary sweep (2026-09-29): the bonus surface keeps
+// name, status, points and expiry only — see the campaign-bonus tests below.
 const apiIndexPath = resolve(__dirname, "../lib/api/index.ts");
 const sharedApiTypesPath = resolve(
   __dirname,
@@ -52,7 +52,6 @@ const activeBonusesControlSource = readFileSync(
   activeBonusesControlPath,
   "utf-8",
 );
-const wageringProgressSource = readFileSync(wageringProgressPath, "utf-8");
 const apiIndexSource = readFileSync(apiIndexPath, "utf-8");
 const sharedApiTypesSource = readFileSync(sharedApiTypesPath, "utf-8");
 const sharedApiClientSource = readFileSync(sharedApiClientPath, "utf-8");
@@ -618,7 +617,7 @@ describe("wallet-client endpoint paths", () => {
     const breakdownType = sliceBetween(
       bonusSource,
       "export interface WalletBreakdown",
-      "export interface PlayContribution",
+      "interface BonusListResponse",
     );
     const breakdownNormalizer = sliceBetween(
       bonusSource,
@@ -690,9 +689,6 @@ describe("wallet-client endpoint paths", () => {
       "normalizePlayerBonus",
       "grantedPoints",
       "remainingPoints",
-      "playRequiredPoints",
-      "playCompletedPoints",
-      "playProgressPct",
       'raw.unit || "PTS"',
       "raw.bonusId ?? raw.bonus_id",
       "raw.campaignName ?? raw.campaign_name",
@@ -708,6 +704,10 @@ describe("wallet-client endpoint paths", () => {
       "wageringRequiredPoints",
       "wageringCompletedPoints",
       "wageringProgressPct",
+      "playRequiredPoints",
+      "playCompletedPoints",
+      "playProgressPct",
+      "recentContributions",
     ]) {
       assert.ok(
         !playerBonusType.includes(retired),
@@ -716,69 +716,39 @@ describe("wallet-client endpoint paths", () => {
     }
   });
 
-  it("normalizes bonus progress and visible progress copy as point play", () => {
-    const playContributionType = sliceBetween(
-      bonusSource,
-      "export interface PlayContribution",
-      "export interface BonusProgress",
+  it("does not ship the retired bonus play-progress surface", () => {
+    // The wagering / play-progress bar was removed along with the gateway's
+    // GET /api/v1/bonuses/*/progress fields — the active-bonus surface keeps
+    // name, status, points and expiry only (campaign bonuses stay live).
+    assert.equal(
+      existsSync(
+        resolve(__dirname, "../components/WageringProgress.tsx"),
+      ),
+      false,
+      "WageringProgress.tsx should not return",
     );
-    const bonusProgressType = sliceBetween(
-      bonusSource,
-      "export interface BonusProgress {",
-      "interface BonusListResponse",
-    );
-
-    for (const token of [
+    for (const retired of [
+      "PlayContribution",
+      "BonusProgress",
+      "getBonusProgress",
       "normalizeBonusProgress",
+      "normalizePlayContribution",
       "playRequiredPoints",
       "playCompletedPoints",
       "playProgressPct",
-      'raw.unit || "PTS"',
-      "playAmountPoints",
-    ]) {
-      assert.ok(
-        bonusSource.includes(token),
-        `bonus-client should normalize bonus progress token ${token}`,
-      );
-    }
-    for (const retired of [
+      "recentContributions",
       "wageringRequiredPoints",
       "wageringCompletedPoints",
-      "progressPct",
+      "wageringProgressPct",
     ]) {
       assert.ok(
-        !bonusProgressType.includes(retired),
-        `BonusProgress should not export retired progress field ${retired}`,
+        !bonusSource.includes(retired),
+        `bonus-client should not export retired progress token ${retired}`,
       );
     }
-    assert.ok(
-      playContributionType.includes("playAmountPoints: number") &&
-        playContributionType.includes("contributionPoints: number") &&
-        !playContributionType.includes("stakePoints") &&
-        bonusSource.includes(
-          "playAmountPoints: raw.stakePoints ?? raw.stakePoints ?? 0",
-        ),
-      "PlayContribution should export point-play amount fields while keeping stake aliases private",
-    );
-    assert.ok(
-      wageringProgressSource.includes('aria-label="Play progress"'),
-      "progress component should use point-play assistive text",
-    );
-    assert.ok(
-      wageringProgressSource.includes('t("playProgressRequired"'),
-      "progress component should use point-play translation key",
-    );
-    assert.ok(
-      !wageringProgressSource.includes('aria-label="Wagering progress"') &&
-        !wageringProgressSource.includes('t("wageringRequired"'),
-      "progress component should not render wagering copy",
-    );
   });
 
-  it("renders active bonus progress on the rewards page with point-play fields", () => {
-    // The local ÷100 formatPoints helper is retired (Points render whole via
-    // app/lib/points), so the retired-field scan covers the whole component
-    // source instead of slicing up to that helper.
+  it("renders active bonuses on the rewards page with name, status, points and expiry", () => {
     const activeBonusPanel = activeBonusesControlSource;
 
     for (const token of [
@@ -793,11 +763,10 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const token of [
-      "WageringProgress",
-      "requiredPoints={bonus.playRequiredPoints}",
-      "completedPoints={bonus.playCompletedPoints}",
-      "progressPct={bonus.playProgressPct}",
+      "bonus.campaignName",
+      "bonus.status",
       "formatPointsAmount(bonus.remainingPoints)",
+      "bonus.expiresAt",
       't("activeBonuses.title", "Active Clout bonuses")',
     ]) {
       assert.ok(
@@ -806,6 +775,10 @@ describe("wallet-client endpoint paths", () => {
       );
     }
     for (const retired of [
+      "WageringProgress",
+      "bonus.playRequiredPoints",
+      "bonus.playCompletedPoints",
+      "bonus.playProgressPct",
       "bonus.wageringRequiredPoints",
       "bonus.wageringCompletedPoints",
       "bonus.wageringProgressPct",

@@ -730,31 +730,6 @@ describe("market detail related markets", () => {
   });
 });
 
-// ── Bug E: compliance cool-off check must stay live ───────────────
-
-describe("compliance-client: cool-off stub", () => {
-  const source = read("lib/api/compliance-client.ts");
-
-  it("getCoolOffStatus fetches /compliance/rg/restrictions", () => {
-    const m = /export async function getCoolOffStatus[\s\S]*?^\}/m.exec(source);
-    assert.ok(m, "getCoolOffStatus should be defined");
-    assert.ok(
-      m![0].includes("/api/v1/compliance/rg/restrictions"),
-      "getCoolOffStatus body should call /compliance/rg/restrictions",
-    );
-  });
-
-  it("getCoolOffStatus is no longer an unconditional inactive stub", () => {
-    const m = /export async function getCoolOffStatus[\s\S]*?^\}/m.exec(source);
-    assert.ok(
-      !/return\s+\{\s*status:\s*"inactive",\s*coolOffUntil:\s*null\s*\};\s*$/.test(
-        m![0].trim(),
-      ),
-      "function should not end as an unconditional inactive stub",
-    );
-  });
-});
-
 // ── Bug D: card styling must not be inside <Link> ─────────────────
 // MarketCard is the browse card everywhere again (the single-column
 // MarketFeed was retired 2026-09-24). Same invariant: an accessible name
@@ -1761,25 +1736,6 @@ describe("Full-page translation coverage", () => {
     assert.deepStrictEqual(offenders, []);
   });
 
-  it("keeps legacy result and esports locale labels point-native", () => {
-    const unsafeLegacyValue =
-      /Financial Transaction ID|^Sport$|^OUTRIGHTS$|^Matches$|^Decimal$|^American$|^Fractional$/;
-    const offenders: string[] = [];
-
-    for (const lang of supportedLaunchLanguages) {
-      for (const namespace of ["page-esports-bets", "win-loss-statistics"]) {
-        const locale = readLocale(lang, namespace);
-        for (const [key, value] of Object.entries(locale)) {
-          if (unsafeLegacyValue.test(value)) {
-            offenders.push(`${lang}/${namespace}.json ${key}: ${value}`);
-          }
-        }
-      }
-    }
-
-    assert.deepStrictEqual(offenders, []);
-  });
-
   it("keeps leaderboard locale labels on point-result wording", () => {
     const unsafeLeaderboardPattern =
       /\bP&L\b|profit|keuntungan|\bkita\b|盈亏|盈虧|利润|利潤/i;
@@ -1803,7 +1759,7 @@ describe("Full-page translation coverage", () => {
     const offenders: string[] = [];
 
     for (const lang of supportedLaunchLanguages) {
-      for (const namespace of ["portfolio", "account", "win-loss-statistics"]) {
+      for (const namespace of ["portfolio", "account"]) {
         const locale = readLocale(lang, namespace);
         for (const [key, value] of Object.entries(locale)) {
           if (unsafeResultPattern.test(value)) {

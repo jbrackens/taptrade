@@ -67,12 +67,6 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 					"expiry_days":         7,
 				}),
 			},
-			{
-				RuleType: "play",
-				PointRuleConfig: mustJSONRaw(t, map[string]any{
-					"multiplier": 0,
-				}),
-			},
 		},
 	})
 	if err != nil {
@@ -108,8 +102,6 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 	assertJSONValue(t, payload, "unit", "PTS")
 	assertJSONNumber(t, payload, "grantedPoints", grantPoints)
 	assertJSONNumber(t, payload, "remainingPoints", grantPoints)
-	assertJSONNumber(t, payload, "playRequiredPoints", 0)
-	assertJSONNumber(t, payload, "playCompletedPoints", 0)
 	for _, retired := range []string{
 		"grantedAmountPoints",
 		"remainingAmountPoints",
@@ -117,6 +109,9 @@ func TestClaimBonusPersistsPointWalletLedgerThroughHTTP(t *testing.T) {
 		"wageringCompletedPoints",
 		"wageringProgressPct",
 		"progressPct",
+		"playRequiredPoints",
+		"playCompletedPoints",
+		"playProgressPct",
 	} {
 		if _, ok := payload[retired]; ok {
 			t.Fatalf("retired bonus response field %q leaked in %s", retired, rec.Body.String())

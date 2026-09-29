@@ -261,13 +261,11 @@ ORDER BY start_at`)
 func (r *Repository) CreatePlayerBonus(ctx context.Context, pb PlayerBonus) (PlayerBonus, error) {
 	err := r.db.QueryRowContext(ctx, `
 INSERT INTO player_bonuses (user_id, campaign_id, bonus_type, status,
-    granted_amount_points, remaining_amount_points, wagering_required_points,
-    wagering_completed_points, expires_at, metadata)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    granted_amount_points, remaining_amount_points, expires_at, metadata)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id, granted_at, created_at, updated_at`,
 		pb.UserID, pb.CampaignID, pb.BonusType, pb.Status,
 		pb.GrantedAmountPoints, pb.RemainingAmountPoints,
-		pb.WageringRequiredPoints, pb.WageringCompletedPoints,
 		pb.ExpiresAt, pb.Metadata,
 	).Scan(&pb.ID, &pb.GrantedAt, &pb.CreatedAt, &pb.UpdatedAt)
 	if err != nil {
@@ -281,13 +279,11 @@ func (r *Repository) GetPlayerBonus(ctx context.Context, id int64) (PlayerBonus,
 	err := r.db.QueryRowContext(ctx, `
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_points, remaining_amount_points,
-       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE id = $1`, id).Scan(
 		&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
 		&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
-		&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 		&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 		&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 	)
@@ -308,7 +304,6 @@ func (r *Repository) ListPlayerBonuses(ctx context.Context, userID string, statu
 	query := `
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_points, remaining_amount_points,
-       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE 1=1`
@@ -340,7 +335,6 @@ FROM player_bonuses WHERE 1=1`
 		if err := rows.Scan(
 			&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
 			&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
-			&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 			&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 			&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 		); err != nil {
@@ -375,7 +369,6 @@ func (r *Repository) ListExpiredActiveBonuses(ctx context.Context) ([]PlayerBonu
 	rows, err := r.db.QueryContext(ctx, `
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_points, remaining_amount_points,
-       wagering_required_points, wagering_completed_points,
        expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
        COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses
@@ -392,7 +385,6 @@ LIMIT 500`)
 		if err := rows.Scan(
 			&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
 			&pb.GrantedAmountPoints, &pb.RemainingAmountPoints,
-			&pb.WageringRequiredPoints, &pb.WageringCompletedPoints,
 			&pb.ExpiresAt, &pb.GrantedAt, &pb.CompletedAt, &pb.ForfeitedAt, &pb.ForfeitedBy,
 			&pb.Metadata, &pb.CreatedAt, &pb.UpdatedAt,
 		); err != nil {

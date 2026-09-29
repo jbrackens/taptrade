@@ -152,7 +152,6 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 		"/api/v1/bonuses/active:",
 		"/api/v1/bonuses/claim:",
 		"/api/v1/bonuses/{id}:",
-		"/api/v1/bonuses/{id}/progress:",
 		"/api/v1/admin/campaigns:",
 		"/api/v1/admin/campaigns/{id}:",
 		"/api/v1/admin/campaigns/{id}/activate:",
@@ -163,14 +162,13 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 		"/api/v1/admin/bonuses/{id}:",
 		"/api/v1/admin/bonuses/{id}/forfeit:",
 		"PlayerBonus:",
-		"PlayerBonusProgress:",
 		"AdminCampaign:",
 		"AdminCampaignRule:",
 		"AdminCampaignRuleInput:",
 		"AdminCampaignCreateRequest:",
 		"AdminBonusGrantRequest:",
 		"AdminBonusForfeitResponse:",
-		"enum: [eligibility, trigger, reward, play]",
+		"enum: [eligibility, trigger, reward]",
 		"enum: [signup_bonus, custom, point_grant, point_match]",
 		"budgetPoints",
 		"spentPoints",
@@ -178,9 +176,6 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 		"override_points",
 		"pointRuleConfig",
 		"point_rule_config",
-		"max_play_contribution_points",
-		"playRequiredPoints",
-		"Returns only PTS unit fields and point-play progress aliases",
 	}
 	for _, needle := range required {
 		if !strings.Contains(content, needle) {
@@ -189,21 +184,20 @@ func TestLaunchOpenAPIDocumentsBonusCampaignSlice(t *testing.T) {
 	}
 
 	bonusSchema := openAPISection(content, "    PlayerBonus:", "    PlayerBonusListResponse:")
-	progressSchema := openAPISection(content, "    PlayerBonusProgress:", "    AdminCampaign:")
 	campaignSchema := openAPISection(content, "    AdminCampaign:", "    AdminCampaignListResponse:")
 	ruleSchema := openAPISection(content, "    AdminCampaignRule:", "    AdminCampaignDetailResponse:")
 	campaignCreateSchema := openAPISection(content, "    AdminCampaignCreateRequest:", "    AdminCampaignDetailResponse:")
 	actionSchema := openAPISection(content, "    AdminCampaignActionResponse:", "    AdminBonusGrantRequest:")
 	grantSchema := openAPISection(content, "    AdminBonusGrantRequest:", "    AdminBonusForfeitRequest:")
-	forfeitSchema := openAPISection(content, "    AdminBonusForfeitResponse:", "    ResponsiblePlayLimitRequest:")
+	forfeitSchema := openAPISection(content, "    AdminBonusForfeitResponse:", "    LoyaltyStanding:")
 
-	for _, retired := range []string{"grantedAmountPoints", "remainingAmountPoints", "wageringRequiredPoints", "wageringCompletedPoints", "wageringProgressPct", "progressPct"} {
+	for _, retired := range []string{"grantedAmountPoints", "remainingAmountPoints", "wageringRequiredPoints", "wageringCompletedPoints", "wageringProgressPct", "progressPct", "playRequiredPoints", "playCompletedPoints"} {
 		if strings.Contains(bonusSchema, retired) {
 			t.Fatalf("player bonus schema should not document retired alias %q", retired)
 		}
-		if strings.Contains(progressSchema, retired) {
-			t.Fatalf("player bonus progress schema should not document retired alias %q", retired)
-		}
+	}
+	if strings.Contains(content, "PlayerBonusProgress") || strings.Contains(content, "/bonuses/{id}/progress") {
+		t.Fatalf("openapi still documents the removed bonus wagering progress endpoint")
 	}
 	for _, retired := range []string{"freebet_grant", "deposit_match"} {
 		if strings.Contains(bonusSchema, retired) {
@@ -808,38 +802,19 @@ func TestLaunchOpenAPIDocumentsLoyaltyAndRewardClusterSlice(t *testing.T) {
 	}
 }
 
-func TestLaunchOpenAPIDocumentsResponsiblePlaySlice(t *testing.T) {
+func TestLaunchOpenAPIHasNoResponsibleGamblingSlice(t *testing.T) {
+	// The sportsbook responsible-gambling routes (limits, cool-off,
+	// self-exclusion) were removed on 2026-09-29; the spec must not
+	// document them again.
 	root := filepath.Clean("../../../..")
 	body, err := os.ReadFile(filepath.Join(root, "services/gateway/api/openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read openapi: %v", err)
 	}
 	content := string(body)
-	required := []string{
-		"/api/v1/compliance/rg/point-use-limit:",
-		"/api/v1/compliance/rg/point-use-limits:",
-		"/api/v1/compliance/rg/prediction-limit:",
-		"/api/v1/compliance/rg/prediction-limits:",
-		"/api/v1/compliance/rg/check-point-use:",
-		"/api/v1/compliance/rg/check-prediction:",
-		"/api/v1/compliance/rg/cool-off:",
-		"/api/v1/compliance/rg/self-exclude:",
-		"/api/v1/compliance/rg/restrictions:",
-		"ResponsiblePlayLimitRequest:",
-		"ResponsiblePlayCheckResponse:",
-		"ResponsiblePlayRestrictions:",
-		"point_use_limit_exceeded",
-		"prediction_limit_exceeded",
-	}
-	for _, needle := range required {
-		if !strings.Contains(content, needle) {
-			t.Fatalf("openapi missing responsible-play launch doc marker %q", needle)
-		}
-	}
-	checkSchema := openAPISection(content, "    ResponsiblePlayCheckResponse:", "    ResponsiblePlayRestrictions:")
-	for _, retired := range []string{"stakePoints", "stakePoints"} {
-		if strings.Contains(checkSchema, retired) {
-			t.Fatalf("responsible-play check schema should not document retired stake alias %q", retired)
+	for _, banned := range []string{"/api/v1/compliance/rg/", "ResponsiblePlay", "self_excluded", "point_use_limit_exceeded", "prediction_limit_exceeded"} {
+		if strings.Contains(content, banned) {
+			t.Fatalf("openapi documents removed responsible-gambling marker %q", banned)
 		}
 	}
 }
@@ -873,7 +848,6 @@ func TestLaunchOpenAPIDocumentsBotAPISlice(t *testing.T) {
 		"reservedPoints",
 		"totalCostPoints",
 		"realizedPoints",
-		"prediction_limit_exceeded",
 		"Bot API key rate limit exceeded",
 		"Full keys are never returned after creation",
 		"Revokes only keys owned by the authenticated session user",

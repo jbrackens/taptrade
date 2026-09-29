@@ -46,7 +46,6 @@ type loyaltyRuleRequest struct {
 	Multiplier              float64  `json:"multiplier"`
 	MinQualifiedStakePoints int64    `json:"minQualifiedStakePoints"`
 	MinQualifiedPoints      int64    `json:"minQualifiedPoints"`
-	EligibleSportIDs        []string `json:"eligibleSportIds"`
 	EligibleBetTypes        []string `json:"eligibleBetTypes"`
 	EligiblePredictionTypes []string `json:"eligiblePredictionTypes"`
 	MaxPointsPerEvent       int64    `json:"maxPointsPerEvent"`
@@ -384,7 +383,6 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 			Active:                  request.Active,
 			Multiplier:              request.Multiplier,
 			MinQualifiedStakePoints: loyaltyRuleMinQualifiedPoints(request),
-			EligibleSportIDs:        request.EligibleSportIDs,
 			EligibleBetTypes:        loyaltyRuleEligiblePredictionTypes(request),
 			MaxPointsPerEvent:       request.MaxPointsPerEvent,
 			EffectiveFrom:           parseOptionalRFC3339(request.EffectiveFrom),
@@ -428,7 +426,6 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 			Active:                  request.Active,
 			Multiplier:              request.Multiplier,
 			MinQualifiedStakePoints: loyaltyRuleMinQualifiedPoints(request),
-			EligibleSportIDs:        request.EligibleSportIDs,
 			EligibleBetTypes:        loyaltyRuleEligiblePredictionTypes(request),
 			MaxPointsPerEvent:       request.MaxPointsPerEvent,
 			EffectiveFrom:           parseOptionalRFC3339(request.EffectiveFrom),

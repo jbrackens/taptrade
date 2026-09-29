@@ -32,8 +32,7 @@ taptrade/
 │   │   └── packages/
 │   │       ├── app/                       ← Player app (Next.js 16 App Router, local dev port 3010)
 │   │       ├── office/                    ← Admin backoffice (Next.js 16 App Router, port 3001)
-│   │       ├── api-client/                ← Shared TS API client (prediction-client.ts)
-│   │       └── design-system/             ← Legacy styled-components kit — NOT used by app/
+│   │       └── api-client/                ← Shared TS API client (prediction-client.ts)
 │   ├── go-platform/
 │   │   ├── services/gateway/              ← API gateway (Go, port 18080)
 │   │   │   ├── cmd/gateway/               ← gateway binary (also `gateway rbac-bootstrap`)
@@ -106,9 +105,9 @@ branch. Do not include unrelated untracked files without explicit user approval.
 ### Never Do These
 
 1. **Never give placeholder paths.** Use real, full paths. The workspace is `/Users/john/Sandbox/taptrade-workspace/taptrade/` — not `~/...` or `your-project/...`.
-2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPricePoints`/`noPricePoints`, not odds; users have positions, not bets.
+2. **Never reintroduce sportsbook concepts.** No new code referencing `fixtures`, `selections`, `betslip`, `sport_key`, `punter_bets`, `freebets`, `odds_boosts`, `match_tracker`. This is a prediction market — markets have `yesPricePoints`/`noPricePoints`, not odds; users have positions, not bets. The same goes for gambling-compliance tooling (bet/stake/deposit limits, cool-off, self-exclusion, session timers) and bonus wagering/playthrough: code that only serves them is deleted, never finished ([ADR-0014](docs/adr/0014-remove-sportsbook-residue.md)). Sports and esports remain as market *categories*.
 3. **Never reintroduce `*Cents` / `*_cents` names in the prediction economy.** Migration 050 renamed them to `*_points`; `app/__tests__/qa-regressions-2026-04-18.test.ts` fails CI if `yesPriceCents` / `noPriceCents` and friends reappear on the wire types.
-4. **Never use `@taptrade-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
+4. **Never reintroduce `@taptrade-ui/design-system`** — the styled-components kit was deleted on 2026-09-29 (it hung webpack in `app/`); the gate still bans the import. Use inline components or Tailwind.
 5. **Never introduce `console.log/warn/error` in production code.** Use the structured `logger` from `app/lib/logger.ts`.
 6. **Never use `any` type.** Use `unknown`, proper interfaces, or `Record<string, unknown>`.
 7. **Never suppress TypeScript errors** with `@ts-nocheck`, `@ts-ignore`, or `as any`.
@@ -286,7 +285,6 @@ Code: `internal/rbac/`, `internal/http/rbac_admin_handlers.go`; UI:
 - `internal/http/launch_boundary.go` + `launch_reason.go` — points-only route gating and redaction
 - `internal/http/pretrade_gate.go` — jurisdiction + KYC gates on the trading path
 - `internal/compliance/kyc_postgres.go` + `idv.go` — DB-backed KYC + pluggable IDV provider (manual review default; vendor seam)
-- `internal/compliance/rg_postgres.go` — DB-backed responsible-gambling limits + atomic stake-limit gate
 - `internal/compliance/geo_gate.go` — jurisdiction allow/deny evaluation
 - `internal/notify/notify.go` — out-of-band notification channel (SMTP + log fallback)
 

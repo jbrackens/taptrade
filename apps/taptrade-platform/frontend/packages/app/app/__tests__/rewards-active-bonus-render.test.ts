@@ -32,7 +32,7 @@ function collectNodes(
 }
 
 describe("ActiveBonusesControl", () => {
-  it("renders active bonus progress with point-play fields", () => {
+  it("renders active campaign bonuses with name, status, points and expiry", () => {
     const bonus: PlayerBonus = {
       bonusId: 308,
       campaignName: "Demo Point-Play Bonus",
@@ -41,9 +41,6 @@ describe("ActiveBonusesControl", () => {
       unit: "PTS",
       grantedPoints: 20_000,
       remainingPoints: 15_000,
-      playRequiredPoints: 100_000,
-      playCompletedPoints: 25_000,
-      playProgressPct: 25,
       expiresAt: "2099-06-28T00:00:00Z",
       grantedAt: "2026-06-28T00:00:00Z",
     };
@@ -63,13 +60,19 @@ describe("ActiveBonusesControl", () => {
     // the retired ÷100 display showed "150" for the same wire value.
     assert.match(text, /15,000/);
     assert.match(text, /Clout remaining/);
+    // This harness has no i18next instance, so useTranslation() renders the
+    // literal default-value template rather than interpolating {{status}} /
+    // {{date}} — source-level coverage of the actual bound values (bonus.status,
+    // bonus.expiresAt) lives in wallet-paths.test.ts. Here we only confirm the
+    // status and expiry rows still render at all.
+    assert.match(text, /Status:/);
+    assert.match(text, /Expires/);
     assert.doesNotMatch(text, /wager|stake|cash|deposit|withdraw|fiat|crypto/i);
 
-    const progress = collectNodes(json, "progress")[0];
-    assert.ok(progress, "expected play-progress bar to render");
-    assert.equal(progress.props["aria-label"], "Play progress");
-    assert.equal(progress.props.value, 25);
-    assert.equal(progress.props.max, 100);
+    // The wagering / play-progress bar was removed along with the gateway's
+    // GET /api/v1/bonuses/*/progress fields — no <progress> element remains.
+    const progress = collectNodes(json, "progress");
+    assert.equal(progress.length, 0, "play-progress bar should not render");
   });
 
   it("does not render an empty active-bonus shell", () => {

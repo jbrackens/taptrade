@@ -314,9 +314,6 @@ func mapStoreError(err error) error {
 		return httpx.BadRequest("unknown checkout outcome", map[string]any{"field": "outcome"})
 	case errors.Is(err, ErrConfirmNotSupported):
 		return httpx.Forbidden("manual confirmation is only available for the demo provider")
-	case errors.Is(err, ErrPurchaseLimit):
-		return httpx.NewError(stdhttp.StatusForbidden, "purchase_limit_reached",
-			"this checkout would exceed your responsible-play limit", nil, nil)
 	default:
 		return httpx.Internal("point store operation failed", err)
 	}

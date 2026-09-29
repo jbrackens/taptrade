@@ -5,7 +5,7 @@ Goose SQL migrations for the Go gateway, run by `services/gateway/cmd/migrate`.
 The gateway was migrated in place from the sportsbook fork, so the numbering
 starts in the old domain: **001–013 are sportsbook-era**, the prediction-market
 schema begins at `014_prediction_schema.sql`, and the directory currently runs
-through `066_settlement_override_actor.sql` (next free prefix: `067`). The
+through `067_remove_sportsbook_residue.sql` (next free prefix: `068`). The
 current schema, table by table, is described in
 [`docs/DATA_MODEL.md`](../../../../../../docs/DATA_MODEL.md).
 

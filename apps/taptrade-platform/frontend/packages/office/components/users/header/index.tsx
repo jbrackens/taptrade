@@ -116,16 +116,6 @@ export const UsersPageHeader: FC<Props> = ({
       }}
       onComplete={onLifecycleChange}
     />,
-    // <UserLifecycleCoolOff
-    //   key="action-timeout"
-    //   id={id}
-    //   status={basicData?.status}
-    //   labels={{
-    //     setCoolOff: t("ACTION_COOL_OFF"),
-    //     resetCoolOff: t("ACTION_COOL_OFF_RESET"),
-    //   }}
-    //   onComplete={onLifecycleChange}
-    // />,
   ];
 
   return (

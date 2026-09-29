@@ -22,14 +22,6 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 				}
 			},
 			{
-				"rule_type": "play",
-				"point_rule_config": {
-					"multiplier": 3,
-					"max_play_contribution_points": 200,
-					"max_stake_contribution_points": 999
-				}
-			},
-			{
 				"rule_type": "eligibility",
 				"point_rule_config": {
 					"min_point_activity_count": 2,
@@ -75,22 +67,8 @@ func TestCreateCampaignRequestNormalizePointAliases(t *testing.T) {
 		}
 	}
 
-	var play map[string]any
-	if err := json.Unmarshal(req.Rules[1].RuleConfig, &play); err != nil {
-		t.Fatalf("unmarshal normalized play config: %v", err)
-	}
-	if play["max_stake_contribution_points"] != float64(999) {
-		t.Fatalf("expected canonical max contribution key, got %+v", play)
-	}
-	if _, ok := play["max_play_contribution_points"]; ok {
-		t.Fatalf("launch-vocab play alias should normalize to the stake key: %+v", play)
-	}
-	if req.Rules[1].RuleType != "wagering" {
-		t.Fatalf("expected public play rule type to normalize to internal wagering rule, got %q", req.Rules[1].RuleType)
-	}
-
 	var eligibility map[string]any
-	if err := json.Unmarshal(req.Rules[2].RuleConfig, &eligibility); err != nil {
+	if err := json.Unmarshal(req.Rules[1].RuleConfig, &eligibility); err != nil {
 		t.Fatalf("unmarshal normalized eligibility config: %v", err)
 	}
 	if eligibility["min_deposits"] != float64(2) {
@@ -193,12 +171,12 @@ func TestRuleInputPrefersPointRuleConfigOverLegacyRuleConfig(t *testing.T) {
 
 func TestRuleInputLaunchValidationPrefersPointRuleConfigOverLegacyRuleConfig(t *testing.T) {
 	rule := RuleInput{
-		RuleType: "play",
+		RuleType: "reward",
 		RuleConfig: mustRuleConfigForModels(t, map[string]any{
 			"min_odds_decimal": 1.5,
 		}),
 		PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-			"multiplier": 3,
+			"fixed_amount_points": 3,
 		}),
 	}
 
@@ -253,28 +231,6 @@ func TestCreateCampaignRequestRuleAmountSingleKey(t *testing.T) {
 	}
 }
 
-func TestCreateCampaignRequestDetectsConflictingRuleContributionAliases(t *testing.T) {
-	req := CreateCampaignRequest{
-		Rules: []RuleInput{
-			{
-				RuleType: "play",
-				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"max_play_contribution_points":  200,
-					"max_stake_contribution_points": 300,
-				}),
-			},
-		},
-	}
-
-	err := req.ValidatePointAliasConflicts()
-	if err == nil {
-		t.Fatal("expected conflicting play contribution aliases")
-	}
-	if got := err.Error(); got != "rules[0]: max_play_contribution_points conflicts with max_stake_contribution_points" {
-		t.Fatalf("unexpected error: %v", err)
-	}
-}
-
 func TestCreateCampaignRequestAllowsMatchingRuleAliases(t *testing.T) {
 	req := CreateCampaignRequest{
 		BudgetPoints: int64PtrForModels(7500),
@@ -286,13 +242,6 @@ func TestCreateCampaignRequestAllowsMatchingRuleAliases(t *testing.T) {
 					"max_bonus_points":    2500,
 					"min_points":          100,
 					"min_amount_points":   100,
-				}),
-			},
-			{
-				RuleType: "play",
-				PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
-					"max_play_contribution_points":  200,
-					"max_stake_contribution_points": 200,
 				}),
 			},
 		},
@@ -430,7 +379,7 @@ func TestCreateCampaignRequestRejectsRetiredPointPlayMechanics(t *testing.T) {
 				Description: "Non-redeemable point-play status only.",
 				Rules: []RuleInput{
 					{
-						RuleType: "play",
+						RuleType: "reward",
 						PointRuleConfig: mustRuleConfigForModels(t, map[string]any{
 							key: 1,
 						}),

@@ -41,52 +41,6 @@ type KYCStatus struct {
 	Metadata           map[string]string `json:"metadata,omitempty"`
 }
 
-// DepositLimit represents a deposit limit configuration
-type DepositLimit struct {
-	UserID          string `json:"userId"`
-	Period          string `json:"period"` // daily, weekly, monthly
-	LimitPoints     int64  `json:"limitPoints"`
-	RemainingPoints int64  `json:"remainingPoints"`
-	UsedPoints      int64  `json:"usedPoints"`
-	ResetsAt        string `json:"resetsAt"`
-	CreatedAt       string `json:"createdAt"`
-	// LC-19/D-11 loosen-limit cooldown: a requested *increase* does not
-	// take effect immediately. The effective (tighter) LimitPoints stays
-	// enforced until PendingActivatesAt; only then does PendingLimitPoints
-	// become LimitPoints. Zero/empty = no pending change. A decrease
-	// applies immediately and clears any pending increase.
-	PendingLimitPoints int64  `json:"pendingLimitPoints,omitempty"`
-	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
-}
-
-// BetLimit represents a bet stake limit
-type BetLimit struct {
-	UserID          string `json:"userId"`
-	Period          string `json:"period"` // daily, weekly, monthly
-	LimitPoints     int64  `json:"limitPoints"`
-	RemainingPoints int64  `json:"remainingPoints"`
-	UsedPoints      int64  `json:"usedPoints"`
-	ResetsAt        string `json:"resetsAt"`
-	CreatedAt       string `json:"createdAt"`
-	// LC-19/D-11 loosen-limit cooldown — see DepositLimit.
-	PendingLimitPoints int64  `json:"pendingLimitPoints,omitempty"`
-	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
-}
-
-// PlayerRestrictions represents all restrictions on a player
-type PlayerRestrictions struct {
-	UserID        string         `json:"userId"`
-	IsBlocked     bool           `json:"isBlocked"`
-	IsOnCoolOff   bool           `json:"isOnCoolOff"`
-	CoolOffUntil  string         `json:"coolOffUntil,omitempty"`
-	IsExcluded    bool           `json:"isExcluded"`
-	ExclusionType string         `json:"exclusionType,omitempty"` // temporary, permanent
-	ExcludedUntil string         `json:"excludedUntil,omitempty"`
-	DepositLimits []DepositLimit `json:"depositLimits"`
-	BetLimits     []BetLimit     `json:"betLimits"`
-	LastUpdated   string         `json:"lastUpdated"`
-}
-
 // RiskAssessment is used internally to track risk
 type RiskAssessment struct {
 	UserID     string

@@ -10,7 +10,7 @@ fi
 echo "Using yarn: $(yarn --version)"
 
 echo "=== Step 1: Clean node_modules + build caches ==="
-rm -rf node_modules packages/office/node_modules packages/app/node_modules packages/utils/node_modules packages/mock-server/node_modules
+rm -rf node_modules packages/office/node_modules packages/app/node_modules packages/utils/node_modules
 rm -rf packages/office/.next packages/app/.next
 rm -f yarn.lock package-lock.json
 

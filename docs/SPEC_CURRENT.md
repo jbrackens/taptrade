@@ -10,8 +10,8 @@
 > [taptrade-economy-rules.md](taptrade-economy-rules.md); store contract →
 > [`../STORE_AND_PAYMENTS.md`](../STORE_AND_PAYMENTS.md).
 > **Last verified:** 2026-09-29 at commit `4924a670`; bot keys, settlement
-> overrides and two-factor sign-in updated the same day with the hardening
-> change. Route registrations in
+> overrides, two-factor sign-in and the sportsbook-residue removal (§2.9, the
+> account pages, the feature flags) updated the same day. Route registrations in
 > `gateway/internal/**` and `gateway/cmd/gateway/main.go`, `gateway/internal/prediction`
 > business logic, every `player/app/**/page.tsx` and `office/app/(dashboard)/**/page.tsx`,
 > `player/FEATURE_MANIFEST.json`, `player/app/lib/features.ts`, and the demo
@@ -97,8 +97,8 @@ geo and KYC gates are off, `SMM_ENABLED=true`, `STORE_ENABLED=true` with the
   lock shares on the position (`reserved_quantity`).
 - AMM execution is retired: orders on `execution_mode='amm'` markets are
   refused; the LMSR code only quotes legacy markets ([ADR-0008](adr/0008-clob-execution-replaces-amm.md)).
-- Order placement runs the responsible-play stake check and the compliance
-  gate (geo, KYC) first ([§2.9](#29-responsible-play-and-compliance)).
+- Order placement runs the compliance gate (geo, KYC) first
+  ([§2.9](#29-compliance)); there is no stake or limit check.
 
 ### 2.3 Market lifecycle — Complete
 
@@ -188,13 +188,15 @@ for manual resolution. Detail: [INTEGRATIONS.md](INTEGRATIONS.md).
   on the demo. Notification *preferences* are not persisted (**Stub**,
   disclosed in the UI).
 
-### 2.9 Responsible play and compliance
+### 2.9 Compliance
+
+The sportsbook responsible-gambling controls (stake and deposit limits,
+self-exclusion, cool-off, the session-limit endpoint) were removed on
+2026-09-29 ([ADR-0014](adr/0014-remove-sportsbook-residue.md)). What remains
+is jurisdictional:
 
 | Control | Behaviour | Status |
 |---|---|---|
-| Stake and deposit limits | Daily/weekly/monthly caps checked against logged activity before an order or store purchase (`gateway/internal/compliance/rg_postgres.go`) | Complete |
-| Self-exclusion, cool-off | Blocks play for the period | Complete (UI behind `NEXT_PUBLIC_FEATURE_RG`, off by default) |
-| Session-duration limit | Endpoint validates and echoes; nothing stored or enforced, although the responsible-gaming page says it works | **Stub** ([TD-016](TECH_DEBT.md#c-compliance-and-licensability)) |
 | Trading KYC gate | With `KYC_REQUIRED_FOR_TRADING=true`, trading needs `approved` KYC; fails closed in production/staging, open in dev | Complete, off by default and on the demo |
 | Withdrawal KYC gate | Threshold (`KYC_WITHDRAWAL_THRESHOLD_CENTS`) over cumulative cash-out across both money rails | Complete but **Dormant** (withdrawal routes unmounted) |
 | KYC review | Submissions queue as `pending`; an admin decides via `POST /api/v1/admin/kyc/decision` (`compliance:write`); no vendor integration | Partial — no office queue ([TD-013](TECH_DEBT.md#c-compliance-and-licensability)) |
@@ -221,11 +223,10 @@ returns 404 or redirects unless the named build-time flag is `true`.
 | Rewards | `/rewards` | Tier ladder, daily claim, missions, streaks, packs, badges, bonuses, ledger | Complete |
 | Leaderboards | `/leaderboards`, `/leaderboards/[id]` | Boards and standings; `[id]` redirects to `?board=` | Complete |
 | Account | `/account` | Own profile hub: balance, marked positions, result sparkline | Complete |
-| Account | `/account/settings` | Details, language, privacy toggle; KYC card (`FEATURE_KYC`), limits (`FEATURE_LIMITS`) | Complete; the details save is not persisted ([TD-036](TECH_DEBT.md#f-gateway-api-and-real-time)) |
+| Account | `/account/settings` | Details, language, privacy toggle; KYC card (`FEATURE_KYC`) | Complete; the details save is not persisted ([TD-036](TECH_DEBT.md#f-gateway-api-and-real-time)) |
 | Account | `/account/security` | Password change, sessions; the two-factor tab (status, setup with an authenticator key, turn off with a code) shows only with `NEXT_PUBLIC_FEATURE_MFA` (off) | Complete (two-factor off by flag) |
 | Account | `/account/notifications` | Preference UI; backend does not persist | Partial / Stub |
 | Account | `/account/transactions` | Clout ledger with filters and CSV export | Complete |
-| Account | `/account/rg-history`, `/account/self-exclude`, `/responsible-gaming` | Responsible-play history, self-exclusion wizard, info page | Flag `NEXT_PUBLIC_FEATURE_RG` |
 | Profile | `/users/[userId]` | Another player's public profile, follow, activity | Complete |
 | Auth | `/auth/login`, `/auth/register` | Password login and two-step registration (terms and points-only disclosure); social buttons behind `FEATURE_SOCIAL_AUTH` | Complete |
 | Auth | `/auth/verify-email`, `/auth/reset-password`, `/reset-password` | Token-based verify and reset (the last redirects) | Complete, but reset links can only be issued manually |
@@ -489,14 +490,14 @@ Channel cleanup: [TD-034](TECH_DEBT.md#f-gateway-api-and-real-time).
 | Stripe store provider | Not implemented (boot-refused) | `gateway/internal/store/config.go` |
 | KYC vendor (IDV) | Not implemented; manual review only | `gateway/internal/compliance/idv.go` |
 | GPS geo verification | Mock | `/api/v1/compliance/geo/verify` |
-| Session-duration limit, notification preferences, profile update | Accepted but not stored | [TD-016](TECH_DEBT.md#c-compliance-and-licensability), [TD-043](TECH_DEBT.md#g-player-app), [TD-036](TECH_DEBT.md#f-gateway-api-and-real-time) |
+| Notification preferences, profile update | Accepted but not stored | [TD-043](TECH_DEBT.md#g-player-app), [TD-036](TECH_DEBT.md#f-gateway-api-and-real-time) |
 | Forgot-password | Stub | `/auth/forgot-password` |
 | Synthetic market maker | Real orders through the normal path, as user `user-bot`; on for the demo only | `gateway/internal/prediction/workers/smm.go` |
 | Synthetic demo charts | A seeded random walk while price history loads or is flat; demo only | `NEXT_PUBLIC_DEMO_SYNTHETIC_CHARTS` |
 | CoinGecko settlement feed | Flagged off | `TAPTRADE_LEGACY_ASSET_PRICE_FEEDS_ENABLED` |
 | Authenticated Kalshi live data | Flagged off | `AUTHENTICATED_MARKET_DATA_ENABLED` |
-| Player feature flags | `FEATURE_RG`, `FEATURE_KYC`, `FEATURE_LIMITS`, `FEATURE_LIVE_MARKETS`, `FEATURE_CASHIER_UI` off; `FEATURE_CHAT`, `FEATURE_SOCIAL_AUTH` on for the demo | `player/app/lib/features.ts` |
-| Loyalty and leaderboards without a database | Legacy in-memory implementations (dev/test only) | `gateway/internal/http/loyalty_handlers.go`, `leaderboard_handlers.go` |
+| Player feature flags | `FEATURE_KYC`, `FEATURE_LIVE_MARKETS`, `FEATURE_CASHIER_UI`, `FEATURE_MFA` off; `FEATURE_CHAT`, `FEATURE_SOCIAL_AUTH` on for the demo | `player/app/lib/features.ts` |
+| Loyalty and leaderboards without a database | Legacy in-memory implementations (dev/test only); the loyalty one is the sportsbook-era service ([TD-061](TECH_DEBT.md#j-legacy-residue-and-hygiene)) | `gateway/internal/http/loyalty_handlers.go`, `leaderboard_handlers.go` |
 
 ## 9. Where documented intent and code disagree
 
@@ -504,8 +505,6 @@ Channel cleanup: [TD-034](TECH_DEBT.md#f-gateway-api-and-real-time).
   describes cent pricing, a live crypto category and withdrawals. None exist:
   prices are Points, the crypto category is deactivated (migration 046), and
   there is no withdrawal path.
-- The responsible-gaming page promises session limits that are not enforced
-  ([§2.9](#29-responsible-play-and-compliance)).
 - The office tier editor implies tiers are configurable; accrual ignores it
   ([§2.7](#27-loyalty-leaderboards-and-rewards--complete)).
 - `FEATURE_MANIFEST.json` lists pages that do not exist ([§3](#3-player-app-pages)).

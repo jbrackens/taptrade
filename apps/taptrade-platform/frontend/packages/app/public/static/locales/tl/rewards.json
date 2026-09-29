@@ -158,9 +158,10 @@
   },
   "activeBonuses": {
     "title": "Aktibong Clout bonuses",
-    "body": "Subaybayan ang promotional Clout at ang progreso nito.",
+    "body": "Promotional Clout na na-credit sa iyong account.",
     "fallbackName": "Clout bonus",
     "status": "Status: {{status}}",
+    "expires": "Mag-e-expire sa {{date}}",
     "remaining": "Clout ang natitira"
   }
 }

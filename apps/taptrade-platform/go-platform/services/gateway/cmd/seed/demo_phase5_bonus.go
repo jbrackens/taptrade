@@ -52,19 +52,10 @@ reward_rule AS (
   )
   FROM campaign
 ),
-play_rule AS (
-  INSERT INTO campaign_rules (campaign_id, rule_type, rule_config)
-  SELECT id, 'wagering', jsonb_build_object(
-    'multiplier', 5,
-    'max_stake_contribution_points', 5000
-  )
-  FROM campaign
-),
 grant_row AS (
   INSERT INTO player_bonuses (
     user_id, campaign_id, bonus_type, status,
     granted_amount_points, remaining_amount_points,
-    wagering_required_points, wagering_completed_points,
     expires_at, metadata
   )
   SELECT
@@ -74,13 +65,11 @@ grant_row AS (
     'active',
     $2,
     $4,
-    $5,
-    $6,
     NOW() + INTERVAL '14 days',
     jsonb_build_object(
       'campaign_name', $7,
       'granted_by', 'demo-seed',
-      'reason', 'demo active bonus progress',
+      'reason', 'demo active bonus',
       'demo_seed', true
     )
   FROM campaign
@@ -91,8 +80,6 @@ SELECT COUNT(*) FROM grant_row`,
 		demoActiveBonusGrantedPoints,
 		demoUserID,
 		demoActiveBonusRemainingPoints,
-		demoActiveBonusPlayRequiredPoints,
-		demoActiveBonusPlayCompletedPoints,
 		demoActiveBonusName,
 	).Scan(&count)
 	if err != nil {

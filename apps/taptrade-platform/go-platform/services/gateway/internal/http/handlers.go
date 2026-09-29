@@ -532,36 +532,24 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	// --- Compliance Routes ---
 	geoComplianceService := compliance.NewMockGeoComplianceServiceFromEnv()
-	// KYC + responsible-gambling are DB-backed (persistent across restarts) when
-	// a database is wired; in-memory mock otherwise (tests / local dev without a
-	// DB). DB-backed KYC routes identity decisions through a pluggable IDV
+	// KYC is DB-backed (persistent across restarts) when a database is wired;
+	// in-memory mock otherwise (tests / local dev without a DB). DB-backed
+	// KYC routes identity decisions through a pluggable IDV
 	// provider — default is back-office manual review (operable, never
 	// auto-approves); a real vendor (Sumsub/Onfido/Persona) drops in via
 	// KYC_IDV_PROVIDER + KYC_IDV_API_KEY without touching this wiring.
 	var kycService compliance.KYCService
-	var rgService compliance.ResponsibleGamblingService
 	var pgKYC *compliance.PostgresKYCService
 	complianceDB := walletService.DB()
 	kycService, pgKYC = selectKYCService(complianceDB, func(db *sql.DB) (*compliance.PostgresKYCService, error) {
 		return compliance.NewPostgresKYCService(db, compliance.NewIDVProviderFromEnv())
 	}, realDeploymentEnvironment())
-	if complianceDB != nil {
-		if svc, err := compliance.NewPostgresResponsibleGamblingService(complianceDB); err != nil {
-			slog.Warn("compliance: Postgres RG init failed, falling back to mock", "error", err)
-			rgService = compliance.NewMockResponsibleGamblingService()
-		} else {
-			rgService = svc
-			slog.Info("compliance: Postgres responsible-gambling service initialized")
-		}
-	} else {
-		rgService = compliance.NewMockResponsibleGamblingService()
-	}
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
 	if pgKYC != nil {
 		// Back-office KYC approve/reject (the operable half of manual review).
 		registerKYCAdminRoutes(mux, pgKYC)
 	}
-	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService)
 	// Pre-trade jurisdiction + KYC gates. Both default OFF — wired here so a
 	// single env flag activates them without a code change. See
 	// internal/http/pretrade_gate.go and docs/compliance/geofencing-kyc.md
@@ -573,12 +561,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// docs/compliance/geofencing-kyc.md for the compliance posture.
 	alphacashier.ComplianceGate = checkComplianceGates
 	payments.ComplianceGate = checkComplianceGates
-	// Point store (owner decision 2026-07-12): purchases are value-in —
-	// jurisdiction-gated like deposits and counted against responsible-play
-	// deposit limits. Seams are nil-safe; the store tree itself only mounts
-	// under STORE_ENABLED.
+	// Point store (owner decision 2026-07-12): purchases are value-in, so
+	// checkout is jurisdiction-gated like trading. The seam is nil-safe; the
+	// store tree itself only mounts under STORE_ENABLED.
 	store.ComplianceGate = checkComplianceGates
-	store.RGLimits = rgService
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	logPreTradeComplianceMode(env, tradeGeoGate)
 	// The geo gate is intentionally default-off (depth pending legal), so a
@@ -588,12 +574,6 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	if (env == "production" || env == "staging") && !tradeGeoGate.Enabled() && !permissiveBetaComplianceMode() {
 		slog.Warn("geo gate DISABLED — jurisdiction policy NOT enforced; set GEO_GATE_ENABLED=true once legal sign-off lands", "environment", env)
 	}
-	// Gate prediction order placement through the same RG service instance the
-	// /api/v1/compliance/rg/* routes write to, so a user-set bet limit /
-	// self-exclusion / cool-off actually blocks trades (UAT 2026-05-16 LC-17:
-	// the prediction path previously had no compliance dependency at all).
-	predictionService.SetComplianceChecker(rgService)
-
 	// --- Payments Routes ---
 	if legacyMoneyRoutesEnabled() {
 		var paymentService payments.PaymentService
@@ -608,7 +588,6 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		} else {
 			paymentService = payments.NewMockPaymentService(walletService)
 		}
-		payments.DepositComplianceChecker = rgService
 		payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
 		payments.RegisterPaymentRoutes(mux, paymentService)
 	} else {

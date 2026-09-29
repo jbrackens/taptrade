@@ -14,6 +14,19 @@ Tap Trade uses non-redeemable gameplay points for prediction-market play. Points
 - Fees are computed on the Points spent on the fill (see the fee-model decision, 2026-04-24: `floor(fee_bps × price × (100 − price) × quantity / 1,000,000)`, flat 100 bps in v1, rounding down — peaking at 0.25 Points/contract at p=50).
 - Balances, grants, rewards, and ledger entries are integer whole Points. There is **no sub-unit below the Point**; the retired "point-cents" abstraction (which treated stored integers as hundredths of a display-point) is a deprecated implementation detail and must not return.
 
+## Amendment — sportsbook residue removed (2026-09-29)
+
+The loop rules below that describe responsible-play limits, cool-off,
+self-exclusion, the `/api/v1/compliance/rg/*` routes, bonus wagering /
+play-progress, the `/api/v1/bonuses/{id}/progress` endpoint, the office
+user-limit editors and the limit-history types record how those surfaces
+were kept launch-safe while they existed. They were removed from the code
+base on 2026-09-29 ([ADR-0014](adr/0014-remove-sportsbook-residue.md)): a
+points prediction market does not run gambling-compliance tooling, and a
+campaign bonus is a plain Points grant. Those rules are history, not
+requirements; the vocabulary bans (no cash, wagering or redeemable wording)
+still apply everywhere.
+
 ## Non-Negotiable Constraints
 
 - No fiat deposits. **(Amended 2026-07-12 — see the note below.)**

@@ -4,8 +4,6 @@ import {
   OfficePunterSessionHistory,
   OfficePunterWallet,
   OfficePunterNotes,
-  LimitsHistoryData,
-  CoolOffsHistoryData,
 } from "../../types/punters";
 import { OfficeAuditLog, OfficeAuditLogs } from "../../types/logs";
 import { parseTableMetaPagination } from "../utils/filters";
@@ -25,8 +23,6 @@ export type UsersDetailsSliceState = {
   sessionHistory: UsersDetailsSessionHistory;
   notes: UsersDetailsNotes;
   updateNotes: boolean;
-  limitsHistory: UsersLimitsHistory;
-  coolOffsHistory: UsersCoolOffsHistory;
 };
 
 export type UsersDetailsWalletHistory = {
@@ -71,16 +67,6 @@ export type UsersDetailsNotesResponse = {
     total?: number;
   };
 } & TablePaginationResponse;
-
-export type UsersLimitsHistory = {
-  data: Array<LimitsHistoryData>;
-  paginationResponse: TablePagination | {};
-} & TableMeta;
-
-export type UsersCoolOffsHistory = {
-  data: Array<CoolOffsHistoryData>;
-  paginationResponse: TablePagination | {};
-} & TableMeta;
 
 const normalizeGoAuditRow = (row: any): OfficeAuditLog => {
   if (!row || typeof row !== "object") {
@@ -163,20 +149,6 @@ const initialState: UsersDetailsSliceState = {
     sorting: {},
   },
   updateNotes: false,
-  limitsHistory: {
-    data: [],
-    pagination: {},
-    paginationResponse: {},
-    filters: {},
-    sorting: {},
-  },
-  coolOffsHistory: {
-    data: [],
-    pagination: {},
-    paginationResponse: {},
-    filters: {},
-    sorting: {},
-  },
 };
 
 export type UsersDetailsSlice = {
@@ -285,35 +257,6 @@ const usersDetailsSlice = createSlice({
         );
       }
     },
-
-    getUserLimitsHistory: () => {},
-
-    getUserLimitsHistorySucceeded: (
-      state: UsersDetailsSliceState,
-      action: PayloadAction<any>,
-    ) => {
-      if (action?.payload) {
-        const { data, ...rest } = action.payload;
-
-        state.limitsHistory.data = [...data];
-        state.limitsHistory.paginationResponse = parseTableMetaPagination(rest);
-      }
-    },
-
-    getUserCoolOffsHistory: () => {},
-
-    getUserCoolOffsHistorySucceeded: (
-      state: UsersDetailsSliceState,
-      action: PayloadAction<any>,
-    ) => {
-      if (action?.payload) {
-        const { data, ...rest } = action.payload;
-
-        state.coolOffsHistory.data = [...data];
-        state.coolOffsHistory.paginationResponse =
-          parseTableMetaPagination(rest);
-      }
-    },
   },
 });
 
@@ -356,22 +299,6 @@ export const selectNotesTableMeta = (state: UsersDetailsSlice) => {
   return { pagination, paginationResponse, filters, sorting };
 };
 
-export const selectLimitsHistoryData = (state: UsersDetailsSlice) =>
-  state.usersDetails.limitsHistory.data;
-export const selectLimitsHistoryTableMeta = (state: UsersDetailsSlice) => {
-  const { pagination, paginationResponse, filters, sorting } =
-    state.usersDetails.limitsHistory;
-  return { pagination, paginationResponse, filters, sorting };
-};
-
-export const selectCoolOffsHistoryData = (state: UsersDetailsSlice) =>
-  state.usersDetails.coolOffsHistory.data;
-export const selectCoolOffsHistoryTableMeta = (state: UsersDetailsSlice) => {
-  const { pagination, paginationResponse, filters, sorting } =
-    state.usersDetails.coolOffsHistory;
-  return { pagination, paginationResponse, filters, sorting };
-};
-
 export const {
   getUserDetails,
   getUserDetailsSucceeded,
@@ -386,10 +313,6 @@ export const {
   getUserNotes,
   setUserNotesUpdate,
   getUserNotesSucceeded,
-  getUserLimitsHistorySucceeded,
-  getUserLimitsHistory,
-  getUserCoolOffsHistorySucceeded,
-  getUserCoolOffsHistory,
 } = usersDetailsSlice.actions;
 
 export default usersDetailsSlice.reducer;

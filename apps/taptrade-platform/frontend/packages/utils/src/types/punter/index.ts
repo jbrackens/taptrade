@@ -15,7 +15,6 @@ export type PunterDetails = Omit<
 > & {
   username: string;
   address: PunterAddress;
-  bettingPreferences: PunterBettingPreferences;
   communicationPreferences: PunterCommunicationPreferences;
   dateOfBirth: PunterDateOfBirth;
   depositLimits: PunterStandardLimitsScope;
@@ -142,10 +141,6 @@ export type PunterTerms = {
   version: number;
 };
 
-export type PunterBettingPreferences = {
-  autoAcceptBetterOdds: boolean;
-};
-
 export type PunterCommunicationPreferences = {
   announcements: boolean;
   promotions: boolean;
@@ -169,35 +164,4 @@ export type PunterRoles = PunterRole[];
 
 export type JSONWebToken = {
   [key: string]: any;
-};
-
-export type FinancialSummaryElement = {
-  amount: number;
-  currency: string;
-};
-
-export type FinancialSummaryProductExposure = {
-  openExposure: FinancialSummaryElement;
-};
-
-export type PredictionFinancialSummaryProduct = {
-  openExposure: FinancialSummaryElement;
-  openOrders: number;
-  settledOrders: number;
-  cancelledOrders: number;
-};
-
-export type FinancialSummaryProductBreakdown = {
-  sportsbook: FinancialSummaryProductExposure;
-  prediction: PredictionFinancialSummaryProduct;
-};
-
-export type FinancialSummary = {
-  currentBalance: FinancialSummaryElement;
-  lifetimeDeposits: FinancialSummaryElement;
-  lifetimeWithdrawals: FinancialSummaryElement;
-  netCash: FinancialSummaryElement;
-  openedBets: FinancialSummaryElement;
-  pendingWithdrawals: FinancialSummaryElement;
-  productBreakdown: FinancialSummaryProductBreakdown;
 };

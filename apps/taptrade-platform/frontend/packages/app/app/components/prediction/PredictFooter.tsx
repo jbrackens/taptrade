@@ -10,7 +10,6 @@
  */
 
 import Link from "next/link";
-import { FEATURE_RG } from "../../lib/features";
 import { brand } from "../../lib/brand";
 import BrandMark from "../BrandMark";
 
@@ -20,9 +19,6 @@ const LINKS = [
   { href: "/about", label: "About" },
   { href: "/tos", label: "Terms of Use" },
   { href: "/privacy", label: "Privacy" },
-  ...(FEATURE_RG
-    ? [{ href: "/responsible-gaming", label: "Responsible Gaming" }]
-    : []),
   { href: "/contact-us", label: "Contact" },
   { href: "/attributions", label: "Photo credits" },
 ];
