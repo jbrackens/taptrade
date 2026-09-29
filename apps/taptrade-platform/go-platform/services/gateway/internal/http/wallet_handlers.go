@@ -617,13 +617,13 @@ func pointPackDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string) 
 		{
 			id:          "starter_boost",
 			name:        "Starter boost",
-			description: "One-time gameplay point pack for trying more predictions.",
+			description: "One-time Clout pack for trying more predictions.",
 			env:         "POINT_PACK_STARTER_BOOST_CENTS",
 		},
 		{
 			id:          "market_explorer",
 			name:        "Market explorer",
-			description: "One-time gameplay point pack for exploring more categories.",
+			description: "One-time Clout pack for exploring more categories.",
 			env:         "POINT_PACK_MARKET_EXPLORER_CENTS",
 		},
 	}
@@ -793,7 +793,7 @@ func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEnt
 		{
 			ID:           "daily_check_in",
 			Name:         "Daily check-in",
-			Description:  "Claim today's gameplay points to complete this mission.",
+			Description:  "Claim today's Clout to complete this mission.",
 			Unit:         "PTS",
 			RewardPoints: reward,
 			Progress:     progress,
@@ -901,7 +901,7 @@ func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEnt
 		{
 			ID:           "weekly_check_in",
 			Name:         "Weekly check-in",
-			Description:  "Claim gameplay points seven days in a row to complete this one-time mission.",
+			Description:  "Claim your daily Clout seven days in a row to complete this one-time mission.",
 			Unit:         "PTS",
 			RewardPoints: weeklyCheckInReward,
 			Progress:     weeklyCheckInProgress,
@@ -913,7 +913,7 @@ func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEnt
 		{
 			ID:           "monthly_check_in",
 			Name:         "Monthly check-in",
-			Description:  "Claim gameplay points thirty days in a row to complete this one-time mission.",
+			Description:  "Claim your daily Clout thirty days in a row to complete this one-time mission.",
 			Unit:         "PTS",
 			RewardPoints: monthlyCheckInReward,
 			Progress:     monthlyCheckInProgress,
@@ -925,7 +925,7 @@ func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEnt
 		{
 			ID:           "seasonal_check_in",
 			Name:         "Seasonal check-in",
-			Description:  "Claim gameplay points sixty days in a row to complete this one-time mission.",
+			Description:  "Claim your daily Clout sixty days in a row to complete this one-time mission.",
 			Unit:         "PTS",
 			RewardPoints: seasonalCheckInReward,
 			Progress:     seasonalCheckInProgress,
@@ -937,7 +937,7 @@ func missionDefinitionsFromLedger(ctx context.Context, ledger []wallet.LedgerEnt
 		{
 			ID:           "quarterly_check_in",
 			Name:         "Quarterly check-in",
-			Description:  "Claim gameplay points ninety days in a row to complete this one-time mission.",
+			Description:  "Claim your daily Clout ninety days in a row to complete this one-time mission.",
 			Unit:         "PTS",
 			RewardPoints: quarterlyCheckInReward,
 			Progress:     quarterlyCheckInProgress,
@@ -1028,7 +1028,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_3",
 			Name:          "3-day check-in streak",
-			Description:   "Claim gameplay points three days in a row.",
+			Description:   "Claim your daily Clout three days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  threeDayReward,
 			CurrentStreak: currentStreak,
@@ -1040,7 +1040,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_7",
 			Name:          "7-day check-in streak",
-			Description:   "Claim gameplay points seven days in a row.",
+			Description:   "Claim your daily Clout seven days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  weeklyReward,
 			CurrentStreak: currentStreak,
@@ -1052,7 +1052,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_14",
 			Name:          "14-day check-in streak",
-			Description:   "Claim gameplay points fourteen days in a row.",
+			Description:   "Claim your daily Clout fourteen days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  fortnightReward,
 			CurrentStreak: currentStreak,
@@ -1064,7 +1064,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_30",
 			Name:          "30-day check-in streak",
-			Description:   "Claim gameplay points thirty days in a row.",
+			Description:   "Claim your daily Clout thirty days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  monthlyReward,
 			CurrentStreak: currentStreak,
@@ -1076,7 +1076,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_60",
 			Name:          "60-day check-in streak",
-			Description:   "Claim gameplay points sixty days in a row.",
+			Description:   "Claim your daily Clout sixty days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  doubleMonthlyReward,
 			CurrentStreak: currentStreak,
@@ -1088,7 +1088,7 @@ func streakDefinitionsFromLedger(ledger []wallet.LedgerEntry, userID string, now
 		{
 			ID:            "daily_90",
 			Name:          "90-day check-in streak",
-			Description:   "Claim gameplay points ninety days in a row.",
+			Description:   "Claim your daily Clout ninety days in a row.",
 			Unit:          "PTS",
 			RewardPoints:  quarterlyReward,
 			CurrentStreak: currentStreak,
@@ -1175,7 +1175,7 @@ func badgeDefinitions(ctx context.Context, service *wallet.Service, leaderboardS
 		{
 			ID:          "daily_check_in",
 			Name:        "Daily check-in badge",
-			Description: "Unlocked by recording at least one gameplay-point daily claim.",
+			Description: "Unlocked by claiming your daily Clout at least once.",
 			CosmeticID:  "badge-daily-check-in",
 			Earned:      hasDailyClaim,
 			Source:      "daily_claim",
