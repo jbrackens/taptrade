@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { CashierConflictError, CashierValidationError, translatePostgresError } from "./errors.mjs";
 
 const WALLET_COLUMNS = `
   user_id,
@@ -307,8 +308,42 @@ export function createSqlCashierRepository(clientOrOptions) {
       return row ? rowToDepositIntent(row) : undefined;
     },
 
-    async saveDepositIntent(intent) {
+    async saveDepositIntent(intent, options = {}) {
+      const { expectedStatus } = options;
       const row = depositIntentToRow(intent);
+      const params = [
+        row.id,
+        row.user_id,
+        row.rail,
+        row.status,
+        row.source_chain,
+        row.source_asset,
+        row.source_decimals,
+        row.settlement_chain,
+        row.settlement_asset,
+        row.destination_wallet_address,
+        row.provider,
+        row.provider_request_id,
+        row.deposit_address,
+        row.expected_source_units,
+        row.actual_source_units,
+        row.settled_units,
+        row.source_tx_hash,
+        row.destination_tx_hash,
+        row.recovery_reason,
+        row.idempotency_key,
+        row.created_at,
+        row.updated_at,
+      ];
+      // Optimistic concurrency: when the caller supplies expectedStatus, only
+      // update a row that is still in that status. A concurrent writer that
+      // already moved the row on will cause this UPDATE to match zero rows
+      // instead of blindly clobbering the newer state.
+      const expectedStatusGuard =
+        expectedStatus !== undefined ? ` WHERE deposit_intents.status = $${params.length + 1}` : "";
+      if (expectedStatus !== undefined) {
+        params.push(expectedStatus);
+      }
       const saved = await queryOne(
         client,
         `INSERT INTO deposit_intents (
@@ -379,33 +414,15 @@ export function createSqlCashierRepository(clientOrOptions) {
              destination_tx_hash = EXCLUDED.destination_tx_hash,
              recovery_reason = EXCLUDED.recovery_reason,
              idempotency_key = EXCLUDED.idempotency_key,
-             updated_at = COALESCE(EXCLUDED.updated_at, deposit_intents.updated_at)
+             updated_at = COALESCE(EXCLUDED.updated_at, deposit_intents.updated_at)${expectedStatusGuard}
          RETURNING ${DEPOSIT_INTENT_COLUMNS}`,
-        [
-          row.id,
-          row.user_id,
-          row.rail,
-          row.status,
-          row.source_chain,
-          row.source_asset,
-          row.source_decimals,
-          row.settlement_chain,
-          row.settlement_asset,
-          row.destination_wallet_address,
-          row.provider,
-          row.provider_request_id,
-          row.deposit_address,
-          row.expected_source_units,
-          row.actual_source_units,
-          row.settled_units,
-          row.source_tx_hash,
-          row.destination_tx_hash,
-          row.recovery_reason,
-          row.idempotency_key,
-          row.created_at,
-          row.updated_at,
-        ],
+        params,
       );
+      if (!saved) {
+        throw new CashierConflictError(
+          `deposit_intent ${row.id} conflict: expected status ${expectedStatus}`,
+        );
+      }
       return rowToDepositIntent(saved);
     },
 
@@ -457,8 +474,34 @@ export function createSqlCashierRepository(clientOrOptions) {
       return row ? rowToWithdrawalIntent(row) : undefined;
     },
 
-    async saveWithdrawalIntent(intent) {
+    async saveWithdrawalIntent(intent, options = {}) {
+      const { expectedStatus } = options;
       const row = withdrawalIntentToRow(intent);
+      const params = [
+        row.id,
+        row.user_id,
+        row.status,
+        row.settlement_chain,
+        row.source_wallet_address,
+        row.destination_address,
+        row.asset,
+        row.decimals,
+        row.amount_units,
+        row.idempotency_key,
+        row.user_authorization_hash,
+        row.user_authorization_nonce,
+        row.user_authorization_expires_at,
+        row.policy_decision_id,
+        row.relayer_submission_id,
+        row.recovery_reason,
+        row.created_at,
+        row.updated_at,
+      ];
+      const expectedStatusGuard =
+        expectedStatus !== undefined ? ` WHERE withdrawal_intents.status = $${params.length + 1}` : "";
+      if (expectedStatus !== undefined) {
+        params.push(expectedStatus);
+      }
       const saved = await queryOne(
         client,
         `INSERT INTO withdrawal_intents (
@@ -517,29 +560,15 @@ export function createSqlCashierRepository(clientOrOptions) {
              policy_decision_id = EXCLUDED.policy_decision_id,
              relayer_submission_id = EXCLUDED.relayer_submission_id,
              recovery_reason = EXCLUDED.recovery_reason,
-             updated_at = COALESCE(EXCLUDED.updated_at, withdrawal_intents.updated_at)
+             updated_at = COALESCE(EXCLUDED.updated_at, withdrawal_intents.updated_at)${expectedStatusGuard}
          RETURNING ${WITHDRAWAL_INTENT_COLUMNS}`,
-        [
-          row.id,
-          row.user_id,
-          row.status,
-          row.settlement_chain,
-          row.source_wallet_address,
-          row.destination_address,
-          row.asset,
-          row.decimals,
-          row.amount_units,
-          row.idempotency_key,
-          row.user_authorization_hash,
-          row.user_authorization_nonce,
-          row.user_authorization_expires_at,
-          row.policy_decision_id,
-          row.relayer_submission_id,
-          row.recovery_reason,
-          row.created_at,
-          row.updated_at,
-        ],
+        params,
       );
+      if (!saved) {
+        throw new CashierConflictError(
+          `withdrawal_intent ${row.id} conflict: expected status ${expectedStatus}`,
+        );
+      }
       return rowToWithdrawalIntent(saved);
     },
 
@@ -557,9 +586,18 @@ export function createSqlCashierRepository(clientOrOptions) {
 
     async insertBridgeEvent(event) {
       const row = bridgeEventToRow(event);
-      const inserted = await queryOne(
-        client,
-        `INSERT INTO bridge_events (
+      // bridge_events has two independent UNIQUE constraints: idempotency_key
+      // and (provider, raw_body_sha256). ON CONFLICT (idempotency_key) DO
+      // NOTHING only suppresses the first; a conflict on the second still
+      // raises a unique_violation, which queryOne() translates into a
+      // CashierConflictError. Treat either conflict as the same "duplicate
+      // delivery" case rather than letting the second one surface as an
+      // unhandled error.
+      let inserted;
+      try {
+        inserted = await queryOne(
+          client,
+          `INSERT INTO bridge_events (
            id,
            provider,
            provider_request_id,
@@ -633,18 +671,39 @@ export function createSqlCashierRepository(clientOrOptions) {
           row.observed_at,
           row.created_at,
         ],
-      );
+        );
+      } catch (err) {
+        if (err instanceof CashierConflictError) {
+          // Conflict on (provider, raw_body_sha256); fall through to the
+          // duplicate lookup below instead of propagating.
+          inserted = undefined;
+        } else {
+          throw err;
+        }
+      }
       if (inserted) {
         return { inserted: true, event: rowToBridgeEvent(inserted) };
       }
 
-      const existing = await queryOne(
+      const existingByIdempotencyKey = await queryOne(
         client,
         `SELECT ${BRIDGE_EVENT_COLUMNS}
          FROM bridge_events
          WHERE idempotency_key = $1`,
         [event.idempotencyKey],
       );
+      const existing =
+        existingByIdempotencyKey ??
+        (row.provider && row.raw_body_sha256
+          ? await queryOne(
+              client,
+              `SELECT ${BRIDGE_EVENT_COLUMNS}
+               FROM bridge_events
+               WHERE provider = $1
+                 AND raw_body_sha256 = $2`,
+              [row.provider, row.raw_body_sha256],
+            )
+          : undefined);
       if (!existing) {
         throw new Error("bridge_event_idempotency_conflict_not_found");
       }
@@ -663,9 +722,11 @@ export function createSqlCashierRepository(clientOrOptions) {
 
     async listRecoveryCases(filter = {}) {
       const normalizedFilter = Object.entries(filter).filter(([, value]) => value !== undefined);
-      const unknownFilter = normalizedFilter.some(([key]) => !RECOVERY_CASE_FILTER_COLUMNS.has(key));
+      const unknownFilter = normalizedFilter.find(([key]) => !RECOVERY_CASE_FILTER_COLUMNS.has(key));
       if (unknownFilter) {
-        return [];
+        throw new CashierValidationError(`unsupported recovery case filter key: ${unknownFilter[0]}`, {
+          field: unknownFilter[0],
+        });
       }
 
       const where = normalizedFilter.map(([key], index) => {
@@ -695,8 +756,30 @@ export function createSqlCashierRepository(clientOrOptions) {
       return row ? rowToRecoveryCase(row) : undefined;
     },
 
-    async saveRecoveryCase(recoveryCase) {
+    async saveRecoveryCase(recoveryCase, options = {}) {
+      const { expectedStatus } = options;
       const row = recoveryCaseToRow(recoveryCase);
+      const params = [
+        row.id,
+        row.subject_type,
+        row.subject_id,
+        row.status,
+        row.recovery_reason,
+        row.user_id,
+        row.provider,
+        row.provider_request_id,
+        row.source_tx_hash,
+        row.destination_tx_hash,
+        row.assigned_operator_id,
+        row.opened_at,
+        row.updated_at,
+        row.closed_at,
+      ];
+      const expectedStatusGuard =
+        expectedStatus !== undefined ? ` WHERE recovery_cases.status = $${params.length + 1}` : "";
+      if (expectedStatus !== undefined) {
+        params.push(expectedStatus);
+      }
       const saved = await queryOne(
         client,
         `INSERT INTO recovery_cases (
@@ -743,25 +826,15 @@ export function createSqlCashierRepository(clientOrOptions) {
              destination_tx_hash = EXCLUDED.destination_tx_hash,
              assigned_operator_id = EXCLUDED.assigned_operator_id,
              updated_at = COALESCE(EXCLUDED.updated_at, recovery_cases.updated_at),
-             closed_at = EXCLUDED.closed_at
+             closed_at = EXCLUDED.closed_at${expectedStatusGuard}
          RETURNING ${RECOVERY_CASE_COLUMNS}`,
-        [
-          row.id,
-          row.subject_type,
-          row.subject_id,
-          row.status,
-          row.recovery_reason,
-          row.user_id,
-          row.provider,
-          row.provider_request_id,
-          row.source_tx_hash,
-          row.destination_tx_hash,
-          row.assigned_operator_id,
-          row.opened_at,
-          row.updated_at,
-          row.closed_at,
-        ],
+        params,
       );
+      if (!saved) {
+        throw new CashierConflictError(
+          `recovery_case ${row.id} conflict: expected status ${expectedStatus}`,
+        );
+      }
       return rowToRecoveryCase(saved);
     },
 
@@ -900,81 +973,101 @@ export function createSqlCashierRepository(clientOrOptions) {
     },
 
     async saveReconciliationReport(report) {
-      const reportRow = reconciliationReportToRow(report);
-      const savedReport = await queryOne(
-        client,
-        `INSERT INTO reconciliation_reports (
-           id,
-           business_date,
-           generated_at,
-           generated_by
-         )
-         VALUES ($1, $2::date, $3, $4)
-         ON CONFLICT (id) DO UPDATE
-         SET business_date = EXCLUDED.business_date,
-             generated_at = EXCLUDED.generated_at,
-             generated_by = EXCLUDED.generated_by
-         RETURNING ${RECONCILIATION_REPORT_COLUMNS}`,
-        [
-          reportRow.id,
-          reportRow.business_date,
-          reportRow.generated_at,
-          reportRow.generated_by,
-        ],
-      );
+      // The report row and all of its items must land atomically: a crash or
+      // error partway through previously left a report with a partial item
+      // set. Check out a dedicated client and wrap the writes in one
+      // transaction.
+      if (typeof client.connect !== "function") {
+        throw new TypeError(
+          "saveReconciliationReport requires a pool with connect() for transactional writes",
+        );
+      }
+      const conn = await client.connect();
+      try {
+        await conn.query("BEGIN");
 
-      const savedItems = [];
-      for (const item of report.items ?? []) {
-        const row = reconciliationItemToRow(item, report.id);
-        const savedItem = await queryOne(
-          client,
-          `INSERT INTO reconciliation_items (
+        const reportRow = reconciliationReportToRow(report);
+        const savedReport = await queryOne(
+          conn,
+          `INSERT INTO reconciliation_reports (
              id,
-             report_id,
-             subject_type,
-             subject_id,
-             expected_units,
-             observed_units,
-             asset,
-             chain,
-             status,
-             provider_request_id,
-             source_tx_hash,
-             destination_tx_hash,
-             notes
+             business_date,
+             generated_at,
+             generated_by
            )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-           ON CONFLICT (report_id, subject_type, subject_id) DO UPDATE
-           SET expected_units = EXCLUDED.expected_units,
-               observed_units = EXCLUDED.observed_units,
-               asset = EXCLUDED.asset,
-               chain = EXCLUDED.chain,
-               status = EXCLUDED.status,
-               provider_request_id = EXCLUDED.provider_request_id,
-               source_tx_hash = EXCLUDED.source_tx_hash,
-               destination_tx_hash = EXCLUDED.destination_tx_hash,
-               notes = EXCLUDED.notes
-           RETURNING ${RECONCILIATION_ITEM_COLUMNS}`,
+           VALUES ($1, $2::date, $3, $4)
+           ON CONFLICT (id) DO UPDATE
+           SET business_date = EXCLUDED.business_date,
+               generated_at = EXCLUDED.generated_at,
+               generated_by = EXCLUDED.generated_by
+           RETURNING ${RECONCILIATION_REPORT_COLUMNS}`,
           [
-            row.id,
-            row.report_id,
-            row.subject_type,
-            row.subject_id,
-            row.expected_units,
-            row.observed_units,
-            row.asset,
-            row.chain,
-            row.status,
-            row.provider_request_id,
-            row.source_tx_hash,
-            row.destination_tx_hash,
-            row.notes,
+            reportRow.id,
+            reportRow.business_date,
+            reportRow.generated_at,
+            reportRow.generated_by,
           ],
         );
-        savedItems.push(savedItem);
-      }
 
-      return rowToReconciliationReport(savedReport, savedItems);
+        const savedItems = [];
+        for (const item of report.items ?? []) {
+          const row = reconciliationItemToRow(item, report.id);
+          const savedItem = await queryOne(
+            conn,
+            `INSERT INTO reconciliation_items (
+               id,
+               report_id,
+               subject_type,
+               subject_id,
+               expected_units,
+               observed_units,
+               asset,
+               chain,
+               status,
+               provider_request_id,
+               source_tx_hash,
+               destination_tx_hash,
+               notes
+             )
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             ON CONFLICT (report_id, subject_type, subject_id) DO UPDATE
+             SET expected_units = EXCLUDED.expected_units,
+                 observed_units = EXCLUDED.observed_units,
+                 asset = EXCLUDED.asset,
+                 chain = EXCLUDED.chain,
+                 status = EXCLUDED.status,
+                 provider_request_id = EXCLUDED.provider_request_id,
+                 source_tx_hash = EXCLUDED.source_tx_hash,
+                 destination_tx_hash = EXCLUDED.destination_tx_hash,
+                 notes = EXCLUDED.notes
+             RETURNING ${RECONCILIATION_ITEM_COLUMNS}`,
+            [
+              row.id,
+              row.report_id,
+              row.subject_type,
+              row.subject_id,
+              row.expected_units,
+              row.observed_units,
+              row.asset,
+              row.chain,
+              row.status,
+              row.provider_request_id,
+              row.source_tx_hash,
+              row.destination_tx_hash,
+              row.notes,
+            ],
+          );
+          savedItems.push(savedItem);
+        }
+
+        await conn.query("COMMIT");
+        return rowToReconciliationReport(savedReport, savedItems);
+      } catch (err) {
+        await conn.query("ROLLBACK").catch(() => {});
+        throw err;
+      } finally {
+        conn.release();
+      }
     },
   };
 }
@@ -988,8 +1081,15 @@ function resolveQueryClient(clientOrOptions) {
 }
 
 async function queryRows(client, text, params = []) {
-  const result = await client.query(text, params);
-  return result?.rows ?? [];
+  try {
+    const result = await client.query(text, params);
+    return result?.rows ?? [];
+  } catch (err) {
+    // Postgres constraint violations (SQLSTATE class 23) become typed cashier
+    // errors here so the handlers layer can map them to 400/409 instead of an
+    // unhandled 500.
+    throw translatePostgresError(err);
+  }
 }
 
 async function queryOne(client, text, params = []) {
@@ -1090,12 +1190,7 @@ function rowToDepositIntent(row) {
       ? tokenAmount(row.source_asset, row.source_chain, row.source_decimals, row.actual_source_units)
       : undefined,
     settledAmount: row.settled_units
-      ? tokenAmount(
-          row.settlement_asset,
-          amountChainForAsset(row.settlement_asset, row.settlement_chain),
-          decimalForAssetOnChain(row.settlement_asset, row.settlement_chain),
-          row.settled_units,
-        )
+      ? settlementTokenAmount(row.settlement_asset, row.settlement_chain, row.settled_units)
       : undefined,
     sourceTxHash: row.source_tx_hash,
     destinationTxHash: row.destination_tx_hash,
@@ -1378,11 +1473,37 @@ function amountChainForAsset(asset, settlementChain) {
   return asset === "hUSD" ? "settlement" : settlementChain;
 }
 
-function decimalForAssetOnChain(asset, chain) {
-  if (asset === "USDT" && chain === "bsc") {
-    return 18;
+// Explicit (asset, chain) -> decimals table. This must stay in sync with the
+// combinations the cashier schema and providers actually support (see the
+// deposit_intents/bridge_events/withdrawal_intents CHECK constraints in
+// migrations/001_cashier_core.sql and packages/cashier-sdk's DECIMALS table).
+// An unrecognized pair throws rather than silently defaulting to 6, which
+// previously could misrepresent a settlement amount by orders of magnitude.
+const ASSET_CHAIN_DECIMALS = new Map([
+  ["USDT:tron", 6],
+  ["USDT:bsc", 18],
+  ["USDC:polygon", 6],
+  ["USDC:base", 6],
+  ["USDC:arbitrum", 6],
+  ["hUSD:settlement", 6],
+]);
+
+export function decimalForAssetOnChain(asset, chain) {
+  const decimals = ASSET_CHAIN_DECIMALS.get(`${asset}:${chain}`);
+  if (decimals === undefined) {
+    throw new Error(`unknown_asset_chain_decimals:${asset}:${chain}`);
   }
-  return 6;
+  return decimals;
+}
+
+// Reconstructs the settlement-leg TokenAmount for a deposit intent. The chain
+// used for the decimals lookup must be the same chain reported on the
+// TokenAmount itself (amountChainForAsset's mapping), not the raw
+// settlement_chain column -- hUSD always settles on the logical "settlement"
+// chain regardless of which EVM chain the wallet lives on.
+function settlementTokenAmount(asset, settlementChain, units) {
+  const chain = amountChainForAsset(asset, settlementChain);
+  return tokenAmount(asset, chain, decimalForAssetOnChain(asset, chain), units);
 }
 
 function toIsoString(value) {
