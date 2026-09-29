@@ -1,6 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
+  chartAxisTicks,
+  chartDomain,
   format24hRange,
   resolveChartSeries,
   samplePath,
@@ -185,5 +187,32 @@ describeSynth("resolveChartSeries — synthetic flagging", () => {
     });
     assertSynth.equal(empty.state, "empty");
     assertSynth.equal(empty.synthetic, false);
+  });
+});
+
+describe("chartDomain — the chart's fitted vertical range", () => {
+  it("snaps a small move to a 5-point grid at least 10 points tall", () => {
+    assert.deepEqual(chartDomain([55, 56, 58, 57]), { min: 50, max: 65 });
+    assert.deepEqual(chartDomain([38, 41, 43]), { min: 35, max: 50 });
+  });
+  it("keeps a wide move as-is", () => {
+    assert.deepEqual(chartDomain([10, 50, 90]), { min: 10, max: 90 });
+  });
+  it("keeps the window's width when it hits 0 or 100", () => {
+    assert.deepEqual(chartDomain([99, 99]), { min: 85, max: 100 });
+    assert.deepEqual(chartDomain([1, 1]), { min: 0, max: 15 });
+  });
+  it("falls back to 0–100 with no data", () => {
+    assert.deepEqual(chartDomain([]), { min: 0, max: 100 });
+  });
+});
+
+describe("chartAxisTicks — where the % labels go", () => {
+  it("labels every 5 points on a narrow range", () => {
+    assert.deepEqual(chartAxisTicks({ min: 50, max: 65 }), [50, 55, 60, 65]);
+  });
+  it("thins out on wider ranges", () => {
+    assert.deepEqual(chartAxisTicks({ min: 30, max: 70 }), [30, 40, 50, 60, 70]);
+    assert.deepEqual(chartAxisTicks({ min: 10, max: 90 }), [20, 40, 60, 80]);
   });
 });

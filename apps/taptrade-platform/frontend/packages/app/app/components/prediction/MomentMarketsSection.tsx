@@ -76,7 +76,7 @@ function dateWindowToCloseBefore(window: DateWindow): string | undefined {
 }
 
 function filterPillClass(active: boolean): string {
-  return `h-8 cursor-pointer whitespace-nowrap rounded-[8px] border-0 px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[640px]:h-9 ${
+  return `h-8 pointer-coarse:h-11 pointer-coarse:min-w-11 cursor-pointer whitespace-nowrap rounded-[8px] border-0 px-3 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)] max-[640px]:h-9 ${
     active
       ? "bg-[var(--surface-1)] font-semibold text-[var(--t1)] shadow-[0_1px_2px_rgba(17,17,20,0.08),0_0_0_0.5px_rgba(17,17,20,0.06)]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
@@ -260,7 +260,7 @@ export function MomentMarketsSection({ categoryId }: { categoryId?: string }) {
         </h2>
         <Link
           href="/discover"
-          className="shrink-0 text-[13px] font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
+          className="shrink-0 text-[13px] font-medium text-[var(--t2)] no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--paper)]"
         >
           {t("VIEW_ALL_MOMENTS", "View all moments")} →
         </Link>

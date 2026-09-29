@@ -129,7 +129,10 @@ const TOP_BAR_LINK_ACTIVE_CLASS = "bg-[var(--surface-2)] !text-[var(--t1)]";
 const TOP_BAR_RIGHT_CLASS = [
   // min-w-0 (not shrink-0): the cluster must compress on narrow phones —
   // at 320px an unshrinkable cluster forces horizontal page scroll.
-  "flex min-w-0 shrink items-center gap-2.5",
+  // ml-auto + justify-end: below 900px the nav and search are hidden, and
+  // only the signed-in bell carried ml-auto, so signed-out Log in / Sign up
+  // sat beside the logo with the right third of the bar empty.
+  "ml-auto flex min-w-0 shrink items-center justify-end gap-2.5",
   "[&_.lang-select-wrap]:relative [&_.lang-select-wrap]:inline-flex [&_.lang-select-wrap]:min-h-10 [&_.lang-select-wrap]:max-w-[190px] [&_.lang-select-wrap]:items-center [&_.lang-select-wrap]:gap-1.5 [&_.lang-select-wrap]:rounded-md [&_.lang-select-wrap]:border [&_.lang-select-wrap]:border-[var(--border-1)] [&_.lang-select-wrap]:bg-[var(--surface-1)] [&_.lang-select-wrap]:px-2.5 [&_.lang-select-wrap]:py-0 [&_.lang-select-wrap]:text-xs [&_.lang-select-wrap]:font-semibold [&_.lang-select-wrap]:text-[var(--t1)]",
   "[&_.lang-select]:absolute [&_.lang-select]:inset-0 [&_.lang-select]:cursor-pointer [&_.lang-select]:opacity-0",
   "[&_.lang-current]:block [&_.lang-current]:overflow-hidden [&_.lang-current]:text-ellipsis [&_.lang-current]:whitespace-nowrap",

@@ -1149,7 +1149,10 @@ export function TradeTicket({
               </div>
               <p className={TICKET_ROW_SUB_CLASS}>
                 {t("IMPLIED_PROB")} {displayPrice}% ·{" "}
-                {t("SHARES_COUNT", { quantity: Math.floor(displayShares) })}
+                {t("SHARES_COUNT", {
+                  count: Math.floor(displayShares),
+                  quantity: Math.floor(displayShares),
+                })}
               </p>
             </div>
 

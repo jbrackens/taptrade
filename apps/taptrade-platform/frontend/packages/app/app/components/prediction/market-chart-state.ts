@@ -132,3 +132,50 @@ export function format24hRange(
   }
   return `${lowPoints} – ${highPoints} Clout`;
 }
+
+/** Smallest vertical window the chart shows, in Clout (= percentage points). */
+export const CHART_MIN_SPAN = 10;
+const CHART_STEP = 5;
+
+/**
+ * The chart's vertical range: fitted to the data (2026-09-29 redesign — a
+ * fixed 0–100 range drew a 55→58 market as a flat line in an empty box),
+ * snapped outward to 5-point steps so the axis reads 50% / 55% / 60%, and
+ * never narrower than CHART_MIN_SPAN so a one-point wobble doesn't read as
+ * a crash. Clamped to 0–100, keeping the window's width at the edges.
+ */
+export function chartDomain(values: number[]): { min: number; max: number } {
+  const finite = values.filter((v) => Number.isFinite(v));
+  if (finite.length === 0) return { min: 0, max: 100 };
+  const lo = Math.min(...finite);
+  const hi = Math.max(...finite);
+  const span = Math.max(hi - lo, CHART_MIN_SPAN);
+  const mid = (lo + hi) / 2;
+  let min = Math.floor((mid - span / 2) / CHART_STEP) * CHART_STEP;
+  let max = Math.ceil((mid + span / 2) / CHART_STEP) * CHART_STEP;
+  const width = max - min;
+  if (min < 0) {
+    min = 0;
+    max = Math.min(100, width);
+  }
+  if (max > 100) {
+    max = 100;
+    min = Math.max(0, 100 - width);
+  }
+  return { min, max };
+}
+
+/**
+ * Where the chart's % labels and dotted guides sit: every 5 points on a
+ * narrow range, 10 on a mid one, 20 on a wide one (so a 10–90 market does
+ * not print seventeen labels).
+ */
+export function chartAxisTicks(domain: { min: number; max: number }): number[] {
+  const span = domain.max - domain.min;
+  const step = span <= 20 ? 5 : span <= 50 ? 10 : 20;
+  const ticks: number[] = [];
+  for (let p = Math.ceil(domain.min / step) * step; p <= domain.max; p += step) {
+    ticks.push(p);
+  }
+  return ticks;
+}

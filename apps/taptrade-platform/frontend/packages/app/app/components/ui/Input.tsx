@@ -17,7 +17,7 @@ import { cx } from "./variants";
 // (attribute selector outranks the base border class, so the override
 // is deterministic — call-site border classNames are not).
 const FIELD_CLASS =
-  "rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm leading-[1.5] text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-150 placeholder:text-[var(--t3)] hover:border-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] aria-invalid:border-[var(--danger)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
+  "rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-3 py-2.5 text-sm pointer-coarse:min-h-11 pointer-coarse:text-base leading-[1.5] text-[var(--t1)] outline-none transition-[background-color,border-color,box-shadow,color] duration-150 placeholder:text-[var(--t3)] hover:border-[var(--t3)] focus:border-[var(--accent)] focus-visible:shadow-[0_0_0_2px_var(--focus-ring)] aria-invalid:border-[var(--danger)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:bg-[var(--inert-fill)] disabled:text-[var(--inert-label)] disabled:opacity-100";
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 

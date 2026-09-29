@@ -19,7 +19,7 @@ const TITLE_CLASS =
   "type-display m-0 text-base font-semibold tracking-[-0.01em] text-[var(--t1)]";
 const COUNT_CLASS = "text-xs text-[var(--t3)]";
 const HEAD_LINK_CLASS =
-  "text-xs text-[var(--t2)] underline-offset-4 hover:text-[var(--accent)] hover:underline";
+  "text-xs text-[var(--t2)] underline-offset-4 pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center hover:text-[var(--accent)] hover:underline";
 const FORM_CLASS = "mb-5 flex flex-col gap-3";
 const FORM_ROW_CLASS = "flex items-center justify-between gap-3";
 const STATUS_CLASS = "text-xs text-[var(--t3)]";

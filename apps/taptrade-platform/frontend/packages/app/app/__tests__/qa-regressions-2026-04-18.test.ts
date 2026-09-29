@@ -868,16 +868,25 @@ describe("MarketChart terminal colors", () => {
     );
   });
 
-  // P11 terminal: the complement stays visible as market context without
-  // competing with the violet primary series.
-  it("draws the complement side as a muted mirror line", () => {
+  // 2026-09-29 redesign: one line on a range fitted to the data with a %
+  // axis; the fixed 0–100 range and the muted complement mirror are gone
+  // (together they drew most markets as a flat line in an empty box).
+  it("fits the vertical range to the data and drops the complement line", () => {
     assert.ok(
-      canvasSource.includes('cssVar(container, "--t4")'),
-      "chart canvas should keep the complement on a quiet neutral token",
+      canvasSource.includes("chartDomain(values)") &&
+        canvasSource.includes("autoscaleInfoProvider: fittedDomain"),
+      "chart canvas should scale to the data via chartDomain",
     );
     assert.ok(
-      canvasSource.includes("withAlpha(muted, 0.45)"),
-      "chart complement line should render muted at 0.45",
+      !canvasSource.includes("minValue: 0, maxValue: 100") &&
+        !canvasSource.includes("value: 100 - v"),
+      "chart canvas should not pin 0–100 or draw the complement mirror",
+    );
+    assert.ok(
+      canvasSource.includes("chartAxisTicks(domain)") &&
+        canvasSource.includes("main.priceToCoordinate(price)") &&
+        canvasSource.includes("{tick.price}%"),
+      "chart canvas should label the fitted range in percent at chartAxisTicks",
     );
   });
 });

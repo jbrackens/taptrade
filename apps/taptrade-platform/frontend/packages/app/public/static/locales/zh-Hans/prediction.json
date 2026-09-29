@@ -146,6 +146,8 @@
   "SETTLEMENT_SOURCE": "结算来源：{{source}}。",
   "SHARES": "份数",
   "SHARES_COUNT": "{{quantity}} 份",
+  "SHARES_COUNT_one": "{{quantity}} 份",
+  "SHARES_COUNT_other": "{{quantity}} 份",
   "SHARES_TO_SELL": "卖出份数",
   "SIDE": "方向",
   "SIGN_IN_TO_PLACE_ORDER": "价格公开可看。登录后即可下这笔 {{side}} 订单。",

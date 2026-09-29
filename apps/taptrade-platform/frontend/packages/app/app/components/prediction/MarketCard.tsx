@@ -240,7 +240,7 @@ export function MarketCard({
                   : t("ADD_TO_WATCHLIST", "Add to watchlist")
               }
               onClick={() => onToggleWatchlist(marketId)}
-              className={`-my-1.5 -mr-1.5 grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded-[var(--r-rh-md)] border-0 bg-transparent transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-11 max-[640px]:w-11 ${
+              className={`-my-1.5 -mr-1.5 pointer-coarse:-my-2.5 pointer-coarse:-mr-2.5 grid h-8 w-8 pointer-coarse:h-11 pointer-coarse:w-11 shrink-0 cursor-pointer place-items-center rounded-[var(--r-rh-md)] border-0 bg-transparent transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-11 max-[640px]:w-11 ${
                 watched ? "text-[var(--t1)]" : "text-[var(--t3)] hover:text-[var(--t1)]"
               }`}
             >

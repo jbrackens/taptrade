@@ -47,13 +47,13 @@ export function WelcomeStrip() {
       <div className="flex shrink-0 items-center gap-2 max-[640px]:w-full">
         <Link
           href="/auth/register"
-          className="inline-flex h-10 items-center rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-[14px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
+          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] bg-[var(--accent)] px-4 text-[14px] font-semibold text-[var(--ticket-cta-text)] no-underline transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--accent)_86%,var(--surface-1))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
         >
           {t("HOME_WELCOME_CTA", "Start free")}
         </Link>
         <Link
           href="/#how-it-works"
-          className="inline-flex h-10 items-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 text-[14px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
+          className="inline-flex h-10 pointer-coarse:h-11 items-center rounded-[var(--r-rh-md)] border border-[var(--border-2)] bg-[var(--surface-1)] px-4 text-[14px] font-semibold text-[var(--t1)] no-underline transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 max-[640px]:flex-1 max-[640px]:justify-center"
         >
           {t("HOME_WELCOME_HOW", "How it works")}
         </Link>

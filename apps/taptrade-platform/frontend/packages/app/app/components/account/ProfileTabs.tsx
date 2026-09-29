@@ -31,7 +31,7 @@ const TAB_CLASS = (active: boolean) =>
       : "text-[var(--t3)] hover:text-[var(--t1)]"
   }`;
 const SEGMENT_CLASS = (active: boolean) =>
-  `min-h-8 cursor-pointer rounded-[var(--r-rh-sm)] border-0 px-3.5 text-[13px] font-semibold transition-colors duration-150 max-[640px]:min-h-10 ${
+  `min-h-8 pointer-coarse:min-h-11 cursor-pointer rounded-[var(--r-rh-sm)] border-0 px-3.5 text-[13px] font-semibold transition-colors duration-150 max-[640px]:min-h-10 ${
     active
       ? "bg-[var(--surface-1)] text-[var(--t1)] shadow-[var(--shadow-card)]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"

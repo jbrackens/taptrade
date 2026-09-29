@@ -100,7 +100,7 @@ export function QuickTradePanel({
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <DialogClose
           aria-label={t("CLOSE", "Close")}
-          className="absolute right-3 top-3 grid h-8 w-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[18px] leading-none text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+          className="absolute right-3 top-3 grid h-8 w-8 pointer-coarse:right-1.5 pointer-coarse:top-1.5 pointer-coarse:h-11 pointer-coarse:w-11 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[18px] leading-none text-[var(--t3)] hover:bg-[var(--surface-2)] hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
         >
           <span aria-hidden="true">×</span>
         </DialogClose>

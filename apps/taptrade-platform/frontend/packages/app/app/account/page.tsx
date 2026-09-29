@@ -381,7 +381,7 @@ function ResultCard({ history, loading }: { history: SettledPositionResult[]; lo
               type="button"
               aria-pressed={period === p.id}
               onClick={() => setPeriod(p.id)}
-              className={`min-h-7 cursor-pointer rounded-[var(--r-rh-sm)] border-0 px-2.5 text-[12px] font-semibold transition-colors duration-150 max-[640px]:min-h-9 ${
+              className={`min-h-7 pointer-coarse:min-h-11 cursor-pointer rounded-[var(--r-rh-sm)] border-0 px-2.5 text-[12px] font-semibold transition-colors duration-150 max-[640px]:min-h-9 ${
                 period === p.id
                   ? "bg-[var(--surface-1)] text-[var(--t1)] shadow-[var(--shadow-card)]"
                   : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"

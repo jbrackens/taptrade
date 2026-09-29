@@ -97,7 +97,7 @@ const MARKET_CONTENT_CLASS =
 const MARKET_CRUMB_CLASS =
   "mb-4 flex min-h-8 flex-wrap items-center gap-2 text-[13px] text-[var(--t3)]";
 const MARKET_CRUMB_LINK_CLASS =
-  "inline-flex min-h-8 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
+  "inline-flex min-h-8 pointer-coarse:min-h-11 items-center gap-1.5 rounded-[var(--r-rh-md)] pr-1 font-medium text-[var(--t2)] no-underline transition-colors hover:text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]";
 const MARKET_CRUMB_SEP_CLASS = "text-[var(--t4)]";
 // <=1023px the workspace lives in the vaul Sheet (P3) — the aside is
 // desktop-only and the old in-flow card styles are retired.
@@ -1345,7 +1345,7 @@ export default function MarketDetailPage() {
               <span className={MARKET_CRUMB_SEP_CLASS}>/</span>
               <Link
                 href={`/category/${category.slug}`}
-                className="font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)]"
+                className="font-medium text-[var(--t2)] no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center hover:text-[var(--t1)]"
               >
                 {displayCategory}
               </Link>
@@ -1357,7 +1357,7 @@ export default function MarketDetailPage() {
               <Link
                 href={`/event/${event.id}`}
                 title={t("VIEW_EVENT_MARKETS", "All markets in this event")}
-                className="max-w-[320px] truncate font-medium text-[var(--t2)] no-underline hover:text-[var(--t1)] max-[640px]:max-w-[200px]"
+                className="max-w-[320px] truncate font-medium text-[var(--t2)] no-underline pointer-coarse:leading-[44px] hover:text-[var(--t1)] max-[640px]:max-w-[200px]"
               >
                 {event.title}
               </Link>

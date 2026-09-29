@@ -92,7 +92,7 @@ const CHART_CARD_CLASS = "";
 // current range sits on a soft raised chip (Robinhood / Kalshi pattern).
 const CHART_SWITCHER_CLASS = "mt-3 flex items-center gap-1";
 const CHART_BUTTON_BASE_CLASS =
-  "cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 text-[12px] font-semibold tabular-nums transition-[background-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
+  "cursor-pointer rounded-[6px] border-0 bg-transparent px-2 py-1 pointer-coarse:min-h-11 pointer-coarse:min-w-11 text-[12px] font-semibold tabular-nums transition-[background-color,color,box-shadow] duration-[120ms] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] disabled:cursor-not-allowed disabled:border-[var(--inert-border)] disabled:text-[var(--inert-label)]";
 
 function rangeButtonClass(active: boolean): string {
   return `${CHART_BUTTON_BASE_CLASS} ${

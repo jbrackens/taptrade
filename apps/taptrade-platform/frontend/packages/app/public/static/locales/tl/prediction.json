@@ -146,6 +146,8 @@
   "SETTLEMENT_SOURCE": "Settlement source: {{source}}.",
   "SHARES": "Shares",
   "SHARES_COUNT": "{{quantity}} shares",
+  "SHARES_COUNT_one": "{{quantity}} share",
+  "SHARES_COUNT_other": "{{quantity}} shares",
   "SHARES_TO_SELL": "Shares na ibebenta",
   "SIDE": "Side",
   "SIGN_IN_TO_PLACE_ORDER": "Public ang prices. Mag-sign in para ilagay ang {{side}} order na ito.",

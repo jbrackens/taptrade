@@ -146,6 +146,8 @@
   "SETTLEMENT_SOURCE": "Sumber penyelesaian: {{source}}.",
   "SHARES": "Saham",
   "SHARES_COUNT": "{{quantity}} saham",
+  "SHARES_COUNT_one": "{{quantity}} saham",
+  "SHARES_COUNT_other": "{{quantity}} saham",
   "SHARES_TO_SELL": "Saham untuk dijual",
   "SIDE": "Pilihan",
   "SIGN_IN_TO_PLACE_ORDER": "Harga boleh dilihat umum. Log masuk untuk hantar pesanan {{side}} ini.",

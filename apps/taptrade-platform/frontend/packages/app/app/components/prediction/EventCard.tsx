@@ -42,7 +42,7 @@ function clampPercentage(value: number): number {
 }
 
 const CHIP_CLASS =
-  "inline-flex h-7 min-w-[64px] cursor-pointer items-center justify-center gap-1 rounded-[var(--r-rh-md)] border-0 px-2 text-[13px] font-semibold no-underline transition-[background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-9";
+  "inline-flex h-7 pointer-coarse:h-11 min-w-[64px] cursor-pointer items-center justify-center gap-1 rounded-[var(--r-rh-md)] border-0 px-2 text-[13px] font-semibold no-underline transition-[background-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] max-[640px]:h-9";
 const CHIP_TONE: Record<"yes" | "no", string> = {
   yes: "bg-[var(--yes-soft)] text-[var(--yes-text)] hover:bg-[var(--yes)] hover:text-[var(--on-ink)]",
   no: "bg-[var(--no-soft)] text-[var(--no-text)] hover:bg-[var(--no)] hover:text-[var(--on-ink)]",
@@ -90,7 +90,7 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
     >
       <Link
         href={`/event/${eventId}`}
-        className="flex items-start gap-2.5 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
+        className="flex pointer-coarse:min-h-11 items-start gap-2.5 text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)]"
         aria-label={left ? `${title} · ${left.value} ${t("TIME_LEFT", "left")}` : title}
       >
         <MarketThumb categorySlug={lead.categorySlug} imageUrl={photo} size={40} />
@@ -130,7 +130,7 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
             <li key={m.id} className="flex items-center gap-2 py-1.5 first:pt-0">
               <Link
                 href={`/market/${m.ticker}`}
-                className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--t1)] no-underline hover:underline"
+                className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--t1)] no-underline pointer-coarse:leading-[44px] hover:underline"
                 title={m.title}
               >
                 {label}
@@ -176,7 +176,7 @@ export function EventCard({ eventId, title, markets: listed, openMarkets = 0, on
           {formatCompactPoints(volume)} {t("VOL_SHORT", "vol")}
         </span>
         {more > 0 && (
-          <Link href={`/event/${eventId}`} className="shrink-0 font-medium text-[var(--t2)] no-underline hover:underline">
+          <Link href={`/event/${eventId}`} className="shrink-0 font-medium text-[var(--t2)] no-underline pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center hover:underline">
             {t("EVENT_MORE_MARKETS", { count: more, defaultValue: `+${more} more` })}
           </Link>
         )}

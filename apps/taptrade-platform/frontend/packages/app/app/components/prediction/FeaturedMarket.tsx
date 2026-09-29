@@ -51,7 +51,7 @@ export function pickFeatured(markets: PredictionMarket[]): PredictionMarket | un
 }
 
 const OUTCOME_BUTTON_CLASS =
-  "inline-flex h-10 min-w-[128px] cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-4 text-[14px] font-semibold text-[var(--on-ink)] transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[640px]:min-w-0 max-[640px]:flex-1";
+  "inline-flex h-10 pointer-coarse:h-11 min-w-[128px] cursor-pointer items-center justify-center gap-1.5 rounded-[var(--r-rh-md)] border-0 px-4 text-[14px] font-semibold text-[var(--on-ink)] transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-1)] max-[640px]:min-w-0 max-[640px]:flex-1";
 
 export function FeaturedMarket({
   featured,

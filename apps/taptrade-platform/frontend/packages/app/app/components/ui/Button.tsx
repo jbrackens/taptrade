@@ -75,8 +75,8 @@ const CTA_INERT_CUSTOM =
   "w-full rounded-md border border-[var(--inert-border)] bg-[var(--inert-fill)] px-4 py-[14px] text-[15px] font-semibold text-[var(--inert-label)] no-underline";
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "min-h-9 px-3 text-[13px]",
-  md: "min-h-10 px-4 text-sm",
+  sm: "min-h-9 pointer-coarse:min-h-11 px-3 text-[13px]",
+  md: "min-h-10 pointer-coarse:min-h-11 px-4 text-sm",
   lg: "min-h-12 px-5 text-[15px]",
   none: "",
 };
