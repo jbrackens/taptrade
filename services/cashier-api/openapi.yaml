@@ -97,9 +97,222 @@ paths:
             type: string
       responses:
         "202":
-          description: Callback accepted or duplicate acknowledged.
+          description: Callback accepted; a new bridge event was inserted.
+        "200":
+          description: Duplicate callback acknowledged; the bridge event already existed (matched by idempotency key or by provider + raw body hash).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accepted, duplicate, bridgeEventId]
+                properties:
+                  accepted:
+                    type: boolean
+                  duplicate:
+                    type: boolean
+                  bridgeEventId:
+                    type: string
         "401":
           description: Invalid provider signature.
+        "423":
+          description: Provider callbacks are disabled (provider_callbacks_enabled runtime flag is off).
+  /v1/cashier/recovery-cases:
+    get:
+      summary: List operator-authorized recovery cases, optionally filtered.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecoveryCaseStatus"
+        - name: recoveryReason
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RecoveryReason"
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: subjectType
+          in: query
+          required: false
+          schema:
+            enum: [deposit, withdrawal, bridge_event]
+        - name: subjectId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: provider
+          in: query
+          required: false
+          schema:
+            enum: [relay, symbiosis, lifi, debridge, manual]
+        - name: providerRequestId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sourceTxHash
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: destinationTxHash
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: assignedOperatorId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recovery cases matching the filter.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recoveryCases]
+                properties:
+                  recoveryCases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RecoveryCase"
+        "400":
+          description: An unsupported filter key was supplied.
+        "403":
+          description: Operator authorization required.
+  /v1/cashier/recovery-cases/{id}/approvals:
+    post:
+      summary: Record an operator's decision on a recovery case (two-person approval).
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordRecoveryApprovalRequest"
+      responses:
+        "201":
+          description: Recovery approval recorded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryApproval"
+        "403":
+          description: Operator authorization required.
+        "404":
+          description: Recovery case not found.
+  /v1/cashier/recovery-cases/{id}/approvals/{approvalType}/status:
+    get:
+      summary: Read whether a recovery case has two-person approval for one approval type.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: approvalType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Approval status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryApprovalStatus"
+        "403":
+          description: Operator authorization required.
+        "404":
+          description: Recovery case not found.
+  /v1/cashier/runtime-flags:
+    get:
+      summary: List every cashier runtime kill-switch flag.
+      security:
+        - OperatorBearerAuth: []
+      responses:
+        "200":
+          description: Runtime flags.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [runtimeFlags]
+                properties:
+                  runtimeFlags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RuntimeFlag"
+        "403":
+          description: Operator authorization required.
+  /v1/cashier/runtime-flags/{flagKey}:
+    put:
+      summary: Enable or disable one cashier runtime kill-switch flag.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/RuntimeFlagKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRuntimeFlagRequest"
+      responses:
+        "200":
+          description: Runtime flag updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeFlag"
+        "400":
+          description: Unsupported flag key, or enabled/reason missing.
+        "403":
+          description: Operator authorization required.
+  /v1/cashier/reconciliation-reports/{businessDate}/generate:
+    post:
+      summary: Generate (and persist) the daily reconciliation report from observed deposit intents and bridge events.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: businessDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "201":
+          description: Reconciliation report generated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationReport"
+        "403":
+          description: Operator authorization required.
   /v1/cashier/recovery-cases/{id}:
     get:
       summary: Read an operator-authorized recovery case.
@@ -367,6 +580,7 @@ components:
       properties:
         destinationAddress:
           type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
         amountUnits:
           type: string
           pattern: "^(0|[1-9][0-9]*)$"
@@ -400,13 +614,7 @@ components:
         subjectId:
           type: string
         status:
-          enum:
-            - triage
-            - waiting_on_provider
-            - waiting_on_user
-            - compliance_hold
-            - ready_for_release
-            - closed
+          $ref: "#/components/schemas/RecoveryCaseStatus"
         recoveryReason:
           $ref: "#/components/schemas/RecoveryReason"
         userId:
@@ -422,6 +630,93 @@ components:
         closedAt:
           type: string
           format: date-time
+    RecoveryCaseStatus:
+      enum:
+        - triage
+        - waiting_on_provider
+        - waiting_on_user
+        - compliance_hold
+        - ready_for_release
+        - closed
+    RecoveryApproval:
+      type: object
+      required: [id, recoveryCaseId, operatorId, approvalType, decision, evidenceSha256, note, createdAt]
+      properties:
+        id:
+          type: string
+        recoveryCaseId:
+          type: string
+        operatorId:
+          type: string
+        approvalType:
+          type: string
+        decision:
+          enum: [approve, deny]
+        evidenceSha256:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RecordRecoveryApprovalRequest:
+      type: object
+      required: [approvalType, decision, evidenceSha256, note]
+      additionalProperties: false
+      properties:
+        approvalType:
+          type: string
+        decision:
+          enum: [approve, deny]
+        evidenceSha256:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        note:
+          type: string
+    RecoveryApprovalStatus:
+      type: object
+      required: [recoveryCaseId, approvalType, approvalCount, twoPersonApproved]
+      properties:
+        recoveryCaseId:
+          type: string
+        approvalType:
+          type: string
+        approvalCount:
+          type: integer
+        twoPersonApproved:
+          type: boolean
+    RuntimeFlagKey:
+      enum:
+        - tron_deposits_enabled
+        - evm_deposits_enabled
+        - withdrawals_enabled
+        - relayer_enabled
+        - provider_callbacks_enabled
+    RuntimeFlag:
+      type: object
+      required: [flagKey, enabled, reason, updatedBy, updatedAt]
+      properties:
+        flagKey:
+          $ref: "#/components/schemas/RuntimeFlagKey"
+        enabled:
+          type: boolean
+        reason:
+          type: string
+        updatedBy:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    SetRuntimeFlagRequest:
+      type: object
+      required: [enabled, reason]
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        reason:
+          type: string
     ReconciliationReport:
       type: object
       required: [id, businessDate, generatedAt, generatedBy, items]

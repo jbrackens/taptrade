@@ -3,7 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { createInMemoryCashierRepository } from "../src/repository.mjs";
-import { createSqlCashierRepository } from "../src/sql-repository.mjs";
+import {
+  createSqlCashierRepository,
+  decimalForAssetOnChain,
+} from "../src/sql-repository.mjs";
+import { CashierConflictError, CashierValidationError } from "../src/errors.mjs";
 
 const fixtures = {
   wallet: readJson("../fixtures/wallet.resolved.json"),
@@ -283,7 +287,14 @@ test("recovery cases, approvals, and reconciliation reports use SQL rows with JS
   assert.equal(cases[0].subjectType, "deposit");
   assert.equal(cases[0].recoveryReason, "ambiguous_source");
 
-  assert.deepEqual(await repo.listRecoveryCases({ unsupported: "value" }), []);
+  await assert.rejects(
+    () => repo.listRecoveryCases({ unsupported: "value" }),
+    (err) => {
+      assert.ok(err instanceof CashierValidationError);
+      assert.equal(err.field, "unsupported");
+      return true;
+    },
+  );
 
   const savedCase = await repo.saveRecoveryCase({
     ...fixtures.recoveryCase,
@@ -386,6 +397,290 @@ test("reconciliation generation repository methods persist reports and items", a
   assert.deepEqual(await repo.saveReconciliationReport(generated), generated);
 });
 
+test("saveReconciliationReport writes the report and its items in one transaction on a checked-out client", async () => {
+  const generated = {
+    ...fixtures.reconciliationReport,
+    id: "recon_txn_2026_05_25",
+    generatedBy: "ops_ana",
+  };
+  const client = new ScriptedClient([
+    {
+      name: "save reconciliation report",
+      match: /insert into reconciliation_reports/i,
+      rows: [reconciliationReportRow({ id: generated.id, generated_by: generated.generatedBy })],
+    },
+    {
+      name: "save reconciliation item",
+      match: /insert into reconciliation_items/i,
+      rows: [reconciliationItemRow(generated.items[0], generated.id)],
+    },
+  ]);
+  const repo = createSqlCashierRepository(client);
+
+  await repo.saveReconciliationReport(generated);
+
+  const verbs = client.calls.map((call) => squash(call.text).toUpperCase());
+  assert.equal(verbs[0], "BEGIN");
+  assert.equal(verbs.at(-1), "COMMIT");
+  assert.ok(verbs.some((text) => text.startsWith("INSERT INTO RECONCILIATION_REPORTS")));
+  assert.ok(verbs.some((text) => text.startsWith("INSERT INTO RECONCILIATION_ITEMS")));
+  assert.equal(client.released, 1, "the checked-out client must be released");
+
+  // A client without connect() (e.g. a bare non-pooled query client) cannot
+  // safely run a transaction, so this must fail loudly rather than silently
+  // writing the report and items non-atomically.
+  const bareClient = { query: async () => ({ rows: [] }) };
+  await assert.rejects(
+    () => createSqlCashierRepository(bareClient).saveReconciliationReport(generated),
+    /requires a pool with connect\(\)/,
+  );
+});
+
+test("saveReconciliationReport rolls back and releases the client when an item write fails", async () => {
+  const generated = {
+    ...fixtures.reconciliationReport,
+    id: "recon_txn_fail_2026_05_25",
+    generatedBy: "ops_ana",
+  };
+  const client = new ScriptedClient([
+    {
+      name: "save reconciliation report",
+      match: /insert into reconciliation_reports/i,
+      rows: [reconciliationReportRow({ id: generated.id, generated_by: generated.generatedBy })],
+    },
+    {
+      name: "save reconciliation item (fails)",
+      match: /insert into reconciliation_items/i,
+      rows() {
+        throw new Error("simulated item write failure");
+      },
+    },
+  ]);
+  const repo = createSqlCashierRepository(client);
+
+  await assert.rejects(
+    () => repo.saveReconciliationReport(generated),
+    /simulated item write failure/,
+  );
+
+  const verbs = client.calls.map((call) => squash(call.text).toUpperCase());
+  assert.equal(verbs[0], "BEGIN");
+  assert.equal(verbs.at(-1), "ROLLBACK");
+  assert.equal(client.released, 1, "the checked-out client must still be released on failure");
+});
+
+test("saveDepositIntent, saveWithdrawalIntent, and saveRecoveryCase reject a concurrent status change", async () => {
+  // --- deposit intent ---
+  {
+    const client = new ScriptedClient([
+      { name: "conflicting update", match: /insert into deposit_intents/i, rows: [] },
+      {
+        name: "matching update",
+        match: /insert into deposit_intents/i,
+        assertParams(params, text) {
+          assert.match(squash(text), /where deposit_intents\.status = \$23/i);
+          assert.equal(params[22], "created");
+        },
+        rows: [depositRow({ status: "address_issued" })],
+      },
+      {
+        name: "blind upsert (no expectedStatus)",
+        match: /insert into deposit_intents/i,
+        assertParams(params, text) {
+          assert.doesNotMatch(squash(text), /where deposit_intents\.status/i);
+        },
+        rows: [depositRow()],
+      },
+    ]);
+    const repo = createSqlCashierRepository(client);
+
+    await assert.rejects(
+      () =>
+        repo.saveDepositIntent(
+          { ...fixtures.deposit, status: "address_issued" },
+          { expectedStatus: "created" },
+        ),
+      (err) => err instanceof CashierConflictError,
+    );
+
+    const updated = await repo.saveDepositIntent(
+      { ...fixtures.deposit, status: "address_issued" },
+      { expectedStatus: "created" },
+    );
+    assert.equal(updated.status, "address_issued");
+
+    const blind = await repo.saveDepositIntent(fixtures.deposit);
+    assert.equal(blind.id, fixtures.deposit.id);
+  }
+
+  // --- withdrawal intent ---
+  {
+    const client = new ScriptedClient([
+      { name: "conflicting update", match: /insert into withdrawal_intents/i, rows: [] },
+      {
+        name: "matching update",
+        match: /insert into withdrawal_intents/i,
+        assertParams(params, text) {
+          assert.match(squash(text), /where withdrawal_intents\.status = \$19/i);
+          assert.equal(params[18], "user_authorized");
+        },
+        rows: [withdrawalRow({ status: "policy_approved" })],
+      },
+    ]);
+    const repo = createSqlCashierRepository(client);
+
+    await assert.rejects(
+      () =>
+        repo.saveWithdrawalIntent(
+          { ...fixtures.withdrawal, status: "policy_approved" },
+          { expectedStatus: "user_authorized" },
+        ),
+      (err) => err instanceof CashierConflictError,
+    );
+
+    const updated = await repo.saveWithdrawalIntent(
+      { ...fixtures.withdrawal, status: "policy_approved" },
+      { expectedStatus: "user_authorized" },
+    );
+    assert.equal(updated.status, "policy_approved");
+  }
+
+  // --- recovery case ---
+  {
+    const client = new ScriptedClient([
+      { name: "conflicting update", match: /insert into recovery_cases/i, rows: [] },
+      {
+        name: "matching update",
+        match: /insert into recovery_cases/i,
+        assertParams(params, text) {
+          assert.match(squash(text), /where recovery_cases\.status = \$15/i);
+          assert.equal(params[14], "triage");
+        },
+        rows: [recoveryCaseRow({ status: "waiting_on_provider" })],
+      },
+    ]);
+    const repo = createSqlCashierRepository(client);
+
+    await assert.rejects(
+      () =>
+        repo.saveRecoveryCase(
+          { ...fixtures.recoveryCase, status: "waiting_on_provider" },
+          { expectedStatus: "triage" },
+        ),
+      (err) => err instanceof CashierConflictError,
+    );
+
+    const updated = await repo.saveRecoveryCase(
+      { ...fixtures.recoveryCase, status: "waiting_on_provider" },
+      { expectedStatus: "triage" },
+    );
+    assert.equal(updated.status, "waiting_on_provider");
+  }
+});
+
+test("decimalForAssetOnChain resolves an explicit table and throws for an unknown pair", () => {
+  assert.equal(decimalForAssetOnChain("USDT", "tron"), 6);
+  assert.equal(decimalForAssetOnChain("USDT", "bsc"), 18);
+  assert.equal(decimalForAssetOnChain("USDC", "polygon"), 6);
+  assert.equal(decimalForAssetOnChain("USDC", "base"), 6);
+  assert.equal(decimalForAssetOnChain("USDC", "arbitrum"), 6);
+  assert.equal(decimalForAssetOnChain("hUSD", "settlement"), 6);
+
+  assert.throws(
+    () => decimalForAssetOnChain("USDT", "polygon"),
+    /unknown_asset_chain_decimals:USDT:polygon/,
+  );
+});
+
+test("saveDepositIntent reconstructs settledAmount decimals for hUSD using the settlement chain, not the wallet's EVM chain", async () => {
+  const client = new ScriptedClient([
+    {
+      name: "save deposit with hUSD settlement",
+      match: /insert into deposit_intents/i,
+      rows: [
+        depositRow({
+          settlement_asset: "hUSD",
+          settlement_chain: "polygon",
+          settled_units: "24900000",
+        }),
+      ],
+    },
+  ]);
+  const repo = createSqlCashierRepository(client);
+
+  const saved = await repo.saveDepositIntent({
+    ...fixtures.deposit,
+    settlementAsset: "hUSD",
+    settledAmount: { asset: "hUSD", chain: "settlement", decimals: 6, units: "24900000" },
+  });
+
+  assert.equal(saved.settledAmount.chain, "settlement");
+  assert.equal(saved.settledAmount.decimals, 6);
+  assert.equal(saved.settledAmount.units, "24900000");
+});
+
+test("insertBridgeEvent treats a UNIQUE(provider, raw_body_sha256) conflict as a duplicate, like the idempotency_key conflict", async () => {
+  const bridgeEvent = {
+    id: "evt_test_dup_001",
+    provider: "relay",
+    providerRequestId: "relay_req_test_001",
+    depositIntentId: fixtures.deposit.id,
+    status: "source_confirmed",
+    idempotencyKey: "deposit:relay:tron:tron_tx_test_002:0",
+    sourceChain: "tron",
+    sourceTxHash: "tron_tx_test_002",
+    amount: { asset: "USDT", chain: "tron", decimals: 6, units: "25000000" },
+    callbackVerification: {
+      envelope: {
+        provider: "relay",
+        receivedAt: "2026-05-25T00:05:00.000Z",
+        signatureHeader: "sha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        rawBodySha256: "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      },
+      signatureVersion: "hmac-sha256-v1",
+      verifiedAt: "2026-05-25T00:05:01.000Z",
+      verifierKeyId: "relay-key-1",
+    },
+    observedAt: "2026-05-25T00:05:00.000Z",
+  };
+  const pgUniqueViolation = () => {
+    const err = new Error(
+      'duplicate key value violates unique constraint "bridge_events_provider_raw_body_sha256_key"',
+    );
+    err.code = "23505";
+    err.constraint = "bridge_events_provider_raw_body_sha256_key";
+    throw err;
+  };
+  const client = new ScriptedClient([
+    {
+      // A different idempotency_key but the same (provider, raw_body_sha256)
+      // still raises a unique_violation, which is NOT suppressed by
+      // ON CONFLICT (idempotency_key) DO NOTHING.
+      name: "insert bridge event conflicts on raw_body_sha256",
+      match: /insert into bridge_events/i,
+      rows: pgUniqueViolation,
+    },
+    {
+      name: "lookup by idempotency_key finds nothing",
+      match: /from bridge_events\s+where idempotency_key = \$1/i,
+      rows: [],
+    },
+    {
+      name: "lookup by (provider, raw_body_sha256) finds the existing row",
+      match: /from bridge_events\s+where provider = \$1\s+and raw_body_sha256 = \$2/i,
+      assertParams(params) {
+        assert.deepEqual(params, ["relay", bridgeEvent.callbackVerification.envelope.rawBodySha256]);
+      },
+      rows: [bridgeEventRow({ id: "evt_test_011", idempotency_key: "deposit:relay:tron:tron_tx_test_001:0" })],
+    },
+  ]);
+  const repo = createSqlCashierRepository(client);
+
+  const result = await repo.insertBridgeEvent(bridgeEvent);
+  assert.equal(result.inserted, false);
+  assert.equal(result.event.id, "evt_test_011");
+});
+
 function readJson(path) {
   return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
 }
@@ -394,15 +689,30 @@ class ScriptedClient {
   constructor(steps = []) {
     this.steps = [...steps];
     this.calls = [];
+    this.released = 0;
+  }
+
+  // Mimics a node-postgres Pool: connect() checks out a client that shares
+  // this same scripted step queue and call log.
+  async connect() {
+    return this;
+  }
+
+  release() {
+    this.released += 1;
   }
 
   async query(text, params = []) {
     this.calls.push({ text, params });
+    const squashed = squash(text);
+    if (/^(BEGIN|COMMIT|ROLLBACK)$/i.test(squashed)) {
+      return { rows: [] };
+    }
     const step = this.steps.shift();
     if (!step) {
       return { rows: [] };
     }
-    assert.match(squash(text), step.match, step.name);
+    assert.match(squashed, step.match, step.name);
     step.assertParams?.(params, text);
     return { rows: typeof step.rows === "function" ? step.rows(params, text) : step.rows };
   }

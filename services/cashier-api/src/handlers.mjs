@@ -1,5 +1,10 @@
 import { createHash } from "node:crypto";
 import { buildDailyReconciliationReport } from "./reconciliation.mjs";
+import { CashierConflictError, CashierValidationError } from "./errors.mjs";
+import {
+  validateCreateDepositIntentRequest,
+  validateCreateWithdrawalIntentRequest,
+} from "./validation.mjs";
 
 const RUNTIME_FLAG_KEYS = new Set([
   "tron_deposits_enabled",
@@ -10,7 +15,7 @@ const RUNTIME_FLAG_KEYS = new Set([
 ]);
 
 export function createCashierHandlers({ repo, providerAdapter, now = () => new Date().toISOString() }) {
-  return {
+  const handlers = {
     async getWallet(ctx) {
       const auth = requireUser(ctx);
       if (!auth.ok) return auth;
@@ -24,6 +29,7 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
       if (!auth.ok) return auth;
       const idempotency = requireIdempotencyKey(ctx);
       if (!idempotency.ok) return idempotency;
+      validateCreateDepositIntentRequest(request);
 
       const flagKey =
         request.rail === "tron-usdt-deposit-address"
@@ -96,6 +102,7 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
       if (!auth.ok) return auth;
       const idempotency = requireIdempotencyKey(ctx);
       if (!idempotency.ok) return idempotency;
+      validateCreateWithdrawalIntentRequest(request);
       if (!(await isFlagEnabled(repo, "withdrawals_enabled"))) {
         return json(423, { error: "rail_disabled", flagKey: "withdrawals_enabled" });
       }
@@ -319,6 +326,35 @@ export function createCashierHandlers({ repo, providerAdapter, now = () => new D
       return json(201, saved);
     },
   };
+
+  return mapHandlerErrors(handlers);
+}
+
+/**
+ * Wraps every handler so a thrown CashierValidationError / CashierConflictError
+ * (raised by request validation or a repository backend — including translated
+ * Postgres constraint violations) becomes a clean 400/409 response instead of
+ * propagating as an unhandled 500.
+ */
+function mapHandlerErrors(handlers) {
+  return Object.fromEntries(
+    Object.entries(handlers).map(([name, handler]) => [
+      name,
+      async (...args) => {
+        try {
+          return await handler(...args);
+        } catch (err) {
+          if (err instanceof CashierValidationError) {
+            return json(400, { error: err.code, field: err.field, message: err.message });
+          }
+          if (err instanceof CashierConflictError) {
+            return json(409, { error: err.code, message: err.message });
+          }
+          throw err;
+        }
+      },
+    ]),
+  );
 }
 
 export async function isFlagEnabled(repo, flagKey) {

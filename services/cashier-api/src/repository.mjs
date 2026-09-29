@@ -7,6 +7,9 @@
  * table ownership.
  */
 
+import { CashierConflictError, CashierValidationError } from "./errors.mjs";
+import { RECOVERY_CASE_FILTER_KEY_SET } from "./recovery-case-filters.mjs";
+
 export function createInMemoryCashierRepository(seed = {}) {
   const wallets = new Map((seed.wallets ?? []).map((wallet) => [wallet.userId, clone(wallet)]));
   const depositIntents = new Map(
@@ -29,6 +32,12 @@ export function createInMemoryCashierRepository(seed = {}) {
   );
   const bridgeEvents = new Map(
     (seed.bridgeEvents ?? []).map((event) => [event.idempotencyKey, clone(event)]),
+  );
+  const bridgeEventsByProviderRawBody = new Map(
+    (seed.bridgeEvents ?? [])
+      .map((event) => [providerRawBodyKey(event), event])
+      .filter(([key]) => key !== undefined)
+      .map(([key, event]) => [key, clone(event)]),
   );
   const reconciliationReports = new Map(
     (seed.reconciliationReports ?? []).map((report) => [report.businessDate, clone(report)]),
@@ -69,7 +78,8 @@ export function createInMemoryCashierRepository(seed = {}) {
       );
     },
 
-    async saveDepositIntent(intent) {
+    async saveDepositIntent(intent, options = {}) {
+      assertExpectedStatus(depositIntents, intent.id, options.expectedStatus, "deposit_intent");
       depositIntents.set(intent.id, clone(intent));
       return clone(intent);
     },
@@ -100,7 +110,8 @@ export function createInMemoryCashierRepository(seed = {}) {
       );
     },
 
-    async saveWithdrawalIntent(intent) {
+    async saveWithdrawalIntent(intent, options = {}) {
+      assertExpectedStatus(withdrawalIntents, intent.id, options.expectedStatus, "withdrawal_intent");
       withdrawalIntents.set(intent.id, clone(intent));
       return clone(intent);
     },
@@ -116,7 +127,14 @@ export function createInMemoryCashierRepository(seed = {}) {
       if (bridgeEvents.has(event.idempotencyKey)) {
         return { inserted: false, event: clone(bridgeEvents.get(event.idempotencyKey)) };
       }
+      const rawBodyKey = providerRawBodyKey(event);
+      if (rawBodyKey && bridgeEventsByProviderRawBody.has(rawBodyKey)) {
+        return { inserted: false, event: clone(bridgeEventsByProviderRawBody.get(rawBodyKey)) };
+      }
       bridgeEvents.set(event.idempotencyKey, clone(event));
+      if (rawBodyKey) {
+        bridgeEventsByProviderRawBody.set(rawBodyKey, clone(event));
+      }
       return { inserted: true, event: clone(event) };
     },
 
@@ -125,10 +143,15 @@ export function createInMemoryCashierRepository(seed = {}) {
     },
 
     async listRecoveryCases(filter = {}) {
+      const entries = Object.entries(filter).filter(([, value]) => value !== undefined);
+      const unknownKey = entries.find(([key]) => !RECOVERY_CASE_FILTER_KEY_SET.has(key));
+      if (unknownKey) {
+        throw new CashierValidationError(`unsupported recovery case filter key: ${unknownKey[0]}`, {
+          field: unknownKey[0],
+        });
+      }
       return [...recoveryCases.values()]
-        .filter((recoveryCase) =>
-          Object.entries(filter).every(([key, value]) => value === undefined || recoveryCase[key] === value),
-        )
+        .filter((recoveryCase) => entries.every(([key, value]) => recoveryCase[key] === value))
         .sort((a, b) => Date.parse(a.updatedAt) - Date.parse(b.updatedAt))
         .map(clone);
     },
@@ -137,7 +160,8 @@ export function createInMemoryCashierRepository(seed = {}) {
       return clone(recoveryCases.get(id));
     },
 
-    async saveRecoveryCase(recoveryCase) {
+    async saveRecoveryCase(recoveryCase, options = {}) {
+      assertExpectedStatus(recoveryCases, recoveryCase.id, options.expectedStatus, "recovery_case");
       recoveryCases.set(recoveryCase.id, clone(recoveryCase));
       return clone(recoveryCase);
     },
@@ -178,6 +202,33 @@ export function createInMemoryCashierRepository(seed = {}) {
 
 function toBusinessDate(value) {
   return value ? String(value).slice(0, 10) : "";
+}
+
+function providerRawBodyKey(event) {
+  const rawBodySha256 = event?.rawBodySha256 ?? event?.callbackVerification?.envelope?.rawBodySha256;
+  if (!event?.provider || !rawBodySha256) {
+    return undefined;
+  }
+  return `${event.provider}:${rawBodySha256}`;
+}
+
+/**
+ * Optimistic-concurrency guard mirroring the SQL repository's
+ * `... DO UPDATE ... WHERE <table>.status = $expectedStatus` pattern: when the
+ * caller passes an expected current status and the stored row doesn't match
+ * it (or doesn't exist), surface a typed conflict instead of silently
+ * overwriting a concurrent change.
+ */
+function assertExpectedStatus(map, id, expectedStatus, kind) {
+  if (expectedStatus === undefined) {
+    return;
+  }
+  const existing = map.get(id);
+  if (!existing || existing.status !== expectedStatus) {
+    throw new CashierConflictError(
+      `${kind} ${id} conflict: expected status ${expectedStatus}, found ${existing ? existing.status : "no existing row"}`,
+    );
+  }
 }
 
 function descCreatedAt(a, b) {

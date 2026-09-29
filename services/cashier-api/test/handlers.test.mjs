@@ -253,6 +253,184 @@ test("operator runtime flag changes are allowlisted and audited", async () => {
   assert.equal(auditEvents[0].actorId, "ops_ana");
 });
 
+test("createWithdrawalIntent validates the request before it ever reaches the repository", async () => {
+  const repo = createInMemoryCashierRepository({
+    wallets: [fixtures.wallet],
+    runtimeFlags: fixtures.runtimeFlags,
+  });
+  const handlers = createCashierHandlers({
+    repo,
+    providerAdapter: {},
+    now: () => "2026-05-25T00:25:00.000Z",
+  });
+  const userCtx = { userId: fixtures.wallet.userId, idempotencyKey: "withdrawal:user_maria_001:validate:001" };
+  const validBody = {
+    destinationAddress: "0x7777777777777777777777777777777777777777",
+    amountUnits: "10000000",
+    asset: "hUSD",
+    settlementChain: "polygon",
+    userAuthorizationHash: "0x8888888888888888888888888888888888888888888888888888888888888888",
+    userAuthorizationNonce: "withdrawal:user_maria_001:000001",
+    userAuthorizationExpiresAt: "2026-05-25T00:30:00.000Z",
+  };
+
+  const unauth = await handlers.createWithdrawalIntent({}, validBody);
+  assert.equal(unauth.status, 401);
+
+  const noIdempotency = await handlers.createWithdrawalIntent({ userId: fixtures.wallet.userId }, validBody);
+  assert.equal(noIdempotency.status, 400);
+
+  const badAddress = await handlers.createWithdrawalIntent(userCtx, {
+    ...validBody,
+    destinationAddress: "not-an-address",
+  });
+  assert.equal(badAddress.status, 400);
+  assert.equal(badAddress.body.field, "destinationAddress");
+
+  const badAsset = await handlers.createWithdrawalIntent(userCtx, { ...validBody, asset: "BTC" });
+  assert.equal(badAsset.status, 400);
+  assert.equal(badAsset.body.field, "asset");
+
+  const zeroAmount = await handlers.createWithdrawalIntent(userCtx, { ...validBody, amountUnits: "0" });
+  assert.equal(zeroAmount.status, 400);
+  assert.equal(zeroAmount.body.field, "amountUnits");
+
+  const nonNumericAmount = await handlers.createWithdrawalIntent(userCtx, {
+    ...validBody,
+    amountUnits: "12.5",
+  });
+  assert.equal(nonNumericAmount.status, 400);
+  assert.equal(nonNumericAmount.body.field, "amountUnits");
+
+  const badChain = await handlers.createWithdrawalIntent(userCtx, {
+    ...validBody,
+    settlementChain: "ethereum",
+  });
+  assert.equal(badChain.status, 400);
+  assert.equal(badChain.body.field, "settlementChain");
+
+  // None of the invalid requests above should have reached the repository.
+  assert.deepEqual(await repo.listWithdrawalIntentsByUser(fixtures.wallet.userId), []);
+});
+
+test("createWithdrawalIntent enforces withdrawals_enabled and is idempotent on replay", async () => {
+  const repo = createInMemoryCashierRepository({
+    wallets: [fixtures.wallet],
+    runtimeFlags: fixtures.runtimeFlags,
+  });
+  const handlers = createCashierHandlers({
+    repo,
+    providerAdapter: {},
+    now: () => "2026-05-25T00:25:00.000Z",
+  });
+  const userCtx = { userId: fixtures.wallet.userId, idempotencyKey: "withdrawal:user_maria_001:create:001" };
+  const body = {
+    destinationAddress: "0x7777777777777777777777777777777777777777",
+    amountUnits: "10000000",
+    asset: "hUSD",
+    settlementChain: "polygon",
+    userAuthorizationHash: "0x8888888888888888888888888888888888888888888888888888888888888888",
+    userAuthorizationNonce: "withdrawal:user_maria_001:000001",
+    userAuthorizationExpiresAt: "2026-05-25T00:30:00.000Z",
+  };
+
+  const disabled = await handlers.createWithdrawalIntent(userCtx, body);
+  assert.equal(disabled.status, 423);
+  assert.equal(disabled.body.flagKey, "withdrawals_enabled");
+
+  await repo.setRuntimeFlag({
+    flagKey: "withdrawals_enabled",
+    enabled: true,
+    reason: "handler test",
+    updatedBy: "test",
+    updatedAt: "2026-05-25T00:24:00.000Z",
+  });
+
+  const created = await handlers.createWithdrawalIntent(userCtx, body);
+  assert.equal(created.status, 201);
+  assert.equal(created.body.status, "user_authorized");
+  assert.equal(created.body.amount.units, "10000000");
+
+  const auditEvents = await repo.listAuditEventsBySubject("withdrawal", created.body.id);
+  assert.equal(auditEvents.length, 1);
+  assert.equal(auditEvents[0].eventType, "cashier.withdrawal_intent.created");
+
+  const replayed = await handlers.createWithdrawalIntent(userCtx, body);
+  assert.equal(replayed.status, 200);
+  assert.equal(replayed.body.id, created.body.id);
+});
+
+test("ingestProviderCallback enforces the provider_callbacks_enabled flag, rejects bad signatures, and dedupes duplicates", async () => {
+  const repo = createInMemoryCashierRepository({
+    runtimeFlags: fixtures.runtimeFlags,
+  });
+  const handlers = createCashierHandlers({
+    repo,
+    providerAdapter: {},
+    now: () => "2026-05-25T00:25:00.000Z",
+  });
+  const event = {
+    id: "evt_handler_test_001",
+    providerRequestId: "relay_req_handler_001",
+    status: "source_confirmed",
+    idempotencyKey: "deposit:relay:tron:tron_tx_handler_001:0",
+    sourceChain: "tron",
+    sourceTxHash: "tron_tx_handler_001",
+    amount: { asset: "USDT", chain: "tron", decimals: 6, units: "25000000" },
+    observedAt: "2026-05-25T00:05:00.000Z",
+  };
+
+  // disabled-flag branch
+  const disabled = await handlers.ingestProviderCallback(
+    { providerSignatureVerified: true },
+    "relay",
+    event,
+  );
+  assert.equal(disabled.status, 423);
+  assert.equal(disabled.body.error, "provider_callbacks_disabled");
+
+  await repo.setRuntimeFlag({
+    flagKey: "provider_callbacks_enabled",
+    enabled: true,
+    reason: "handler test",
+    updatedBy: "test",
+    updatedAt: "2026-05-25T00:24:00.000Z",
+  });
+
+  // signature-failure branch
+  const badSignature = await handlers.ingestProviderCallback(
+    { providerSignatureVerified: false },
+    "relay",
+    event,
+  );
+  assert.equal(badSignature.status, 401);
+  assert.equal(badSignature.body.error, "invalid_provider_signature");
+  assert.deepEqual(await repo.listBridgeEvents(), []);
+
+  // first accepted delivery
+  const accepted = await handlers.ingestProviderCallback(
+    { providerSignatureVerified: true },
+    "relay",
+    event,
+  );
+  assert.equal(accepted.status, 202);
+  assert.equal(accepted.body.accepted, true);
+  assert.equal(accepted.body.duplicate, false);
+
+  // duplicate branch: same idempotency key delivered again
+  const duplicate = await handlers.ingestProviderCallback(
+    { providerSignatureVerified: true },
+    "relay",
+    event,
+  );
+  assert.equal(duplicate.status, 200);
+  assert.equal(duplicate.body.accepted, true);
+  assert.equal(duplicate.body.duplicate, true);
+  assert.equal(duplicate.body.bridgeEventId, accepted.body.bridgeEventId);
+
+  assert.equal((await repo.listBridgeEvents()).length, 1);
+});
+
 function readJson(path) {
   return JSON.parse(readFileSync(new URL(path, import.meta.url), "utf8"));
 }

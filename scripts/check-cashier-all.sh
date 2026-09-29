@@ -16,6 +16,8 @@ node "$ROOT/scripts/check-cashier-launch-readiness.mjs"
 
 (cd "$ROOT/apps/taptrade-platform/go-platform/services/gateway" && go test ./internal/cashier ./cmd/gateway ./internal/payments)
 
+node --test "$ROOT/services/cashier-api/test/"*.test.mjs
+
 PATH="$ROOT/apps/taptrade-platform/frontend/node_modules/.bin:$PATH" \
   npm --prefix "$ROOT/packages/cashier-sdk" test
 

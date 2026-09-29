@@ -558,21 +558,29 @@ test("cashier compliance policy maps caps, geo, and screening to stable decision
   });
   assert.equal(denyBeatsQuarantine.decision, "deny");
 
-  const permissiveBeta = evaluateCashierCompliancePolicy({
+  // There is no compliance bypass: geo_blocked and address_screening_unavailable
+  // are always evaluated and always escalate, regardless of any beta/staging
+  // context the caller might be in.
+  const strictGeoBlockDeniesEvenWithUnavailableScreening = evaluateCashierCompliancePolicy({
     subjectType: "deposit",
     geoAllowed: false,
     addressScreening: "unavailable",
-    complianceMode: "permissive_beta",
   });
-  assert.deepEqual(permissiveBeta, { decision: "allow", reasons: [] });
+  assert.equal(strictGeoBlockDeniesEvenWithUnavailableScreening.decision, "deny");
+  assert.ok(strictGeoBlockDeniesEvenWithUnavailableScreening.reasons.includes("geo_blocked"));
+  assert.ok(
+    strictGeoBlockDeniesEvenWithUnavailableScreening.reasons.includes("address_screening_unavailable"),
+  );
 
-  const betaStillQuarantinesKnownHits = evaluateCashierCompliancePolicy({
+  const unavailableScreeningAloneEscalatesToManualReview = evaluateCashierCompliancePolicy({
     subjectType: "withdrawal",
-    geoAllowed: false,
-    addressScreening: "sanctions_hit",
-    complianceMode: "permissive_beta",
+    geoAllowed: true,
+    addressScreening: "unavailable",
   });
-  assert.equal(betaStillQuarantinesKnownHits.decision, "quarantine");
+  assert.equal(unavailableScreeningAloneEscalatesToManualReview.decision, "manual_review");
+  assert.ok(
+    unavailableScreeningAloneEscalatesToManualReview.reasons.includes("address_screening_unavailable"),
+  );
 });
 
 test("provider callback signatures verify raw body before parsing", () => {

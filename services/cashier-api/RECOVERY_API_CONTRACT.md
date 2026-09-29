@@ -42,12 +42,16 @@ Rules:
 - Two-person review above cap.
 - Every decision writes `compliance_decisions` and `cashier_audit_events`.
 
-## `POST /v1/admin/recovery-cases/:id/retry-provider`
+## `POST /v1/admin/recovery-cases/:id/retry-provider` — NOT IMPLEMENTED
 
-Re-fetches provider status and writes bridge events only through the normal watcher
-state machine. It must not directly mutate balances.
+No handler exists for this operation in `services/cashier-api/src/handlers.mjs`.
+Documented here as a future requirement only: when built, it must re-fetch
+provider status and write bridge events only through the normal watcher state
+machine, and it must not directly mutate balances.
 
-## `POST /v1/admin/recovery-cases/:id/retry-chain-evidence`
+## `POST /v1/admin/recovery-cases/:id/retry-chain-evidence` — NOT IMPLEMENTED
 
-Re-fetches source/destination chain evidence and writes bridge events only through
-the normal watcher state machine. It must not directly mutate balances.
+No handler exists for this operation in `services/cashier-api/src/handlers.mjs`.
+Documented here as a future requirement only: when built, it must re-fetch
+source/destination chain evidence and write bridge events only through the
+normal watcher state machine, and it must not directly mutate balances.
