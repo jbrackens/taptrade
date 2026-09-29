@@ -100,15 +100,34 @@ func (s *DBPaymentService) InitiateDeposit(ctx context.Context, userID string, a
 
 	now := time.Now().UTC()
 	txnID := fmt.Sprintf("dep:db:%d", now.UnixNano())
+	// A client Idempotency-Key makes a retry or double-click return the first
+	// deposit (2026-09-29 audit: the key used to embed the current time, so
+	// the UNIQUE column never deduplicated anything). Without one, each call
+	// is its own deposit, as before.
 	idempotencyKey := fmt.Sprintf("deposit:%s:%d:%d", userID, amountCents, now.UnixNano())
+	if clientKey := idempotencyKeyFrom(ctx); clientKey != "" {
+		idempotencyKey = "deposit:" + userID + ":" + clientKey
+	}
 
 	// Create pending deposit transaction
-	_, err := s.db.ExecContext(ctx, `
+	res, err := s.db.ExecContext(ctx, `
 INSERT INTO payment_transactions (txn_id, user_id, txn_type, amount_cents, payment_method, status, idempotency_key)
-VALUES ($1, $2, 'deposit', $3, $4, 'pending', $5)`,
+VALUES ($1, $2, 'deposit', $3, $4, 'pending', $5)
+ON CONFLICT (idempotency_key) DO NOTHING`,
 		txnID, userID, amountCents, paymentMethod, idempotencyKey)
 	if err != nil {
 		return nil, fmt.Errorf("create deposit record: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		// Replay of an earlier request: return that deposit as it stands.
+		var existing DepositResult
+		if err := s.db.QueryRowContext(ctx, `
+SELECT txn_id, status, amount_cents, payment_method FROM payment_transactions
+ WHERE idempotency_key = $1 AND user_id = $2 AND txn_type = 'deposit'`, idempotencyKey, userID).
+			Scan(&existing.TransactionID, &existing.Status, &existing.Amount, &existing.PaymentMethod); err != nil {
+			return nil, fmt.Errorf("load replayed deposit: %w", err)
+		}
+		return &existing, nil
 	}
 
 	if !depositAutoApprove {
@@ -227,9 +246,10 @@ VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
 	}, nil
 }
 
-// CumulativeWithdrawnCents sums the user's non-failed/non-cancelled
-// withdrawals for the KYC just-in-time threshold. A pending withdrawal still
-// counts — it represents committed cash-out intent for AML purposes.
+// CumulativeWithdrawnCents sums the user's committed withdrawals on every
+// rail (CrossRailWithdrawnCents) for the KYC just-in-time threshold. A
+// pending withdrawal still counts — it represents committed cash-out intent
+// for AML purposes.
 func (s *DBPaymentService) CumulativeWithdrawnCents(ctx context.Context, userID string) (int64, error) {
 	if userID == "" {
 		return 0, ErrInvalidUserID
@@ -237,16 +257,7 @@ func (s *DBPaymentService) CumulativeWithdrawnCents(ctx context.Context, userID 
 	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
 	defer cancel()
 
-	var total int64
-	err := s.db.QueryRowContext(ctx, `
-SELECT COALESCE(SUM(amount_cents), 0)
-FROM payment_transactions
-WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','cancelled')`,
-		userID).Scan(&total)
-	if err != nil {
-		return 0, fmt.Errorf("sum cumulative withdrawals: %w", err)
-	}
-	return total, nil
+	return CrossRailWithdrawnCents(ctx, s.db, userID)
 }
 
 // InitiateGatedWithdrawal serializes (cumulative-sum → gate decision →
@@ -285,13 +296,9 @@ func (s *DBPaymentService) InitiateGatedWithdrawal(ctx context.Context, userID s
 		return nil, fmt.Errorf("acquire withdrawal lock: %w", err)
 	}
 
-	var cumulative int64
-	if err = tx.QueryRowContext(ctx, `
-SELECT COALESCE(SUM(amount_cents), 0)
-FROM payment_transactions
-WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','cancelled')`,
-		userID).Scan(&cumulative); err != nil {
-		return nil, fmt.Errorf("sum cumulative withdrawals: %w", err)
+	cumulative, err := CrossRailWithdrawnCents(ctx, tx, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	// Gate decision under the lock. A non-nil error aborts with exactly
@@ -542,4 +549,49 @@ WHERE txn_id = $1`, payload.TransactionID, payload.Status, payload.Data["error"]
 
 func canApplyWebhookTransition(currentStatus string) bool {
 	return strings.EqualFold(strings.TrimSpace(currentStatus), "pending")
+}
+
+// rowQuerier is satisfied by *sql.DB and *sql.Tx.
+type rowQuerier interface {
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
+// CrossRailWithdrawnCents is the user's committed cash-out across every rail:
+// legacy payment withdrawals that did not fail or get cancelled, plus alpha
+// cashier withdrawal requests that were not rejected, failed or cancelled.
+// One definition, used by both rails' KYC gates (2026-09-29 audit: each rail
+// used to count only its own withdrawals). A rail's table is summed only if
+// it exists (payment_transactions is created lazily by this package,
+// alpha_withdrawal_requests by migration 030); existence is checked first
+// because Postgres resolves every table a statement names at plan time.
+func CrossRailWithdrawnCents(ctx context.Context, q rowQuerier, userID string) (int64, error) {
+	if userID == "" {
+		return 0, ErrInvalidUserID
+	}
+	var hasPayments, hasAlpha bool
+	if err := q.QueryRowContext(ctx, `
+SELECT to_regclass('payment_transactions') IS NOT NULL,
+       to_regclass('alpha_withdrawal_requests') IS NOT NULL`).Scan(&hasPayments, &hasAlpha); err != nil {
+		return 0, fmt.Errorf("check withdrawal tables: %w", err)
+	}
+	var total int64
+	if hasPayments {
+		var n int64
+		if err := q.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0) FROM payment_transactions
+ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','cancelled')`, userID).Scan(&n); err != nil {
+			return 0, fmt.Errorf("sum payment withdrawals: %w", err)
+		}
+		total += n
+	}
+	if hasAlpha {
+		var n int64
+		if err := q.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0) FROM alpha_withdrawal_requests
+ WHERE user_id = $1 AND status NOT IN ('rejected','failed','cancelled')`, userID).Scan(&n); err != nil {
+			return 0, fmt.Errorf("sum alpha withdrawals: %w", err)
+		}
+		total += n
+	}
+	return total, nil
 }

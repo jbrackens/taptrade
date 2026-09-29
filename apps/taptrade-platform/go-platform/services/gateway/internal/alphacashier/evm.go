@@ -20,6 +20,20 @@ type EVMClient interface {
 	TransactionReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error)
 	BlockNumber(ctx context.Context) (uint64, error)
 	TokenBalance(ctx context.Context, token common.Address, owner common.Address) (*big.Int, error)
+	// FilterTransfers returns the token's ERC-20 Transfer events to `to` in
+	// [fromBlock, toBlock] (the deposit scanner's eth_getLogs query).
+	FilterTransfers(ctx context.Context, token common.Address, to common.Address, fromBlock, toBlock uint64) ([]TransferLog, error)
+}
+
+// TransferLog is one ERC-20 Transfer event found by FilterTransfers.
+type TransferLog struct {
+	TxHash      string
+	LogIndex    uint
+	BlockNumber uint64
+	BlockHash   string
+	From        string
+	To          string
+	AmountUnits string
 }
 
 type JSONRPCEVMClient struct {
@@ -40,6 +54,36 @@ func (c *JSONRPCEVMClient) TransactionReceipt(ctx context.Context, txHash common
 
 func (c *JSONRPCEVMClient) BlockNumber(ctx context.Context) (uint64, error) {
 	return c.client.BlockNumber(ctx)
+}
+
+func (c *JSONRPCEVMClient) FilterTransfers(ctx context.Context, token common.Address, to common.Address, fromBlock, toBlock uint64) ([]TransferLog, error) {
+	logs, err := c.client.FilterLogs(ctx, ethereum.FilterQuery{
+		FromBlock: new(big.Int).SetUint64(fromBlock),
+		ToBlock:   new(big.Int).SetUint64(toBlock),
+		Addresses: []common.Address{token},
+		Topics:    [][]common.Hash{{transferTopic}, nil, {common.BytesToHash(to.Bytes())}},
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]TransferLog, 0, len(logs))
+	for _, l := range logs {
+		// A removed log belongs to a reorged-out block; a standard Transfer
+		// has exactly three topics (event, from, to) and the amount as data.
+		if l.Removed || len(l.Topics) != 3 || l.Topics[0] != transferTopic || l.Address != token {
+			continue
+		}
+		out = append(out, TransferLog{
+			TxHash:      l.TxHash.Hex(),
+			LogIndex:    l.Index,
+			BlockNumber: l.BlockNumber,
+			BlockHash:   l.BlockHash.Hex(),
+			From:        common.BytesToAddress(l.Topics[1].Bytes()[12:]).Hex(),
+			To:          common.BytesToAddress(l.Topics[2].Bytes()[12:]).Hex(),
+			AmountUnits: new(big.Int).SetBytes(l.Data).String(),
+		})
+	}
+	return out, nil
 }
 
 func (c *JSONRPCEVMClient) TokenBalance(ctx context.Context, token common.Address, owner common.Address) (*big.Int, error) {

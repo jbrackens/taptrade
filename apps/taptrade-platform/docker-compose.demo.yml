@@ -272,6 +272,8 @@ services:
       # ALPHA_CASHIER_TOKEN_DECIMALS: "6"
       # ALPHA_CASHIER_TREASURY_ADDRESS: ""
       # ALPHA_CASHIER_CONFIRMATIONS: "12"
+      # ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED: "false"  # auto-detect treasury transfers (2026-09-29); needs ALPHA_CASHIER_ENABLED
+      # ALPHA_CASHIER_PAYOUT_ADDRESS: ""  # payout wallet checked on-chain before a withdrawal completes; empty = treasury
       # ALPHA_CASHIER_MIN_DEPOSIT_CENTS: "100"
       # ALPHA_CASHIER_MAX_DEPOSIT_CENTS: "25000"
       # ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS: "100000"

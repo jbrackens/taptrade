@@ -49,6 +49,9 @@ type Service struct {
 	now          func() time.Time
 	challengeTTL time.Duration
 	intentTTL    time.Duration
+	// withdrawalGate is the KYC just-in-time check across every cash-out
+	// rail (set by the HTTP layer; nil = no gate, e.g. memory mode).
+	withdrawalGate func(ctx context.Context, userID string, amountCents int64) error
 }
 
 type WalletLedger interface {
@@ -76,6 +79,13 @@ func NewService(cfg Config, repo Repository) *Service {
 
 func (s *Service) SetWalletLedger(ledger WalletLedger) {
 	s.ledger = ledger
+}
+
+// SetWithdrawalGate installs the cross-rail KYC just-in-time check a new
+// withdrawal must pass (2026-09-29 audit: the legacy payments rail had one,
+// this rail had none, so a threshold could be split between them).
+func (s *Service) SetWithdrawalGate(gate func(ctx context.Context, userID string, amountCents int64) error) {
+	s.withdrawalGate = gate
 }
 
 func (s *Service) SetEVMClient(client EVMClient) {
@@ -198,6 +208,15 @@ func (s *Service) CreateDepositIntent(ctx context.Context, userID string, wallet
 	if idempotencyKey == "" {
 		return nil, ErrInvalidIdempotencyKey
 	}
+	// One money operation per user at a time (2026-09-29 audit): the
+	// idempotency lookup, the daily-limit sum and the insert must not
+	// interleave with a concurrent request, or two requests both pass the
+	// daily limit, or both miss each other's idempotency key.
+	unlock, err := s.repo.LockUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
 	if existing, err := s.repo.FindDepositIntentByIdempotencyKey(ctx, userID, idempotencyKey); err != nil {
 		return nil, err
 	} else if existing != nil {
@@ -432,6 +451,15 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	if idempotencyKey == "" {
 		return nil, ErrInvalidIdempotencyKey
 	}
+	// Same per-user lock as deposits, keyed like the payments rail's
+	// withdrawal lock so the two rails serialize against each other: the
+	// idempotency lookup, the KYC gate and the hold+insert cannot race
+	// (two concurrent identical requests used to both hold funds).
+	unlock, err := s.repo.LockUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
 	if existing, err := s.repo.FindWithdrawalRequestByIdempotencyKey(ctx, userID, idempotencyKey); err != nil {
 		return nil, err
 	} else if existing != nil {
@@ -448,6 +476,11 @@ func (s *Service) CreateWithdrawalRequest(ctx context.Context, userID string, de
 	// are reserved (audit CMP-01).
 	if err := s.screenAddress(ctx, userID, normalized, "withdrawal_destination"); err != nil {
 		return nil, err
+	}
+	if s.withdrawalGate != nil {
+		if err := s.withdrawalGate(ctx, userID, amountCents); err != nil {
+			return nil, err
+		}
 	}
 	units, err := CentsToTokenUnits(amountCents, s.cfg.TokenDecimals)
 	if err != nil {
@@ -669,6 +702,31 @@ func (s *Service) MarkWithdrawalCompleted(ctx context.Context, id string, actorI
 	if req.Status != "broadcasted" {
 		return nil, ErrInvalidStatus
 	}
+	// Completion captures the reserved points, so it must rest on chain
+	// evidence, not the operator's word (2026-09-29 audit): the broadcast
+	// tx must be mined, successful, confirmation-deep, and move exactly the
+	// requested amount of the token from the payout wallet to the
+	// destination. Deposits already verify this way (SubmitDepositTx).
+	if s.evmClient == nil {
+		return nil, ErrTxVerificationMissing
+	}
+	evidence, err := VerifyERC20Transfer(ctx, s.evmClient, TransferExpectation{
+		ChainID:               req.ChainID,
+		TxHash:                req.BroadcastTxHash,
+		TokenAddress:          req.TokenAddress,
+		FromAddress:           s.cfg.PayoutAddress(),
+		ToAddress:             req.DestinationAddress,
+		AmountUnits:           req.AmountUnits,
+		RequiredConfirmations: s.cfg.Confirmations,
+	})
+	if err != nil {
+		s.auditOrLog(ctx, "withdrawal_request", req.ID, "alpha_cashier.withdrawal.completion_unverified", "admin", actorID, map[string]any{
+			"userId": req.UserID,
+			"txHash": req.BroadcastTxHash,
+			"error":  err.Error(),
+		})
+		return nil, err
+	}
 	entry, err := s.ledger.Capture(ctx, withdrawalReferenceType, req.ID)
 	if err != nil {
 		return nil, err
@@ -683,6 +741,9 @@ func (s *Service) MarkWithdrawalCompleted(ctx context.Context, id string, actorI
 		"amountCents":   req.AmountCents,
 		"walletEntryId": entry.EntryID,
 		"txHash":        req.BroadcastTxHash,
+		"blockNumber":   evidence.BlockNumber,
+		"blockHash":     evidence.BlockHash,
+		"confirmations": evidence.Confirmations,
 	})
 	return completed, nil
 }
@@ -717,12 +778,13 @@ func (s *Service) ReconciliationSummary(ctx context.Context) (*ReconciliationSum
 		if balance == nil {
 			balance = big.NewInt(0)
 		}
-		cents, err := TokenUnitsToCents(balance, s.cfg.TokenDecimals)
+		cents, dust, err := TokenUnitsToCentsWithDust(balance, s.cfg.TokenDecimals)
 		if err != nil {
 			return nil, err
 		}
 		summary.TreasuryBalanceUnits = balance.String()
 		summary.TreasuryBalanceCents = cents
+		summary.TreasuryDustUnits = dust.String()
 		summary.CashierDriftCents = cents - expected
 	}
 	return summary, nil

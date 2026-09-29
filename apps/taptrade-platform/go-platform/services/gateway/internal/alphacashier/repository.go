@@ -11,6 +11,11 @@ import (
 )
 
 type Repository interface {
+	// LockUser serializes one user's money operations (deposit intents,
+	// withdrawal requests) and returns the release func. SQL: a session
+	// advisory lock on hashtext(userID), the same key the payments rail's
+	// withdrawal lock uses, so the two rails serialize against each other.
+	LockUser(ctx context.Context, userID string) (func(), error)
 	SaveWalletChallenge(ctx context.Context, challenge WalletChallenge) error
 	GetWalletChallenge(ctx context.Context, nonce string) (*WalletChallenge, error)
 	ConsumeWalletChallenge(ctx context.Context, nonce string, consumedAt time.Time) error
@@ -32,6 +37,22 @@ type Repository interface {
 	// ListCreditedDepositsForFinality returns credited deposits paired with the
 	// on-chain evidence they were credited from, for the reorg watcher (A2-03).
 	ListCreditedDepositsForFinality(ctx context.Context, limit int) ([]CreditedDeposit, error)
+	// MarkDepositFinalized retires a credited deposit from the reorg
+	// watcher once it is finality-deep (migration 065).
+	MarkDepositFinalized(ctx context.Context, id string, at time.Time) error
+	// MarkDepositReorgDetected records the first detection of a reorg on a
+	// credited deposit; first reports whether this call set it.
+	MarkDepositReorgDetected(ctx context.Context, id string, at time.Time) (first bool, err error)
+	// FindOpenDepositIntentForTransfer returns the oldest unexpired intent
+	// awaiting a transaction that a treasury transfer of amountUnits from
+	// fromAddress would satisfy (the deposit scanner), or nil.
+	FindOpenDepositIntentForTransfer(ctx context.Context, chainID int64, fromAddress string, amountUnits string, now time.Time) (*DepositIntent, error)
+	// GetScanCursor / SetScanCursor persist where a deposit scanner resumes.
+	GetScanCursor(ctx context.Context, name string) (next uint64, ok bool, err error)
+	SetScanCursor(ctx context.Context, name string, next uint64) error
+	// TryLockScanner makes one scanner run at a time across replicas; ok is
+	// false (and unlock nil) when another instance holds it.
+	TryLockScanner(ctx context.Context, name string) (unlock func(), ok bool, err error)
 	SumUserDepositIntentCentsSince(ctx context.Context, userID string, since time.Time) (int64, error)
 	FindWithdrawalRequestByIdempotencyKey(ctx context.Context, userID string, idempotencyKey string) (*WithdrawalRequest, error)
 	SaveWithdrawalRequest(ctx context.Context, request WithdrawalRequest) (*WithdrawalRequest, error)
@@ -47,6 +68,12 @@ type Repository interface {
 }
 
 type MemoryRepository struct {
+	userLocksMu sync.Mutex
+	userLocks   map[string]*sync.Mutex
+	finalized   map[string]time.Time
+	reorgSeen   map[string]time.Time
+	cursors     map[string]uint64
+	scannerBusy map[string]bool
 	mu          sync.Mutex
 	challenges  map[string]WalletChallenge
 	wallets     map[string]WalletConnection
@@ -65,6 +92,21 @@ func NewMemoryRepository() *MemoryRepository {
 		withdrawals: map[string]WithdrawalRequest{},
 		chainTxs:    map[string]ChainTransaction{},
 	}
+}
+
+func (r *MemoryRepository) LockUser(_ context.Context, userID string) (func(), error) {
+	r.userLocksMu.Lock()
+	if r.userLocks == nil {
+		r.userLocks = map[string]*sync.Mutex{}
+	}
+	m, ok := r.userLocks[userID]
+	if !ok {
+		m = &sync.Mutex{}
+		r.userLocks[userID] = m
+	}
+	r.userLocksMu.Unlock()
+	m.Lock()
+	return m.Unlock, nil
 }
 
 func (r *MemoryRepository) SaveWalletChallenge(_ context.Context, challenge WalletChallenge) error {
@@ -207,27 +249,129 @@ func (r *MemoryRepository) RecordChainTransaction(_ context.Context, tx ChainTra
 func (r *MemoryRepository) ListCreditedDepositsForFinality(_ context.Context, limit int) ([]CreditedDeposit, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	out := []CreditedDeposit{}
+	type row struct {
+		dep        CreditedDeposit
+		creditedAt time.Time
+	}
+	rows := []row{}
 	for _, intent := range r.deposits {
 		if intent.Status != "credited" {
+			continue
+		}
+		if _, done := r.finalized[intent.ID]; done {
 			continue
 		}
 		tx, ok := r.chainTxs[intent.ID]
 		if !ok {
 			continue
 		}
-		out = append(out, CreditedDeposit{
+		at := time.Time{}
+		if intent.CreditedAt != nil {
+			at = *intent.CreditedAt
+		}
+		rows = append(rows, row{CreditedDeposit{
 			DepositID:   intent.ID,
 			UserID:      intent.UserID,
 			AmountCents: intent.AmountCents,
 			Tx:          tx,
-		})
+		}, at})
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].DepositID < out[j].DepositID })
+	// Oldest unfinalized credit first, like the SQL listing.
+	sort.Slice(rows, func(i, j int) bool {
+		if !rows[i].creditedAt.Equal(rows[j].creditedAt) {
+			return rows[i].creditedAt.Before(rows[j].creditedAt)
+		}
+		return rows[i].dep.DepositID < rows[j].dep.DepositID
+	})
+	out := []CreditedDeposit{}
+	for _, r := range rows {
+		out = append(out, r.dep)
+	}
 	if limit > 0 && len(out) > limit {
 		out = out[:limit]
 	}
 	return out, nil
+}
+
+func (r *MemoryRepository) MarkDepositFinalized(_ context.Context, id string, at time.Time) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.finalized == nil {
+		r.finalized = map[string]time.Time{}
+	}
+	if _, ok := r.finalized[id]; !ok {
+		r.finalized[id] = at
+	}
+	return nil
+}
+
+func (r *MemoryRepository) MarkDepositReorgDetected(_ context.Context, id string, at time.Time) (bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.reorgSeen == nil {
+		r.reorgSeen = map[string]time.Time{}
+	}
+	if _, ok := r.reorgSeen[id]; ok {
+		return false, nil
+	}
+	r.reorgSeen[id] = at
+	return true, nil
+}
+
+func (r *MemoryRepository) FindOpenDepositIntentForTransfer(_ context.Context, chainID int64, fromAddress string, amountUnits string, now time.Time) (*DepositIntent, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	var best *DepositIntent
+	for _, intent := range r.deposits {
+		if intent.ChainID != chainID || intent.Status != "created" || intent.TxHash != "" {
+			continue
+		}
+		if !strings.EqualFold(intent.FromAddress, fromAddress) || intent.AmountUnits != amountUnits {
+			continue
+		}
+		if !now.Before(intent.ExpiresAt) {
+			continue
+		}
+		if best == nil || intent.CreatedAt.Before(best.CreatedAt) {
+			copy := intent
+			best = &copy
+		}
+	}
+	return best, nil
+}
+
+func (r *MemoryRepository) GetScanCursor(_ context.Context, name string) (uint64, bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	next, ok := r.cursors[name]
+	return next, ok, nil
+}
+
+func (r *MemoryRepository) SetScanCursor(_ context.Context, name string, next uint64) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.cursors == nil {
+		r.cursors = map[string]uint64{}
+	}
+	r.cursors[name] = next
+	return nil
+}
+
+func (r *MemoryRepository) TryLockScanner(_ context.Context, name string) (func(), bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.scannerBusy == nil {
+		r.scannerBusy = map[string]bool{}
+	}
+	if r.scannerBusy[name] {
+		return nil, false, nil
+	}
+	r.scannerBusy[name] = true
+	return func() {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+		delete(r.scannerBusy, name)
+	}, true, nil
 }
 
 func (r *MemoryRepository) GetDepositIntent(_ context.Context, id string) (*DepositIntent, error) {

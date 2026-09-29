@@ -2,13 +2,19 @@ package alphacashier
 
 import (
 	"context"
+	"errors"
 	"math/big"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"taptrade/gateway/internal/wallet"
 )
 
 func TestServiceWalletConnectAndDepositIntent(t *testing.T) {
@@ -101,6 +107,7 @@ func TestServiceWithdrawalReviewLifecycle(t *testing.T) {
 	svc := NewService(testConfig(), NewMemoryRepository())
 	ledger := &fakeLedger{}
 	svc.SetWalletLedger(ledger)
+	svc.SetEVMClient(payoutClient(testTxHash(), 25000000))
 	req, err := svc.CreateWithdrawalRequest(context.Background(), "u-1", "0x0000000000000000000000000000000000000009", 2500, "wd-1")
 	if err != nil {
 		t.Fatalf("CreateWithdrawalRequest: %v", err)
@@ -250,4 +257,160 @@ func testConfig() Config {
 
 func bigInt(n int64) *big.Int {
 	return big.NewInt(n)
+}
+
+// payoutClient answers with a confirmed payout of amountUnits of the test
+// token from the treasury to the test destination (0x…09).
+func payoutClient(txHash string, amountUnits int64) fakeEVMClient {
+	cfg := testConfig()
+	return fakeEVMClient{
+		latest: 120,
+		receipt: transferReceipt(txHash,
+			common.HexToAddress(cfg.TokenAddress),
+			common.HexToAddress(cfg.TreasuryAddress),
+			common.HexToAddress("0x0000000000000000000000000000000000000009"),
+			amountUnits, 100),
+	}
+}
+
+// broadcastWithdrawal walks a 25.00 withdrawal to "broadcasted".
+func broadcastWithdrawal(t *testing.T, svc *Service) *WithdrawalRequest {
+	t.Helper()
+	req, err := svc.CreateWithdrawalRequest(context.Background(), "u-1", "0x0000000000000000000000000000000000000009", 2500, "wd-verify")
+	if err != nil {
+		t.Fatalf("CreateWithdrawalRequest: %v", err)
+	}
+	if _, err := svc.ApproveWithdrawal(context.Background(), req.ID, "admin-1", "approved"); err != nil {
+		t.Fatalf("ApproveWithdrawal: %v", err)
+	}
+	broadcasted, err := svc.MarkWithdrawalBroadcasted(context.Background(), req.ID, "admin-2", testTxHash())
+	if err != nil {
+		t.Fatalf("MarkWithdrawalBroadcasted: %v", err)
+	}
+	return broadcasted
+}
+
+// 2026-09-29 audit: completion captures the reserved points, so it must be
+// backed by the payout on chain, not the operator's say-so.
+func TestServiceWithdrawalCompletionRequiresChainEvidence(t *testing.T) {
+	t.Run("no EVM client: refused, nothing captured", func(t *testing.T) {
+		svc := NewService(testConfig(), NewMemoryRepository())
+		ledger := &fakeLedger{}
+		svc.SetWalletLedger(ledger)
+		req := broadcastWithdrawal(t, svc)
+		if _, err := svc.MarkWithdrawalCompleted(context.Background(), req.ID, "admin-2"); !errors.Is(err, ErrTxVerificationMissing) {
+			t.Fatalf("want ErrTxVerificationMissing, got %v", err)
+		}
+		if len(ledger.captured) != 0 {
+			t.Fatalf("nothing may be captured without evidence, got %v", ledger.captured)
+		}
+	})
+	t.Run("wrong amount on chain: refused, nothing captured", func(t *testing.T) {
+		svc := NewService(testConfig(), NewMemoryRepository())
+		ledger := &fakeLedger{}
+		svc.SetWalletLedger(ledger)
+		svc.SetEVMClient(payoutClient(testTxHash(), 24000000))
+		req := broadcastWithdrawal(t, svc)
+		if _, err := svc.MarkWithdrawalCompleted(context.Background(), req.ID, "admin-2"); !errors.Is(err, ErrTransferMismatch) {
+			t.Fatalf("want ErrTransferMismatch, got %v", err)
+		}
+		if len(ledger.captured) != 0 {
+			t.Fatalf("nothing may be captured on a mismatch, got %v", ledger.captured)
+		}
+	})
+	t.Run("payout from an unexpected wallet: refused", func(t *testing.T) {
+		cfg := testConfig()
+		cfg.PayoutAddressValue = "0x0000000000000000000000000000000000000077"
+		svc := NewService(cfg, NewMemoryRepository())
+		ledger := &fakeLedger{}
+		svc.SetWalletLedger(ledger)
+		svc.SetEVMClient(payoutClient(testTxHash(), 25000000)) // paid from the treasury
+		req := broadcastWithdrawal(t, svc)
+		if _, err := svc.MarkWithdrawalCompleted(context.Background(), req.ID, "admin-2"); !errors.Is(err, ErrTransferMismatch) {
+			t.Fatalf("want ErrTransferMismatch, got %v", err)
+		}
+	})
+	t.Run("matching payout: completed and captured once", func(t *testing.T) {
+		svc := NewService(testConfig(), NewMemoryRepository())
+		ledger := &fakeLedger{}
+		svc.SetWalletLedger(ledger)
+		svc.SetEVMClient(payoutClient(testTxHash(), 25000000))
+		req := broadcastWithdrawal(t, svc)
+		done, err := svc.MarkWithdrawalCompleted(context.Background(), req.ID, "admin-2")
+		if err != nil || done.Status != "completed" || len(ledger.captured) != 1 {
+			t.Fatalf("want completed once, got %+v err=%v captured=%v", done, err, ledger.captured)
+		}
+	})
+}
+
+// lockedHoldLedger counts holds under a mutex so concurrent requests can be
+// checked for a double reservation.
+type lockedHoldLedger struct {
+	fakeLedger
+	mu    sync.Mutex
+	holds int
+}
+
+func (l *lockedHoldLedger) Hold(ctx context.Context, req wallet.HoldRequest) (wallet.Reservation, error) {
+	l.mu.Lock()
+	l.holds++
+	l.mu.Unlock()
+	time.Sleep(5 * time.Millisecond) // widen the race window
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.fakeLedger.Hold(ctx, req)
+}
+
+// 2026-09-29 audit: two identical withdrawal requests racing used to both
+// reserve funds before the idempotency insert caught the second.
+func TestServiceConcurrentWithdrawalRequestsHoldOnce(t *testing.T) {
+	svc := NewService(testConfig(), NewMemoryRepository())
+	ledger := &lockedHoldLedger{}
+	svc.SetWalletLedger(ledger)
+	var wg sync.WaitGroup
+	ids := make([]string, 8)
+	for i := range ids {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			req, err := svc.CreateWithdrawalRequest(context.Background(), "u-1", "0x0000000000000000000000000000000000000009", 2500, "wd-race")
+			if err != nil {
+				t.Errorf("CreateWithdrawalRequest: %v", err)
+				return
+			}
+			ids[i] = req.ID
+		}(i)
+	}
+	wg.Wait()
+	if ledger.holds != 1 {
+		t.Fatalf("want exactly one hold, got %d", ledger.holds)
+	}
+	for _, id := range ids {
+		if id != ids[0] {
+			t.Fatalf("all replays must return the same request, got %v", ids)
+		}
+	}
+}
+
+// The cross-rail KYC gate runs before any funds are reserved.
+func TestServiceWithdrawalGateBlocksBeforeHold(t *testing.T) {
+	svc := NewService(testConfig(), NewMemoryRepository())
+	ledger := &fakeLedger{}
+	svc.SetWalletLedger(ledger)
+	var gotUser string
+	var gotAmount int64
+	svc.SetWithdrawalGate(func(_ context.Context, userID string, amountCents int64) error {
+		gotUser, gotAmount = userID, amountCents
+		return ErrIdentityVerificationRequired
+	})
+	_, err := svc.CreateWithdrawalRequest(context.Background(), "u-1", "0x0000000000000000000000000000000000000009", 2500, "wd-gated")
+	if !errors.Is(err, ErrIdentityVerificationRequired) {
+		t.Fatalf("want ErrIdentityVerificationRequired, got %v", err)
+	}
+	if gotUser != "u-1" || gotAmount != 2500 {
+		t.Fatalf("gate saw user=%q amount=%d", gotUser, gotAmount)
+	}
+	if len(ledger.holds) != 0 {
+		t.Fatalf("a gated withdrawal must not reserve funds, got %v", ledger.holds)
+	}
 }

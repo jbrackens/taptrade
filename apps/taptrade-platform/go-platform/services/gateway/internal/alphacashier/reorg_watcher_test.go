@@ -8,6 +8,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+
+	"taptrade/gateway/internal/wallet"
 )
 
 // reorgTestReceipt builds a successful receipt at a given block/hash for the
@@ -139,5 +141,63 @@ func seedCreditedWithEvidence(t *testing.T, ctx context.Context, repo *MemoryRep
 	}
 	if _, err := repo.MarkDepositCredited(ctx, intent.ID, "le:test", now, now); err != nil {
 		t.Fatalf("MarkDepositCredited: %v", err)
+	}
+}
+
+// 2026-09-29 audit: a finality-deep deposit is retired from the watch list,
+// so the watcher's LIMIT walks the whole backlog instead of re-checking the
+// same rows forever.
+func TestReorgWatcherRetiresFinalizedDeposits(t *testing.T) {
+	ctx := context.Background()
+	repo := NewMemoryRepository()
+	svc := NewService(testConfig(), repo)
+	svc.SetWalletLedger(&fakeLedger{})
+	svc.SetEVMClient(fakeEVMClient{receipt: reorgTestReceipt(100, "0xabc123", "0x00000000000000000000000000000000000000000000000000000000000000bb"), latest: 1000})
+	seedCreditedWithEvidence(t, ctx, repo, "u-3", 1000, "0xabc123")
+
+	before, _ := repo.ListCreditedDepositsForFinality(ctx, 10)
+	if len(before) != 1 {
+		t.Fatalf("seeded deposit should be on the watch list, got %d", len(before))
+	}
+	NewReorgWatcher(svc, time.Minute).tick(ctx)
+	after, _ := repo.ListCreditedDepositsForFinality(ctx, 10)
+	if len(after) != 0 {
+		t.Fatalf("a finalized deposit must leave the watch list, got %d", len(after))
+	}
+}
+
+// failingHoldLedger cannot place holds (the credited points were spent).
+type failingHoldLedger struct{ fakeLedger }
+
+func (l *failingHoldLedger) Hold(context.Context, wallet.HoldRequest) (wallet.Reservation, error) {
+	return wallet.Reservation{}, wallet.ErrInsufficientFunds
+}
+
+// A reorg whose freeze cannot be placed is escalated once (audit event), not
+// on every tick; the watcher keeps retrying the freeze.
+func TestReorgWatcherEscalatesUnrecoverableReorgOnce(t *testing.T) {
+	ctx := context.Background()
+	repo := NewMemoryRepository()
+	svc := NewService(testConfig(), repo)
+	svc.SetWalletLedger(&failingHoldLedger{})
+	svc.SetEVMClient(fakeEVMClient{receipt: nil, latest: 1000}) // orphaned
+	seedCreditedWithEvidence(t, ctx, repo, "u-4", 1500, "0xabc123")
+
+	w := NewReorgWatcher(svc, time.Minute)
+	w.tick(ctx)
+	w.tick(ctx)
+	w.tick(ctx)
+	events, err := repo.ListAuditEvents(ctx, AuditEventFilter{})
+	if err != nil {
+		t.Fatalf("ListAuditEvents: %v", err)
+	}
+	escalations := 0
+	for _, e := range events {
+		if e.EventType == "alpha_cashier.deposit.reorg_unrecovered" {
+			escalations++
+		}
+	}
+	if escalations != 1 {
+		t.Fatalf("want exactly one reorg_unrecovered escalation over three ticks, got %d", escalations)
 	}
 }

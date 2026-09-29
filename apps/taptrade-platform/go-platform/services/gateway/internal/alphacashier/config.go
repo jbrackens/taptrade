@@ -2,6 +2,7 @@ package alphacashier
 
 import (
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -37,6 +38,24 @@ type Config struct {
 	// ChallengeDomainValue is the origin/domain bound into the wallet-connect
 	// challenge message (audit #19). Empty = default ("hula-na").
 	ChallengeDomainValue string `json:"challengeDomain"`
+	// PayoutAddressValue is the wallet withdrawals are paid from, checked
+	// on-chain before a withdrawal is completed (2026-09-29 audit). Empty =
+	// the treasury address. Stage 1 pays out manually, so ops may use a
+	// separate payout wallet.
+	PayoutAddressValue string `json:"-"`
+	// DepositScannerEnabled turns on proactive deposit detection (ported from
+	// feat/hula-na-cashier, 2026-09-29): a watcher that finds treasury
+	// transfers from connected wallets and submits the matching intent
+	// through the verified SubmitDepositTx path. Off by default.
+	DepositScannerEnabled bool `json:"depositScannerEnabled"`
+}
+
+// PayoutAddress is the wallet withdrawals are expected to be paid from.
+func (c Config) PayoutAddress() string {
+	if a := strings.TrimSpace(c.PayoutAddressValue); a != "" {
+		return a
+	}
+	return c.TreasuryAddress
 }
 
 // ChallengeDomain returns the origin/domain to bind into the wallet challenge
@@ -68,6 +87,8 @@ func LoadConfigFromEnv(getenv func(string) string) (Config, error) {
 		TwoPersonWithdrawal:        envBool(getenv, "ALPHA_CASHIER_TWO_PERSON_WITHDRAWAL", true),
 		FinalityConfirmationsValue: envInt64(getenv, "ALPHA_CASHIER_FINALITY_CONFIRMATIONS", 0),
 		ChallengeDomainValue:       envString(getenv, "ALPHA_CASHIER_CHALLENGE_DOMAIN", defaultChallengeDomain),
+		PayoutAddressValue:         strings.TrimSpace(getenv("ALPHA_CASHIER_PAYOUT_ADDRESS")),
+		DepositScannerEnabled:      envBool(getenv, "ALPHA_CASHIER_DEPOSIT_SCANNER_ENABLED", false),
 	}
 	if !cfg.Enabled {
 		return cfg, nil
@@ -121,6 +142,11 @@ func (cfg Config) Validate() error {
 	if strings.TrimSpace(cfg.RPCURL) == "" {
 		return fmt.Errorf("ALPHA_CASHIER_RPC_URL is required when ALPHA_CASHIER_ENABLED=true")
 	}
+	// Defense in depth for the endpoint the gateway POSTs to (2026-09-29
+	// audit): an http(s) URL with a host, nothing else.
+	if u, err := url.Parse(strings.TrimSpace(cfg.RPCURL)); err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
+		return fmt.Errorf("ALPHA_CASHIER_RPC_URL must be an http(s) URL with a host")
+	}
 	if strings.TrimSpace(cfg.TokenSymbol) == "" {
 		return fmt.Errorf("ALPHA_CASHIER_TOKEN_SYMBOL is required")
 	}
@@ -144,6 +170,9 @@ func (cfg Config) Validate() error {
 	}
 	if cfg.DailyDepositLimitCents < cfg.MaxDepositCents {
 		return fmt.Errorf("ALPHA_CASHIER_DAILY_DEPOSIT_LIMIT_CENTS must be >= ALPHA_CASHIER_MAX_DEPOSIT_CENTS")
+	}
+	if p := strings.TrimSpace(cfg.PayoutAddressValue); p != "" && !common.IsHexAddress(p) {
+		return fmt.Errorf("ALPHA_CASHIER_PAYOUT_ADDRESS must be an EVM address")
 	}
 	return nil
 }

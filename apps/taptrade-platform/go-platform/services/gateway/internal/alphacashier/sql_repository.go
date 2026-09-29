@@ -3,6 +3,7 @@ package alphacashier
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,6 +19,38 @@ type SQLRepository struct {
 
 func NewSQLRepository(db *sql.DB) *SQLRepository {
 	return &SQLRepository{db: db}
+}
+
+// userLockWait bounds how long a request waits for another in-flight money
+// operation of the same user.
+const userLockWait = 10 * time.Second
+
+// LockUser takes a session-level advisory lock on hashtext(userID) on a
+// pinned connection. The key matches the payments rail's
+// pg_advisory_xact_lock(hashtext(userID)), so a withdrawal on either rail
+// waits for the other (2026-09-29 audit). The release func unlocks and
+// returns the connection; if the unlock fails the connection is discarded
+// rather than returned to the pool still holding the lock.
+func (r *SQLRepository) LockUser(ctx context.Context, userID string) (func(), error) {
+	lockCtx, cancel := context.WithTimeout(ctx, userLockWait)
+	defer cancel()
+	conn, err := r.db.Conn(lockCtx)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := conn.ExecContext(lockCtx, `SELECT pg_advisory_lock(hashtext($1))`, userID); err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
+	return func() {
+		unlockCtx, unlockCancel := context.WithTimeout(context.Background(), dbTimeout)
+		defer unlockCancel()
+		if _, err := conn.ExecContext(unlockCtx, `SELECT pg_advisory_unlock(hashtext($1))`, userID); err != nil {
+			// Never hand a connection still holding the lock back to the pool.
+			_ = conn.Raw(func(any) error { return driver.ErrBadConn })
+		}
+		_ = conn.Close()
+	}, nil
 }
 
 func (r *SQLRepository) SaveWalletChallenge(ctx context.Context, challenge WalletChallenge) error {
@@ -315,16 +348,26 @@ func (r *SQLRepository) ListCreditedDepositsForFinality(ctx context.Context, lim
 	if limit <= 0 {
 		limit = defaultAdminListLimit
 	}
+	// Oldest unfinalized credits first (migration 065): a finalized deposit
+	// drops out, so the LIMIT walks the whole backlog over successive ticks
+	// instead of re-checking the same first rows by uuid order forever.
 	rows, err := r.db.QueryContext(ctx, `
-SELECT DISTINCT ON (di.id)
-       di.id::text, di.user_id, di.amount_cents,
-       ct.chain_id, ct.tx_hash, ct.log_index, ct.block_number, ct.block_hash,
-       ct.token_address, ct.from_address, ct.to_address, ct.amount_units::text,
-       ct.confirmations, ct.receipt_status
-FROM alpha_deposit_intents di
-JOIN alpha_chain_transactions ct ON ct.deposit_intent_id = di.id
-WHERE di.status = 'credited'
-ORDER BY di.id, ct.block_number DESC, ct.log_index DESC
+SELECT id, user_id, amount_cents,
+       chain_id, tx_hash, log_index, block_number, block_hash,
+       token_address, from_address, to_address, amount_units,
+       confirmations, receipt_status
+FROM (
+  SELECT DISTINCT ON (di.id)
+         di.id::text AS id, di.user_id, di.amount_cents, di.credited_at,
+         ct.chain_id, ct.tx_hash, ct.log_index, ct.block_number, ct.block_hash,
+         ct.token_address, ct.from_address, ct.to_address, ct.amount_units::text AS amount_units,
+         ct.confirmations, ct.receipt_status
+  FROM alpha_deposit_intents di
+  JOIN alpha_chain_transactions ct ON ct.deposit_intent_id = di.id
+  WHERE di.status = 'credited' AND di.finalized_at IS NULL
+  ORDER BY di.id, ct.block_number DESC, ct.log_index DESC
+) latest
+ORDER BY credited_at NULLS FIRST, id
 LIMIT $1`, limit)
 	if err != nil {
 		return nil, err
@@ -701,4 +744,99 @@ func scanWithdrawalRequest(row scanner) (*WithdrawalRequest, error) {
 		req.CompletedAt = &completed.Time
 	}
 	return &req, nil
+}
+
+func (r *SQLRepository) MarkDepositFinalized(ctx context.Context, id string, at time.Time) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := r.db.ExecContext(ctx, `
+UPDATE alpha_deposit_intents SET finalized_at = $2, updated_at = $2
+ WHERE id = $1::uuid AND finalized_at IS NULL`, id, at)
+	return err
+}
+
+func (r *SQLRepository) MarkDepositReorgDetected(ctx context.Context, id string, at time.Time) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	res, err := r.db.ExecContext(ctx, `
+UPDATE alpha_deposit_intents SET reorg_detected_at = $2, updated_at = $2
+ WHERE id = $1::uuid AND reorg_detected_at IS NULL`, id, at)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
+}
+
+func (r *SQLRepository) FindOpenDepositIntentForTransfer(ctx context.Context, chainID int64, fromAddress string, amountUnits string, now time.Time) (*DepositIntent, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	row := r.db.QueryRowContext(ctx, depositIntentSelect()+`
+WHERE chain_id = $1
+  AND status = 'created'
+  AND COALESCE(tx_hash, '') = ''
+  AND lower(from_address) = lower($2)
+  AND amount_units = $3::numeric
+  AND expires_at > $4
+ORDER BY created_at
+LIMIT 1`, chainID, fromAddress, amountUnits, now)
+	intent, err := scanDepositIntent(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return intent, err
+}
+
+func (r *SQLRepository) GetScanCursor(ctx context.Context, name string) (uint64, bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	var next int64
+	err := r.db.QueryRowContext(ctx, `SELECT next_block FROM alpha_cashier_scan_cursors WHERE name = $1`, name).Scan(&next)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, err
+	}
+	return uint64(next), true, nil
+}
+
+func (r *SQLRepository) SetScanCursor(ctx context.Context, name string, next uint64) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := r.db.ExecContext(ctx, `
+INSERT INTO alpha_cashier_scan_cursors (name, next_block, updated_at)
+VALUES ($1, $2, NOW())
+ON CONFLICT (name) DO UPDATE SET next_block = EXCLUDED.next_block, updated_at = NOW()`, name, int64(next))
+	return err
+}
+
+// TryLockScanner holds a session advisory lock on a pinned connection for
+// the life of one scan, so only one gateway replica scans at a time (the
+// branch prototype let every replica race on the cursor).
+func (r *SQLRepository) TryLockScanner(ctx context.Context, name string) (func(), bool, error) {
+	lockCtx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	conn, err := r.db.Conn(lockCtx)
+	if err != nil {
+		return nil, false, err
+	}
+	key := "alpha_cashier:scanner:" + name
+	var ok bool
+	if err := conn.QueryRowContext(lockCtx, `SELECT pg_try_advisory_lock(hashtext($1))`, key).Scan(&ok); err != nil {
+		_ = conn.Close()
+		return nil, false, err
+	}
+	if !ok {
+		_ = conn.Close()
+		return nil, false, nil
+	}
+	return func() {
+		unlockCtx, unlockCancel := context.WithTimeout(context.Background(), dbTimeout)
+		defer unlockCancel()
+		if _, err := conn.ExecContext(unlockCtx, `SELECT pg_advisory_unlock(hashtext($1))`, key); err != nil {
+			_ = conn.Raw(func(any) error { return driver.ErrBadConn })
+		}
+		_ = conn.Close()
+	}, true, nil
 }

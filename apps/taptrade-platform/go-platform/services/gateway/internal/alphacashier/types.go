@@ -30,6 +30,11 @@ var (
 	// ErrSecondApproverRequired is returned when two-person withdrawal control
 	// is on and the broadcaster is the same operator who approved (A2-04).
 	ErrSecondApproverRequired = errors.New("withdrawal broadcast requires a different operator than the approver")
+	// ErrIdentityVerificationRequired / Unavailable are the KYC just-in-time
+	// gate's refusals, shared with the legacy payments rail so a withdrawal
+	// threshold cannot be split across rails (2026-09-29 audit).
+	ErrIdentityVerificationRequired    = errors.New("identity verification required to withdraw above this amount")
+	ErrIdentityVerificationUnavailable = errors.New("identity verification unavailable; withdrawal blocked")
 )
 
 type WalletChallenge struct {
@@ -162,19 +167,23 @@ type WithdrawalRequest struct {
 }
 
 type ReconciliationSummary struct {
-	ChainID                     int64     `json:"chainId"`
-	TokenSymbol                 string    `json:"tokenSymbol"`
-	TreasuryAddress             string    `json:"treasuryAddress"`
-	TreasuryBalanceUnits        string    `json:"treasuryBalanceUnits,omitempty"`
-	TreasuryBalanceCents        int64     `json:"treasuryBalanceCents,omitempty"`
-	CreditedDepositCents        int64     `json:"creditedDepositCents"`
-	CompletedWithdrawalCents    int64     `json:"completedWithdrawalCents"`
-	PendingWithdrawalCents      int64     `json:"pendingWithdrawalCents"`
-	WalletBalanceCents          int64     `json:"walletBalanceCents"`
-	ActiveReservationCents      int64     `json:"activeReservationCents"`
-	CashierExpectedReserveCents int64     `json:"cashierExpectedReserveCents"`
-	CashierDriftCents           int64     `json:"cashierDriftCents,omitempty"`
-	GeneratedAt                 time.Time `json:"generatedAt"`
+	ChainID                     int64  `json:"chainId"`
+	TokenSymbol                 string `json:"tokenSymbol"`
+	TreasuryAddress             string `json:"treasuryAddress"`
+	TreasuryBalanceUnits        string `json:"treasuryBalanceUnits,omitempty"`
+	TreasuryBalanceCents        int64  `json:"treasuryBalanceCents,omitempty"`
+	CreditedDepositCents        int64  `json:"creditedDepositCents"`
+	CompletedWithdrawalCents    int64  `json:"completedWithdrawalCents"`
+	PendingWithdrawalCents      int64  `json:"pendingWithdrawalCents"`
+	WalletBalanceCents          int64  `json:"walletBalanceCents"`
+	ActiveReservationCents      int64  `json:"activeReservationCents"`
+	CashierExpectedReserveCents int64  `json:"cashierExpectedReserveCents"`
+	CashierDriftCents           int64  `json:"cashierDriftCents,omitempty"`
+	// TreasuryDustUnits is the sub-cent remainder of the treasury balance
+	// (base units) that TreasuryBalanceCents truncates away, so a drift can
+	// be attributed to dust rather than a missing deposit.
+	TreasuryDustUnits string    `json:"treasuryDustUnits,omitempty"`
+	GeneratedAt       time.Time `json:"generatedAt"`
 }
 
 type ReconciliationLedgerSnapshot struct {

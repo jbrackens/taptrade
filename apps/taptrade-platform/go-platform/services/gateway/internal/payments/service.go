@@ -3,6 +3,7 @@ package payments
 import (
 	"context"
 	"errors"
+	"strings"
 )
 
 var (
@@ -50,4 +51,17 @@ type PaymentService interface {
 
 	// HandleWebhook processes a webhook from the payment gateway
 	HandleWebhook(ctx context.Context, payload WebhookPayload) error
+}
+
+type idempotencyKeyCtxKey struct{}
+
+// WithIdempotencyKey attaches a client-supplied Idempotency-Key (the HTTP
+// header) to a deposit request's context.
+func WithIdempotencyKey(ctx context.Context, key string) context.Context {
+	return context.WithValue(ctx, idempotencyKeyCtxKey{}, strings.TrimSpace(key))
+}
+
+func idempotencyKeyFrom(ctx context.Context) string {
+	key, _ := ctx.Value(idempotencyKeyCtxKey{}).(string)
+	return key
 }

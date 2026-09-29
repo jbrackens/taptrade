@@ -147,14 +147,20 @@ func TestServiceSubmitDepositTxCreditsOnce(t *testing.T) {
 
 type fakeEVMClient struct {
 	receipt *types.Receipt
-	balance *big.Int
-	latest  uint64
-	err     error
+	// receipts, when set, answers by tx hash (a deposit and a payout in one
+	// test); receipt is the fallback for single-tx tests.
+	receipts map[common.Hash]*types.Receipt
+	balance  *big.Int
+	latest   uint64
+	err      error
 }
 
-func (c fakeEVMClient) TransactionReceipt(_ context.Context, _ common.Hash) (*types.Receipt, error) {
+func (c fakeEVMClient) TransactionReceipt(_ context.Context, hash common.Hash) (*types.Receipt, error) {
 	if c.err != nil {
 		return nil, c.err
+	}
+	if r, ok := c.receipts[hash]; ok {
+		return r, nil
 	}
 	if c.receipt == nil {
 		return nil, ethereum.NotFound
@@ -162,8 +168,32 @@ func (c fakeEVMClient) TransactionReceipt(_ context.Context, _ common.Hash) (*ty
 	return c.receipt, nil
 }
 
+// transferReceipt builds a successful receipt carrying one ERC-20 Transfer.
+func transferReceipt(txHash string, token, from, to common.Address, amount int64, block int64) *types.Receipt {
+	return &types.Receipt{
+		TxHash:      common.HexToHash(txHash),
+		Status:      types.ReceiptStatusSuccessful,
+		BlockNumber: big.NewInt(block),
+		BlockHash:   common.HexToHash("0xb10c"),
+		Logs: []*types.Log{{
+			Address: token,
+			Topics: []common.Hash{
+				transferTopic,
+				common.BytesToHash(from.Bytes()),
+				common.BytesToHash(to.Bytes()),
+			},
+			Data:  common.LeftPadBytes(big.NewInt(amount).Bytes(), 32),
+			Index: 0,
+		}},
+	}
+}
+
 func (c fakeEVMClient) BlockNumber(_ context.Context) (uint64, error) {
 	return c.latest, nil
+}
+
+func (c fakeEVMClient) FilterTransfers(_ context.Context, _ common.Address, _ common.Address, _, _ uint64) ([]TransferLog, error) {
+	return nil, c.err
 }
 
 func (c fakeEVMClient) TokenBalance(_ context.Context, _ common.Address, _ common.Address) (*big.Int, error) {

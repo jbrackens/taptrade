@@ -255,8 +255,21 @@ func alphaCashierAuditEventPayload(raw string) string {
 	return string(encoded)
 }
 
+// alphaCashierRequireRBAC is set when the alpha cashier runs on the SQL
+// repository (real custody). Then the cashier's admin actions refuse to run
+// without RBAC instead of degrading to "any admin", which would collapse the
+// cashier:write / cashier:broadcast split (2026-09-29 audit). Memory mode
+// and tests keep the project-wide nil-RBAC fallback to the admin role.
+var alphaCashierRequireRBAC bool
+
 func requireAlphaCashierPermission(r *stdhttp.Request, rbacSvc *rbac.Service, permission string) error {
 	if rbacSvc == nil {
+		if alphaCashierRequireRBAC {
+			if err := requireAdminRole(r); err != nil {
+				return err
+			}
+			return httpx.Forbidden("cashier admin actions require RBAC; none is configured")
+		}
 		return requireAdminRole(r)
 	}
 	return requireRBACPermission(r, rbacSvc, permission)

@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	stdhttp "net/http"
@@ -462,13 +463,33 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			alphaCashierConfig = alphacashier.Config{Enabled: false}
 		}
 		var alphaCashierRepo alphacashier.Repository
-		if walletDB := walletService.DB(); walletDB != nil {
+		walletDB := walletService.DB()
+		if walletDB != nil {
 			alphaCashierRepo = alphacashier.NewSQLRepository(walletDB)
+			alphaCashierRequireRBAC = true
 		} else {
 			alphaCashierRepo = alphacashier.NewMemoryRepository()
 		}
 		alphaCashierService := alphacashier.NewService(alphaCashierConfig, alphaCashierRepo)
 		alphaCashierService.SetWalletLedger(walletService)
+		if walletDB != nil {
+			// The KYC just-in-time gate counts cash-out on every rail, shared
+			// with the payments rail (2026-09-29 audit).
+			alphaCashierService.SetWithdrawalGate(func(ctx context.Context, userID string, amountCents int64) error {
+				cumulative, err := payments.CrossRailWithdrawnCents(ctx, walletDB, userID)
+				if err != nil {
+					return err
+				}
+				switch err := payments.WithdrawalKYCCheck(ctx, userID, cumulative, amountCents); {
+				case errors.Is(err, payments.ErrKYCRequired):
+					return alphacashier.ErrIdentityVerificationRequired
+				case errors.Is(err, payments.ErrKYCUnavailable):
+					return alphacashier.ErrIdentityVerificationUnavailable
+				default:
+					return err
+				}
+			})
+		}
 		// Default address-screening seam (audit CMP-01). The manual-review screener
 		// never auto-clears, so with ALPHA_CASHIER_SCREENING_ENFORCEMENT=true the
 		// deposit/withdrawal addresses are blocked pending a real provider or human
@@ -487,6 +508,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			// no-op until the RPC client above connects.
 			reorgWatcher := alphacashier.NewReorgWatcher(alphaCashierService, 5*time.Minute)
 			go reorgWatcher.Run(context.Background())
+			// Proactive deposit detection (ported from feat/hula-na-cashier,
+			// 2026-09-29): its own flag, off by default, never set on the demo.
+			if alphaCashierConfig.DepositScannerEnabled {
+				go alphacashier.NewDepositScanner(alphaCashierService, 15*time.Second).Run(context.Background())
+			}
 		}
 		alphacashier.RegisterRoutes(mux, alphaCashierService)
 		registerAlphaCashierAdminRoutes(mux, alphaCashierService, rbacService)

@@ -352,6 +352,10 @@ func mapAlphaError(err error) error {
 		return httpx.Conflict("legacy point request is not in a valid status for this action", nil)
 	case errors.Is(err, ErrReviewNoteRequired):
 		return httpx.BadRequest("review note is required", map[string]any{"field": "reviewNote"})
+	case errors.Is(err, ErrIdentityVerificationRequired):
+		return httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
+	case errors.Is(err, ErrIdentityVerificationUnavailable):
+		return httpx.Forbidden("identity verification unavailable; withdrawal blocked")
 	case errors.Is(err, wallet.ErrInsufficientFunds):
 		return httpx.BadRequest("insufficient point account balance", map[string]any{"field": "amountCents"})
 	default:

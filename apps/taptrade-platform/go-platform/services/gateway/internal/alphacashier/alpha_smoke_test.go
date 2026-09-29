@@ -29,9 +29,15 @@ func TestAlphaCashierFakeChainSmoke(t *testing.T) {
 	svc.now = func() time.Time { return time.Date(2026, 5, 28, 10, 30, 0, 0, time.UTC) }
 	ledger := &fakeLedger{}
 	svc.SetWalletLedger(ledger)
+	payoutHash := "0x2222222222222222222222222222222222222222222222222222222222222222"
 	svc.SetEVMClient(fakeEVMClient{
 		latest:  120,
 		balance: big.NewInt(20000000),
+		// The payout the operators broadcast for the withdrawal below.
+		receipts: map[common.Hash]*types.Receipt{
+			common.HexToHash(payoutHash): transferReceipt(payoutHash, token, treasury,
+				common.HexToAddress("0x0000000000000000000000000000000000000009"), 5000000, 101),
+		},
 		receipt: &types.Receipt{
 			TxHash:      common.HexToHash(txHash),
 			Status:      types.ReceiptStatusSuccessful,
@@ -87,7 +93,7 @@ func TestAlphaCashierFakeChainSmoke(t *testing.T) {
 	if _, err := svc.ApproveWithdrawal(ctx, withdrawal.ID, "ops-1", "alpha smoke approval"); err != nil {
 		t.Fatalf("ApproveWithdrawal: %v", err)
 	}
-	if _, err := svc.MarkWithdrawalBroadcasted(ctx, withdrawal.ID, "ops-1", "0x2222222222222222222222222222222222222222222222222222222222222222"); err != nil {
+	if _, err := svc.MarkWithdrawalBroadcasted(ctx, withdrawal.ID, "ops-1", payoutHash); err != nil {
 		t.Fatalf("MarkWithdrawalBroadcasted: %v", err)
 	}
 	completed, err := svc.MarkWithdrawalCompleted(ctx, withdrawal.ID, "ops-1")

@@ -77,6 +77,46 @@ func kycStatusPasses(status string) bool {
 	}
 }
 
+// ErrKYCRequired / ErrKYCUnavailable are the KYC just-in-time gate's
+// refusals (LC-22/D-8).
+var (
+	ErrKYCRequired    = errors.New("identity verification required to withdraw above this amount")
+	ErrKYCUnavailable = errors.New("identity verification unavailable; withdrawal blocked")
+)
+
+// WithdrawalKYCCheck applies the KYC just-in-time rule to a withdrawal of
+// amountCents on top of cumulativeCents the user has already cashed out
+// across every rail (CrossRailWithdrawnCents). The payments rail and the
+// alpha cashier both call it, and both count each other's withdrawals, so a
+// threshold cannot be split between them (2026-09-29 audit). nil = allowed.
+func WithdrawalKYCCheck(ctx context.Context, userID string, cumulativeCents, amountCents int64) error {
+	if KYCGate == nil || !kycEnforcementEnabled() {
+		return nil
+	}
+	threshold := kycWithdrawalThresholdCents()
+	if cumulativeCents+amountCents <= threshold {
+		return nil
+	}
+	gctx, gcancel := context.WithTimeout(ctx, 3*time.Second)
+	defer gcancel()
+	st, kerr := KYCGate.GetVerificationStatus(gctx, userID)
+	if kerr != nil {
+		env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+		if env == "production" || env == "staging" {
+			slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
+			return ErrKYCUnavailable
+		}
+		slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
+		return nil
+	}
+	if st == nil || !kycStatusPasses(st.Status) {
+		slog.Info("withdrawal blocked: KYC required above threshold",
+			"user_id", userID, "cumulative_cents", cumulativeCents, "amount_cents", amountCents, "threshold_cents", threshold)
+		return ErrKYCRequired
+	}
+	return nil
+}
+
 func paymentRouteUserID(r *stdhttp.Request, requestedUserID string, allowAdmin bool) (string, error) {
 	sessionUserID := httpx.UserIDFromContext(r.Context())
 	if sessionUserID == "" {
@@ -139,7 +179,14 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			}
 		}
 
-		result, err := service.InitiateDeposit(r.Context(), userID, req.Amount, req.PaymentMethod)
+		ctx := r.Context()
+		if key := r.Header.Get("Idempotency-Key"); strings.TrimSpace(key) != "" {
+			if len(key) > 128 {
+				return httpx.BadRequest("Idempotency-Key is too long", map[string]any{"field": "Idempotency-Key"})
+			}
+			ctx = WithIdempotencyKey(ctx, key)
+		}
+		result, err := service.InitiateDeposit(ctx, userID, req.Amount, req.PaymentMethod)
 		if err != nil {
 			return mapPaymentError(err)
 		}
@@ -206,30 +253,15 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 		// an httpx error), distinct from payment-domain errors.
 		var gateErr error
 		gate := func(cumulative int64) error {
-			if KYCGate == nil || !kycEnforcementEnabled() {
-				return nil
-			}
-			threshold := kycWithdrawalThresholdCents()
-			if cumulative+req.Amount <= threshold {
-				return nil
-			}
-			gctx, gcancel := context.WithTimeout(r.Context(), 3*time.Second)
-			defer gcancel()
-			st, kerr := KYCGate.GetVerificationStatus(gctx, userID)
-			if kerr != nil {
-				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-				if env == "production" || env == "staging" {
-					slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
-					gateErr = httpx.Forbidden("identity verification unavailable; withdrawal blocked")
-					return gateErr
-				}
-				slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
-				return nil
-			}
-			if st == nil || !kycStatusPasses(st.Status) {
-				slog.Info("withdrawal blocked: KYC required above threshold",
-					"user_id", userID, "cumulative_cents", cumulative, "amount_cents", req.Amount, "threshold_cents", threshold)
+			switch err := WithdrawalKYCCheck(r.Context(), userID, cumulative, req.Amount); {
+			case errors.Is(err, ErrKYCUnavailable):
+				gateErr = httpx.Forbidden("identity verification unavailable; withdrawal blocked")
+				return gateErr
+			case errors.Is(err, ErrKYCRequired):
 				gateErr = httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
+				return gateErr
+			case err != nil:
+				gateErr = httpx.Internal("identity verification check failed", err)
 				return gateErr
 			}
 			return nil
